@@ -1,0 +1,12 @@
+# Project place file
+/Quick Draw.rbxlx
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+sourcemap.json
+Packages/
+ServerPackages/
+sourcemap.json
+wally.lock
