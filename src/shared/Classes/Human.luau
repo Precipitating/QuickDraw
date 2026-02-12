@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 
 export type Human = {
 	Player: Player,
@@ -14,6 +13,21 @@ export type Human = {
 	ToggleRagdoll: (self: Human) -> (),
 	IsAlive: (self: Human) -> boolean,
 	Destroy: (self: Human) -> (),
+	OnDeath: (self: Human) -> (),
+}
+
+local RagdollDisabledStates = {
+	[Enum.HumanoidStateType.Ragdoll] = true,
+	[Enum.HumanoidStateType.FallingDown] = true,
+	[Enum.HumanoidStateType.GettingUp] = true,
+	[Enum.HumanoidStateType.Dead] = true,
+}
+
+local CharacterStates = {
+	Ragdoll = Enum.HumanoidStateType.Ragdoll,
+	Falling = Enum.HumanoidStateType.FallingDown,
+	GettingUp = Enum.HumanoidStateType.GettingUp,
+	Dead = Enum.HumanoidStateType.Dead,
 }
 
 -- Module
@@ -43,13 +57,47 @@ function Human.new(player: Player?): Human
 
 	self.Player = player
 	self.Character = character
-	self.Humanoid = humanoid
+	self.Humanoid = humanoid :: Humanoid?
 	self.RootPart = rootPart :: BasePart
 	self.IsRagdolled = false
+	self.Janitor = Janitor.new()
+	self.AnimationControllerState = false
+
+	-- keep BallSocketConstraints on death
+	humanoid.BreakJointsOnDeath = false
+	-- avoid HRP colliding with UpperTorso on death
+	character.HumanoidRootPart.CanCollide = false
+
+	self:OnHumanoidStateChange()
+
+	print(`New Human class initialized for {self.Player.DisplayName}`)
 
 	return self :: any
 end
 
+function Human:OnHumanoidStateChange()
+	if not self.Humanoid then
+		error("Missing humanoid reference in human class!")
+	end
+
+	-- disable joints when falling
+	self.Janitor:Add(
+		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
+			if RagdollDisabledStates[newState] then
+				self.AnimationControllerState = false
+			else
+				self.AnimationControllerState = true
+			end
+
+			print(newState)
+			for _, j in self.Character:GetDescendants() do
+				if j:IsA("AnimationConstraint") and j.Name ~= "Root" then
+					j.Enabled = self.AnimationControllerState
+				end
+			end
+		end)
+	)
+end
 --[=[
 	Creates a Human instance from a Player. Waits for the character if it hasn't loaded yet.
 	
@@ -57,7 +105,7 @@ end
 	@param config RagdollConfig? -- Optional configuration
 	@return Human
 ]=]
-function Human.fromPlayer(player: Player): Human
+function Human.FromPlayer(player: Player): Human
 	local character = player.Character or player.CharacterAdded:Wait()
 	character:WaitForChild("Humanoid")
 	character:WaitForChild("HumanoidRootPart")
@@ -86,9 +134,31 @@ function Human.IsAlive(self: any): boolean
 	return true
 end
 
-function Human.Ragdoll(self: any) end
+function Human:Ragdoll()
+	self.Humanoid:ChangeState(CharacterStates["Ragdoll"])
+	self.Humanoid:SetStateEnabled(CharacterStates["GettingUp"], false)
+	print(`{self.Player.DisplayName} should ragdoll`)
+end
 
-function Human.Unragdoll(self: any) end
+function Human:UnRagdoll()
+	self.Humanoid:SetStateEnabled(CharacterStates["GettingUp"], true)
+	print(`{self.Player.DisplayName} should get up`)
+end
+
+--[=[
+	Applies death ragdoll state
+]=]
+function Human:OnDeath()
+	for _, joint in self.Character:GetDescendants() do
+		if joint:IsA("AnimationConstraint") then
+			joint.Enabled = false
+		elseif joint:IsA("BallSocketConstraint") then
+			joint.MaxFrictionTorque = 10
+		end
+	end
+
+	self:Destroy()
+end
 
 --[=[
 	Toggles ragdoll state on or off.
@@ -123,11 +193,7 @@ function Human.ApplyImpulse(self: any, force: Vector3, position: Vector3?)
 	end
 end
 
---[=[
-	Cleans up the Human instance, removing all ragdoll artifacts and disconnecting events.
-	After calling Destroy(), the instance should not be used.
-]=]
-function Human.Destroy(self: any)
+function Human:Destroy()
 	if self._destroyed then
 		return
 	end
@@ -140,10 +206,18 @@ function Human.Destroy(self: any)
 	end
 
 	-- Disconnect all connections
-	self._connections:Destroy()
+	self.Janitor:Destroy()
 
-	self.Character = nil :: any
 	self.Humanoid = nil :: any
+	self.Player = nil
+	self.Character = nil
+	self.Humanoid = nil
+	self.RootPart = nil
+	self.IsRagdolled = nil
+	self.Janitor = nil
+	self.AnimationControllerState = nil
+	setmetatable(self, nil)
+	print(`Human class destroyed!`)
 end
 
 return Human

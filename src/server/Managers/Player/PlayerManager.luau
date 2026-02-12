@@ -9,10 +9,7 @@ function PlayerManager:AddHumanClass(key: Player)
 		warn(`Attempting to add a Human class, but key is {key}`)
 		return
 	end
-	self.HumanClasses[key] = Human.fromPlayer(key)
-
-	-- task.wait(5)
-	-- self.HumanClasses[key]:Ragdoll()
+	self.HumanClasses[key] = Human.FromPlayer(key)
 
 	return self.HumanClasses[key]
 end
