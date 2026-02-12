@@ -1,4 +1,1 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Networker = require(ReplicatedStorage.Packages.Networker)
-
-type Networker = NetworkClient
+require(script.Utility.PlayerContext)
