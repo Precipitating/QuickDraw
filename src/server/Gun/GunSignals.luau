@@ -3,4 +3,5 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 
 return {
 	ConnectGunSignal = Signal.new(),
+	FireMuzzleFlash = Signal.new(),
 }

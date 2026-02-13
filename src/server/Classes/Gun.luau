@@ -14,6 +14,7 @@ export type Gun = {
 	CurrentCooldown: number,
 	AddGunToInventory: (self: Gun) -> (),
 	ShootGun: (self: Gun) -> (),
+	MuzzleFlash: Attachment?,
 }
 
 local Gun = {}
@@ -30,6 +31,7 @@ function Gun.new(player: Player): Gun
 	self.CanShoot = true
 	self.CurrentCooldown = -1
 	self.PlayerRef = player
+	self.MuzzleFlash = nil
 
 	self:AddGunToInventory(player)
 
@@ -54,8 +56,18 @@ function Gun:ShootGun()
 	end)
 
 	self:ApplyPistolRecoil()
+	self:ActivateMuzzleFlash()
 
 	return true
+end
+
+function Gun:ActivateMuzzleFlash()
+	if not self.MuzzleFlash then
+		warn("Muzzle flash reference missing, can't activate")
+		return
+	end
+
+	GunSignals.FireMuzzleFlash:Fire(self.PlayerRef, self.MuzzleFlash)
 end
 
 function Gun:ApplyPistolRecoil() end
@@ -68,7 +80,17 @@ end
 function Gun:AddGunToInventory(player: Player)
 	local clone: Tool = ServerStorage.Templates.Revolver:Clone()
 	self.Tool = clone
-	self.ShootPoint = clone:FindFirstChildOfClass("Attachment")
+	self.ShootPoint = clone:FindFirstChild("ShootPoint")
+
+	local muzzle = clone:FindFirstChild("MuzzleFlash")
+	if not muzzle then
+		error("Missing muzzle flash reference")
+	end
+
+	self.MuzzleFlash = muzzle:FindFirstChildOfClass("Attachment")
+	if not self.MuzzleFlash then
+		error("Missing muzzle flash attachment reference")
+	end
 
 	clone.Parent = self.PlayerRef.Backpack
 	GunSignals.ConnectGunSignal:Fire(player, clone)

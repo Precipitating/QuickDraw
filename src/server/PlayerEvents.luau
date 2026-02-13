@@ -19,7 +19,7 @@ return {
 		end)
 	end),
 	Players.PlayerRemoving:Connect(function(player: Player)
-		local humanClass: Human = PlayerManager:AddHumanClass(player)
+		local humanClass: Human = PlayerManager:GetHumanClass(player)
 		if not humanClass then
 			warn(`{player} left but they don't have a human class to destroy!`)
 			return

@@ -9,7 +9,7 @@ export type Human = {
 	Humanoid: Humanoid,
 	RootPart: BasePart,
 	IsRagdolled: boolean,
-	CurrentGun: Gun,
+	CurrentGun: Gun?,
 	LimbHealth: {},
 	BodyParts: {},
 
