@@ -1,5 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Gun = require(script.Parent.Gun)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+type Gun = Gun.Gun
 
 export type Human = {
 	Player: Player,
@@ -7,6 +9,9 @@ export type Human = {
 	Humanoid: Humanoid,
 	RootPart: BasePart,
 	IsRagdolled: boolean,
+	CurrentGun: Gun,
+	LimbHealth: {},
+	BodyParts: {},
 
 	Ragdoll: (self: Human) -> (),
 	UnRagdoll: (self: Human) -> (),
@@ -14,6 +19,8 @@ export type Human = {
 	IsAlive: (self: Human) -> boolean,
 	Destroy: (self: Human) -> (),
 	OnDeath: (self: Human) -> (),
+	DisableLimb: (self: Human, limbName: string) -> (),
+	ApplyImpulse: (force: Vector3, position: Vector3?) -> (),
 }
 
 local RagdollDisabledStates = {
@@ -23,6 +30,28 @@ local RagdollDisabledStates = {
 	[Enum.HumanoidStateType.Dead] = true,
 }
 
+local SimulatingLimbs = {
+	["LeftShoulder"] = true,
+	["RightShoulder"] = true,
+	["LeftElbow"] = true,
+	["RightElbow"] = true,
+	["LeftWrist"] = true,
+	["RightWrist"] = true,
+}
+local LimbHealth = {
+	Head = 100,
+	UpperTorso = 150,
+	LowerTorso = 150,
+	LeftUpperArm = 75,
+	LeftLowerArm = 75,
+	RightUpperArm = 75,
+	RightLowerArm = 75,
+	LeftUpperLeg = 100,
+	LeftLowerLeg = 100,
+	RightUpperLeg = 100,
+	RightLowerLeg = 100,
+}
+
 local CharacterStates = {
 	Ragdoll = Enum.HumanoidStateType.Ragdoll,
 	Falling = Enum.HumanoidStateType.FallingDown,
@@ -30,17 +59,33 @@ local CharacterStates = {
 	Dead = Enum.HumanoidStateType.Dead,
 }
 
+local BodyParts = {
+	Head = nil,
+
+	UpperTorso = nil,
+	LowerTorso = nil,
+
+	LeftUpperArm = nil,
+	LeftLowerArm = nil,
+	LeftHand = nil,
+
+	RightUpperArm = nil,
+	RightLowerArm = nil,
+	RightHand = nil,
+
+	LeftUpperLeg = nil,
+	LeftLowerLeg = nil,
+	LeftFoot = nil,
+
+	RightUpperLeg = nil,
+	RightLowerLeg = nil,
+	RightFoot = nil,
+}
+
 -- Module
 local Human = {}
 Human.__index = Human
 
---[=[
-	Creates a new Human instance from a character model.
-	
-	@param character Model -- The character model (must contain a Humanoid and HumanoidRootPart)
-	@param config RagdollConfig? -- Optional configuration for ragdoll behavior
-	@return Human
-]=]
 function Human.new(player: Player?): Human
 	assert(player, "Human.new: player cannot be nil")
 
@@ -54,14 +99,21 @@ function Human.new(player: Player?): Human
 	assert(rootPart, "Human.new: character must contain a HumanoidRootPart")
 
 	local self = setmetatable({}, Human)
+	self.Janitor = Janitor.new()
 
+	self.Health = 100
 	self.Player = player
 	self.Character = character
 	self.Humanoid = humanoid :: Humanoid?
 	self.RootPart = rootPart :: BasePart
+
+	self.LimbHealth = table.clone(LimbHealth)
+	self.BodyParts = table.clone(BodyParts)
+
 	self.IsRagdolled = false
-	self.Janitor = Janitor.new()
 	self.AnimationControllerState = false
+
+	self.CurrentGun = Gun.new(player)
 
 	-- keep BallSocketConstraints on death
 	humanoid.BreakJointsOnDeath = false
@@ -69,18 +121,36 @@ function Human.new(player: Player?): Human
 	character.HumanoidRootPart.CanCollide = false
 
 	self:OnHumanoidStateChange()
-
+	self:SimulateDefaultLimbs()
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 
 	return self :: any
 end
 
+function Human:SimulateDefaultLimbs()
+	for _, obj in self.Character:GetDescendants() do
+		if BodyParts[obj.Name] then
+			BodyParts[obj.Name] = obj
+			print(obj.Name)
+		end
+
+		if not obj:IsA("AnimationConstraint") then
+			continue
+		end
+
+		if SimulatingLimbs[obj.Name] then
+			obj.IsKinematic = false
+			obj.MaxTorque = 700
+		end
+	end
+end
+
+-- ragdoll when player's state is equal to any CharacterStates
 function Human:OnHumanoidStateChange()
 	if not self.Humanoid then
 		error("Missing humanoid reference in human class!")
 	end
 
-	-- disable joints when falling
 	self.Janitor:Add(
 		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
 			if RagdollDisabledStates[newState] then
@@ -89,7 +159,6 @@ function Human:OnHumanoidStateChange()
 				self.AnimationControllerState = true
 			end
 
-			print(newState)
 			for _, j in self.Character:GetDescendants() do
 				if j:IsA("AnimationConstraint") and j.Name ~= "Root" then
 					j.Enabled = self.AnimationControllerState
@@ -111,6 +180,16 @@ function Human.FromPlayer(player: Player): Human
 	character:WaitForChild("HumanoidRootPart")
 
 	return Human.new(player)
+end
+
+function Human:DisableLimb(limbName: string)
+	local animationConstraint = self.Character[limbName]:FindFirstChildOfClass("AnimationConstraint")
+	local ballSocket = self.Character[limbName]:FindFirstChildOfClass("BallSocketConstraint")
+	if animationConstraint then
+		animationConstraint.Enabled = false
+	elseif ballSocket then
+		ballSocket.MaxFrictionTorque = 10
+	end
 end
 
 --[=[
@@ -177,7 +256,7 @@ end
 	@param force Vector3 -- The force vector to apply
 	@param position Vector3? -- Optional world position to apply force at (defaults to RootPart position)
 ]=]
-function Human.ApplyImpulse(self: any, force: Vector3, position: Vector3?)
+function Human:ApplyImpulse(force: Vector3, position: Vector3?)
 	if self._destroyed then
 		return
 	end
@@ -215,7 +294,11 @@ function Human:Destroy()
 	self.RootPart = nil
 	self.IsRagdolled = nil
 	self.Janitor = nil
+	self.CurrentGun:Destroy()
+	self.CurrentGun = nil
 	self.AnimationControllerState = nil
+	table.clear(self.BodyParts)
+	table.clear(self.BodyParts)
 	setmetatable(self, nil)
 	print(`Human class destroyed!`)
 end

@@ -1,2 +1,3 @@
 require(script.Utility.PlayerContext)
-require(script.PlayerEvents)
+require(script.Gun.ClientGunHandler)
+require(script.PlayerEvents).Initialize()

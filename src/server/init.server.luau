@@ -1,4 +1,2 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Human = require(ReplicatedStorage.Shared.Classes.Human)
+require(script.Gun.GunSignalLogic)
 require(script.PlayerEvents)
-type Human = Human.Human

@@ -3,13 +3,12 @@ local Players = game:GetService("Players")
 
 local PlayerContext = {}
 local Player: Player = Players.LocalPlayer
-Player.CharacterAdded:Wait()
 
 PlayerContext.Player = Player
-PlayerContext.Character = Player.Character
+PlayerContext.Character = nil
 PlayerContext.PlayerGui = Player.PlayerGui
-PlayerContext.HRP = PlayerContext.Character:WaitForChild("HumanoidRootPart")
-PlayerContext.Humanoid = PlayerContext.Character:WaitForChild("Humanoid")
+PlayerContext.HRP = nil
+PlayerContext.Humanoid = nil
 PlayerContext.Camera = workspace.CurrentCamera
 
 -- if we die, update the refs

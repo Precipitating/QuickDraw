@@ -1,7 +1,6 @@
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Human = require(ReplicatedStorage.Shared.Classes.Human)
+local Human = require(ServerScriptService.Server.Classes.Human)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
 type Human = Human.Human

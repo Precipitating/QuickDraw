@@ -1,5 +1,6 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Human = require(ReplicatedStorage.Shared.Classes.Human)
+local ServerScriptService = game:GetService("ServerScriptService")
+local Human = require(ServerScriptService.Server.Classes.Human)
+type Human = Human.Human
 
 local PlayerManager = {}
 PlayerManager.HumanClasses = {}
@@ -20,7 +21,7 @@ function PlayerManager:GetHumanClass(key: Player)
 		return
 	end
 
-	if not PlayerManager[key] then
+	if not PlayerManager.HumanClasses[key] then
 		warn(`Cannot get human class of {key}...`)
 		return
 	end

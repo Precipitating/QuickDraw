@@ -20,6 +20,9 @@
         "$path": "ServerPackages"
       }
     },
+    "ServerStorage": {
+      "$path": "src/serverstorage" 
+    },
 
     "StarterPlayer": {
       "StarterPlayerScripts": {
