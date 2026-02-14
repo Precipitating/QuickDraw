@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
+local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
 
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
@@ -7,11 +9,18 @@ type Networker = NetworkClient
 local ClientGunHandler = {}
 local GunNetwork = Networker.new("GunNetwork", ClientGunHandler)
 
-function ClientGunHandler:ActivateMuzzleFlash(muzzleFolder: Attachment?)
-	if not muzzleFolder then
-		warn("Client muzzle folder NIL")
+function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
+	if not gunTool then
+		warn("Client gunTool invalid")
 		return
 	end
+	local muzzleFolder = gunTool:WaitForChild("MuzzleFlash"):WaitForChild("Attachment")
+
+	if not muzzleFolder then
+		warn("[ ClientGunHandler:ActivateMuzzleFlash] muzzleFolder invalid!")
+		return
+	end
+
 	for _, effect in pairs(muzzleFolder:GetChildren()) do
 		if not effect:IsA("ParticleEmitter") then
 			continue
@@ -22,7 +31,29 @@ function ClientGunHandler:ActivateMuzzleFlash(muzzleFolder: Attachment?)
 			effect.Enabled = false
 		end)
 	end
-	print("should work")
+
+	self:ApplyPistolRecoil(gunTool)
+end
+function ClientGunHandler:ApplyPistolRecoil(gunTool: Tool)
+	local handle: Part? = gunTool:WaitForChild("Handle") :: Part
+	local shootPoint: Attachment? = gunTool:WaitForChild("ShootPoint") :: Attachment
+	local rightArm: MeshPart? = PlayerContext.Character:WaitForChild("RightUpperArm")
+
+	if not handle then
+		warn(`[ClientGunHandler:ApplyPistolRecoil()] failed to get Handle`)
+		return
+	end
+	if not shootPoint then
+		warn(`[ClientGunHandler:ApplyPistolRecoil()] failed to get shootPoint`)
+		return
+	end
+	if not rightArm then
+		warn(`[ClientGunHandler:ApplyPistolRecoil()] failed to get right upper arm`)
+		return
+	end
+
+	handle:ApplyImpulseAtPosition(Vector3.new(0, 1, 0) * 10, shootPoint.WorldPosition)
+	rightArm:ApplyImpulse(rightArm.AssemblyMass * Vector3.new(0, 1, 0) * 100)
 end
 
 function ClientGunHandler:ConnectGun(gun: Tool?)
@@ -35,12 +66,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		local shot = GunNetwork:fetch("ShootGun")
 
 		if shot then
-			local gunRef = gun:WaitForChild("MuzzleFlash", 5)
-			local muzzleFolder: Attachment? = gunRef:WaitForChild("Attachment", 5)
-			if not gunRef or not muzzleFolder then
-				return
-			end
-			self:ActivateMuzzleFlash(muzzleFolder)
+			self:ActivateMuzzleFlash(gun)
 		end
 
 		print(shot)

@@ -7,11 +7,11 @@ return {
 		ServerGunHandler.networker:fire(player, "ConnectGun", gun)
 	end),
 
-	GunSignals.FireMuzzleFlash:Connect(function(player: Player, muzzleFolder: Attachment?)
-		if not muzzleFolder then
-			warn("[GunSignals.FireMuzzleFlash] Muzzle folder ref invalid")
+	GunSignals.FireMuzzleFlash:Connect(function(player: Player, gunTool: Tool?)
+		if not gunTool then
+			warn("[GunSignals.FireMuzzleFlash] gun tool ref invalid")
 			return
 		end
-		ServerGunHandler:ActivateMuzzleFlash(player, muzzleFolder)
+		ServerGunHandler:ActivateMuzzleFlash(player, gunTool)
 	end),
 }

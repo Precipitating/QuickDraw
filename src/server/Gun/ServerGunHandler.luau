@@ -1,12 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Gun = require(ServerScriptService.Server.Classes.Gun)
-local Human = require(ServerScriptService.Server.Classes.Human)
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
-
-type Human = Human.Human
-type Gun = Gun.Gun
+type Human = ClassTypes.Human
+type Gun = ClassTypes.Gun
 type Networker = NetworkServer
 
 local ServerGunHandler = {}
@@ -24,9 +23,9 @@ function ServerGunHandler:ShootGun(player: Player)
 	return hasShot
 end
 
-function ServerGunHandler:ActivateMuzzleFlash(player: Player, muzzleFolder: Attachment)
-	if not muzzleFolder then
-		warn("[ServerGunHandler:ActivateMuzzleFlash] muzzleFolder invalid")
+function ServerGunHandler:ActivateMuzzleFlash(player: Player, gunTool: Tool?)
+	if not gunTool then
+		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
 
@@ -35,8 +34,7 @@ function ServerGunHandler:ActivateMuzzleFlash(player: Player, muzzleFolder: Atta
 		return
 	end
 
-	--self.networker:fire(player, "ActivateMuzzleFlash", muzzleFolder)
-	self.networker:fireAllExcept(player, "ActivateMuzzleFlash", muzzleFolder)
+	self.networker:fireAllExcept(player, "ActivateMuzzleFlash", gunTool)
 	print(`Server -> Client Muzzle Flash`)
 end
 ServerGunHandler.networker =

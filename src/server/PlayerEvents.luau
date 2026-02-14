@@ -1,9 +1,9 @@
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Human = require(ServerScriptService.Server.Classes.Human)
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
-type Human = Human.Human
+type Human = ClassTypes.Human
 return {
 	Players.PlayerAdded:Connect(function(player: Player)
 		player.CharacterAdded:Connect(function(character)

@@ -1,6 +1,7 @@
 local ServerScriptService = game:GetService("ServerScriptService")
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local Human = require(ServerScriptService.Server.Classes.Human)
-type Human = Human.Human
+type Human = ClassTypes.Human
 
 local PlayerManager = {}
 PlayerManager.HumanClasses = {}

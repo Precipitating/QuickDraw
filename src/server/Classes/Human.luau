@@ -1,27 +1,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ClassTypes = require(script.Parent.ClassTypes)
 local Gun = require(script.Parent.Gun)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-type Gun = Gun.Gun
-
-export type Human = {
-	Player: Player,
-	Character: Model,
-	Humanoid: Humanoid,
-	RootPart: BasePart,
-	IsRagdolled: boolean,
-	CurrentGun: Gun?,
-	LimbHealth: {},
-	BodyParts: {},
-
-	Ragdoll: (self: Human) -> (),
-	UnRagdoll: (self: Human) -> (),
-	ToggleRagdoll: (self: Human) -> (),
-	IsAlive: (self: Human) -> boolean,
-	Destroy: (self: Human) -> (),
-	OnDeath: (self: Human) -> (),
-	DisableLimb: (self: Human, limbName: string) -> (),
-	ApplyImpulse: (force: Vector3, position: Vector3?) -> (),
-}
+type Gun = ClassTypes.Gun
+type Human = ClassTypes.Human
 
 local RagdollDisabledStates = {
 	[Enum.HumanoidStateType.Ragdoll] = true,
@@ -35,6 +17,7 @@ local SimulatingLimbs = {
 	["RightShoulder"] = true,
 	["LeftElbow"] = true,
 	["RightElbow"] = true,
+	["RightUpperArm"] = true,
 	["LeftWrist"] = true,
 	["RightWrist"] = true,
 }
@@ -60,26 +43,26 @@ local CharacterStates = {
 }
 
 local BodyParts = {
-	Head = nil,
+	Head = true,
 
-	UpperTorso = nil,
-	LowerTorso = nil,
+	UpperTorso = true,
+	LowerTorso = true,
 
-	LeftUpperArm = nil,
-	LeftLowerArm = nil,
-	LeftHand = nil,
+	LeftUpperArm = true,
+	LeftLowerArm = true,
+	LeftHand = true,
 
-	RightUpperArm = nil,
-	RightLowerArm = nil,
-	RightHand = nil,
+	RightUpperArm = true,
+	RightLowerArm = true,
+	RightHand = true,
 
-	LeftUpperLeg = nil,
-	LeftLowerLeg = nil,
-	LeftFoot = nil,
+	LeftUpperLeg = true,
+	LeftLowerLeg = true,
+	LeftFoot = true,
 
-	RightUpperLeg = nil,
-	RightLowerLeg = nil,
-	RightFoot = nil,
+	RightUpperLeg = true,
+	RightLowerLeg = true,
+	RightFoot = true,
 }
 
 -- Module
@@ -113,7 +96,7 @@ function Human.new(player: Player?): Human
 	self.IsRagdolled = false
 	self.AnimationControllerState = false
 
-	self.CurrentGun = Gun.new(player)
+	self.CurrentGun = Gun.new(self, player)
 
 	-- keep BallSocketConstraints on death
 	humanoid.BreakJointsOnDeath = false
@@ -121,19 +104,23 @@ function Human.new(player: Player?): Human
 	character.HumanoidRootPart.CanCollide = false
 
 	self:OnHumanoidStateChange()
+	self:AssignBodyParts()
 	self:SimulateDefaultLimbs()
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 
 	return self :: any
 end
 
+function Human:AssignBodyParts()
+	for _, obj in self.Character:GetChildren() do
+		if BodyParts[obj.Name] then
+			self.BodyParts[obj.Name] = obj
+		end
+	end
+end
+
 function Human:SimulateDefaultLimbs()
 	for _, obj in self.Character:GetDescendants() do
-		if BodyParts[obj.Name] then
-			BodyParts[obj.Name] = obj
-			print(obj.Name)
-		end
-
 		if not obj:IsA("AnimationConstraint") then
 			continue
 		end
