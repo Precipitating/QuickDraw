@@ -15,6 +15,7 @@ export type Gun = {
 
 export type Human = {
 	Player: Player,
+	Health: number,
 	Character: Model,
 	Humanoid: Humanoid,
 	RootPart: BasePart,
@@ -32,6 +33,10 @@ export type Human = {
 	DisableLimb: (self: Human, limbName: string) -> (),
 	ApplyImpulse: (force: Vector3, position: Vector3?) -> (),
 	ApplyImpulseOnLimb: (limbName: string, force: Vector3) -> (),
+}
+
+export type HumanPlayer = Human & {
+	Player: Player,
 }
 
 return nil

@@ -1,3 +1,5 @@
+local ServerScriptService = game:GetService("ServerScriptService")
+local DamageModule = require(ServerScriptService.Server.DamageModule)
 local GunSignals = require(script.Parent.GunSignals)
 local ServerGunHandler = require(script.Parent.ServerGunHandler)
 
@@ -7,11 +9,25 @@ return {
 		ServerGunHandler.networker:fire(player, "ConnectGun", gun)
 	end),
 
-	GunSignals.FireMuzzleFlash:Connect(function(player: Player, gunTool: Tool?)
+	GunSignals.FireMuzzleFlash:Connect(function(player: Player?, gunTool: Tool?)
 		if not gunTool then
 			warn("[GunSignals.FireMuzzleFlash] gun tool ref invalid")
 			return
 		end
 		ServerGunHandler:ActivateMuzzleFlash(player, gunTool)
+	end),
+
+	GunSignals.PlayerHit:Connect(function(hitObj: Instance?, playerHumanoid: Humanoid?, damageInflicted: number)
+		if not hitObj then
+			warn("[GunSignals.PlayerHit] Hit object reference invalid")
+			return
+		end
+
+		if not playerHumanoid then
+			warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
+			return
+		end
+
+		DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted)
 	end),
 }

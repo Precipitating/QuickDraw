@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
@@ -11,59 +12,89 @@ type Gun = ClassTypes.Gun
 local Gun = {}
 Gun.__index = Gun
 
-local function GetCharacterFromHit(instance: Instance): Model?
+local function GetHumanoidFromHit(instance: Instance): Humanoid?
+	print(instance)
+
 	local model = instance:FindFirstAncestorOfClass("Model")
-	if model and model:FindFirstChildOfClass("Humanoid") then
-		return model
+	if not model then
+		return nil
 	end
-	return nil
+
+	local humanoid = model:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		return nil
+	end
+
+	return humanoid
 end
 
-function Gun.new(humanClass: Human, player: Player): Gun
+function Gun.new(humanClass: Human, player: Player | Model): Gun
 	local self = setmetatable({}, Gun)
 	self.Janitor = Janitor.new()
 	self.Tool = nil
-	self.MaxAmmo = 6
-	self.CurrentAmmo = 6
+	self.MaxAmmo = 55
+	self.CurrentAmmo = 55
 	self.ShootPoint = nil
 	self.ShotDelay = 0.1
 	self.CanShoot = true
 	self.Damage = 20
 	self.CurrentCooldown = -1
+
+	-- if its NPC, its their model, else player instance
 	self.PlayerRef = player
+	if player:IsA("Player") then
+		self.PlayerRef = player
+	end
 	self.HumanClassRef = humanClass
 	self.MuzzleFlash = nil
 
+	-- if its NPC, player should be a model instead of a player instance.
+	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or player
 	-- projectile data
 	self.FastCast = FastCast.new()
 	self.BulletVelocity = 350
 	self.ProjectileData = FastCast.newBehavior()
 	self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { player.Character }
+	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { excludeModel }
 	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
 	self.ProjectileData.AutoIgnoreContainer = true
 
-	self:AddGunToInventory(player)
+	self:AddGunToInventory()
+
 	self:ConnectProjectileEvents()
 	return self
 end
 
 function Gun:ConnectProjectileEvents()
 	self.Janitor:Add(self.FastCast.RayHit:Connect(function(activeCast, raycastResult: RaycastResult, segmentVelocity)
-		print("SOMEONE GOT HIT")
 		print(raycastResult.Material)
 
 		--check if hit player
-		local hitPlayer = GetCharacterFromHit(raycastResult.Instance)
+		local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
+		local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
 
-		if hitPlayer then
-			print("player hit")
-		else
+		-- hit environment
+		if not hitHumanoid then
 			workspace.BulletHole:PivotTo(
 				CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
 			)
+			return
 		end
+
+		if isAccessory then
+			return
+		end
+
+		-- hit body part
+		local playerHumanoid: Humanoid? = GetHumanoidFromHit(hitHumanoid)
+		if not playerHumanoid then
+			warn(`[ConnectProjectileEvents] Cannot get humanoid from character!`)
+			return
+		end
+
+		GunSignals.PlayerHit:Fire(raycastResult.Instance, playerHumanoid, self.Damage)
+		print(`{raycastResult.Instance.Name} hit!`)
 	end))
 end
 
@@ -99,6 +130,7 @@ function Gun:ActivateMuzzleFlash()
 		return
 	end
 
+	-- if playerRef is nil, it'll be an NPC
 	GunSignals.FireMuzzleFlash:Fire(self.PlayerRef, self.Tool)
 end
 
@@ -107,7 +139,7 @@ function Gun:Destroy()
 	setmetatable(self, nil)
 end
 
-function Gun:AddGunToInventory(player: Player)
+function Gun:AddGunToInventory()
 	local clone: Tool = ServerStorage.Templates.Revolver:Clone()
 	self.Tool = clone
 	self.ShootPoint = clone:FindFirstChild("ShootPoint")
@@ -122,8 +154,13 @@ function Gun:AddGunToInventory(player: Player)
 		error("Missing muzzle flash attachment reference")
 	end
 
-	clone.Parent = self.PlayerRef.Backpack
-	GunSignals.ConnectGunSignal:Fire(player, clone)
-	self.Janitor:Add(self.Tool)
+	if self.PlayerRef:IsA("Player") then
+		clone.Parent = self.PlayerRef.Backpack
+		GunSignals.ConnectGunSignal:Fire(self.PlayerRef, clone)
+		self.Janitor:Add(self.Tool)
+	else
+		-- should be NPC
+		self.HumanClassRef.Humanoid:EquipTool(clone)
+	end
 end
 return Gun

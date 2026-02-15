@@ -37,7 +37,10 @@ end
 function ClientGunHandler:ApplyPistolRecoil(gunTool: Tool)
 	local handle: Part? = gunTool:WaitForChild("Handle") :: Part
 	local shootPoint: Attachment? = gunTool:WaitForChild("ShootPoint") :: Attachment
-	local rightArm: MeshPart? = PlayerContext.Character:WaitForChild("RightUpperArm")
+	local gunHolderModel: Model? = gunTool:FindFirstAncestorOfClass("Model")
+	assert(gunHolderModel, "Cannot apply recoil locally, can't get person's model")
+
+	local rightArm: MeshPart = gunHolderModel:WaitForChild("RightUpperArm", 10) :: MeshPart
 
 	if not handle then
 		warn(`[ClientGunHandler:ApplyPistolRecoil()] failed to get Handle`)
@@ -63,13 +66,11 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 	end
 
 	gun.Activated:Connect(function()
-		local shot = GunNetwork:fetch("ShootGun")
+		local shot = GunNetwork:fetch("ShootGun", PlayerContext.Humanoid)
 
 		if shot then
 			self:ActivateMuzzleFlash(gun)
 		end
-
-		print(shot)
 	end)
 end
 

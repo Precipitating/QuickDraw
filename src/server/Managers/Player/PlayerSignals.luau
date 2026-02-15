@@ -2,7 +2,5 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signal = require(ReplicatedStorage.Packages.Signal)
 
 return {
-	ConnectGunSignal = Signal.new(),
-	FireMuzzleFlash = Signal.new(),
-	PlayerHit = Signal.new(),
+	RemovePlayerClass = Signal.new(),
 }

@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local ClassTypes = require(script.Parent.ClassTypes)
-local Gun = require(script.Parent.Gun)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 type Gun = ClassTypes.Gun
 type Human = ClassTypes.Human
@@ -21,18 +22,19 @@ local SimulatingLimbs = {
 	["LeftWrist"] = true,
 	["RightWrist"] = true,
 }
+
 local LimbHealth = {
-	Head = 100,
-	UpperTorso = 150,
-	LowerTorso = 150,
-	LeftUpperArm = 75,
-	LeftLowerArm = 75,
-	RightUpperArm = 75,
-	RightLowerArm = 75,
-	LeftUpperLeg = 100,
-	LeftLowerLeg = 100,
-	RightUpperLeg = 100,
-	RightLowerLeg = 100,
+	Head = 35,
+	UpperTorso = 85,
+	LowerTorso = 70,
+	LeftUpperArm = 60,
+	LeftLowerArm = 60,
+	RightUpperArm = 60,
+	RightLowerArm = 60,
+	LeftUpperLeg = 65,
+	LeftLowerLeg = 65,
+	RightUpperLeg = 65,
+	RightLowerLeg = 65,
 }
 
 local CharacterStates = {
@@ -69,14 +71,10 @@ local BodyParts = {
 local Human = {}
 Human.__index = Human
 
-function Human.new(player: Player?): Human
-	assert(player, "Human.new: player cannot be nil")
-
-	local character = player.Character
+function Human.new(humanoid: Humanoid?): Human
+	assert(humanoid, "Human.new: humanoid cannot be nil")
+	local character = humanoid:FindFirstAncestorOfClass("Model")
 	assert(character, "Human.new: character cannot be nil")
-
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	assert(humanoid, "Human.new: character must contain a Humanoid")
 
 	local rootPart = humanoid.RootPart or character:FindFirstChild("HumanoidRootPart")
 	assert(rootPart, "Human.new: character must contain a HumanoidRootPart")
@@ -84,10 +82,10 @@ function Human.new(player: Player?): Human
 	local self = setmetatable({}, Human)
 	self.Janitor = Janitor.new()
 
-	self.Health = 100
-	self.Player = player
+	self.Health = 465
+
 	self.Character = character
-	self.Humanoid = humanoid :: Humanoid?
+	self.Humanoid = humanoid
 	self.RootPart = rootPart :: BasePart
 
 	self.LimbHealth = table.clone(LimbHealth)
@@ -96,7 +94,7 @@ function Human.new(player: Player?): Human
 	self.IsRagdolled = false
 	self.AnimationControllerState = false
 
-	self.CurrentGun = Gun.new(self, player)
+	self.CurrentGun = nil
 
 	-- keep BallSocketConstraints on death
 	humanoid.BreakJointsOnDeath = false
@@ -106,7 +104,6 @@ function Human.new(player: Player?): Human
 	self:OnHumanoidStateChange()
 	self:AssignBodyParts()
 	self:SimulateDefaultLimbs()
-	print(`New Human class initialized for {self.Player.DisplayName}`)
 
 	return self :: any
 end
@@ -114,6 +111,7 @@ end
 function Human:AssignBodyParts()
 	for _, obj in self.Character:GetChildren() do
 		if BodyParts[obj.Name] then
+			obj.CanQuery = true
 			self.BodyParts[obj.Name] = obj
 		end
 	end
@@ -155,27 +153,31 @@ function Human:OnHumanoidStateChange()
 	)
 end
 --[=[
-	Creates a Human instance from a Player. Waits for the character if it hasn't loaded yet.
+	Creates a Human instance from a Player's humanoid. Waits for the character if it hasn't loaded yet.
 	
 	@param player Player -- The player to create a Human from
-	@param config RagdollConfig? -- Optional configuration
 	@return Human
 ]=]
-function Human.FromPlayer(player: Player): Human
-	local character = player.Character or player.CharacterAdded:Wait()
-	character:WaitForChild("Humanoid")
-	character:WaitForChild("HumanoidRootPart")
-
-	return Human.new(player)
-end
 
 function Human:DisableLimb(limbName: string)
-	local animationConstraint = self.Character[limbName]:FindFirstChildOfClass("AnimationConstraint")
-	local ballSocket = self.Character[limbName]:FindFirstChildOfClass("BallSocketConstraint")
+	local limb = self.Character[limbName]
+	if not limb then
+		return
+	end
+
+	local animationConstraint: AnimationConstraint? = limb:FindFirstChildOfClass("AnimationConstraint")
+	local ballSocket: BallSocketConstraint? = limb:FindFirstChildOfClass("BallSocketConstraint")
+
 	if animationConstraint then
 		animationConstraint.Enabled = false
-	elseif ballSocket then
-		ballSocket.MaxFrictionTorque = 10
+		animationConstraint.IsKinematic = false
+		print(`${limbName} animation constraint disabled!`)
+	end
+
+	if ballSocket then
+		ballSocket.LimitsEnabled = false
+		ballSocket.MaxFrictionTorque = 0
+		print(`${limbName} ball socket disabled!`)
 	end
 end
 
@@ -185,10 +187,6 @@ end
 	@return boolean
 ]=]
 function Human.IsAlive(self: any): boolean
-	if self._destroyed then
-		return false
-	end
-
 	if not self.Character or not self.Character.Parent then
 		return false
 	end
@@ -203,12 +201,12 @@ end
 function Human:Ragdoll()
 	self.Humanoid:ChangeState(CharacterStates["Ragdoll"])
 	self.Humanoid:SetStateEnabled(CharacterStates["GettingUp"], false)
-	print(`{self.Player.DisplayName} should ragdoll`)
+	print(`{self.Character.Name} should ragdoll`)
 end
 
 function Human:UnRagdoll()
 	self.Humanoid:SetStateEnabled(CharacterStates["GettingUp"], true)
-	print(`{self.Player.DisplayName} should get up`)
+	print(`{self.Character.Name} should get up`)
 end
 
 --[=[
@@ -244,10 +242,6 @@ end
 	@param position Vector3? -- Optional world position to apply force at (defaults to RootPart position)
 ]=]
 function Human:ApplyImpulse(force: Vector3, position: Vector3?)
-	if self._destroyed then
-		return
-	end
-
 	if not self.RootPart or not self.RootPart.Parent then
 		return
 	end
@@ -260,33 +254,17 @@ function Human:ApplyImpulse(force: Vector3, position: Vector3?)
 end
 
 function Human:Destroy()
-	if self._destroyed then
-		return
+	PlayerSignals.RemovePlayerClass:Fire(self.Humanoid)
+	if self.CurrentGun then
+		self.CurrentGun:Destroy()
+		self.CurrentGun = nil
 	end
 
-	self._destroyed = true
-
-	-- Unragdoll first if currently ragdolled
-	if self.IsRagdolled then
-		self:Unragdoll()
-	end
-
-	-- Disconnect all connections
 	self.Janitor:Destroy()
 
-	self.Humanoid = nil :: any
-	self.Player = nil
-	self.Character = nil
-	self.Humanoid = nil
-	self.RootPart = nil
-	self.IsRagdolled = nil
-	self.Janitor = nil
-	self.CurrentGun:Destroy()
-	self.CurrentGun = nil
-	self.AnimationControllerState = nil
-	table.clear(self.BodyParts)
-	table.clear(self.BodyParts)
+	table.clear(self)
 	setmetatable(self, nil)
+
 	print(`Human class destroyed!`)
 end
 
