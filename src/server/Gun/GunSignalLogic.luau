@@ -17,7 +17,7 @@ return {
 		ServerGunHandler:ActivateMuzzleFlash(player, gunTool)
 	end),
 
-	GunSignals.PlayerHit:Connect(function(hitObj: Instance?, playerHumanoid: Humanoid?, damageInflicted: number)
+	GunSignals.PlayerHit:Connect(function(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number)
 		if not hitObj then
 			warn("[GunSignals.PlayerHit] Hit object reference invalid")
 			return
@@ -29,5 +29,11 @@ return {
 		end
 
 		DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted)
+	end),
+
+	GunSignals.DisplayBulletHole:Connect(function(cframeTarget: CFrame?)
+		assert(cframeTarget, "[GunSignals.DisplayBulletHole] cframeTarget is nil!")
+
+		ServerGunHandler:DisplayBulletHole(cframeTarget)
 	end),
 }

@@ -1,3 +1,4 @@
+local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
@@ -165,13 +166,13 @@ function Human:DisableLimb(limbName: string)
 		return
 	end
 
-	local animationConstraint: AnimationConstraint? = limb:FindFirstChildOfClass("AnimationConstraint")
+	local animationConstraint: AnimationConstraint? = limb:FindFirstChildWhichIsA("AnimationConstraint", true)
 	local ballSocket: BallSocketConstraint? = limb:FindFirstChildOfClass("BallSocketConstraint")
 
 	if animationConstraint then
 		animationConstraint.Enabled = false
 		animationConstraint.IsKinematic = false
-		print(`${limbName} animation constraint disabled!`)
+		print(`${animationConstraint.Name} animation constraint disabled!`)
 	end
 
 	if ballSocket then
@@ -221,6 +222,7 @@ function Human:OnDeath()
 		end
 	end
 
+	Debris:AddItem(self.Character, 10)
 	self:Destroy()
 end
 

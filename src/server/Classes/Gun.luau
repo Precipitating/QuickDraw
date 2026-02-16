@@ -1,4 +1,3 @@
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
@@ -37,7 +36,7 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	self.ShootPoint = nil
 	self.ShotDelay = 0.1
 	self.CanShoot = true
-	self.Damage = 20
+	self.Damage = 30
 	self.CurrentCooldown = -1
 
 	-- if its NPC, its their model, else player instance
@@ -76,9 +75,8 @@ function Gun:ConnectProjectileEvents()
 
 		-- hit environment
 		if not hitHumanoid then
-			workspace.BulletHole:PivotTo(
-				CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
-			)
+			local hitPos = CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
+			GunSignals.DisplayBulletHole:Fire(hitPos)
 			return
 		end
 
@@ -93,7 +91,7 @@ function Gun:ConnectProjectileEvents()
 			return
 		end
 
-		GunSignals.PlayerHit:Fire(raycastResult.Instance, playerHumanoid, self.Damage)
+		GunSignals.PlayerHit:Fire(raycastResult, playerHumanoid, self.Damage)
 		print(`{raycastResult.Instance.Name} hit!`)
 	end))
 end

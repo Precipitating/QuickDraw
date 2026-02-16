@@ -1,5 +1,6 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local ServerGunHandler = require(ServerScriptService.Server.Gun.ServerGunHandler)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
 type Human = ClassTypes.Human
@@ -22,58 +23,69 @@ local LimbDamageMultiplier = {
 
 local DamageModule = {}
 
-function DamageModule.DamageHuman(hitObj: Instance?, playerHumanoid: Humanoid?, damageInflicted: number)
-	if not hitObj then
-		warn("[GunSignals.PlayerHit] Hit object reference invalid or not a mesh part")
-		return
-	end
+local function ApplyDamage(humanClass, limbName: string, damage: number)
+	local multiplier = LimbDamageMultiplier[limbName] or 1
 
-	if not playerHumanoid then
-		warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
-		return
-	end
+	humanClass.LimbHealth[limbName] -= damage
+	humanClass.Health -= damage * multiplier
+end
 
-	local humanClass: Human = PlayerManager:GetHumanClass(playerHumanoid)
-	local limbName = hitObj.Name
-	local limbHit = humanClass.LimbHealth and humanClass.LimbHealth[limbName] or nil
-	if not humanClass.LimbHealth then
-		error("limbhealth is nil")
-		return
-	end
-	if not limbHit then
-		warn("Didn't hit a limb")
-		return
-	end
-
-	local limbDamageApplied = damageInflicted
-	local multiplierDamage = damageInflicted * (LimbDamageMultiplier[limbName] or 1)
-
-	-- dmg
-	humanClass.LimbHealth[limbName] -= limbDamageApplied
-	humanClass.Health -= multiplierDamage
-	print(
-		`{limbName} hit! {limbDamageApplied} damage applied!, current limb health = {humanClass.LimbHealth[limbName]}, core hp = {humanClass.Health}`
-	)
-
-	-- head or torso being 0 limb health means insta death
-	if humanClass.LimbHealth[limbName] <= 0 then
-		humanClass:DisableLimb(limbName)
-		if limbName == "Head" or limbName == "UpperTorso" or limbName == "LowerTorso" then
-			humanClass.Health = 0
-		else
-			-- if blacked out already, apply damage to all limbs
-			task.spawn(function()
-				for _, limbHealth in pairs(humanClass.LimbHealth) do
-					limbHealth -= limbDamageApplied
-				end
-			end)
+local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
+	-- Overkill = gib the limb
+	if limbName ~= "UpperTorso" and limbName ~= "LowerTorso" then
+		if humanClass.LimbHealth[limbName] <= -60 then
+			humanClass.BodyParts[limbName]:Destroy()
+			return
 		end
 	end
 
-	if humanClass.Health <= 0 then
-		print("Should be dead")
-		humanClass:OnDeath()
+	humanClass:DisableLimb(limbName)
+
+	-- Vital limb = instant death
+	if limbName == "Head" or limbName == "UpperTorso" or limbName == "LowerTorso" then
+		humanClass.Health = 0
 		return
+	end
+
+	-- Blacked limb = spread damage to all limbs
+	for name in pairs(humanClass.LimbHealth) do
+		humanClass.LimbHealth[name] -= damage
+	end
+end
+
+function DamageModule.DamageHuman(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number)
+	if not hitObj then
+		warn("[DamageHuman] Invalid hit object")
+		return
+	end
+	if not playerHumanoid then
+		warn("[DamageHuman] Invalid humanoid")
+		return
+	end
+
+	local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
+	local limbName = hitObj.Instance.Name
+	local limbHealth = humanClass.LimbHealth
+
+	if not limbHealth then
+		warn("[DamageHuman] LimbHealth is nil, person shot might be dead already")
+		return
+	end
+	if not limbHealth[limbName] then
+		warn("[DamageHuman] Didn't hit a limb")
+		return
+	end
+
+	ApplyDamage(humanClass, limbName, damageInflicted)
+
+	ServerGunHandler:DisplayBloodHit(hitObj.Position, hitObj.Normal)
+
+	if limbHealth[limbName] <= 0 then
+		HandleLimbDestroyed(humanClass, limbName, damageInflicted)
+	end
+
+	if humanClass.Health <= 0 then
+		humanClass:OnDeath()
 	end
 end
 

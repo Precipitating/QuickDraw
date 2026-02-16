@@ -57,6 +57,16 @@ function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
 	print(`Server -> Client Muzzle Flash`)
 end
 
+function ServerGunHandler:DisplayBulletHole(cframeTarget: CFrame?)
+	assert(cframeTarget, "[ServerGunHandler.DisplayBulletHole] cframeTarget is nil")
+	self.networker:fireAll("DisplayBulletHole", cframeTarget)
+end
+
+function ServerGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
+	assert(position, "[ServerGunHandler.DisplayBulletHole] position is nil")
+	assert(normal, "[ServerGunHandler.DisplayBulletHole] normal is nil")
+	self.networker:fireAll("DisplayBloodHit", position, normal)
+end
 ServerGunHandler.networker =
 	Networker.new("GunNetwork", ServerGunHandler, { ServerGunHandler.ShootGun, ServerGunHandler.ActivateMuzzleFlash })
 
