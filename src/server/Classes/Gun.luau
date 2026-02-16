@@ -157,8 +157,8 @@ function Gun:AddGunToInventory()
 		GunSignals.ConnectGunSignal:Fire(self.PlayerRef, clone)
 		self.Janitor:Add(self.Tool)
 	else
-		-- should be NPC
-		self.HumanClassRef.Humanoid:EquipTool(clone)
+		-- should be HumanNPC class
+		self.HumanClassRef:EquipGun(clone)
 	end
 end
 return Gun

@@ -11,5 +11,17 @@ function HumanNPC.new(humanoid: Humanoid)
 	print(`New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
 end
+function HumanNPC:EquipGun(gunTool: Tool?)
+	if not gunTool then
+		error("[HumanNPC:EquipGun] gunTool is nil")
+	end
+	self.Humanoid:EquipTool(gunTool)
+	local rightArmConstraint: AnimationConstraint? =
+		self.Character["RightUpperArm"]:FindFirstChildOfClass("AnimationConstraint")
+	if not rightArmConstraint then
+		error("Missing NPC right arm anim constraint")
+	end
 
+	rightArmConstraint.Transform = CFrame.new(rightArmConstraint.Transform.Position) * CFrame.Angles(math.rad(90), 0, 0)
+end
 return HumanNPC
