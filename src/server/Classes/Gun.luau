@@ -12,8 +12,6 @@ local Gun = {}
 Gun.__index = Gun
 
 local function GetHumanoidFromHit(instance: Instance): Humanoid?
-	print(instance)
-
 	local model = instance:FindFirstAncestorOfClass("Model")
 	if not model then
 		return nil
@@ -31,10 +29,10 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	local self = setmetatable({}, Gun)
 	self.Janitor = Janitor.new()
 	self.Tool = nil
-	self.MaxAmmo = 55
-	self.CurrentAmmo = 55
+	self.MaxAmmo = 999
+	self.CurrentAmmo = 999
 	self.ShootPoint = nil
-	self.ShotDelay = 0.1
+	self.ShotDelay = 0.15
 	self.CanShoot = true
 	self.Damage = 30
 	self.CurrentCooldown = -1
@@ -59,9 +57,8 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
 	self.ProjectileData.AutoIgnoreContainer = true
 
-	self:AddGunToInventory()
-
 	self:ConnectProjectileEvents()
+
 	return self
 end
 

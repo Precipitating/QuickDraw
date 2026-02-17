@@ -1,3 +1,4 @@
+require(script.Sound.ServerSoundHandler)
 require(script.Managers.Player.PlayerSignalsLogic)
 require(script.Gun.GunSignalLogic)
 require(script.PlayerEvents)

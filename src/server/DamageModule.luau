@@ -1,7 +1,10 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerGunHandler = require(ServerScriptService.Server.Gun.ServerGunHandler)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 type Human = ClassTypes.Human
 
@@ -34,7 +37,7 @@ local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
 	-- Overkill = gib the limb
 	if limbName ~= "UpperTorso" and limbName ~= "LowerTorso" then
 		if humanClass.LimbHealth[limbName] <= -60 then
-			humanClass.BodyParts[limbName]:Destroy()
+			humanClass:DestroyLimb(limbName)
 			return
 		end
 	end

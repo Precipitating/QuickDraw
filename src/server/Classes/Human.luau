@@ -1,9 +1,10 @@
-local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ClassTypes = require(script.Parent.ClassTypes)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 type Gun = ClassTypes.Gun
 type Human = ClassTypes.Human
 
@@ -30,8 +31,8 @@ local LimbHealth = {
 	LowerTorso = 70,
 	LeftUpperArm = 60,
 	LeftLowerArm = 60,
-	RightUpperArm = 60,
-	RightLowerArm = 60,
+	RightUpperArm = 999,
+	RightLowerArm = 999,
 	LeftUpperLeg = 65,
 	LeftLowerLeg = 65,
 	RightUpperLeg = 65,
@@ -153,12 +154,6 @@ function Human:OnHumanoidStateChange()
 		end)
 	)
 end
---[=[
-	Creates a Human instance from a Player's humanoid. Waits for the character if it hasn't loaded yet.
-	
-	@param player Player -- The player to create a Human from
-	@return Human
-]=]
 
 function Human:DisableLimb(limbName: string)
 	local limb = self.Character[limbName]
@@ -179,6 +174,17 @@ function Human:DisableLimb(limbName: string)
 		ballSocket.LimitsEnabled = false
 		ballSocket.MaxFrictionTorque = 0
 		print(`${limbName} ball socket disabled!`)
+	end
+end
+
+function Human:DestroyLimb(limbName: string)
+	self.BodyParts[limbName]:Destroy()
+	self.BodyParts[limbName] = nil
+	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
+
+	if not self.BodyParts["RightUpperLeg"] and not self.BodyParts["LeftUpperLeg"] then
+		self.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+		print("Both legs gone")
 	end
 end
 
@@ -214,15 +220,16 @@ end
 	Applies death ragdoll state
 ]=]
 function Human:OnDeath()
-	for _, joint in self.Character:GetDescendants() do
-		if joint:IsA("AnimationConstraint") then
-			joint.Enabled = false
-		elseif joint:IsA("BallSocketConstraint") then
-			joint.MaxFrictionTorque = 10
+	task.spawn(function()
+		for _, joint in self.Character:GetDescendants() do
+			if joint:IsA("AnimationConstraint") then
+				joint.Enabled = false
+			elseif joint:IsA("BallSocketConstraint") then
+				joint.MaxFrictionTorque = 10
+			end
 		end
-	end
+	end)
 
-	Debris:AddItem(self.Character, 10)
 	self:Destroy()
 end
 

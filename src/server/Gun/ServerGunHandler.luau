@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 type Human = ClassTypes.Human
 type Gun = ClassTypes.Gun
@@ -47,13 +48,32 @@ function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
 		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
+	local shotPos = gunTool:FindFirstChild("Frame")
+	if not shotPos then
+		warn("ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
+		return
+	end
 
 	if player and player:IsA("Player") then
 		self.networker:fireAllExcept(player, "ActivateMuzzleFlash", gunTool)
+
+		ServerSoundHandler:Play3DOneShotToOthers(
+			player,
+			"RevolverShot",
+			shotPos:GetPivot(),
+			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
+		)
 	else
 		-- its an NPC, so fire all
 		self.networker:fireAll("ActivateMuzzleFlash", gunTool)
+		ServerSoundHandler:Play3DOneShotToOthers(
+			nil,
+			"RevolverShot",
+			shotPos:GetPivot(),
+			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
+		)
 	end
+
 	print(`Server -> Client Muzzle Flash`)
 end
 
@@ -66,6 +86,10 @@ function ServerGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 	assert(position, "[ServerGunHandler.DisplayBulletHole] position is nil")
 	assert(normal, "[ServerGunHandler.DisplayBulletHole] normal is nil")
 	self.networker:fireAll("DisplayBloodHit", position, normal)
+end
+
+function ServerGunHandler:DisconnectGun(player: Player)
+	self.networker:fire(player, "DisconnectGun")
 end
 ServerGunHandler.networker =
 	Networker.new("GunNetwork", ServerGunHandler, { ServerGunHandler.ShootGun, ServerGunHandler.ActivateMuzzleFlash })

@@ -1,14 +1,16 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PoolHandler = require(StarterPlayer.StarterPlayerScripts.Client.Pools.PoolHandler)
-
 local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
-
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 type Networker = NetworkClient
 
 local ClientGunHandler = {}
+ClientGunHandler.janitor = Janitor.new()
 local GunNetwork = Networker.new("GunNetwork", ClientGunHandler)
 
 function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
@@ -72,18 +74,33 @@ function ClientGunHandler:ApplyPistolRecoil(gunTool: Tool)
 end
 
 function ClientGunHandler:ConnectGun(gun: Tool?)
-	print("connectin")
+	print("connecting gun")
 	if not gun then
 		error("Can't connect guns, tool reference not valid!")
 	end
 
-	gun.Activated:Connect(function()
+	self.janitor:Add(gun.Activated:Connect(function()
+		if PlayerContext.Humanoid.health <= 0 then
+			return
+		end
 		local shot = GunNetwork:fetch("ShootGun", PlayerContext.Humanoid)
 
 		if shot then
 			self:ActivateMuzzleFlash(gun)
+			SoundManager.Play("RevolverShot", {
+				Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
+			})
+		else
+			SoundManager.Play("RevolverClick", {
+				Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
+			})
 		end
-	end)
+	end))
+end
+
+function ClientGunHandler:DisconnectGun()
+	print("Gun disconnected!")
+	self.janitor:Cleanup()
 end
 
 function ClientGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
