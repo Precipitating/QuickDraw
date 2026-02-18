@@ -49,7 +49,7 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or player
 	-- projectile data
 	self.FastCast = FastCast.new()
-	self.BulletVelocity = 350
+	self.BulletVelocity = 900
 	self.ProjectileData = FastCast.newBehavior()
 	self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude

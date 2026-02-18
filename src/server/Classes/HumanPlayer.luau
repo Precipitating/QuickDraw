@@ -1,6 +1,4 @@
-local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
-local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
 local Gun = require(script.Parent.Gun)
 local Human = require(script.Parent.Human)
 local HumanPlayer = setmetatable({}, Human)
@@ -19,7 +17,6 @@ end
 
 function HumanPlayer:OnDeath()
 	self.Humanoid.Health = 0
-	GunSignals.DisconnectGun:Fire(self.Player)
 end
 
 return HumanPlayer

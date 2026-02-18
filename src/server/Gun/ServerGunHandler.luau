@@ -88,9 +88,6 @@ function ServerGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 	self.networker:fireAll("DisplayBloodHit", position, normal)
 end
 
-function ServerGunHandler:DisconnectGun(player: Player)
-	self.networker:fire(player, "DisconnectGun")
-end
 ServerGunHandler.networker =
 	Networker.new("GunNetwork", ServerGunHandler, { ServerGunHandler.ShootGun, ServerGunHandler.ActivateMuzzleFlash })
 
