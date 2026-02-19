@@ -13,6 +13,20 @@ return {
 				error(`Missing humanoid for {player.DisplayName}`)
 			end
 
+			local rightArm = character:WaitForChild("RightUpperArm")
+			if not rightArm then
+				warn("Missing right arm reference")
+				return
+			end
+
+			local rightArmSocket = rightArm:WaitForChild("RightShoulderBallSocket")
+			if not rightArmSocket then
+				warn("Missing right arm socket reference")
+				return
+			end
+
+			rightArmSocket.UpperAngle = 90
+
 			-- ragdoll
 			humanoid.Died:Connect(function()
 				humanClass:OnDeath()

@@ -31,12 +31,10 @@ function HumanNPC:EquipGun(gunTool: Tool?)
 			self.CurrentGun:ShootGun()
 		end
 	end)
-
-	print(self.CurrentGun)
 end
 
 function HumanNPC:OnDeath()
-	Human.OnDeath(self)
 	Debris:AddItem(self.Character, 30)
+	Human.OnDeath(self)
 end
 return HumanNPC

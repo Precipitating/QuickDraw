@@ -85,7 +85,6 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Janitor = Janitor.new()
 
 	self.Health = 465
-
 	self.Character = character
 	self.Humanoid = humanoid
 	self.RootPart = rootPart :: BasePart

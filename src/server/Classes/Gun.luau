@@ -51,7 +51,7 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	self.FastCast = FastCast.new()
 	self.BulletVelocity = 900
 	self.ProjectileData = FastCast.newBehavior()
-	self.ProjectileData.RaycastParams = RaycastParams.new()
+	self.ProjectileData.self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { excludeModel }
 	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
@@ -63,7 +63,7 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 end
 
 function Gun:ConnectProjectileEvents()
-	self.Janitor:Add(self.FastCast.RayHit:Connect(function(activeCast, raycastResult: RaycastResult, segmentVelocity)
+	self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _)
 		print(raycastResult.Material)
 
 		--check if hit player
@@ -105,7 +105,12 @@ function Gun:ShootGun()
 
 	self.CanShoot = false
 
-	self.FastCast:Fire(self.ShootPoint.WorldPosition, self.ShootPoint.WorldCFrame.LookVector, 350, self.ProjectileData)
+	self.FastCast:Fire(
+		self.ShootPoint.WorldPosition,
+		self.ShootPoint.WorldCFrame.LookVector,
+		self.BulletVelocity,
+		self.ProjectileData
+	)
 
 	self.CurrentAmmo -= 1
 

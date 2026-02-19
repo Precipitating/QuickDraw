@@ -21,6 +21,10 @@ local HoldingRMB = false
 local GunEquipConn = nil
 local GunDisconnectConn = nil
 
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
+rayParams.FilterDescendantsInstances = {}
+
 function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 	if not gunTool then
 		warn("Client gunTool invalid")
@@ -83,57 +87,138 @@ local function StopCurrentTween()
 		ADSTween = nil
 	end
 end
+local function ADSTransparency(on: boolean)
+	for _, part in pairs(PlayerContext.Character:GetDescendants()) do
+		if not part:IsA("MeshPart") then
+			continue
+		end
+
+		if part.Parent:IsA("Tool") then
+			continue
+		end
+
+		if on then
+			part.Transparency = 0.8
+		else
+			part.Transparency = 0
+		end
+	end
+end
+
+local function GetCrosshair()
+	local crosshairPart = workspace:WaitForChild("Crosshair", 10)
+	if not crosshairPart then
+		warn("CrosshairPart missing")
+		return
+	end
+	local crosshairBillboard = crosshairPart:WaitForChild("CrosshairBB", 10)
+	if not crosshairBillboard then
+		warn("CrosshairBillboard missing")
+		return
+	end
+
+	local crosshairImage = crosshairBillboard:WaitForChild("ImageLabel")
+	if not crosshairImage then
+		warn("crosshairImage missing")
+		return
+	end
+
+	return crosshairPart, crosshairBillboard, crosshairImage
+end
 
 local function CancelADS()
 	StopCurrentTween()
 
-	UserInputService.MouseIconEnabled = true
-	UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-	PlayerContext.Humanoid.AutoRotate = true
+	local _: Part, crosshairBB: BillboardGui, _: ImageLabel = GetCrosshair()
+	crosshairBB.Enabled = false
 
+	CurrentCamera.CameraSubject = PlayerContext.Humanoid
+	PlayerContext.Player.CameraMaxZoomDistance = GunConfig.NORMAL_MAX_ZOOM_DIST
+	ADSTransparency(false)
 	ADSTween = TweenService:Create(
-		PlayerContext.Humanoid,
+		CurrentCamera,
 		TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-		{ CameraOffset = Vector3.new(0, 0, 0) }
+		{ FieldOfView = GunConfig.NORMAL_FOV }
 	)
 
 	ADSTween:Play()
 end
 
+local function CastBarrelRay(shootPoint: Attachment)
+	if not shootPoint then
+		warn("Casting ray failed, shootpoint nil")
+		return
+	end
+	local origin = shootPoint.WorldPosition
+	local direction = shootPoint.WorldCFrame.LookVector * 1000
+
+	return workspace:Raycast(origin, direction, rayParams)
+end
 local function ADSTweenZoom(gunTool: Tool)
 	StopCurrentTween()
-	PlayerContext.Humanoid.AutoRotate = false
-	UserInputService.MouseIconEnabled = false
-	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-	CurrentCamera.CameraSubject = PlayerContext.Character:WaitForChild("RightUpperArm", 10)
+
+	PlayerContext.Player.CameraMaxZoomDistance = GunConfig.NORMAL_MIN_ZOOM_DIST
+	CurrentCamera.CameraSubject = gunTool:FindFirstChild("AimPos")
+	ADSTransparency(true)
 
 	ADSTween = TweenService:Create(
-		PlayerContext.Humanoid,
+		CurrentCamera,
 		TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-		{ CameraOffset = Vector3.new(2.4, -3, -20) }
+		{ FieldOfView = GunConfig.ADS_FOV }
 	)
-
 	ADSTween:Play()
 
-	local rightShoulder: AnimationConstraint =
-		PlayerContext.Character:WaitForChild("RightUpperArm"):WaitForChild("RightShoulder")
-	ClientGunHandler.janitor:Add(
-		RunService.RenderStepped:Connect(function()
-			local camLookAt = CurrentCamera.CFrame.LookVector
+	local character = PlayerContext.Character
 
-			-- rotate around
-			local rotateLook = Vector3.new(camLookAt.X, 0, camLookAt.Z).Unit
-			local hrp = PlayerContext.HRP
-			hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + rotateLook)
+	local rightShoulder = character:WaitForChild("RightUpperArm"):WaitForChild("RightShoulder")
+	local rightShoulderAttachment: Attachment = rightShoulder.Attachment0
+	local originalCF: CFrame = rightShoulderAttachment.CFrame -- cache rest pose
 
-			-- tilt up/down
-			local pitch = math.asin(camLookAt.Y)
-			pitch = math.clamp(pitch, -math.rad(60), math.rad(60))
-			rightShoulder.Transform = CFrame.Angles(pitch, 0, 0)
-		end),
-		"Disconnect",
-		"Rotate"
-	)
+	-- crosshair
+	local crosshairPart: Part, crosshairBB: BillboardGui, crosshairImage: ImageLabel = GetCrosshair()
+	local shootPoint = gunTool:WaitForChild("ShootPoint", 10)
+
+	rayParams.FilterDescendantsInstances = { PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
+
+	local BIND_NAME = "ADS_RotateAndTilt"
+
+	-----------------------------------------------------------------------
+	-- BindToRenderStep at the very end so nothing overwrites us
+	-----------------------------------------------------------------------
+	RunService:BindToRenderStep(BIND_NAME, Enum.RenderPriority.Last.Value, function()
+		local camLook = CurrentCamera.CFrame.LookVector
+
+		-- ── Pitch: tilt upper body to follow camera vertically ──
+		local pitch, _, _ = CurrentCamera.CFrame:ToOrientation()
+		pitch = math.clamp(pitch, -math.rad(40), math.rad(40))
+
+		-- Animator writes to Transform, never to Attachment.CFrame,
+		-- so this rotation persists and compounds with the animation.
+		rightShoulderAttachment.CFrame = originalCF * CFrame.Angles(pitch, 0, 0)
+
+		-- barrel raycast to 1000 units forward
+		local rayHitResult = CastBarrelRay(shootPoint)
+
+		-- setting crosshair via raycast result
+		if rayHitResult then
+			if not crosshairBB.Enabled then
+				crosshairBB.Enabled = true
+			end
+			crosshairPart.Position = rayHitResult.Position
+		else
+			if crosshairBB.Enabled then
+				crosshairBB.Enabled = false
+			end
+		end
+	end)
+
+	-----------------------------------------------------------------------
+	-- Cleanup: unbind + restore the attachment to its original pose
+	-----------------------------------------------------------------------
+	ClientGunHandler.janitor:Add(function()
+		RunService:UnbindFromRenderStep(BIND_NAME)
+		rightShoulderAttachment.CFrame = originalCF
+	end, true, "Rotate")
 end
 
 function ClientGunHandler:ConnectGun(gun: Tool?)
@@ -147,7 +232,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		GunDisconnectConn:Disconnect()
 	end
 
-	GunEquipConn = gun.Equipped:Connect(function(mouse: Mouse)
+	GunEquipConn = gun.Equipped:Connect(function(_: Mouse)
 		self.janitor:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
 			if gameProcessed then
 				return
