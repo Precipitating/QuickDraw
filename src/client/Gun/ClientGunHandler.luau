@@ -10,6 +10,7 @@ local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PoolHandler = require(StarterPlayer.StarterPlayerScripts.Client.Pools.PoolHandler)
 local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local FastCastRedux = require(ReplicatedStorage.Packages.FastCastRedux)
 type Networker = NetworkClient
 
 local ClientGunHandler = {}
@@ -20,10 +21,17 @@ local ADSTween = nil
 local HoldingRMB = false
 local GunEquipConn = nil
 local GunDisconnectConn = nil
+local LastCrosshairHit = 0
 
-local rayParams = RaycastParams.new()
-rayParams.FilterType = Enum.RaycastFilterType.Exclude
-rayParams.FilterDescendantsInstances = {}
+local FastCast = FastCastRedux.new()
+local BulletVelocity = 900
+local ProjectileData = FastCast.newBehavior()
+ProjectileData.RaycastParams = RaycastParams.new()
+ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+ProjectileData.RaycastParams.FilterDescendantsInstances = {}
+ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
+ProjectileData.MaxDistance = 250
+ProjectileData.AutoIgnoreContainer = true
 
 function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 	if not gunTool then
@@ -98,7 +106,7 @@ local function ADSTransparency(on: boolean)
 		end
 
 		if on then
-			part.Transparency = 0.8
+			part.Transparency = 1
 		else
 			part.Transparency = 0
 		end
@@ -149,10 +157,10 @@ local function CastBarrelRay(shootPoint: Attachment)
 		warn("Casting ray failed, shootpoint nil")
 		return
 	end
-	local origin = shootPoint.WorldPosition
-	local direction = shootPoint.WorldCFrame.LookVector * 1000
+	local origin: Vector3 = shootPoint.WorldPosition
+	local direction: Vector3 = shootPoint.WorldCFrame.LookVector
 
-	return workspace:Raycast(origin, direction, rayParams)
+	FastCast:Fire(origin, direction, BulletVelocity, ProjectileData)
 end
 local function ADSTweenZoom(gunTool: Tool)
 	StopCurrentTween()
@@ -175,19 +183,15 @@ local function ADSTweenZoom(gunTool: Tool)
 	local originalCF: CFrame = rightShoulderAttachment.CFrame -- cache rest pose
 
 	-- crosshair
-	local crosshairPart: Part, crosshairBB: BillboardGui, crosshairImage: ImageLabel = GetCrosshair()
-	local shootPoint = gunTool:WaitForChild("ShootPoint", 10)
-
-	rayParams.FilterDescendantsInstances = { PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
+	local crosshairPart: Part, crosshairBB: BillboardGui, _: ImageLabel = GetCrosshair()
 
 	local BIND_NAME = "ADS_RotateAndTilt"
-
+	ProjectileData.RaycastParams.FilterDescendantsInstances =
+		{ PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
 	-----------------------------------------------------------------------
 	-- BindToRenderStep at the very end so nothing overwrites us
 	-----------------------------------------------------------------------
 	RunService:BindToRenderStep(BIND_NAME, Enum.RenderPriority.Last.Value, function()
-		local camLook = CurrentCamera.CFrame.LookVector
-
 		-- ── Pitch: tilt upper body to follow camera vertically ──
 		local pitch, _, _ = CurrentCamera.CFrame:ToOrientation()
 		pitch = math.clamp(pitch, -math.rad(40), math.rad(40))
@@ -196,21 +200,29 @@ local function ADSTweenZoom(gunTool: Tool)
 		-- so this rotation persists and compounds with the animation.
 		rightShoulderAttachment.CFrame = originalCF * CFrame.Angles(pitch, 0, 0)
 
-		-- barrel raycast to 1000 units forward
-		local rayHitResult = CastBarrelRay(shootPoint)
+		local shootPoint = gunTool:WaitForChild("ShootPoint", 10)
+		CastBarrelRay(shootPoint)
 
-		-- setting crosshair via raycast result
-		if rayHitResult then
-			if not crosshairBB.Enabled then
-				crosshairBB.Enabled = true
-			end
-			crosshairPart.Position = rayHitResult.Position
-		else
-			if crosshairBB.Enabled then
+		if crosshairBB.Enabled then
+			local currentTime = os.clock()
+			if (currentTime - LastCrosshairHit) > 0.01 then
 				crosshairBB.Enabled = false
 			end
 		end
 	end)
+
+	-- setting crosshair via raycast result
+	ClientGunHandler.janitor:Add(
+		FastCast.RayHit:Connect(function(_, rayHitResult: RaycastResult, _)
+			if rayHitResult then
+				crosshairBB.Enabled = true
+				crosshairPart.Position = rayHitResult.Position
+				LastCrosshairHit = os.clock()
+			end
+		end),
+		"Disconnect",
+		"RayHit"
+	)
 
 	-----------------------------------------------------------------------
 	-- Cleanup: unbind + restore the attachment to its original pose
@@ -237,6 +249,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 			if gameProcessed then
 				return
 			end
+
 			if input.UserInputType == Enum.UserInputType.MouseButton2 then
 				HoldingRMB = true
 				ADSTweenZoom(gun)
@@ -247,6 +260,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 			if input.UserInputType == Enum.UserInputType.MouseButton2 then
 				HoldingRMB = false
 				self.janitor:Remove("Rotate")
+				self.janitor:Remove("RayHit")
 				CancelADS()
 			end
 		end))

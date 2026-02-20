@@ -51,7 +51,7 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	self.FastCast = FastCast.new()
 	self.BulletVelocity = 900
 	self.ProjectileData = FastCast.newBehavior()
-	self.ProjectileData.self.ProjectileData.RaycastParams = RaycastParams.new()
+	self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { excludeModel }
 	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)

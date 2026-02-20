@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local AnimationIds = require(script.Parent.AnimationIds)
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ClassTypes = require(script.Parent.ClassTypes)
@@ -37,6 +38,14 @@ local LimbHealth = {
 	LeftLowerLeg = 65,
 	RightUpperLeg = 65,
 	RightLowerLeg = 65,
+}
+
+local Animations = {
+	idle = true,
+	fall = true,
+	run = true,
+	walk = true,
+	toolnone = true,
 }
 
 local CharacterStates = {
@@ -87,15 +96,19 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Health = 465
 	self.Character = character
 	self.Humanoid = humanoid
+	self.Animate = character:WaitForChild("Animate")
 	self.RootPart = rootPart :: BasePart
 
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
+	self.AnimationRefs = table.clone(Animations)
 
 	self.IsRagdolled = false
 	self.AnimationControllerState = false
 
 	self.CurrentGun = nil
+
+	self.Legless = false
 
 	-- keep BallSocketConstraints on death
 	humanoid.BreakJointsOnDeath = false
@@ -105,8 +118,34 @@ function Human.new(humanoid: Humanoid?): Human
 	self:OnHumanoidStateChange()
 	self:AssignBodyParts()
 	self:SimulateDefaultLimbs()
+	self:SetupPhysicsSettings()
+	self:SetupAnimationReferences()
 
 	return self :: any
+end
+
+function Human:SetupAnimationReferences()
+	for _, animName in self.Animate:GetChildren() do
+		if self.AnimationRefs[animName.Name] then
+			self.AnimationRefs[animName.Name] = animName:GetChildren()
+		end
+	end
+end
+
+function Human:SetupPhysicsSettings()
+	local rightArm = self.Character:WaitForChild("RightUpperArm")
+	if not rightArm then
+		warn("Missing right arm reference")
+		return
+	end
+
+	local rightArmSocket = rightArm:WaitForChild("RightShoulderBallSocket")
+	if not rightArmSocket then
+		warn("Missing right arm socket reference")
+		return
+	end
+
+	rightArmSocket.UpperAngle = 90
 end
 
 function Human:AssignBodyParts()
@@ -154,6 +193,60 @@ function Human:OnHumanoidStateChange()
 	)
 end
 
+local function SetAnimationInArray(array, id: string)
+	for _, anim: Animation in array do
+		if not anim:IsA("Animation") then
+			continue
+		end
+		anim.AnimationId = id
+	end
+end
+
+function Human:SetCrawlState()
+	local parts = self.BodyParts
+
+	if (not parts.LeftUpperLeg or not parts.LeftLowerLeg) and (not parts.RightUpperLeg or not parts.RightLowerLeg) then
+		if self.Legless then
+			return
+		end
+
+		local idle: Animation = self.AnimationRefs["idle"]
+		local run: Animation = self.AnimationRefs["run"]
+		local toolequip = self.AnimationRefs["toolnone"]
+		local walk: Animation = self.AnimationRefs["walk"]
+		if not idle or not run then
+			warn("Missing animation references to enable crawl anim")
+			return
+		end
+
+		print("Both legs gone")
+		self.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
+		for _, v in pairs(self.Humanoid.Animator:GetPlayingAnimationTracks()) do
+			v:Stop()
+		end
+
+		task.delay(2, function()
+			if self.Health <= 0 then
+				return
+			end
+
+			-- set crawl anims
+			local hrp = self.Character:FindFirstChild("HumanoidRootPart")
+			hrp.CanCollide = false
+			SetAnimationInArray(idle, `rbxassetid://{AnimationIds.LeglessIdle}`)
+			SetAnimationInArray(run, `rbxassetid://{AnimationIds.LeglessMove}`)
+			SetAnimationInArray(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
+			SetAnimationInArray(toolequip, "rbxassetid://0")
+
+			self.Humanoid.UseJumpPower = true
+			self.Humanoid.JumpPower = 0
+			self.Humanoid.WalkSpeed = 8
+
+			self.Legless = true
+		end)
+	end
+end
+
 function Human:DisableLimb(limbName: string)
 	local limb = self.Character[limbName]
 	if not limb then
@@ -180,11 +273,7 @@ function Human:DestroyLimb(limbName: string)
 	self.BodyParts[limbName]:Destroy()
 	self.BodyParts[limbName] = nil
 	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
-
-	if not self.BodyParts["RightUpperLeg"] and not self.BodyParts["LeftUpperLeg"] then
-		self.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-		print("Both legs gone")
-	end
+	self:SetCrawlState()
 end
 
 --[=[
