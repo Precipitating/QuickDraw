@@ -16,10 +16,12 @@ export type Gun = {
 export type Human = {
 	Player: Player,
 	Health: number,
+	HumanType: string,
 	Character: Model,
 	Humanoid: Humanoid,
 	RootPart: BasePart,
 	IsRagdolled: boolean,
+	HRP: BasePart,
 	CurrentGun: Gun?,
 	LimbHealth: {},
 	BodyParts: {},

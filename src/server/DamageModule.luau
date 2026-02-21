@@ -88,7 +88,7 @@ function DamageModule.DamageHuman(hitObj: RaycastResult?, playerHumanoid: Humano
 	end
 
 	if humanClass.Health <= 0 then
-		humanClass:OnDeath()
+		humanClass.Humanoid.Health = 0
 	end
 end
 

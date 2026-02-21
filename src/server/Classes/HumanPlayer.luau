@@ -8,6 +8,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	assert(player, "HumanPlayer constructor needs a valid player instance!")
 	local self = setmetatable(Human.new(humanoid), HumanPlayer)
 	self.Player = player
+	self.HumanType = "Player"
 	self.CurrentGun = Gun.new(self, player)
 	self.CurrentGun:AddGunToInventory()
 

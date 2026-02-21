@@ -11,6 +11,7 @@ local PoolHandler = require(StarterPlayer.StarterPlayerScripts.Client.Pools.Pool
 local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local FastCastRedux = require(ReplicatedStorage.Packages.FastCastRedux)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 type Networker = NetworkClient
 
 local ClientGunHandler = {}
@@ -52,8 +53,6 @@ function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 
 		effect:Emit(1)
 	end
-
-	self:ApplyPistolRecoil(gunTool)
 end
 
 function ClientGunHandler:DisplayBulletHole(cframeTarget: CFrame?)
@@ -114,23 +113,9 @@ local function ADSTransparency(on: boolean)
 end
 
 local function GetCrosshair()
-	local crosshairPart = workspace:WaitForChild("Crosshair", 10)
-	if not crosshairPart then
-		warn("CrosshairPart missing")
-		return
-	end
-	local crosshairBillboard = crosshairPart:WaitForChild("CrosshairBB", 10)
-	if not crosshairBillboard then
-		warn("CrosshairBillboard missing")
-		return
-	end
-
-	local crosshairImage = crosshairBillboard:WaitForChild("ImageLabel")
-	if not crosshairImage then
-		warn("crosshairImage missing")
-		return
-	end
-
+	local crosshairPart = Utility.GetInstance(workspace, true, "Crosshair")
+	local crosshairBillboard = Utility.GetInstance(crosshairPart, true, "CrosshairBB")
+	local crosshairImage = Utility.GetInstance(crosshairBillboard, true, "ImageLabel")
 	return crosshairPart, crosshairBillboard, crosshairImage
 end
 
@@ -273,6 +258,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 
 			if shot then
 				self:ActivateMuzzleFlash(gun)
+				self:ApplyPistolRecoil(gun)
 				SoundManager.Play("RevolverShot", {
 					Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 				})

@@ -1,4 +1,5 @@
 return {
 	LeglessIdle = 81513829845848,
-	LeglessMove = 100847749000439,
+	LeglessGunIdle = 134091578086884,
+	LeglessMove = 73185922629286,
 }

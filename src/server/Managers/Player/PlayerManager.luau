@@ -20,7 +20,7 @@ function PlayerManager:AddHumanClass(player: Player)
 end
 
 function PlayerManager:AddHumanClassNPC(humanoid: Humanoid?)
-	assert(humanoid, "P[layerManager:AddHumanClassNPC] should be humanoid argument!")
+	assert(humanoid, "[PlayerManager:AddHumanClassNPC] should be humanoid argument!")
 	self.HumanClasses[humanoid] = HumanNPC.new(humanoid)
 	return self.HumanClasses[humanoid]
 end
