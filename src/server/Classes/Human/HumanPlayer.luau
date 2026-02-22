@@ -1,6 +1,8 @@
+local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
-local Gun = require(script.Parent.Gun)
+local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Human = require(script.Parent.Human)
+local HumanSignals = require(script.Parent.HumanSignals)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
 
@@ -16,8 +18,8 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	return self :: any
 end
 
-function HumanPlayer:OnDeath()
-	self.Humanoid.Health = 0
+function HumanPlayer:ConnectGUIs()
+	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
 end
 
 return HumanPlayer

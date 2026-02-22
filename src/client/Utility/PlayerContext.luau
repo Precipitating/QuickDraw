@@ -1,9 +1,12 @@
 -- used to get up to date references to the player even if player dies
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local HumanGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.HumanGUIHandler)
 local ClientGunSignals = require(StarterPlayer.StarterPlayerScripts.Client.Gun.ClientGunSignals)
 
 local PlayerContext = {}
@@ -34,7 +37,6 @@ local function onCharacterAdded(character)
 
 	PlayerContext.Humanoid.AutoRotate = false
 	PlayerContext.Humanoid.CameraOffset = Vector3.new(2, 1, -2)
-	ApplyMouseLock()
 
 	ThirdPersonCameraConn = RunService.RenderStepped:Connect(function()
 		local camLook = PlayerContext.Camera.CFrame.LookVector
@@ -46,11 +48,17 @@ local function onCharacterAdded(character)
 		end
 	end)
 
+	-- connect GUI events
+	local staminaValue: NumberValue = Utility.GetInstance(character, true, "Stamina")
+	HumanGUIHandler.ConnectStaminaGUI(PlayerContext.PlayerGui, staminaValue)
+
 	PlayerContext.Humanoid.Died:Connect(function()
 		ClientGunSignals.DisconnectGun:Fire()
 		ThirdPersonCameraConn:Disconnect()
+		HumanGUIHandler:Disconnect()
 	end)
 
+	ApplyMouseLock()
 	print("Local character references updated!")
 end
 

@@ -1,7 +1,8 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanNPC = require(ServerScriptService.Server.Classes.HumanNPC)
-local HumanPlayer = require(ServerScriptService.Server.Classes.HumanPlayer)
+local HumanNPC = require(ServerScriptService.Server.Classes.Human.HumanNPC)
+local HumanPlayer = require(ServerScriptService.Server.Classes.Human.HumanPlayer)
+
 type HumanPlayer = ClassTypes.HumanPlayer
 
 local PlayerManager = {}
@@ -15,6 +16,7 @@ function PlayerManager:AddHumanClass(player: Player)
 	local character = player.Character
 	local humanoid = character:WaitForChild("Humanoid")
 	self.HumanClasses[humanoid] = HumanPlayer.new(humanoid, player)
+	self.HumanClasses[humanoid]:ConnectGUIs()
 
 	return self.HumanClasses[humanoid]
 end

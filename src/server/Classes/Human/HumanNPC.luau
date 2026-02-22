@@ -1,6 +1,8 @@
 local Debris = game:GetService("Debris")
+local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
-local Gun = require(script.Parent.Gun)
+
+local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Human = require(script.Parent.Human)
 
 local UP = Vector3.yAxis

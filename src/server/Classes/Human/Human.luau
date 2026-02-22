@@ -1,9 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local AnimationIds = require(script.Parent.AnimationIds)
+local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
+local AnimationIds = require(ServerScriptService.Server.Animation.AnimationIds)
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
-local ClassTypes = require(script.Parent.ClassTypes)
+
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -100,6 +103,8 @@ function Human.new(humanoid: Humanoid?): Human
 	self.HRP = self.Character:WaitForChild("HumanoidRootPart", 10)
 	self.Animate = character:WaitForChild("Animate")
 	self.RootPart = rootPart :: BasePart
+	self.Stamina = 100
+	self.Sprinting = false
 
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
@@ -111,11 +116,6 @@ function Human.new(humanoid: Humanoid?): Human
 	self.CurrentGun = nil
 
 	self.Legless = false
-
-	-- keep BallSocketConstraints on death
-	humanoid.BreakJointsOnDeath = false
-	-- avoid HRP colliding with UpperTorso on death
-	character.HumanoidRootPart.CanCollide = false
 
 	self:OnHumanoidStateChange()
 	self:AssignBodyParts()
@@ -132,6 +132,11 @@ function Human:SetupAnimationReferences()
 			self.AnimationRefs[animName.Name] = animName:GetChildren()
 		end
 	end
+
+	-- set defaults
+	AnimationHandler.SetAnimation(self.AnimationRefs["walk"], `rbxassetid://{AnimationIds.WalkSlow}`)
+	AnimationHandler.SetAnimation(self.AnimationRefs["run"], `rbxassetid://{AnimationIds.Run}`)
+	AnimationHandler.SetAnimation(self.AnimationRefs["toolnone"], `rbxassetid://{AnimationIds.GunAim}`)
 end
 
 function Human:SetupPhysicsSettings()
@@ -182,6 +187,10 @@ function Human:OnHumanoidStateChange()
 	if not self.Humanoid then
 		error("Missing humanoid reference in human class!")
 	end
+	-- keep BallSocketConstraints on death
+	self.Humanoid.BreakJointsOnDeath = false
+	-- avoid HRP colliding with UpperTorso on death
+	self.Character.HumanoidRootPart.CanCollide = false
 
 	self.Janitor:Add(
 		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
@@ -198,15 +207,6 @@ function Human:OnHumanoidStateChange()
 			end
 		end)
 	)
-end
-
-local function SetAnimationInArray(array, id: string)
-	for _, anim: Animation in array do
-		if not anim:IsA("Animation") then
-			continue
-		end
-		anim.AnimationId = id
-	end
 end
 
 -- fix right arm to face forward correctly and make gun non collidable so shooting
@@ -250,15 +250,14 @@ function Human:SetCrawlState()
 			return
 		end
 
-		for _, v in pairs(self.Humanoid.Animator:GetPlayingAnimationTracks()) do
-			v:Stop()
-		end
+		AnimationHandler.StopAllAnimationTracks(self.Humanoid)
 
 		local idle: Animation = self.AnimationRefs["idle"]
 		local run: Animation = self.AnimationRefs["run"]
 		local toolequip = self.AnimationRefs["toolnone"]
 		local walk: Animation = self.AnimationRefs["walk"]
 		local fall: Animation = self.AnimationRefs["fall"]
+
 		if not idle or not run then
 			warn("Missing animation references to enable crawl anim")
 			return
@@ -279,11 +278,11 @@ function Human:SetCrawlState()
 		-- set crawl anims
 		local hrp = self.Character:FindFirstChild("HumanoidRootPart")
 		hrp.CanCollide = false
-		SetAnimationInArray(idle, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		SetAnimationInArray(run, `rbxassetid://{AnimationIds.LeglessMove}`)
-		SetAnimationInArray(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
-		SetAnimationInArray(toolequip, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		SetAnimationInArray(fall, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		AnimationHandler.SetAnimation(idle, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		AnimationHandler.SetAnimation(run, `rbxassetid://{AnimationIds.LeglessMove}`)
+		AnimationHandler.SetAnimation(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
+		AnimationHandler.SetAnimation(toolequip, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		AnimationHandler.SetAnimation(fall, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
 
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0

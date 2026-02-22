@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
-local AnimationIds = require(ServerScriptService.Server.Classes.AnimationIds)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
@@ -14,11 +13,13 @@ return {
 				error(`Missing humanoid for {player.DisplayName}`)
 			end
 
+			humanoid.WalkSpeed = 6
+
 			-- ragdoll
 			humanoid.Died:Connect(function()
 				humanClass:OnDeath()
 			end)
-			-- remove class
+			-- remove class if they leave
 			humanoid.Destroying:Connect(function()
 				humanClass:Destroy()
 			end)

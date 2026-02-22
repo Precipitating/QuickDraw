@@ -32,8 +32,8 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	self.MaxAmmo = 999
 	self.CurrentAmmo = 999
 	self.ShootPoint = nil
-	self.ShotDelay = 0.15
-	self.CanShoot = true
+	self.ShotDelay = 0.35
+	self.LastShot = 0
 	self.Damage = 30
 	self.CurrentCooldown = -1
 
@@ -94,16 +94,14 @@ function Gun:ConnectProjectileEvents()
 end
 
 function Gun:ShootGun()
-	if not self.CanShoot then
-		warn("Can't shoot, cooldown")
+	local now = os.clock()
+	if now - self.LastShot < self.ShotDelay then
 		return false
 	end
 
 	if self.CurrentAmmo <= 0 or self.CurrentCooldown > 0 then
 		return false
 	end
-
-	self.CanShoot = false
 
 	self.FastCast:Fire(
 		self.ShootPoint.WorldPosition,
@@ -115,9 +113,7 @@ function Gun:ShootGun()
 	self.CurrentAmmo -= 1
 
 	self.CurrentAmmo = math.clamp(self.CurrentAmmo, 0, self.MaxAmmo)
-	task.delay(self.ShotDelay, function()
-		self.CanShoot = true
-	end)
+	self.LastShot = os.clock()
 
 	self:ActivateMuzzleFlash()
 

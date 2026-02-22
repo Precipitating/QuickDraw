@@ -16,6 +16,7 @@ export type Gun = {
 export type Human = {
 	Player: Player,
 	Health: number,
+	Stamina: number,
 	HumanType: string,
 	Character: Model,
 	Humanoid: Humanoid,

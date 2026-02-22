@@ -1,5 +1,7 @@
 require(script.Sound.ServerSoundHandler)
 require(script.Managers.Player.PlayerSignalsLogic)
+require(script.Classes.Human.HumanSignalsLogic)
 require(script.Gun.GunSignalLogic)
 require(script.PlayerEvents)
 require(script.NPCEvents)
+require(script.ServerInputs.Inputs)

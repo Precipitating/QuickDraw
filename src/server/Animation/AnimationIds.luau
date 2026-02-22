@@ -2,4 +2,7 @@ return {
 	LeglessIdle = 81513829845848,
 	LeglessGunIdle = 134091578086884,
 	LeglessMove = 73185922629286,
+	WalkSlow = 110034364860119,
+	Run = 82474325722923,
+	GunAim = 95175412361021,
 }
