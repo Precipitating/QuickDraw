@@ -21,14 +21,23 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 	numberValue.Name = "Stamina"
 	numberValue.Value = Constants.MAX_STAMINA
 	numberValue.Parent = player.Character
+	playerClass.StaminaValue = numberValue
 
 	-- will auto disconnect when playerClass is removed (when player dies)
 	playerClass.Janitor:Add(RunService.Heartbeat:Connect(function(dt)
+		-- sprint
 		if playerClass.Sprinting then
 			currentStamina -= Constants.STAMINA_DRAIN_RATE * dt
 		else
 			currentStamina += Constants.STAMINA_REGEN_RATE * dt
 		end
+
+		-- jump
+		if playerClass.JumpSignalled and currentStamina >= Constants.JUMP_DRAIN then
+			currentStamina -= Constants.JUMP_DRAIN
+			playerClass.JumpSignalled = false
+		end
+
 		currentStamina = math.clamp(currentStamina, 0, Constants.MAX_STAMINA)
 
 		if currentStamina <= 0 then
@@ -36,6 +45,7 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 		end
 
 		numberValue.Value = currentStamina
+		playerClass.Stamina = currentStamina
 	end))
 
 	warn(`{player.DisplayName}'s stamina bar connected!`)

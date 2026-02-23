@@ -3,17 +3,30 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Constants = require(ServerScriptService.Server.Classes.Constants)
 
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local Inputs = {}
 
-function Inputs:ToggleSprint(player: Player, active: boolean)
-	local character = player.Character
-	local humanoid: Humanoid? = Utility.GetInstance(character, true, "Humanoid")
-	assert(humanoid, "[Inputs:ToggleSprint] Humanoid is nil")
+function Inputs:ApplyJumpDrain(player: Player)
+	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
 
-	local humanClass = PlayerManager:GetHumanClass(humanoid)
-	assert(humanClass, "[Inputs:ToggleSprint] Reference to humanClass is nil")
+	if humanClass.Legless then
+		return
+	end
+	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+		return
+	end
+
+	if humanClass.Stamina < Constants.JUMP_DRAIN then
+		print("CANT")
+		return false
+	end
+	humanClass.JumpSignalled = true
+	return true
+end
+
+function Inputs:ToggleSprint(player: Player, active: boolean)
+	local humanClass, humanoid = PlayerManager:GetHumanClassFromPlayer(player)
 	local stamina = humanClass.Stamina
 
 	if humanClass.Legless then
@@ -30,5 +43,5 @@ function Inputs:ToggleSprint(player: Player, active: boolean)
 	end
 end
 
-Inputs.networker = Networker.new("InputNetwork", Inputs, { Inputs.ToggleSprint })
+Inputs.networker = Networker.new("InputNetwork", Inputs, { Inputs.ToggleSprint, Inputs.ApplyJumpDrain })
 return Inputs

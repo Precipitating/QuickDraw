@@ -1,6 +1,7 @@
 return {
 	MAX_STAMINA = 100,
 	STAMINA_DRAIN_RATE = 20, -- per sec
+	JUMP_DRAIN = 30,
 	STAMINA_REGEN_RATE = 15, -- per sec
 
 	WALKSPEED = 6,

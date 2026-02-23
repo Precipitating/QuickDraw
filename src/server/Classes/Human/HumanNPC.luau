@@ -19,6 +19,9 @@ function HumanNPC.new(humanoid: Humanoid)
 	print(`New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
 end
+
+function HumanNPC:AttackPlayer(target: Model) end
+
 function HumanNPC:EquipGun(gunTool: Tool?)
 	if not gunTool then
 		error("[HumanNPC:EquipGun] gunTool is nil")
@@ -30,7 +33,7 @@ function HumanNPC:EquipGun(gunTool: Tool?)
 		error("Missing NPC right arm anim constraint")
 	end
 
-	rightArmConstraint.Transform = CFrame.new(rightArmConstraint.Transform.Position) * CFrame.Angles(math.rad(90), 0, 0)
+	--rightArmConstraint.Transform = CFrame.new(rightArmConstraint.Transform.Position) * CFrame.Angles(math.rad(10), 0, 0)
 
 	task.spawn(function()
 		while task.wait(1) do
@@ -69,7 +72,7 @@ function HumanNPC:NPCShoot()
 	-- Fire weapon logic first
 	currentGun:ShootGun()
 
-	-- Recoil impulse (mass-scaled for consistency)
+	-- recoil impulse
 	local handleImpulse = handle.AssemblyMass * UP * 10
 	handle:ApplyImpulseAtPosition(handleImpulse, shootPoint.WorldPosition)
 

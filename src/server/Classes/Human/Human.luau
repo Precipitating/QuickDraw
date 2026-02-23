@@ -157,8 +157,19 @@ end
 
 function Human:AssignBodyParts()
 	for _, obj in self.Character:GetChildren() do
+		if obj:IsA("Accessory") then
+			local accessory: BasePart = obj:FindFirstChild("Handle")
+			if accessory then
+				accessory.CanCollide = false
+				accessory.CanQuery = false
+				accessory.CanTouch = false
+			end
+			continue
+		end
+
 		if BodyParts[obj.Name] then
 			obj.CanQuery = true
+			obj.CanCollide = true
 			self.BodyParts[obj.Name] = obj
 		end
 	end
@@ -189,8 +200,6 @@ function Human:OnHumanoidStateChange()
 	end
 	-- keep BallSocketConstraints on death
 	self.Humanoid.BreakJointsOnDeath = false
-	-- avoid HRP colliding with UpperTorso on death
-	self.Character.HumanoidRootPart.CanCollide = false
 
 	self.Janitor:Add(
 		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)

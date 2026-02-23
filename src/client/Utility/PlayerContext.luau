@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local HumanGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.HumanGUIHandler)
 local ClientGunSignals = require(StarterPlayer.StarterPlayerScripts.Client.Gun.ClientGunSignals)
@@ -18,7 +19,7 @@ PlayerContext.PlayerGui = Player.PlayerGui
 PlayerContext.HRP = nil
 PlayerContext.Humanoid = nil
 PlayerContext.Camera = workspace.CurrentCamera
-local ThirdPersonCameraConn = nil
+PlayerContext.janitor = Janitor.new()
 
 local function ApplyMouseLock()
 	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
@@ -37,8 +38,9 @@ local function onCharacterAdded(character)
 
 	PlayerContext.Humanoid.AutoRotate = false
 	PlayerContext.Humanoid.CameraOffset = Vector3.new(2, 1, -2)
+	PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
 
-	ThirdPersonCameraConn = RunService.RenderStepped:Connect(function()
+	PlayerContext.janitor:Add(RunService.RenderStepped:Connect(function()
 		local camLook = PlayerContext.Camera.CFrame.LookVector
 		-- ── Yaw: rotate HRP to face camera direction (horizontal) ──
 		local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
@@ -46,7 +48,7 @@ local function onCharacterAdded(character)
 			PlayerContext.HRP.CFrame =
 				CFrame.new(PlayerContext.HRP.Position, PlayerContext.HRP.Position + flatLook.Unit)
 		end
-	end)
+	end))
 
 	-- connect GUI events
 	local staminaValue: NumberValue = Utility.GetInstance(character, true, "Stamina")
@@ -54,7 +56,7 @@ local function onCharacterAdded(character)
 
 	PlayerContext.Humanoid.Died:Connect(function()
 		ClientGunSignals.DisconnectGun:Fire()
-		ThirdPersonCameraConn:Disconnect()
+		PlayerContext.janitor:Cleanup()
 		HumanGUIHandler:Disconnect()
 	end)
 

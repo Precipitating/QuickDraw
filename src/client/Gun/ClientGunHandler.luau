@@ -39,7 +39,7 @@ function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 		warn("Client gunTool invalid")
 		return
 	end
-	local muzzleFolder = gunTool:WaitForChild("MuzzleFlash"):WaitForChild("Attachment")
+	local muzzleFolder = Utility.GetInstance(gunTool, true, "MuzzleFlash", "Attachment")
 
 	if not muzzleFolder then
 		warn("[ ClientGunHandler:ActivateMuzzleFlash] muzzleFolder invalid!")
@@ -179,7 +179,7 @@ local function ADSTweenZoom(gunTool: Tool)
 	RunService:BindToRenderStep(BIND_NAME, Enum.RenderPriority.Last.Value, function()
 		-- ── Pitch: tilt upper body to follow camera vertically ──
 		local pitch, _, _ = CurrentCamera.CFrame:ToOrientation()
-		pitch = math.clamp(pitch, -math.rad(40), math.rad(40))
+		pitch = math.clamp(pitch, -math.rad(60), math.rad(60))
 
 		-- Animator writes to Transform, never to Attachment.CFrame,
 		-- so this rotation persists and compounds with the animation.

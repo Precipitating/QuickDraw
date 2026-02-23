@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local StarterPlayer = game:GetService("StarterPlayer")
-local ClientGunHandler = require(StarterPlayer.StarterPlayerScripts.Client.Gun.ClientGunHandler)
 local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
 local Player = Players.LocalPlayer
 local Character = Player.CharacterAdded:Wait()

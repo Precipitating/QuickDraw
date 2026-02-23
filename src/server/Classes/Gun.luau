@@ -18,6 +18,7 @@ local function GetHumanoidFromHit(instance: Instance): Humanoid?
 	end
 
 	local humanoid = model:FindFirstChildOfClass("Humanoid")
+
 	if not humanoid then
 		return nil
 	end
@@ -45,15 +46,13 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 	self.HumanClassRef = humanClass
 	self.MuzzleFlash = nil
 
-	-- if its NPC, player should be a model instead of a player instance.
-	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or player
 	-- projectile data
 	self.FastCast = FastCast.new()
 	self.BulletVelocity = 900
 	self.ProjectileData = FastCast.newBehavior()
 	self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { excludeModel }
+
 	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
 	self.ProjectileData.AutoIgnoreContainer = true
 
@@ -82,13 +81,8 @@ function Gun:ConnectProjectileEvents()
 		end
 
 		-- hit body part
-		local playerHumanoid: Humanoid? = GetHumanoidFromHit(hitHumanoid)
-		if not playerHumanoid then
-			warn(`[ConnectProjectileEvents] Cannot get humanoid from character!`)
-			return
-		end
 
-		GunSignals.PlayerHit:Fire(raycastResult, playerHumanoid, self.Damage)
+		GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage)
 		print(`{raycastResult.Instance.Name} hit!`)
 	end))
 end
@@ -144,6 +138,10 @@ function Gun:AddGunToInventory()
 	if not muzzle then
 		error("Missing muzzle flash reference")
 	end
+
+	-- if its NPC, playerRef should be a model instead of a player instance.
+	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or self.PlayerRef
+	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { excludeModel, self.Tool }
 
 	self.MuzzleFlash = muzzle:FindFirstChildOfClass("Attachment")
 	if not self.MuzzleFlash then

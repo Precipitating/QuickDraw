@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanNPC = require(ServerScriptService.Server.Classes.Human.HumanNPC)
 local HumanPlayer = require(ServerScriptService.Server.Classes.Human.HumanPlayer)
@@ -55,6 +57,16 @@ function PlayerManager:GetHumanClass(key: Humanoid)
 
 	print(`Succesfully obtained human class reference of player {humanoidParent.Name}`)
 	return self.HumanClasses[key]
+end
+
+function PlayerManager:GetHumanClassFromPlayer(player: Player)
+	local character = player.Character
+	local humanoid: Humanoid? = Utility.GetInstance(character, true, "Humanoid")
+	assert(humanoid, "[Inputs:ApplyJumpDrain] Humanoid is nil")
+	local humanClass = PlayerManager:GetHumanClass(humanoid)
+	assert(humanClass, "[Inputs:ToggleSprint] Reference to humanClass is nil")
+
+	return humanClass, humanoid
 end
 
 return PlayerManager

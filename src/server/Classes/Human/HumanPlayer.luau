@@ -13,6 +13,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new(self, player)
 	self.CurrentGun:AddGunToInventory()
+	self.JumpSignalled = false
 
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 	return self :: any
