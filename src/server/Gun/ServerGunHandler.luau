@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -11,7 +12,7 @@ type Networker = NetworkServer
 
 local ServerGunHandler = {}
 
-function ServerGunHandler:ShootGun(player: Player, humanoid: Humanoid?)
+function ServerGunHandler:ShootGun(player: Player, humanoid: Humanoid?, adsPos: Vector3, adsDir: Vector3)
 	if not humanoid then
 		warn("[ServerGunHandler:ShootGun] Humanoid nil, retrying with player instance")
 
@@ -38,7 +39,7 @@ function ServerGunHandler:ShootGun(player: Player, humanoid: Humanoid?)
 		error(`[ServerGunHandler:ShootGun] No gun reference in human class`)
 	end
 
-	local hasShot = currentGun:ShootGun()
+	local hasShot = currentGun:ShootGun(adsPos, adsDir)
 
 	return hasShot
 end
@@ -59,7 +60,7 @@ function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
 
 		ServerSoundHandler:Play3DOneShotToOthers(
 			player,
-			"RevolverShot",
+			GunData[gunTool.Name].ShootSoundName,
 			shotPos:GetPivot(),
 			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
 		)
@@ -68,7 +69,7 @@ function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
 		self.networker:fireAll("ActivateMuzzleFlash", gunTool)
 		ServerSoundHandler:Play3DOneShotToOthers(
 			nil,
-			"RevolverShot",
+			GunData[gunTool.Name].ShootSoundName,
 			shotPos:GetPivot(),
 			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
 		)

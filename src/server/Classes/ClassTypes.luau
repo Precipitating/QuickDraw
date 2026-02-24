@@ -8,7 +8,7 @@ export type Gun = {
 	CanShoot: boolean,
 	CurrentCooldown: number,
 	AddGunToInventory: (self: Gun) -> (),
-	ShootGun: (self: Gun) -> (),
+	ShootGun: (self: Gun, adsPos: Vector3, adsDir: Vector3) -> (),
 	MuzzleFlash: Attachment?,
 	HumanClassRef: Human?,
 }

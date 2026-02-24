@@ -12,7 +12,7 @@ HumanNPC.__index = HumanNPC
 
 function HumanNPC.new(humanoid: Humanoid)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
-	self.CurrentGun = Gun.new(self, self.Character)
+	self.CurrentGun = Gun.new("Revolver", self, self.Character)
 	self.HumanType = "NPC"
 	self.CurrentGun:AddGunToInventory()
 

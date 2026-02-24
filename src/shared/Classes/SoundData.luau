@@ -18,7 +18,7 @@ SoundData.Sounds = {
 	},
 
 	MainTheme = {
-		SoundId = "rbxassetid://128043849198610",
+		SoundId = "rbxassetid://140307073043749",
 		Volume = 0.7,
 		PlaybackSpeed = 1,
 		Group = "Music",

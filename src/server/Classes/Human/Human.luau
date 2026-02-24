@@ -38,10 +38,10 @@ local LimbHealth = {
 	LeftLowerArm = 60,
 	RightUpperArm = 999,
 	RightLowerArm = 999,
-	LeftUpperLeg = 65,
-	LeftLowerLeg = 65,
-	RightUpperLeg = 65,
-	RightLowerLeg = 65,
+	LeftUpperLeg = 40,
+	LeftLowerLeg = 40,
+	RightUpperLeg = 40,
+	RightLowerLeg = 40,
 }
 
 local Animations = {
@@ -97,7 +97,7 @@ function Human.new(humanoid: Humanoid?): Human
 	local self = setmetatable({}, Human)
 	self.Janitor = Janitor.new()
 	self.HumanType = "Base"
-	self.Health = 465
+	self.Health = 400
 	self.Character = character
 	self.Humanoid = humanoid
 	self.HRP = self.Character:WaitForChild("HumanoidRootPart", 10)
@@ -140,17 +140,15 @@ function Human:SetupAnimationReferences()
 end
 
 function Human:SetupPhysicsSettings()
-	local rightArm = self.Character:WaitForChild("RightUpperArm")
-	if not rightArm then
-		warn("Missing right arm reference")
-		return
-	end
+	local rightArm = Utility.GetInstance(self.Character, true, "RightUpperArm")
 
-	local rightArmSocket = rightArm:WaitForChild("RightShoulderBallSocket")
-	if not rightArmSocket then
-		warn("Missing right arm socket reference")
-		return
-	end
+	local rightShoulder: AnimationConstraint =
+		Utility.GetInstance(rightArm, true, "RightShoulder") :: AnimationConstraint
+	-- important to be high so the arm doesn't get stuck when going back to original position (when ADS)
+	rightShoulder.MaxTorque = 9999
+
+	local rightArmSocket: BallSocketConstraint =
+		Utility.GetInstance(rightArm, true, "RightShoulderBallSocket") :: BallSocketConstraint
 
 	rightArmSocket.UpperAngle = 90
 end

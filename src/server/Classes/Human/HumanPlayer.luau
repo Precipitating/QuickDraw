@@ -11,7 +11,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	local self = setmetatable(Human.new(humanoid), HumanPlayer)
 	self.Player = player
 	self.HumanType = "Player"
-	self.CurrentGun = Gun.new(self, player)
+	self.CurrentGun = Gun.new("Revolver", self, player)
 	self.CurrentGun:AddGunToInventory()
 	self.JumpSignalled = false
 

@@ -5,6 +5,7 @@ local ClassTypes = require(script.Parent.ClassTypes)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
 local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
+local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 
 type Human = ClassTypes.Human
 type Gun = ClassTypes.Gun
@@ -26,16 +27,21 @@ local function GetHumanoidFromHit(instance: Instance): Humanoid?
 	return humanoid
 end
 
-function Gun.new(humanClass: Human, player: Player | Model): Gun
+function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gun
+	if not GunData[gunName] then
+		error("Gun doesn't exist")
+	end
+
 	local self = setmetatable({}, Gun)
 	self.Janitor = Janitor.new()
 	self.Tool = nil
-	self.MaxAmmo = 999
-	self.CurrentAmmo = 999
+	self.GunName = gunName
+	self.MaxAmmo = GunData[gunName].MaxAmmo
+	self.CurrentAmmo = GunData[gunName].MaxAmmo
 	self.ShootPoint = nil
-	self.ShotDelay = 0.35
+	self.ShotDelay = GunData[gunName].ShotDelay
 	self.LastShot = 0
-	self.Damage = 30
+	self.Damage = GunData[gunName].Damage
 	self.CurrentCooldown = -1
 
 	-- if its NPC, its their model, else player instance
@@ -48,7 +54,7 @@ function Gun.new(humanClass: Human, player: Player | Model): Gun
 
 	-- projectile data
 	self.FastCast = FastCast.new()
-	self.BulletVelocity = 900
+	self.BulletVelocity = GunData[gunName].Velocity
 	self.ProjectileData = FastCast.newBehavior()
 	self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -81,13 +87,13 @@ function Gun:ConnectProjectileEvents()
 		end
 
 		-- hit body part
-
 		GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage)
 		print(`{raycastResult.Instance.Name} hit!`)
 	end))
 end
 
-function Gun:ShootGun()
+-- if adsPosition and adsDir is specified, we shoot from middle of screen
+function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 	local now = os.clock()
 	if now - self.LastShot < self.ShotDelay then
 		return false
@@ -97,12 +103,16 @@ function Gun:ShootGun()
 		return false
 	end
 
-	self.FastCast:Fire(
-		self.ShootPoint.WorldPosition,
-		self.ShootPoint.WorldCFrame.LookVector,
-		self.BulletVelocity,
-		self.ProjectileData
-	)
+	if adsDir and adsPosition then
+		self.FastCast:Fire(adsPosition, adsDir, self.BulletVelocity, self.ProjectileData)
+	else
+		self.FastCast:Fire(
+			self.ShootPoint.WorldPosition,
+			self.ShootPoint.WorldCFrame.LookVector,
+			self.BulletVelocity,
+			self.ProjectileData
+		)
+	end
 
 	self.CurrentAmmo -= 1
 
@@ -130,7 +140,7 @@ function Gun:Destroy()
 end
 
 function Gun:AddGunToInventory()
-	local clone: Tool = ServerStorage.Templates.Revolver:Clone()
+	local clone: Tool = ServerStorage.Templates:FindFirstChild(self.GunName):Clone()
 	self.Tool = clone
 	self.ShootPoint = clone:FindFirstChild("ShootPoint")
 

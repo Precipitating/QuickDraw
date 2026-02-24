@@ -5,14 +5,19 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local GunConfig = require(script.Parent.GunConfig)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PoolHandler = require(StarterPlayer.StarterPlayerScripts.Client.Pools.PoolHandler)
 local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local FastCastRedux = require(ReplicatedStorage.Packages.FastCastRedux)
+local Ripple = require(ReplicatedStorage.Packages.Ripple)
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local GunDataTypes = require(ReplicatedStorage.Shared.GunData.GunDataTypes)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+
 type Networker = NetworkClient
+type GunData = GunDataTypes.GunData
 
 local ClientGunHandler = {}
 ClientGunHandler.janitor = Janitor.new()
@@ -23,6 +28,13 @@ local HoldingRMB = false
 local GunEquipConn = nil
 local GunDisconnectConn = nil
 local LastCrosshairHit = 0
+
+-- for camera recoil
+local RecoilSpring = Ripple.createSpring(0, {
+	dampingRatio = 0.9,
+	frequency = 7.5,
+	start = true,
+})
 
 local FastCast = FastCastRedux.new()
 local BulletVelocity = 900
@@ -64,7 +76,7 @@ function ClientGunHandler:DisplayBulletHole(cframeTarget: CFrame?)
 	availableBulletHole:PivotTo(cframeTarget)
 end
 
-function ClientGunHandler:ApplyPistolRecoil(gunTool: Tool)
+function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
 	local handle: Part? = gunTool:WaitForChild("Handle") :: Part
 	local shootPoint: Attachment? = gunTool:WaitForChild("ShootPoint") :: Attachment
 	local gunHolderModel: Model? = gunTool:FindFirstAncestorOfClass("Model")
@@ -73,20 +85,23 @@ function ClientGunHandler:ApplyPistolRecoil(gunTool: Tool)
 	local rightArm: MeshPart = gunHolderModel:WaitForChild("RightUpperArm", 10) :: MeshPart
 
 	if not handle then
-		warn(`[ClientGunHandler:ApplyPistolRecoil()] failed to get Handle`)
+		warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get Handle`)
 		return
 	end
 	if not shootPoint then
-		warn(`[ClientGunHandler:ApplyPistolRecoil()] failed to get shootPoint`)
+		warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get shootPoint`)
 		return
 	end
 	if not rightArm then
-		warn(`[ClientGunHandler:ApplyPistolRecoil()] failed to get right upper arm`)
+		warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get right upper arm`)
 		return
 	end
 
-	handle:ApplyImpulseAtPosition(Vector3.new(0, 1, 0) * 10, shootPoint.WorldPosition)
-	rightArm:ApplyImpulse(rightArm.AssemblyMass * Vector3.new(0, 1, 0) * 100)
+	handle:ApplyImpulseAtPosition(Vector3.new(0, 1, 0) * GunData[gunTool.Name].GunRecoil, shootPoint.WorldPosition)
+	rightArm:ApplyImpulse(rightArm.AssemblyMass * Vector3.new(0, 1, 0) * GunData[gunTool.Name].ArmRecoil)
+
+	-- also make camera flick up via springs
+	RecoilSpring:setGoal(GunData[gunTool.Name].CameraRecoil)
 end
 local function StopCurrentTween()
 	if ADSTween then
@@ -128,6 +143,7 @@ local function CancelADS()
 	CurrentCamera.CameraSubject = PlayerContext.Humanoid
 	PlayerContext.Player.CameraMaxZoomDistance = GunConfig.NORMAL_MAX_ZOOM_DIST
 	ADSTransparency(false)
+	UserInputService.MouseIconEnabled = false
 	ADSTween = TweenService:Create(
 		CurrentCamera,
 		TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
@@ -147,47 +163,35 @@ local function CastBarrelRay(shootPoint: Attachment)
 
 	FastCast:Fire(origin, direction, BulletVelocity, ProjectileData)
 end
-local function ADSTweenZoom(gunTool: Tool)
-	StopCurrentTween()
 
-	PlayerContext.Player.CameraMaxZoomDistance = GunConfig.NORMAL_MIN_ZOOM_DIST
-	CurrentCamera.CameraSubject = gunTool:FindFirstChild("AimPos")
-	ADSTransparency(true)
-
-	ADSTween = TweenService:Create(
-		CurrentCamera,
-		TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
-		{ FieldOfView = GunConfig.ADS_FOV }
-	)
-	ADSTween:Play()
-
+local function AimAndDisplayCrosshair(gunTool: Tool)
 	local character = PlayerContext.Character
 
-	local rightShoulder = character:WaitForChild("RightUpperArm"):WaitForChild("RightShoulder")
+	local rightShoulder = Utility.GetInstance(character, true, "RightUpperArm", "RightShoulder")
+
 	local rightShoulderAttachment: Attachment = rightShoulder.Attachment0
-	local originalCF: CFrame = rightShoulderAttachment.CFrame -- cache rest pose
+
+	local rightShoulderOriginalCF: CFrame = rightShoulderAttachment.CFrame
 
 	-- crosshair
 	local crosshairPart: Part, crosshairBB: BillboardGui, _: ImageLabel = GetCrosshair()
-
+	local shootPoint = gunTool:WaitForChild("ShootPoint", 10)
 	local BIND_NAME = "ADS_RotateAndTilt"
 	ProjectileData.RaycastParams.FilterDescendantsInstances =
 		{ PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
+
 	-----------------------------------------------------------------------
 	-- BindToRenderStep at the very end so nothing overwrites us
 	-----------------------------------------------------------------------
-	RunService:BindToRenderStep(BIND_NAME, Enum.RenderPriority.Last.Value, function()
+	RunService:BindToRenderStep(BIND_NAME, Enum.RenderPriority.Last.Value, function(dt)
 		-- ── Pitch: tilt upper body to follow camera vertically ──
-		local pitch, _, _ = CurrentCamera.CFrame:ToOrientation()
-		pitch = math.clamp(pitch, -math.rad(60), math.rad(60))
+		local lookVector = CurrentCamera.CFrame.LookVector
+		local pitch = math.asin(math.clamp(lookVector.Y, -1, 1))
+		local shoulderPitch = math.clamp(pitch, -math.rad(80), math.rad(90))
 
-		-- Animator writes to Transform, never to Attachment.CFrame,
-		-- so this rotation persists and compounds with the animation.
-		rightShoulderAttachment.CFrame = originalCF * CFrame.Angles(pitch, 0, 0)
+		rightShoulderAttachment.CFrame = rightShoulderOriginalCF * CFrame.Angles(shoulderPitch, 0, 0)
 
-		local shootPoint = gunTool:WaitForChild("ShootPoint", 10)
 		CastBarrelRay(shootPoint)
-
 		if crosshairBB.Enabled then
 			local currentTime = os.clock()
 			if (currentTime - LastCrosshairHit) > 0.01 then
@@ -195,6 +199,16 @@ local function ADSTweenZoom(gunTool: Tool)
 			end
 		end
 	end)
+
+	--recoil
+	ClientGunHandler.janitor:Add(RecoilSpring:onChange(function(currentVal, dt)
+		local offset = CFrame.Angles(math.rad(currentVal), 0, 0)
+		CurrentCamera.CFrame *= offset
+	end))
+
+	ClientGunHandler.janitor:Add(RecoilSpring:onComplete(function()
+		RecoilSpring:setGoal(-GunData[gunTool.Name].CameraRecoil)
+	end))
 
 	-- setting crosshair via raycast result
 	ClientGunHandler.janitor:Add(
@@ -214,8 +228,25 @@ local function ADSTweenZoom(gunTool: Tool)
 	-----------------------------------------------------------------------
 	ClientGunHandler.janitor:Add(function()
 		RunService:UnbindFromRenderStep(BIND_NAME)
-		rightShoulderAttachment.CFrame = originalCF
+		rightShoulderAttachment.CFrame = rightShoulderOriginalCF
+		crosshairBB.Enabled = false
 	end, true, "Rotate")
+end
+local function ADSTweenZoom(gunTool: Tool)
+	StopCurrentTween()
+
+	PlayerContext.Player.CameraMaxZoomDistance = GunConfig.NORMAL_MIN_ZOOM_DIST
+	CurrentCamera.CameraSubject = gunTool:FindFirstChild("AimPos")
+	ADSTransparency(true)
+	UserInputService.MouseIconEnabled = true
+	UserInputService.MouseIcon = "http://www.roblox.com/asset/?id=117431027"
+
+	ADSTween = TweenService:Create(
+		CurrentCamera,
+		TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out),
+		{ FieldOfView = GunConfig.ADS_FOV }
+	)
+	ADSTween:Play()
 end
 
 function ClientGunHandler:ConnectGun(gun: Tool?)
@@ -230,6 +261,8 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 	end
 
 	GunEquipConn = gun.Equipped:Connect(function(_: Mouse)
+		AimAndDisplayCrosshair(gun)
+
 		self.janitor:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
 			if gameProcessed then
 				return
@@ -237,6 +270,8 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 
 			if input.UserInputType == Enum.UserInputType.MouseButton2 then
 				HoldingRMB = true
+
+				self.janitor:Remove("RayHit")
 				ADSTweenZoom(gun)
 			end
 		end))
@@ -244,8 +279,9 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		self.janitor:Add(UserInputService.InputEnded:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton2 then
 				HoldingRMB = false
+
 				self.janitor:Remove("Rotate")
-				self.janitor:Remove("RayHit")
+				AimAndDisplayCrosshair(gun)
 				CancelADS()
 			end
 		end))
@@ -254,16 +290,28 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 			if PlayerContext.Humanoid.health <= 0 then
 				return
 			end
-			local shot = GunNetwork:fetch("ShootGun", PlayerContext.Humanoid)
+
+			local shot = nil
+
+			if HoldingRMB then
+				shot = GunNetwork:fetch(
+					"ShootGun",
+					PlayerContext.Humanoid,
+					CurrentCamera.CFrame.Position,
+					CurrentCamera.CFrame.LookVector
+				)
+			else
+				shot = GunNetwork:fetch("ShootGun", PlayerContext.Humanoid)
+			end
 
 			if shot then
 				self:ActivateMuzzleFlash(gun)
-				self:ApplyPistolRecoil(gun)
-				SoundManager.Play("RevolverShot", {
+				self:ApplyGunRecoil(gun)
+				SoundManager.Play(GunData[gun.Name].ShootSoundName, {
 					Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 				})
 			else
-				SoundManager.Play("RevolverClick", {
+				SoundManager.Play(GunData[gun.Name].ShootNoAmmoName, {
 					Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 				})
 			end
@@ -273,6 +321,8 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 	GunDisconnectConn = gun.Unequipped:Connect(function()
 		print("Disconnecting gun connections!")
 		HoldingRMB = false
+		self.janitor:Remove("Rotate")
+		self.janitor:Remove("RayHit")
 		CurrentCamera.CameraSubject = PlayerContext.Humanoid
 		self:DisconnectGun()
 	end)
