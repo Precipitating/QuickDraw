@@ -1,13 +1,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local HumanConstants = require(script.Parent.HumanConstants)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
-local AnimationIds = require(ServerScriptService.Server.Animation.AnimationIds)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 type Gun = ClassTypes.Gun
@@ -100,17 +101,21 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Health = 400
 	self.Character = character
 	self.Humanoid = humanoid
-	self.HRP = self.Character:WaitForChild("HumanoidRootPart", 10)
+	self.HRP = humanoid.RootPart
 	self.Animate = character:WaitForChild("Animate")
 	self.RootPart = rootPart :: BasePart
+
 	self.Stamina = 100
 	self.Sprinting = false
+	self.JumpSignalled = false
+	self.RollSignalled = false
 
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
 	self.AnimationRefs = table.clone(Animations)
 
 	self.IsRagdolled = false
+
 	self.AnimationControllerState = false
 
 	self.CurrentGun = nil
@@ -151,6 +156,46 @@ function Human:SetupPhysicsSettings()
 		Utility.GetInstance(rightArm, true, "RightShoulderBallSocket") :: BallSocketConstraint
 
 	rightArmSocket.UpperAngle = 90
+end
+
+function Human:ApplyRollForce(lookDir: Vector3)
+	local hrp = self.HRP
+	if not hrp then
+		return
+	end
+	-- Get forward direction flattened to XZ plane
+	local forward = lookDir
+	forward = Vector3.new(forward.X, 0, forward.Z).Unit
+
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = hrp
+	local lv = Instance.new("LinearVelocity")
+	lv.Attachment0 = attachment
+
+	lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
+	lv.RelativeTo = Enum.ActuatorRelativeTo.World
+
+	-- Define plane axes (XZ movement only)
+	lv.PrimaryTangentAxis = Vector3.new(1, 0, 0)
+	lv.SecondaryTangentAxis = Vector3.new(0, 0, 1)
+
+	-- Apply planar velocity
+	lv.PlaneVelocity = Vector2.new(forward.X * HumanConstants.ROLL_FORCE, forward.Z * HumanConstants.ROLL_FORCE)
+
+	lv.MaxForce = hrp.AssemblyMass * 7000
+
+	lv.Parent = hrp
+
+	-- Cleanup after duration
+	task.delay(HumanConstants.ROLL_DURATION, function()
+		if lv and lv.Parent then
+			lv:Destroy()
+		end
+		if attachment and attachment.Parent then
+			attachment:Destroy()
+		end
+		self.RollSignalled = false
+	end)
 end
 
 function Human:AssignBodyParts()

@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Constants = require(ServerScriptService.Server.Classes.Constants)
+local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
@@ -11,17 +11,35 @@ function Inputs:ApplyJumpDrain(player: Player)
 	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
 
 	if humanClass.Legless then
-		return
+		return false
 	end
 	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-		return
+		return false
 	end
 
-	if humanClass.Stamina < Constants.JUMP_DRAIN then
-		print("CANT")
+	if humanClass.Stamina < HumanConstants.JUMP_DRAIN then
 		return false
 	end
 	humanClass.JumpSignalled = true
+	return true
+end
+
+function Inputs:ApplyRollDrain(player: Player, lookDir: Vector3)
+	assert(lookDir, "Missing lookDir from client to roll!")
+	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
+
+	if humanClass.Legless then
+		return false
+	end
+	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+		return false
+	end
+
+	if humanClass.Stamina < HumanConstants.JUMP_DRAIN then
+		return false
+	end
+	humanClass.RollSignalled = true
+	humanClass:ApplyRollForce(lookDir)
 	return true
 end
 
@@ -34,14 +52,15 @@ function Inputs:ToggleSprint(player: Player, active: boolean)
 	end
 
 	if active and stamina > 0 then
-		humanoid.WalkSpeed = Constants.SPRINT_SPEED
-		stamina = math.clamp(stamina, 0, Constants.MAX_STAMINA)
+		humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+		stamina = math.clamp(stamina, 0, HumanConstants.MAX_STAMINA)
 		humanClass.Sprinting = true
 	else
-		humanoid.WalkSpeed = Constants.WALKSPEED
+		humanoid.WalkSpeed = HumanConstants.WALKSPEED
 		humanClass.Sprinting = false
 	end
 end
 
-Inputs.networker = Networker.new("InputNetwork", Inputs, { Inputs.ToggleSprint, Inputs.ApplyJumpDrain })
+Inputs.networker =
+	Networker.new("InputNetwork", Inputs, { Inputs.ToggleSprint, Inputs.ApplyJumpDrain, Inputs.ApplyRollDrain })
 return Inputs

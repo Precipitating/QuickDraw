@@ -1,12 +1,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
+local AnimationsHandler = require(StarterPlayer.StarterPlayerScripts.Client.Animations.AnimationsHandler)
 local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 local Inputs = {}
 Inputs.networker = Networker.new("InputNetwork", Inputs)
 local CanJump = true
+local CanRoll = true
 
 function Inputs:Initialize()
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
@@ -14,8 +16,27 @@ function Inputs:Initialize()
 			return
 		end
 
+		-- sprint
 		if input.KeyCode == Enum.KeyCode.LeftShift then
 			self.networker:fire("ToggleSprint", true)
+		end
+
+		-- roll
+		if input.KeyCode == Enum.KeyCode.E then
+			if not CanRoll then
+				return
+			end
+
+			local rollActivated = self.networker:fetch("ApplyRollDrain", PlayerContext.HRP.CFrame.LookVector)
+
+			if rollActivated then
+				CanRoll = false
+				local rollAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Roll")
+
+				rollAnim.Stopped:Once(function()
+					CanRoll = true
+				end)
+			end
 		end
 	end)
 

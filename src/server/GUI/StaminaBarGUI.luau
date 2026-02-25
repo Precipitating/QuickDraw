@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Constants = require(ServerScriptService.Server.Classes.Constants)
+local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Inputs = require(ServerScriptService.Server.ServerInputs.Inputs)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -19,7 +19,7 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 	-- of sending a remote event every heartbeat
 	local numberValue = Instance.new("NumberValue")
 	numberValue.Name = "Stamina"
-	numberValue.Value = Constants.MAX_STAMINA
+	numberValue.Value = HumanConstants.MAX_STAMINA
 	numberValue.Parent = player.Character
 	playerClass.StaminaValue = numberValue
 
@@ -27,18 +27,23 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 	playerClass.Janitor:Add(RunService.Heartbeat:Connect(function(dt)
 		-- sprint
 		if playerClass.Sprinting then
-			currentStamina -= Constants.STAMINA_DRAIN_RATE * dt
+			currentStamina -= HumanConstants.STAMINA_DRAIN_RATE * dt
 		else
-			currentStamina += Constants.STAMINA_REGEN_RATE * dt
+			currentStamina += HumanConstants.STAMINA_REGEN_RATE * dt
 		end
 
 		-- jump
-		if playerClass.JumpSignalled and currentStamina >= Constants.JUMP_DRAIN then
-			currentStamina -= Constants.JUMP_DRAIN
+		if playerClass.JumpSignalled and currentStamina >= HumanConstants.JUMP_DRAIN then
+			currentStamina -= HumanConstants.JUMP_DRAIN
 			playerClass.JumpSignalled = false
 		end
 
-		currentStamina = math.clamp(currentStamina, 0, Constants.MAX_STAMINA)
+		-- roll
+		if playerClass.RollSignalled and currentStamina >= HumanConstants.ROLL_DRAIN then
+			currentStamina -= HumanConstants.ROLL_DRAIN
+		end
+
+		currentStamina = math.clamp(currentStamina, 0, HumanConstants.MAX_STAMINA)
 
 		if currentStamina <= 0 then
 			Inputs:ToggleSprint(player, false)
