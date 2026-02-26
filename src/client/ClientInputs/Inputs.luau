@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
+
 local AnimationsHandler = require(StarterPlayer.StarterPlayerScripts.Client.Animations.AnimationsHandler)
 local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
@@ -32,7 +33,7 @@ function Inputs:Initialize()
 			if rollActivated then
 				CanRoll = false
 				local rollAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Roll")
-
+				PlayerContext.Humanoid:UnequipTools()
 				rollAnim.Stopped:Once(function()
 					CanRoll = true
 				end)

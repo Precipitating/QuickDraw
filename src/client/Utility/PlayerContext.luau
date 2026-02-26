@@ -8,7 +8,6 @@ local AnimationsHandler = require(StarterPlayer.StarterPlayerScripts.Client.Anim
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local HumanGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.HumanGUIHandler)
-local ClientGunSignals = require(StarterPlayer.StarterPlayerScripts.Client.Gun.ClientGunSignals)
 
 local PlayerContext = {}
 local Player: Player = Players.LocalPlayer
@@ -50,6 +49,13 @@ local function RefreshPlayerContextRefs(character: Model)
 	PlayerContext.Humanoid = humanoid
 	PlayerContext.HRP = hrp
 	PlayerContext.PlayerGui = Player:WaitForChild("PlayerGui")
+	PlayerContext.Bodyparts = {}
+	for _, obj in pairs(character:GetChildren()) do
+		if not obj:IsA("MeshPart") then
+			continue
+		end
+		PlayerContext.Bodyparts[obj.Name] = obj
+	end
 
 	-- Configure humanoid safely
 	humanoid.AutoRotate = false
@@ -63,10 +69,10 @@ local function ConnectGUIConnections(character: Model)
 end
 
 local function OnDeath()
-	PlayerContext.Humanoid.Died:Connect(function()
-		ClientGunSignals.DisconnectGun:Fire()
+	PlayerContext.Humanoid.Died:Once(function()
 		PlayerContext.janitor:Cleanup()
 		HumanGUIHandler:Disconnect()
+		warn("ded")
 	end)
 end
 

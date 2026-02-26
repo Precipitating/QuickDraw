@@ -9,11 +9,16 @@ local Inputs = {}
 
 function Inputs:ApplyJumpDrain(player: Player)
 	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
+	local humanoid = humanClass.Humanoid
 
+	if not humanoid then
+		warn("Missing humanoid reference to apply jump drain, probably dead")
+		return false
+	end
 	if humanClass.Legless then
 		return false
 	end
-	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+	if humanoid:GetState() == Enum.HumanoidStateType.Freefall then
 		return false
 	end
 

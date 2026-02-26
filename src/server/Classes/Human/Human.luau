@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(script.Parent.HumanConstants)
+local HumanSignals = require(script.Parent.HumanSignals)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
@@ -146,16 +147,33 @@ end
 
 function Human:SetupPhysicsSettings()
 	local rightArm = Utility.GetInstance(self.Character, true, "RightUpperArm")
+	local rightLowerArm = Utility.GetInstance(self.Character, true, "RightLowerArm")
+	local rightHand = Utility.GetInstance(self.Character, true, "RightHand")
 
 	local rightShoulder: AnimationConstraint =
 		Utility.GetInstance(rightArm, true, "RightShoulder") :: AnimationConstraint
+
+	local rightElbow: AnimationConstraint =
+		Utility.GetInstance(rightLowerArm, true, "RightElbow") :: AnimationConstraint
+
+	local rightWrist: AnimationConstraint = Utility.GetInstance(rightHand, true, "RightWrist") :: AnimationConstraint
+
 	-- important to be high so the arm doesn't get stuck when going back to original position (when ADS)
 	rightShoulder.MaxTorque = 9999
+	rightElbow.MaxTorque = 9999
+	rightWrist.MaxTorque = 9999
 
 	local rightArmSocket: BallSocketConstraint =
 		Utility.GetInstance(rightArm, true, "RightShoulderBallSocket") :: BallSocketConstraint
 
+	local rightLowerArmSocket: BallSocketConstraint =
+		Utility.GetInstance(rightLowerArm, true, "RightElbowBallSocket") :: BallSocketConstraint
+
 	rightArmSocket.UpperAngle = 90
+
+	rightLowerArmSocket.UpperAngle = 5
+	rightLowerArmSocket.TwistUpperAngle = 0
+	rightLowerArmSocket.TwistLowerAngle = 0
 end
 
 function Human:ApplyRollForce(lookDir: Vector3)
@@ -213,6 +231,7 @@ function Human:AssignBodyParts()
 		if BodyParts[obj.Name] then
 			obj.CanQuery = true
 			obj.CanCollide = true
+			obj.CollisionGroup = "Player"
 			self.BodyParts[obj.Name] = obj
 		end
 	end
@@ -282,7 +301,8 @@ function Human:FixCrawlADS()
 	rightWristBallSocket.UpperAngle = 180
 	rightWristBallSocket.TwistUpperAngle = 0
 	rightWristBallSocket.TwistLowerAngle = -50
-	rightShoulderBallSocket.LimitsEnabled = false
+	rightShoulderBallSocket.TwistLimitsEnabled = false
+	rightShoulderBallSocket.UpperAngle = 89
 
 	-- disable gun's collision
 	for _, part: MeshPart in pairs(gun:GetChildren()) do
@@ -316,16 +336,6 @@ function Human:SetCrawlState()
 		end
 
 		print("Both legs gone")
-
-		if self.HumanType == "NPC" then
-			self.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
-			task.wait(1)
-			if self.Health <= 0 then
-				return
-			end
-		else
-			self.Humanoid:UnequipTools()
-		end
 
 		-- set crawl anims
 		local hrp = self.Character:FindFirstChild("HumanoidRootPart")
@@ -409,11 +419,13 @@ end
 ]=]
 function Human:OnDeath()
 	task.spawn(function()
-		for _, joint in self.Character:GetDescendants() do
-			if joint:IsA("AnimationConstraint") then
-				joint.Enabled = false
-			elseif joint:IsA("BallSocketConstraint") then
-				joint.MaxFrictionTorque = 10
+		for _, obj in self.Character:GetDescendants() do
+			if obj:IsA("AnimationConstraint") then
+				obj.Enabled = false
+			elseif obj:IsA("BallSocketConstraint") then
+				obj.MaxFrictionTorque = 10
+			elseif obj:IsA("BasePart") then
+				obj.CollisionGroup = "Dead"
 			end
 		end
 	end)

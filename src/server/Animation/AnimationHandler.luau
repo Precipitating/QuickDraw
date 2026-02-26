@@ -17,6 +17,7 @@ function AnimationHandler.SetAnimation(animation: Animation? | {}, id: string)
 		return
 	end
 
+	-- else its a single animation
 	animation.AnimationId = id
 end
 

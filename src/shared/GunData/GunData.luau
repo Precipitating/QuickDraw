@@ -6,8 +6,8 @@ return {
 		Velocity = 900,
 		ShootSoundName = "RevolverShot",
 		ShootNoAmmoName = "RevolverClick",
-		ArmRecoil = 100,
-		GunRecoil = 10,
-		CameraRecoil = 0.2,
+		ArmRecoil = 200,
+		GunRecoil = 20,
+		CameraRecoil = 20,
 	},
 }

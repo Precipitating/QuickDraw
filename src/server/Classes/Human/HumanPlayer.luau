@@ -21,5 +21,9 @@ end
 function HumanPlayer:ConnectGUIs()
 	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
 end
-
+function HumanPlayer:SetCrawlState()
+	Human.SetCrawlState(self)
+	HumanSignals.RagdollClient:Fire(self.Player)
+	self.Humanoid:UnequipTools()
+end
 return HumanPlayer

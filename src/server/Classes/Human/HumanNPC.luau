@@ -84,4 +84,9 @@ function HumanNPC:OnDeath()
 	Debris:AddItem(self.Character, 30)
 	Human.OnDeath(self)
 end
+
+function HumanNPC:SetCrawlState()
+	self.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
+	Human.SetCrawlState(self)
+end
 return HumanNPC
