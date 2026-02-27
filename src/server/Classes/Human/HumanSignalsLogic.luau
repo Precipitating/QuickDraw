@@ -10,4 +10,8 @@ return {
 	HumanSignals.RagdollClient:Connect(function(player: Player)
 		HumanNetwork.networker:fire(player, "RagdollClient")
 	end),
+
+	HumanSignals.AdjustGrayscale:Connect(function(player: Player, saturationTarget: number)
+		HumanNetwork.networker:fire(player, "AdjustGrayscale", saturationTarget)
+	end),
 }

@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerStorage = game:GetService("ServerStorage")
 local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
@@ -54,13 +55,6 @@ local Animations = {
 	toolnone = true,
 }
 
-local CharacterStates = {
-	Ragdoll = Enum.HumanoidStateType.Ragdoll,
-	Falling = Enum.HumanoidStateType.FallingDown,
-	GettingUp = Enum.HumanoidStateType.GettingUp,
-	Dead = Enum.HumanoidStateType.Dead,
-}
-
 local BodyParts = {
 	Head = true,
 
@@ -99,7 +93,7 @@ function Human.new(humanoid: Humanoid?): Human
 	local self = setmetatable({}, Human)
 	self.Janitor = Janitor.new()
 	self.HumanType = "Base"
-	self.Health = 400
+	self.Health = HumanConstants.MAX_HP
 	self.Character = character
 	self.Humanoid = humanoid
 	self.HRP = humanoid.RootPart
@@ -131,7 +125,12 @@ function Human.new(humanoid: Humanoid?): Human
 
 	return self :: any
 end
-
+function Human:GetHealthPercentage()
+	if self.Health <= 0 then
+		return -1
+	end
+	return self.Health / HumanConstants.MAX_HP
+end
 function Human:SetupAnimationReferences()
 	for _, animName in self.Animate:GetChildren() do
 		if self.AnimationRefs[animName.Name] then
@@ -224,6 +223,7 @@ function Human:AssignBodyParts()
 				accessory.CanCollide = false
 				accessory.CanQuery = false
 				accessory.CanTouch = false
+				accessory.CollisionGroup = "Player"
 			end
 			continue
 		end
@@ -233,6 +233,10 @@ function Human:AssignBodyParts()
 			obj.CanCollide = true
 			obj.CollisionGroup = "Player"
 			self.BodyParts[obj.Name] = obj
+		end
+
+		if obj:IsA("BasePart") then
+			obj.CollisionGroup = "Player"
 		end
 	end
 	self.HRP:SetNetworkOwner(nil)
@@ -321,6 +325,12 @@ function Human:SetCrawlState()
 		if self.Legless then
 			return
 		end
+		self.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
+
+		if self.HumanType == "Player" then
+			HumanSignals.RagdollClient:Fire(self.Player)
+			self.Humanoid:UnequipTools()
+		end
 
 		AnimationHandler.StopAllAnimationTracks(self.Humanoid)
 
@@ -377,6 +387,10 @@ function Human:DisableLimb(limbName: string)
 		ballSocket.MaxFrictionTorque = 0
 		print(`${limbName} ball socket disabled!`)
 	end
+
+	if limbName ~= "Head" then
+		ServerSoundHandler:PlaySoundTo(nil, "BoneSnap", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
+	end
 end
 
 function Human:DestroyLimb(limbName: string)
@@ -403,17 +417,6 @@ function Human.IsAlive(self: any): boolean
 	return true
 end
 
-function Human:Ragdoll()
-	self.Humanoid:ChangeState(CharacterStates["Ragdoll"])
-	self.Humanoid:SetStateEnabled(CharacterStates["GettingUp"], false)
-	print(`{self.Character.Name} should ragdoll`)
-end
-
-function Human:UnRagdoll()
-	self.Humanoid:SetStateEnabled(CharacterStates["GettingUp"], true)
-	print(`{self.Character.Name} should get up`)
-end
-
 --[=[
 	Applies death ragdoll state
 ]=]
@@ -431,17 +434,6 @@ function Human:OnDeath()
 	end)
 
 	self:Destroy()
-end
-
---[=[
-	Toggles ragdoll state on or off.
-]=]
-function Human.ToggleRagdoll(self: any)
-	if self.IsRagdolled then
-		self:Unragdoll()
-	else
-		self:Ragdoll()
-	end
 end
 
 --[=[

@@ -1,15 +1,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
-local AnimationsHandler = require(StarterPlayer.StarterPlayerScripts.Client.Animations.AnimationsHandler)
-local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
+local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
+local ClientSoundHandler = require(script.Parent.Parent.Sound.ClientSoundHandler)
+local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 local Inputs = {}
 Inputs.networker = Networker.new("InputNetwork", Inputs)
-local CanJump = true
-local CanRoll = true
 
 function Inputs:Initialize()
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
@@ -24,28 +22,29 @@ function Inputs:Initialize()
 
 		-- roll
 		if input.KeyCode == Enum.KeyCode.E then
-			if not CanRoll then
+			if not PlayerContext.CanRoll then
 				return
 			end
 
 			local rollActivated = self.networker:fetch("ApplyRollDrain", PlayerContext.HRP.CFrame.LookVector)
 
 			if rollActivated then
-				CanRoll = false
+				PlayerContext.CanRoll = false
 				local rollAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Roll")
 				PlayerContext.Humanoid:UnequipTools()
+				ClientSoundHandler:PlayOneShot("Roll")
 				rollAnim.Stopped:Once(function()
-					CanRoll = true
+					PlayerContext.CanRoll = true
 				end)
 			end
 		end
 	end)
 
 	UserInputService.JumpRequest:Connect(function()
-		if not CanJump then
+		if not PlayerContext.CanJump then
 			return
 		end
-		CanJump = false
+		PlayerContext.CanJump = false
 		local enoughStamina = self.networker:fetch("ApplyJumpDrain")
 
 		if enoughStamina then
@@ -57,7 +56,7 @@ function Inputs:Initialize()
 		end
 
 		task.wait(1)
-		CanJump = true
+		PlayerContext.CanJump = true
 	end)
 
 	UserInputService.InputEnded:Connect(function(input, processed)

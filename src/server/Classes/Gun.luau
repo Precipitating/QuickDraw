@@ -164,6 +164,7 @@ function Gun:AddGunToInventory()
 		self.Janitor:Add(self.Tool)
 	else
 		-- should be HumanNPC class
+		-- remove this later, NPC auto equips gun for now
 		self.HumanClassRef:EquipGun(clone)
 	end
 end

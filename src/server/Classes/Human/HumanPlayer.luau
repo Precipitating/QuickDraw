@@ -2,6 +2,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Human = require(script.Parent.Human)
+
 local HumanSignals = require(script.Parent.HumanSignals)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
@@ -21,9 +22,10 @@ end
 function HumanPlayer:ConnectGUIs()
 	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
 end
-function HumanPlayer:SetCrawlState()
-	Human.SetCrawlState(self)
-	HumanSignals.RagdollClient:Fire(self.Player)
-	self.Humanoid:UnequipTools()
+
+-- scale gray screen tint on client via current health
+function HumanPlayer:AdjustGrayscale()
+	local hpPercent = self:GetHealthPercentage()
+	HumanSignals.AdjustGrayscale:Fire(self.Player, -1 - -hpPercent)
 end
 return HumanPlayer

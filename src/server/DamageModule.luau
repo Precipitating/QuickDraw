@@ -1,7 +1,12 @@
+local Debris = game:GetService("Debris")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local TweenService = game:GetService("TweenService")
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerGunHandler = require(ServerScriptService.Server.Gun.ServerGunHandler)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 type Human = ClassTypes.Human
 
@@ -23,15 +28,31 @@ local LimbDamageMultiplier = {
 
 local DamageModule = {}
 
+local function ApplyDamageHighlight(humanClass: Human, limbName: string)
+	local highlight = Instance.new("Highlight")
+	highlight.OutlineTransparency = 1
+	highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+	highlight.Parent = humanClass.BodyParts[limbName]
+	Debris:AddItem(highlight, 0.5)
+	TweenService:Create(highlight, TweenInfo.new(0.5), { FillTransparency = 1 }):Play()
+end
+
 local function ApplyDamage(humanClass, limbName: string, damage: number)
 	local multiplier = LimbDamageMultiplier[limbName] or 1
 
 	humanClass.LimbHealth[limbName] -= damage
 	humanClass.Health -= damage * multiplier
+
+	ServerSoundHandler:PlaySoundTo(nil, "BulletHitGroan", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
+
+	if humanClass.AdjustGrayscale then
+		humanClass:AdjustGrayscale()
+	end
+
+	ApplyDamageHighlight(humanClass, limbName)
 end
 
 local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
-	-- Overkill = gib the limb
 	if limbName ~= "UpperTorso" and limbName ~= "LowerTorso" then
 		if humanClass.LimbHealth[limbName] <= -60 then
 			humanClass:DestroyLimb(limbName)
@@ -78,8 +99,6 @@ function DamageModule.DamageHuman(hitObj: RaycastResult?, playerHumanoid: Humano
 
 	ApplyDamage(humanClass, limbName, damageInflicted)
 
-	ServerGunHandler:DisplayBloodHit(hitObj.Position, hitObj.Normal)
-
 	if limbHealth[limbName] <= 0 then
 		HandleLimbDestroyed(humanClass, limbName, damageInflicted)
 	end
@@ -87,6 +106,8 @@ function DamageModule.DamageHuman(hitObj: RaycastResult?, playerHumanoid: Humano
 	if humanClass.Health <= 0 then
 		humanClass.Humanoid.Health = 0
 	end
+
+	ServerGunHandler:DisplayBloodHit(hitObj.Position, hitObj.Normal)
 end
 
 return DamageModule

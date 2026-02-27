@@ -1,54 +1,75 @@
 -- used to get up to date references to the player even if player dies
-local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
-local AnimationsHandler = require(StarterPlayer.StarterPlayerScripts.Client.Animations.AnimationsHandler)
+local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
+local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-local HumanGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.HumanGUIHandler)
-
+local HumanGUIHandler = require(script.Parent.Parent.GUI.HumanGUIHandler)
+local CurrentCamera = workspace.CurrentCamera
 local PlayerContext = {}
-local Player: Player = Players.LocalPlayer
 
-PlayerContext.Player = Player
+PlayerContext.Player = nil
 PlayerContext.Character = nil
-PlayerContext.PlayerGui = Player.PlayerGui
+PlayerContext.PlayerGui = nil
 PlayerContext.HRP = nil
 PlayerContext.Humanoid = nil
-PlayerContext.Camera = workspace.CurrentCamera
+PlayerContext.Camera = nil
 PlayerContext.janitor = Janitor.new()
 
-local function ApplyMouseLock()
-	UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-	UserInputService.MouseIconEnabled = false
-end
-
-local function PlayerFollowCamera()
-	-- body moves with
-	PlayerContext.janitor:Add(RunService.RenderStepped:Connect(function()
-		local camLook = PlayerContext.Camera.CFrame.LookVector
-		-- ── Yaw: rotate HRP to face camera direction (horizontal) ──
-		local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
-		if flatLook.Magnitude > 0.001 then
-			PlayerContext.HRP.CFrame =
-				CFrame.new(PlayerContext.HRP.Position, PlayerContext.HRP.Position + flatLook.Unit)
-		end
-	end))
-end
-
-local function RefreshPlayerContextRefs(character: Model)
-	if not character then
-		return
+function PlayerContext.ApplyMouseLock(on: boolean)
+	if on then
+		UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+	else
+		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 	end
+end
+
+function PlayerContext.PlayerFollowCamera()
+	-- body moves with cam
+	local align = Instance.new("AlignOrientation")
+	align.Mode = Enum.OrientationAlignmentMode.OneAttachment
+	align.Responsiveness = 1000
+	align.RigidityEnabled = true
+
+	local attachment = Instance.new("Attachment")
+	attachment.Parent = PlayerContext.HRP
+
+	align.Attachment0 = attachment
+	align.Parent = PlayerContext.HRP
+
+	PlayerContext.janitor:Add(
+		RunService.RenderStepped:Connect(function()
+			local camLook = CurrentCamera.CFrame.LookVector
+			local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
+
+			if flatLook.Magnitude > 0.001 then
+				align.CFrame = CFrame.lookAt(Vector3.zero, flatLook.Unit)
+			end
+		end),
+		"Disconnect",
+		"FollowCamera"
+	)
+end
+
+local function RefreshPlayerContextRefs(player: Player, character: Model)
+	assert(player, "Missing player when refreshing PlayerContext")
+	assert(character, "Missing character when refreshing PlayerContext")
+	warn("OII")
 	local humanoid = character:WaitForChild("Humanoid")
 	local hrp = character:WaitForChild("HumanoidRootPart")
 
+	PlayerContext.Player = player
 	PlayerContext.Character = character
 	PlayerContext.Humanoid = humanoid
 	PlayerContext.HRP = hrp
-	PlayerContext.PlayerGui = Player:WaitForChild("PlayerGui")
+	PlayerContext.CanJump = true
+	PlayerContext.CanRoll = true
+	PlayerContext.PlayerGui = player:WaitForChild("PlayerGui", 10)
+	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.Bodyparts = {}
 	for _, obj in pairs(character:GetChildren()) do
 		if not obj:IsA("MeshPart") then
@@ -61,6 +82,24 @@ local function RefreshPlayerContextRefs(character: Model)
 	humanoid.AutoRotate = false
 	humanoid.CameraOffset = Vector3.new(2, 1, -2)
 	humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+
+	-- Reset colour corrector
+	PlayerContext.ColorCorrector.Saturation = 0
+	CoreGUIHandler.ToggleBackpackVisibility(true)
+
+	-- connect events
+	PlayerContext.janitor:Add(
+		humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, new: Enum.HumanoidStateType)
+			if new == Enum.HumanoidStateType.GettingUp then
+				CoreGUIHandler.ToggleBackpackVisibility(true)
+				hrp.CanCollide = true
+			elseif new == Enum.HumanoidStateType.Ragdoll or new == Enum.HumanoidStateType.Dead then
+				CoreGUIHandler.ToggleBackpackVisibility(false)
+				humanoid:UnequipTools()
+				hrp.CanCollide = false
+			end
+		end)
+	)
 end
 
 local function ConnectGUIConnections(character: Model)
@@ -72,7 +111,7 @@ local function OnDeath()
 	PlayerContext.Humanoid.Died:Once(function()
 		PlayerContext.janitor:Cleanup()
 		HumanGUIHandler:Disconnect()
-		warn("ded")
+		PlayerContext.ColorCorrector.Saturation = -1
 	end)
 end
 
@@ -82,17 +121,19 @@ local function ReloadCustomAnimations()
 end
 
 -- if we die, update the refs
-local function onCharacterAdded(character: Model)
-	RefreshPlayerContextRefs(character)
-	PlayerFollowCamera()
+function PlayerContext.OnCharacterAdded(player: Player, character: Model)
+	assert(player, "Missing player when refreshing PlayerContext")
+	assert(character, "Missing character when refreshing PlayerContext")
+
+	RefreshPlayerContextRefs(player, character)
+	PlayerContext.PlayerFollowCamera()
 	ConnectGUIConnections(character)
 	OnDeath()
 	ReloadCustomAnimations()
-	ApplyMouseLock()
+	PlayerContext.ApplyMouseLock(true)
+	UserInputService.MouseIconEnabled = false
 
-	print("Local character references updated!")
+	warn("Local character references updated!")
 end
-
-Player.CharacterAdded:Connect(onCharacterAdded)
 
 return PlayerContext

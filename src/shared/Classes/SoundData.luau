@@ -32,6 +32,25 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+
+	BulletHitGroan = {
+		SoundId = "rbxassetid://1489934368",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	BoneSnap = {
+		SoundId = "rbxassetid://137260412436272",
+		Volume = 4,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	Roll = {
+		SoundId = "rbxassetid://8042841372",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 }
 
 -- Default group volumes
@@ -43,4 +62,4 @@ SoundData.GroupDefaults = {
 	Ambient = 0.5,
 }
 
-return SoundData
+return table.freeze(SoundData)

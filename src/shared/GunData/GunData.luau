@@ -1,5 +1,5 @@
-return {
-	["Revolver"] = {
+local GunData = {
+	Revolver = {
 		MaxAmmo = 999,
 		ShotDelay = 0.35,
 		Damage = 30,
@@ -11,3 +11,11 @@ return {
 		CameraRecoil = 20,
 	},
 }
+
+for _, gun in GunData do
+	table.freeze(gun)
+end
+
+table.freeze(GunData)
+
+return GunData

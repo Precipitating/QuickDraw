@@ -14,28 +14,49 @@ export type Gun = {
 }
 
 export type Human = {
-	Player: Player,
+	-- Core
+	Player: Player?, -- not set in constructor, so optional unless assigned elsewhere
+	HumanType: string,
 	Health: number,
 	Stamina: number,
-	HumanType: string,
+
+	-- Character References
 	Character: Model,
 	Humanoid: Humanoid,
 	RootPart: BasePart,
-	IsRagdolled: boolean,
 	HRP: BasePart,
+	Animate: Instance,
+
+	-- State Flags
+	Sprinting: boolean,
+	JumpSignalled: boolean,
+	RollSignalled: boolean,
+	IsRagdolled: boolean,
+	AnimationControllerState: boolean,
+	Legless: boolean,
+
+	-- Equipment
 	CurrentGun: Gun?,
+
+	-- Data Tables
 	LimbHealth: {},
 	BodyParts: {},
+	AnimationRefs: {},
 
+	-- Utilities
+	Janitor: any,
+
+	-- Methods
 	Ragdoll: (self: Human) -> (),
 	UnRagdoll: (self: Human) -> (),
 	ToggleRagdoll: (self: Human) -> (),
 	IsAlive: (self: Human) -> boolean,
 	Destroy: (self: Human) -> (),
 	OnDeath: (self: Human) -> (),
+
 	DisableLimb: (self: Human, limbName: string) -> (),
-	ApplyImpulse: (force: Vector3, position: Vector3?) -> (),
-	ApplyImpulseOnLimb: (limbName: string, force: Vector3) -> (),
+	ApplyImpulse: (self: Human, force: Vector3, position: Vector3?) -> (),
+	ApplyImpulseOnLimb: (self: Human, limbName: string, force: Vector3) -> (),
 }
 
 export type HumanPlayer = Human & {

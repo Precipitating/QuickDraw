@@ -20,20 +20,21 @@ function HumanNPC.new(humanoid: Humanoid)
 	return self :: any
 end
 
-function HumanNPC:AttackPlayer(target: Model) end
+function HumanNPC:AttackPlayer(target: Model)
+	assert(target, "[HumanNPC:AttackPlayer] Target is invalid")
+
+	local rightArm = self.BodyParts["RightUpperArm"]
+	assert(rightArm, "[HumanNPC:AttackPlayer] Right arm missing, NPC cannot attack target")
+
+	local rightShoulder: AnimationConstraint? = rightArm:FindFirstChildOfClass("AnimationConstraint")
+	assert(rightShoulder, "[HumanNPC:AttackPlayer] Right shoulder missing, NPC cannot attack target")
+end
 
 function HumanNPC:EquipGun(gunTool: Tool?)
 	if not gunTool then
 		error("[HumanNPC:EquipGun] gunTool is nil")
 	end
 	self.Humanoid:EquipTool(gunTool)
-	local rightArmConstraint: AnimationConstraint? =
-		self.Character["RightUpperArm"]:FindFirstChildOfClass("AnimationConstraint")
-	if not rightArmConstraint then
-		error("Missing NPC right arm anim constraint")
-	end
-
-	--rightArmConstraint.Transform = CFrame.new(rightArmConstraint.Transform.Position) * CFrame.Angles(math.rad(10), 0, 0)
 
 	task.spawn(function()
 		while task.wait(1) do
@@ -45,7 +46,14 @@ function HumanNPC:EquipGun(gunTool: Tool?)
 	end)
 end
 
-function HumanNPC:UnEquipGun()
+function HumanNPC:EquipThrowable(throwable: Tool?)
+	if not throwable then
+		error("[HumanNPC:EquipGun] gunTool is nil")
+	end
+	self.Humanoid:EquipTool(throwable)
+end
+
+function HumanNPC:UnEquipCurrentTool()
 	self.Humanoid:UnEquipTools()
 end
 
@@ -61,8 +69,8 @@ function HumanNPC:NPCShoot()
 	end
 
 	-- Cache these once on equip in production (see note below)
-	local handle = tool:FindFirstChild("Handle")
-	local shootPoint = tool:FindFirstChild("ShootPoint")
+	local handle = tool:WaitForChild("Handle", 10)
+	local shootPoint = tool:WaitForChild("ShootPoint", 10)
 	local rightArm = self.BodyParts.RightUpperArm
 
 	if not (handle and shootPoint and rightArm) then
@@ -85,8 +93,4 @@ function HumanNPC:OnDeath()
 	Human.OnDeath(self)
 end
 
-function HumanNPC:SetCrawlState()
-	self.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
-	Human.SetCrawlState(self)
-end
 return HumanNPC

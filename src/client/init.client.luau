@@ -1,11 +1,19 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
+local PlayerContext = require(script.Utility.PlayerContext)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+require(script.Sound.ClientSoundHandler)
+require(script.Gun.ClientGunHandler)
+require(script.ClientInputs.Inputs):Initialize()
 SoundManager.Init()
 SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
 
-require(script.Sound.ClientSoundHandler)
-require(script.Utility.PlayerContext)
-require(script.Gun.ClientGunHandler)
-require(script.PlayerEvents).Initialize()
-require(script.ClientInputs.Inputs):Initialize()
+local Player = Players.LocalPlayer
+
+Player.CharacterAdded:Connect(function(character: Model)
+	PlayerContext.OnCharacterAdded(Player, character)
+end)
+
+if Player.Character then
+	PlayerContext.OnCharacterAdded(Player, Player.Character)
+end
