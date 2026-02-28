@@ -6,8 +6,7 @@ local GunData = {
 		Velocity = 900,
 		ShootSoundName = "RevolverShot",
 		ShootNoAmmoName = "RevolverClick",
-		ArmRecoil = 200,
-		GunRecoil = 20,
+		GunRecoil = 50,
 		CameraRecoil = 20,
 	},
 }

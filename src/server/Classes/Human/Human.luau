@@ -78,6 +78,20 @@ local BodyParts = {
 	RightFoot = true,
 }
 
+local DisabledBodyParts = {
+	LeftUpperArm = false,
+	LeftLowerArm = false,
+
+	RightUpperArm = false,
+	RightLowerArm = false,
+
+	LeftUpperLeg = false,
+	LeftLowerLeg = false,
+
+	RightUpperLeg = false,
+	RightLowerLeg = false,
+}
+
 -- Module
 local Human = {}
 Human.__index = Human
@@ -107,6 +121,7 @@ function Human.new(humanoid: Humanoid?): Human
 
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
+	self.DisabledBodyParts = table.clone(DisabledBodyParts)
 	self.AnimationRefs = table.clone(Animations)
 
 	self.IsRagdolled = false
@@ -301,12 +316,14 @@ function Human:FixCrawlADS()
 	assert(rightUpperArm, "[Human:FixCrawlADS] RightUpperArm missing from BodyParts")
 	assert(rightLowerArm, "[Human:FixCrawlADS] RightLowerArm missing from BodyParts")
 
-	rightWristBallSocket.LimitsEnabled = false
-	rightWristBallSocket.UpperAngle = 180
+	rightWristBallSocket.LimitsEnabled = true
+	rightWristBallSocket.UpperAngle = 0
+	rightWristBallSocket.TwistLimitsEnabled = true
 	rightWristBallSocket.TwistUpperAngle = 0
-	rightWristBallSocket.TwistLowerAngle = -50
+	rightWristBallSocket.TwistLowerAngle = 0
+
 	rightShoulderBallSocket.TwistLimitsEnabled = false
-	rightShoulderBallSocket.UpperAngle = 89
+	rightShoulderBallSocket.UpperAngle = 100
 
 	-- disable gun's collision
 	for _, part: MeshPart in pairs(gun:GetChildren()) do
@@ -319,9 +336,9 @@ end
 
 function Human:SetCrawlState()
 	print(self.HumanType)
-	local parts = self.BodyParts
+	local parts = self.DisabledBodyParts
 
-	if (not parts.LeftUpperLeg or not parts.LeftLowerLeg) and (not parts.RightUpperLeg or not parts.RightLowerLeg) then
+	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
 		if self.Legless then
 			return
 		end
@@ -345,7 +362,7 @@ function Human:SetCrawlState()
 			return
 		end
 
-		print("Both legs gone")
+		print("Both legs disabled")
 
 		-- set crawl anims
 		local hrp = self.Character:FindFirstChild("HumanoidRootPart")
@@ -359,8 +376,10 @@ function Human:SetCrawlState()
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
 		self.Humanoid.WalkSpeed = 8
-		self.Humanoid.HipHeight = 3
 
+		if self.HumanType == "Player" then
+			self.Humanoid.HipHeight = 0.5
+		end
 		self:FixCrawlADS()
 
 		self.Legless = true
@@ -376,9 +395,9 @@ function Human:DisableLimb(limbName: string)
 	local animationConstraint: AnimationConstraint? = limb:FindFirstChildWhichIsA("AnimationConstraint", true)
 	local ballSocket: BallSocketConstraint? = limb:FindFirstChildOfClass("BallSocketConstraint")
 
+	limb.CanCollide = false
 	if animationConstraint then
 		animationConstraint.Enabled = false
-		animationConstraint.IsKinematic = false
 		print(`${animationConstraint.Name} animation constraint disabled!`)
 	end
 
@@ -388,16 +407,21 @@ function Human:DisableLimb(limbName: string)
 		print(`${limbName} ball socket disabled!`)
 	end
 
+	if self.DisabledBodyParts[limbName] == false then
+		self.DisabledBodyParts[limbName] = true
+	end
+
 	if limbName ~= "Head" then
 		ServerSoundHandler:PlaySoundTo(nil, "BoneSnap", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
 	end
+
+	self:SetCrawlState()
 end
 
 function Human:DestroyLimb(limbName: string)
 	self.BodyParts[limbName]:Destroy()
 	self.BodyParts[limbName] = nil
 	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
-	self:SetCrawlState()
 end
 
 --[=[

@@ -12,4 +12,7 @@ return {
 	STAMINA_REGEN_RATE = 15, -- per sec
 	WALKSPEED = 6,
 	SPRINT_SPEED = 25,
+
+	SWAY_SPEED = 1.5,
+	SWAY_AMOUNT = math.rad(2), -- 2 degrees max
 }

@@ -42,7 +42,7 @@ local RecoilSpring = Ripple.createSpring(0, {
 
 local CrosshairSpring = Ripple.createSpring(Vector3.zero, {
 	dampingRatio = 1,
-	frequency = 20,
+	frequency = 50,
 })
 
 local CrosshairScaleSpring = Ripple.createSpring(UDim2.fromScale(1, 1), {
@@ -68,7 +68,6 @@ function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 	local muzzleFolder = Utility.GetInstance(gunTool, true, "MuzzleFlash", "Attachment")
 
 	if not muzzleFolder then
-		warn("[ ClientGunHandler:ActivateMuzzleFlash] muzzleFolder invalid!")
 		return
 	end
 
@@ -112,7 +111,6 @@ function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
 	end
 
 	handle:ApplyImpulseAtPosition(Vector3.new(0, 1, 0) * GunData[gunTool.Name].GunRecoil, shootPoint.WorldPosition)
-	rightArm:ApplyImpulse(rightArm.AssemblyMass * Vector3.new(0, 1, 0) * GunData[gunTool.Name].ArmRecoil)
 
 	-- also make camera flick up via springs
 	RecoilSpring:impulse(GunData[gunTool.Name].CameraRecoil)
@@ -148,19 +146,6 @@ local function Get3DCrosshair()
 	return crosshairPart, crosshairBillboard, crosshairImage
 end
 
--- right arm physics can mess up the twist sometimes, enforce an angle to hopefully prevent this
-local function StiffenRightArm(stiffen: boolean)
-	local rightUpperArmSocket: BallSocketConstraint =
-		Utility.GetInstance(PlayerContext.Bodyparts["RightUpperArm"], true, "RightShoulderBallSocket")
-
-	if stiffen then
-		rightUpperArmSocket.TwistLowerAngle = 90
-		rightUpperArmSocket.TwistUpperAngle = 90
-	else
-		rightUpperArmSocket.TwistLowerAngle = -85
-		rightUpperArmSocket.TwistUpperAngle = 85
-	end
-end
 function ClientGunHandler.TweenADS(tweenIn: boolean)
 	StopCurrentTween()
 	if tweenIn then
@@ -174,7 +159,6 @@ end
 
 function ClientGunHandler.CancelADS()
 	StopCurrentTween()
-	StiffenRightArm(false)
 	local _: Part, crosshairBB: BillboardGui, _: ImageLabel = Get3DCrosshair()
 	crosshairBB.Enabled = false
 
@@ -267,27 +251,30 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 
 	local parentPart = if HumanNetwork.networker:fetch("IsLegless")
 		then PlayerContext.HRP
-		else PlayerContext.Bodyparts["UpperTorso"]
+		else PlayerContext.BodyParts["UpperTorso"]
 
 	-----------------------------------------------------------------------
 	-- BindToRenderStep at the very end so nothing overwrites us
 	-----------------------------------------------------------------------
+	PlayerContext.RightArmYaw.Enabled = true
 	RunService:BindToRenderStep("ADS_RotateAndTilt", Enum.RenderPriority.Last.Value, function(dt)
-		local lookVector = CurrentCamera.CFrame.LookVector
+		local camLook = CurrentCamera.CFrame.LookVector
+		local parentCF = parentPart.CFrame
 
-		-- ── Convert camera look direction into torso-local space ──
-		local localDir = parentPart.CFrame:VectorToObjectSpace(lookVector)
+		-- Get pitch from camera
+		local pitch = math.asin(math.clamp(camLook.Y, -1, 1))
+		pitch = math.clamp(pitch, -math.rad(90), math.rad(90))
 
-		-- ── Decompose into yaw (horizontal) and pitch (vertical) ──
-		local yaw = math.atan2(-localDir.X, -localDir.Z)
-		local pitch = math.asin(math.clamp(localDir.Y, -1, 1))
-		pitch = math.clamp(pitch, -math.rad(80), math.rad(90))
+		-- Use parent's flat forward as the base direction
+		local flatForward = (parentCF.LookVector * Vector3.new(1, 0, 1)).Unit
 
-		-- ── Apply: yaw first, then pitch ──
-		rightShoulderAttachment.CFrame = rightShoulderOriginalCF
-			* CFrame.Angles(0, yaw, 0) -- horizontal aim
-			* CFrame.Angles(pitch, 0, 0) -- vertical aim
+		-- Build a direction vector with parent's yaw + camera's pitch
+		local direction = (flatForward * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)).Unit
 
+		-- Arm points down by default, so the "up" vector keeps roll stable
+		local targetCF = CFrame.lookAt(Vector3.zero, direction, parentCF.UpVector) * CFrame.Angles(math.rad(90), 0, 0) -- attachment offset
+
+		PlayerContext.RightArmYaw.CFrame = targetCF
 		if not HoldingRMB then
 			CastBarrelRay(gunTool.Name, shootPoint)
 
@@ -315,10 +302,6 @@ local function ADSTweenZoom(gunTool: Tool)
 	CurrentCamera.CameraSubject = gunTool:FindFirstChild("AimPos")
 	ADSTransparency(true)
 	CrosshairHandler:ToggleCrosshairVisibility(true, "Gun")
-
-	if not HumanNetwork.networker:fetch("IsLegless") then
-		StiffenRightArm(true)
-	end
 
 	ClientGunHandler.TweenADS(true)
 end
@@ -373,7 +356,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 
 			-- fix right arm orientation if pressed
 			if input.KeyCode == Enum.KeyCode.Q then
-				local rightArm = PlayerContext.Bodyparts["RightUpperArm"]
+				local rightArm = PlayerContext.BodyParts["RightUpperArm"]
 				if rightArm then
 					local shoulder: AnimationConstraint = rightArm:WaitForChild("RightShoulder", 10)
 					if not shoulder then
@@ -427,6 +410,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		CurrentCamera.CameraSubject = PlayerContext.Humanoid
 		self:DisconnectGun()
 		ClientGunHandler.CancelADS()
+		PlayerContext.RightArmYaw.Enabled = false
 	end)
 end
 

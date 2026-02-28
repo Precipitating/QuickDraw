@@ -56,7 +56,7 @@ function Inputs:ToggleSprint(player: Player, active: boolean)
 		return
 	end
 
-	if active and stamina > 0 then
+	if active and stamina and stamina > 0 then
 		humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
 		stamina = math.clamp(stamina, 0, HumanConstants.MAX_STAMINA)
 		humanClass.Sprinting = true

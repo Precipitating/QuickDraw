@@ -16,6 +16,8 @@ local function AddNPCClass(taggedNPC: Model)
 	humanoid.Died:Connect(function()
 		humanNPC:OnDeath()
 	end)
+
+	return humanNPC
 end
 
 -- for existing models in studio, initialize its class
@@ -23,7 +25,8 @@ local function Initialize()
 	local npcInstances = CollectionService:GetTagged("NPC")
 
 	for _, NPC: Model in ipairs(npcInstances) do
-		AddNPCClass(NPC)
+		local npc = AddNPCClass(NPC)
+		--npc:AttackPlayer(workspace:WaitForChild("oOR0B0TOo"))
 	end
 end
 

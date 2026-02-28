@@ -18,6 +18,7 @@ PlayerContext.PlayerGui = nil
 PlayerContext.HRP = nil
 PlayerContext.Humanoid = nil
 PlayerContext.Camera = nil
+PlayerContext.RightArmYaw = nil
 PlayerContext.janitor = Janitor.new()
 
 function PlayerContext.ApplyMouseLock(on: boolean)
@@ -28,7 +29,7 @@ function PlayerContext.ApplyMouseLock(on: boolean)
 	end
 end
 
-function PlayerContext.PlayerFollowCamera()
+function PlayerContext:PlayerFollowCamera()
 	-- body moves with cam
 	local align = Instance.new("AlignOrientation")
 	align.Mode = Enum.OrientationAlignmentMode.OneAttachment
@@ -36,12 +37,12 @@ function PlayerContext.PlayerFollowCamera()
 	align.RigidityEnabled = true
 
 	local attachment = Instance.new("Attachment")
-	attachment.Parent = PlayerContext.HRP
+	attachment.Parent = self.HRP
 
 	align.Attachment0 = attachment
-	align.Parent = PlayerContext.HRP
+	align.Parent = self.HRP
 
-	PlayerContext.janitor:Add(
+	self.janitor:Add(
 		RunService.RenderStepped:Connect(function()
 			local camLook = CurrentCamera.CFrame.LookVector
 			local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
@@ -55,10 +56,30 @@ function PlayerContext.PlayerFollowCamera()
 	)
 end
 
+-- for yaw aiming when equipping a tool
+function PlayerContext:AddRightArmOrientation()
+	local align = Instance.new("AlignOrientation")
+	local rightArm = self.BodyParts["RightUpperArm"]
+	local rightArmBallSocket: BallSocketConstraint = rightArm:WaitForChild("RightShoulderBallSocket")
+	align.Mode = Enum.OrientationAlignmentMode.OneAttachment
+	align.Attachment0 = rightArm:WaitForChild("RightShoulderAttachment")
+	align.RigidityEnabled = false
+	align.Name = "RightArmYawOrientation"
+	align.MaxTorque = 90000
+	align.MaxAngularVelocity = 15000
+
+	align.Responsiveness = 150
+	align.Parent = rightArm
+	align.Enabled = false
+	rightArmBallSocket.TwistLimitsEnabled = true
+	rightArmBallSocket.TwistUpperAngle = 175
+	rightArmBallSocket.TwistLowerAngle = 0
+	self.RightArmYaw = align
+end
 local function RefreshPlayerContextRefs(player: Player, character: Model)
 	assert(player, "Missing player when refreshing PlayerContext")
 	assert(character, "Missing character when refreshing PlayerContext")
-	warn("OII")
+
 	local humanoid = character:WaitForChild("Humanoid")
 	local hrp = character:WaitForChild("HumanoidRootPart")
 
@@ -70,12 +91,12 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.CanRoll = true
 	PlayerContext.PlayerGui = player:WaitForChild("PlayerGui", 10)
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
-	PlayerContext.Bodyparts = {}
+	PlayerContext.BodyParts = {}
 	for _, obj in pairs(character:GetChildren()) do
 		if not obj:IsA("MeshPart") then
 			continue
 		end
-		PlayerContext.Bodyparts[obj.Name] = obj
+		PlayerContext.BodyParts[obj.Name] = obj
 	end
 
 	-- Configure humanoid safely
@@ -126,7 +147,8 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 	assert(character, "Missing character when refreshing PlayerContext")
 
 	RefreshPlayerContextRefs(player, character)
-	PlayerContext.PlayerFollowCamera()
+	PlayerContext:PlayerFollowCamera()
+	PlayerContext:AddRightArmOrientation()
 	ConnectGUIConnections(character)
 	OnDeath()
 	ReloadCustomAnimations()

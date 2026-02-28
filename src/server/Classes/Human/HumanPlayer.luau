@@ -14,6 +14,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new("Revolver", self, player)
 	self.CurrentGun:AddGunToInventory()
+	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 	return self :: any

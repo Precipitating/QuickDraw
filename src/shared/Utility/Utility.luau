@@ -26,7 +26,8 @@ return {
 			end
 
 			if not nextInstance then
-				error(`[GetInstance] Cannot grab "{name}" reference`)
+				warn(`[GetInstance] Cannot grab "{name}" reference`)
+				return nil
 			end
 
 			current = nextInstance
