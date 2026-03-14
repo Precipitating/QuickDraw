@@ -36,9 +36,4 @@ return {
 
 		ServerGunHandler:DisplayBulletHole(cframeTarget)
 	end),
-
-	GunSignals.DisconnectGun:Connect(function(player: Player)
-		assert(player, "[GunSignals.DisconnectGun] player is nil!")
-		ServerGunHandler:DisconnectGun(player)
-	end),
 }

@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Gun = require(ServerScriptService.Server.Classes.Gun)
+local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
 local HumanConstants = require(script.Parent.HumanConstants)
 
@@ -16,9 +17,11 @@ HumanNPC.__index = HumanNPC
 function HumanNPC.new(humanoid: Humanoid)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	self.CurrentGun = Gun.new("Revolver", self, self.Character)
+	self.CurrentThrowable = Throwable.new("Dynamite", self)
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.CurrentGun:AddGunToInventory()
+	self.CurrentThrowable:AddThrowableToInventory()
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self.AttackingTarget = false
 	print(`New human class initiated for NPC {self.Character.Name}`)

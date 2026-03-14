@@ -129,6 +129,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.AnimationControllerState = false
 
 	self.CurrentGun = nil
+	self.CurrentThrowable = nil
 
 	self.Legless = false
 

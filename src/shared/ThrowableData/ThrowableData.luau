@@ -2,7 +2,7 @@ local ThrowableData = {
 
 	Dynamite = {
 		MaxAmmo = 1,
-		ThrowDelay = 3,
+		ThrowDelay = 5,
 		Damage = 75,
 		Velocity = 100,
 		DetonationTime = 3,

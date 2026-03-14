@@ -439,4 +439,4 @@ function ClientGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 	end
 end
 
-return GunNetwork
+return ClientGunHandler

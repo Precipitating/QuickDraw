@@ -26,7 +26,7 @@ local function Initialize()
 
 	for _, NPC: Model in ipairs(npcInstances) do
 		local npc = AddNPCClass(NPC)
-		--npc:AttackPlayer(workspace:WaitForChild("oOR0B0TOo"))
+		npc:AttackPlayer(workspace:WaitForChild("oOR0B0TOo"))
 	end
 end
 

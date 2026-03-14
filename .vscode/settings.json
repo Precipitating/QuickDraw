@@ -8,5 +8,6 @@
             "folderPath": "Quick Draw\\src\\shared\\",
             "color": "foldercolorizer.color_9900ff"
         }
-    ]
+    ],
+    "stylua.targetReleaseVersion": "latest"
 }

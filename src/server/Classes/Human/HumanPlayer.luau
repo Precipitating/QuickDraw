@@ -1,8 +1,8 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
 local Gun = require(ServerScriptService.Server.Classes.Gun)
+local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
-
 local HumanSignals = require(script.Parent.HumanSignals)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
@@ -13,7 +13,9 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.Player = player
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new("Revolver", self, player)
+	self.CurrentThrowable = Throwable.new("Dynamite", self)
 	self.CurrentGun:AddGunToInventory()
+	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 
 	print(`New Human class initialized for {self.Player.DisplayName}`)

@@ -13,6 +13,16 @@ export type Gun = {
 	HumanClassRef: Human?,
 }
 
+export type Throwable = {
+	Name: string,
+	Tool: Tool?,
+	Owner: Human,
+	CurrentAmmo: number,
+	DetonationTime: number,
+	ThrowForce: number,
+
+	Throw: (self: Throwable, cameraLookVector: Vector3) -> (),
+}
 export type Human = {
 	-- Core
 	Player: Player?, -- not set in constructor, so optional unless assigned elsewhere
@@ -37,6 +47,7 @@ export type Human = {
 
 	-- Equipment
 	CurrentGun: Gun?,
+	CurrentThrowable: Throwable?,
 
 	-- Data Tables
 	LimbHealth: {},
