@@ -481,6 +481,8 @@ function SoundManager.PlayAtPosition(name: string, position: Vector3, options: P
 		part:Destroy()
 	end)
 
+	print(`Playing {name}`)
+
 	return sound
 end
 

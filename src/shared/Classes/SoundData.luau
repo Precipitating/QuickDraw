@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local SoundData = {}
 
 SoundData.Sounds = {
@@ -48,6 +50,18 @@ SoundData.Sounds = {
 	Roll = {
 		SoundId = "rbxassetid://8042841372",
 		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	DynamiteFuse = {
+		SoundId = "rbxassetid://126320753231712",
+		Volume = 3,
+		PlaybackSpeed = 7 / ThrowableData["Dynamite"].DetonationTime,
+		Group = "SFX",
+	},
+	DynamiteExplosion = {
+		SoundId = "rbxassetid://138278545827368",
+		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},

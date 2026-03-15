@@ -11,7 +11,6 @@ function ServerSoundHandler:Play3DOneShotToOthers(
 	if playerToExclude then
 		self.networker:fireAllExcept(playerToExclude, "Play3DOneShotToOthers", soundName, emitterCFrame, config)
 	else
-		print("Should hear NPC shooting")
 		self.networker:fireAll("Play3DOneShotToOthers", soundName, emitterCFrame, config)
 	end
 end

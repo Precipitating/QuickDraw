@@ -7,6 +7,10 @@ return {
 		return rng:NextNumber(min, max)
 	end,
 
+	GetNextUnitVector = function()
+		return rng:NextUnitVector()
+	end,
+
 	-- 0 - 1 decimal
 	GetRandom = function()
 		return rng:NextNumber()

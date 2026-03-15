@@ -4,8 +4,12 @@ local ThrowableData = {
 		MaxAmmo = 1,
 		ThrowDelay = 5,
 		Damage = 75,
-		Velocity = 100,
+		Velocity = 150,
 		DetonationTime = 3,
+		FragmentRange = 60,
+		FragmentCount = 60,
+		LandSound = "DynamiteFuse",
+		DetonationSound = "DynamiteExplosion",
 	},
 }
 
