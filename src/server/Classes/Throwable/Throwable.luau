@@ -11,6 +11,7 @@ local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local Effects = ReplicatedStorage.Shared.Effects
 local Throwable = {}
 type Human = ClassTypes.Human
 Throwable.__index = Throwable
@@ -25,6 +26,7 @@ function Throwable.new(throwableName: string, humanRef: Human)
 	self.Owner = humanRef
 	self.Name = throwableName
 	self.Tool = nil
+	self.Type = ThrowableData[throwableName].Type
 	self.CurrentAmmo = ThrowableData[throwableName].MaxAmmo
 	self.DetonationTime = ThrowableData[throwableName].DetonationTime
 	self.ThrowForce = nil
@@ -38,7 +40,7 @@ function Throwable.new(throwableName: string, humanRef: Human)
 	self.ProjectileData.CosmeticBulletTemplate = nil
 	self.ProjectileData.CosmeticBulletContainer = workspace.ProjectilesFolder
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { humanRef.Character, self.Tool }
+	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { self.Tool }
 	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
 	self.ProjectileData.AutoIgnoreContainer = true
 
@@ -71,19 +73,39 @@ function Throwable:Throw(cameraLookVector: Vector3)
 	return true
 end
 
+function Throwable:ApplyInflictingDamage(humanoid: Humanoid?, hit: RaycastResult)
+	assert(humanoid, "Missing humanoid")
+
+	local spreadParticle = if Effects[ThrowableData[self.Name].SpreadParticle]
+		then Effects[ThrowableData[self.Name].SpreadParticle]:Clone()
+		else nil
+
+	local spreadDuration = ThrowableData[self.Name].SpreadDuration
+	local damage = ThrowableData[self.Name].Damage
+	if not spreadParticle then
+		warn("[SpawnFragments] Missing spread particle reference")
+		return
+	end
+
+	-- visualize the effect
+	spreadParticle.Enabled = true
+	spreadParticle.Parent = hit.Instance
+	Debris:AddItem(spreadParticle, spreadDuration)
+
+	task.spawn(function()
+		for _ = 1, spreadDuration do
+			GunSignals.PlayerHit:Fire(hit, humanoid, damage)
+			task.wait(1)
+		end
+	end)
+end
 function Throwable:SpawnFragments(spawnPos: Vector3)
-	local normal = Vector3.new(0, 1, 0)
 	local fragmentCount = ThrowableData[self.Name].FragmentCount
 	local fragmentRange = ThrowableData[self.Name].FragmentRange
 	local fragmentDamage = ThrowableData[self.Name].Damage
-
+	local fragmentType = ThrowableData[self.Name].Type
 	for _ = 1, fragmentCount do
 		local dir = RandomModule.GetNextUnitVector()
-
-		-- inverse if hits ground, creating a hemisphere
-		if dir:Dot(normal) < 0 then
-			dir = -dir
-		end
 
 		local hit = workspace:Raycast(spawnPos, dir * fragmentRange)
 
@@ -98,11 +120,16 @@ function Throwable:SpawnFragments(spawnPos: Vector3)
 			if isModel then
 				local humanoid = isModel:FindFirstChild("Humanoid")
 				if humanoid then
-					GunSignals.PlayerHit:Fire(hit, humanoid, fragmentDamage)
+					if fragmentType == "Explosive" then
+						GunSignals.PlayerHit:Fire(hit, humanoid, fragmentDamage)
+					elseif fragmentType == "Spread" then
+						self:ApplyInflictingDamage(humanoid, hit)
+					end
 				end
 			end
 		end
 
+		--debug rays
 		-- local debugPart = Instance.new("Part")
 		-- debugPart.CanCollide = false
 		-- debugPart.CanTouch = false
@@ -113,6 +140,31 @@ function Throwable:SpawnFragments(spawnPos: Vector3)
 	end
 end
 
+function Throwable:OnThrowImpact(cosmeticBulletObj)
+	-- get particle name
+	local throwEffect = ThrowableData[self.Name].ImpactParticle
+	-- clone particle if valid
+	local effect = if Effects[throwEffect] then Effects[throwEffect]:Clone() else nil
+
+	if not effect then
+		warn("[Throwable:OnThrowImpact] Effect not valid to spawn")
+		return
+	end
+
+	local explosion: Part = Instance.new("Part")
+	explosion.Parent = workspace
+	explosion.CanCollide = false
+	explosion.CanQuery = false
+	explosion.Transparency = 1
+	explosion.Anchored = true
+	explosion.Position = cosmeticBulletObj.Position + Vector3.new(0, 1, 0)
+	effect.Parent = explosion
+	effect.Enabled = true
+	cosmeticBulletObj:Destroy()
+
+	Debris:AddItem(explosion, 1)
+end
+
 function Throwable:ConnectProjectileEvents()
 	self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _, cosmeticBulletObj)
 		cosmeticBulletObj.Anchored = false
@@ -120,10 +172,6 @@ function Throwable:ConnectProjectileEvents()
 		ServerSoundHandler:Play3DOneShotToOthers(nil, ThrowableData[self.Name].LandSound, cosmeticBulletObj.CFrame)
 		task.delay(self.DetonationTime, function()
 			local cosmeticPos = cosmeticBulletObj.Position
-			local explosion: Explosion = Instance.new("Explosion")
-			explosion.Parent = workspace
-			explosion.BlastPressure = 0
-			explosion.Position = cosmeticBulletObj.Position
 			ServerSoundHandler:Play3DOneShotToOthers(
 				nil,
 				ThrowableData[self.Name].DetonationSound,
@@ -131,9 +179,8 @@ function Throwable:ConnectProjectileEvents()
 				{ MaxDistance = 150 }
 			)
 
-			Debris:AddItem(explosion, 0.5)
-			Debris:AddItem(cosmeticBulletObj, 0.5)
-			self:SpawnFragments(cosmeticPos)
+			self:OnThrowImpact(cosmeticBulletObj)
+			self:SpawnFragments(cosmeticPos + Vector3.new(0, 1, 0))
 		end)
 	end))
 
@@ -169,14 +216,15 @@ function Throwable:AddThrowableToInventory()
 	local clone: Tool = ServerStorage.Templates:FindFirstChild(self.Name):Clone()
 	self.Tool = clone
 
+	clone.Parent = if self.Owner.HumanType == "Player" then self.Owner.Player.Backpack else self.Character
+	self.Janitor:Add(self.Tool)
+
+	local projectileClone = self.Tool.Handle:Clone()
+	projectileClone.Anchored = true
+
+	self.ProjectileData.CosmeticBulletTemplate = projectileClone
+
 	if self.Owner.HumanType == "Player" then
-		clone.Parent = self.Owner.Player.Backpack
-		self.Janitor:Add(self.Tool)
-
-		local projectileClone = self.Tool.Handle:Clone()
-		projectileClone.Anchored = true
-
-		self.ProjectileData.CosmeticBulletTemplate = projectileClone
 		ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, clone)
 	end
 end

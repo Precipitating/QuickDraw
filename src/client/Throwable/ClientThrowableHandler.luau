@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
@@ -15,6 +16,10 @@ local ThrowableDisconnectConn = nil
 function ClientThrowableHandler:Throw(throwable: Tool)
 	local cameraLookVector = workspace.CurrentCamera.CFrame.LookVector
 	local thrown = self.networker:fetch("ThrowProjectile", cameraLookVector)
+
+	if thrown then
+		SoundManager.Play(ThrowableData[throwable.Name].ThrowSound)
+	end
 
 	return thrown
 end

@@ -65,6 +65,24 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	MolotovLand = {
+		SoundId = "rbxassetid://3105090678",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	MolotovFire = {
+		SoundId = "rbxassetid://2770705399",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	ThrowProjectile = {
+		SoundId = "rbxassetid://101808428209321",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 }
 
 -- Default group volumes
