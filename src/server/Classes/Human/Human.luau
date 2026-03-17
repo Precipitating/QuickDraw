@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
 local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
@@ -256,6 +255,7 @@ function Human:AssignBodyParts()
 		end
 	end
 	self.HRP:SetNetworkOwner(nil)
+	self.Character.PrimaryPart:SetNetworkOwner(nil)
 end
 
 function Human:SimulateDefaultLimbs()

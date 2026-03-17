@@ -1,15 +1,11 @@
-local Debris = game:GetService("Debris")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
+local Debris = game:GetService("Debris")
+local ServerScriptService = game:GetService("ServerScriptService")
+local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
 
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
-local HumanConstants = require(script.Parent.HumanConstants)
-
-local UP = Vector3.yAxis
 
 local HumanNPC = setmetatable({}, Human)
 HumanNPC.__index = HumanNPC
@@ -22,8 +18,7 @@ function HumanNPC.new(humanoid: Humanoid)
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
-	self.NoiseSeed = RandomModule.GetRandom() * 1000
-	self.AttackingTarget = false
+	self.AI = RangeAI.new(self)
 	print(`New human class initiated for NPC {self.Character.Name}`)
 
 	return self :: any
@@ -43,57 +38,10 @@ function HumanNPC:InitializeRightArmAimer()
 	return aimer
 end
 
-function HumanNPC:ToggleRightArmAimer(enable: boolean)
-	assert(self.RightArmAimer, "[HumanNPC:ToggleRightArmAimer] RightArmAimer is nil")
-	if self.RightArmAimer.Enabled == enable then
-		return
-	end
-
-	if enable then
-		self.RightArmAimer.Enabled = true
-	else
-		self.RightArmAimer.Enabled = false
-	end
-end
-
-function HumanNPC:AimRightArmTowards(target)
-	local rightArm = self.BodyParts["RightUpperArm"]
-	local origin = rightArm.Position
-
-	local targetPos = target:IsA("Model") and target:GetPivot().Position or target.Position
-
-	local lookCF = CFrame.lookAt(origin, targetPos)
-
-	-- smooth time-based noise
-	local t = os.clock() * HumanConstants.SWAY_SPEED
-	local seed = self.NoiseSeed
-
-	local yawNoise = math.noise(seed, t, 0)
-	local pitchNoise = math.noise(seed, 0, t)
-
-	local swayYaw = yawNoise * HumanConstants.SWAY_AMOUNT
-	local swayPitch = pitchNoise * HumanConstants.SWAY_AMOUNT
-
-	lookCF *= CFrame.Angles(math.rad(90) + swayPitch, swayYaw, 0)
-
-	self.RightArmAimer.CFrame = lookCF
-end
 function HumanNPC:AttackPlayer(target: Model | BasePart)
 	assert(target, "[HumanNPC:AttackPlayer] Target is invalid")
 
-	self.AttackingTarget = true
-
-	self:ToggleRightArmAimer(true)
-
-	task.spawn(function()
-		while task.wait(1) do
-			if not self.AttackingTarget then
-				return
-			end
-			self:AimRightArmTowards(target)
-			self:NPCShoot()
-		end
-	end)
+	self.AI:StartAttackState(target)
 end
 
 function HumanNPC:EquipGun(gunTool: Tool?)
@@ -107,35 +55,8 @@ function HumanNPC:UnEquipCurrentTool()
 	self.Humanoid:UnEquipTools()
 end
 
-function HumanNPC:NPCShoot()
-	local currentGun = self.CurrentGun
-	if not currentGun then
-		return
-	end
-
-	local tool = currentGun.Tool
-	if not tool then
-		return
-	end
-
-	-- Cache these once on equip in production (see note below)
-	local handle = tool:WaitForChild("Handle", 10)
-	local shootPoint = tool:WaitForChild("ShootPoint", 10)
-	local rightArm = self.BodyParts.RightUpperArm
-
-	if not (handle and shootPoint and rightArm) then
-		return
-	end
-
-	-- Fire weapon logic first
-	currentGun:ShootGun()
-
-	--recoil impulse
-	local handleImpulse = handle.AssemblyMass * UP * 100
-	handle:ApplyImpulseAtPosition(handleImpulse, shootPoint.WorldPosition)
-end
-
 function HumanNPC:OnDeath()
+	self.AI.CurrentState = "Dead"
 	Debris:AddItem(self.Character, 30)
 	Human.OnDeath(self)
 end
