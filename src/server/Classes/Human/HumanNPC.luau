@@ -58,6 +58,7 @@ end
 function HumanNPC:OnDeath()
 	self.AI.CurrentState = "Dead"
 	Debris:AddItem(self.Character, 30)
+
 	Human.OnDeath(self)
 end
 

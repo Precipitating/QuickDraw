@@ -19,9 +19,9 @@ Throwable.__index = Throwable
 local fragmentParam = RaycastParams.new()
 fragmentParam.FilterType = Enum.RaycastFilterType.Exclude
 
-function Throwable.new(throwableName: string, humanRef: Human)
+function Throwable.new(throwableName: string, humanRef: Human?)
 	assert(ThrowableData[throwableName], "Throwable name missing, cannot initialize")
-	assert(humanRef, "Human reference missing from throwable class")
+	--assert(humanRef, "Human reference missing from throwable class")
 	local self = setmetatable({}, Throwable)
 	self.Owner = humanRef
 	self.Name = throwableName

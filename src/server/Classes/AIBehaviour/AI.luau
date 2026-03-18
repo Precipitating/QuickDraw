@@ -33,12 +33,9 @@ function AI:PathFindTo(targetPos: Vector3)
 	})
 	local character = self.Owner.Character
 	local humanoid: Humanoid = self.Owner.Humanoid
-	local attackDist = self.TypeInfo.AttackDistance
-	local dir = (targetPos - character:GetPivot().Position).Unit
-	local distOffset = targetPos - (dir * attackDist)
 
 	local success, errorMessage = pcall(function()
-		path:ComputeAsync(character:GetPivot().Position, distOffset)
+		path:ComputeAsync(character:GetPivot().Position, targetPos)
 	end)
 
 	if not success then

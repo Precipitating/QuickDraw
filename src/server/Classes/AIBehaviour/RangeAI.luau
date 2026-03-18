@@ -54,11 +54,12 @@ function RangeAI:AimRightArmTowards(target)
 
 	self.Owner.RightArmAimer.CFrame = lookCF
 end
-
 function RangeAI:StartAttackState(target)
 	local attackDist = self.TypeInfo.AttackDistance
+	local minAttackDist = self.TypeInfo.MinAttackDistance
 
 	self.CurrentState = "Attack"
+
 	task.spawn(function()
 		while task.wait(self.TypeInfo.AttackCooldown) do
 			local character = self.Owner.Character
@@ -69,24 +70,54 @@ function RangeAI:StartAttackState(target)
 			if not target or not target.Parent then
 				return
 			end
-			local distDiff = target:GetPivot().Position - character:GetPivot().Position
+
+			local charPos = character:GetPivot().Position
+			local targetPos = target:GetPivot().Position
+			local distDiff = targetPos - charPos
 			local distSquared = distDiff:Dot(distDiff)
+
 			if self.CurrentState ~= "Attack" then
 				return
 			end
 
-			-- keep within attack distance
+			-- Too far: move toward target (stop at attackDist range)
+			local attackDistSquared = ((attackDist + self.PathfindTolerance) ^ 2)
+			local minAttackDistSquared = minAttackDist ^ 2
 
-			if distSquared > ((attackDist + self.PathfindTolerance) ^ 2) then
+			if distSquared > attackDistSquared then
 				if not self.CurrentlyMoving then
 					self:ToggleRightArmAimer(false)
+					-- Move TOWARD the target, stopping at attackDist away
+					local dir = distDiff.Unit
+					local moveGoal = targetPos - (dir * attackDist)
 					task.spawn(function()
-						AI.PathFindTo(self, target:GetPivot().Position)
+						AI.PathFindTo(self, moveGoal)
+					end)
+				end
+				continue
+			elseif distSquared < minAttackDistSquared then
+				if not self.CurrentlyMoving then
+					self:ToggleRightArmAimer(false)
+					-- Move AWAY from the target along X/Z, keeping Y neutral
+					-- Direction from target to self (away from target)
+					local awayDir = (charPos - targetPos)
+					-- Flatten Y so the AI doesn't try to fly up/down
+					awayDir = Vector3.new(awayDir.X, 0, awayDir.Z)
+					-- Fallback if directly on top of target
+					if awayDir.Magnitude < 0.01 then
+						awayDir = Vector3.new(1, 0, 0)
+					end
+					awayDir = awayDir.Unit
+					-- Move to a point that is attackDist away from the target (in the away direction)
+					local moveGoal = targetPos + (awayDir * attackDist)
+					task.spawn(function()
+						AI.PathFindTo(self, moveGoal)
 					end)
 				end
 				continue
 			end
 
+			-- In valid range: stop, aim, and attack
 			self:ToggleRightArmAimer(true)
 			self:AimRightArmTowards(target)
 			self:Attack()
