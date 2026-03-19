@@ -4,11 +4,13 @@ local ServerStorage = game:GetService("ServerStorage")
 local ClassTypes = require(script.Parent.ClassTypes)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
+local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
 local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 
 type Human = ClassTypes.Human
 type Gun = ClassTypes.Gun
+type Destroyable = ClassTypes.Destroyable
 local Gun = {}
 Gun.__index = Gun
 
@@ -67,28 +69,57 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	return self
 end
 
+function Gun:HitPlayer(raycastResult: RaycastResult)
+	local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
+	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
+
+	if not hitHumanoid then
+		return false
+	end
+
+	if isAccessory then
+		return false
+	end
+
+	-- hit body part
+	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage)
+	print(`{raycastResult.Instance.Name} hit!`)
+	return true
+end
+
+function Gun:HitDestroyable(raycastResult: RaycastResult)
+	local instance = raycastResult.Instance
+	local destroyableClass: Destroyable = DestroyableManager.Destroyables[instance]
+	if not destroyableClass then
+		return
+	end
+
+	destroyableClass:Damage(self.Damage)
+
+	return true
+end
+
+-- This should be executed last, as every other option should be exhausted before deciding we've hit
+-- the environment.
+function Gun:HitEnvironment(raycastResult: RaycastResult)
+	-- hit environment
+	local hitPos = CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
+	GunSignals.DisplayBulletHole:Fire(hitPos)
+end
+
 function Gun:ConnectProjectileEvents()
 	self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _)
-		print(raycastResult.Material)
-
-		--check if hit player
-		local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
-		local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
-
-		-- hit environment
-		if not hitHumanoid then
-			local hitPos = CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
-			GunSignals.DisplayBulletHole:Fire(hitPos)
+		local hitPlayer = self:HitPlayer(raycastResult)
+		if hitPlayer then
 			return
 		end
 
-		if isAccessory then
+		local hitDestroyable = self:HitDestroyable(raycastResult)
+		if hitDestroyable then
 			return
 		end
 
-		-- hit body part
-		GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage)
-		print(`{raycastResult.Instance.Name} hit!`)
+		Gun:HitEnvironment(raycastResult)
 	end))
 end
 

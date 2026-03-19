@@ -1,7 +1,11 @@
 local ServerScriptService = game:GetService("ServerScriptService")
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
+local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local GunSignals = require(script.Parent.GunSignals)
 local ServerGunHandler = require(script.Parent.ServerGunHandler)
+
+type Human = ClassTypes.Human
 
 return {
 	GunSignals.ConnectGunSignal:Connect(function(player: Player, gun: Tool)
@@ -30,6 +34,34 @@ return {
 
 		DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted)
 	end),
+
+	GunSignals.InflictLimbDamage:Connect(
+		function(
+			limb: MeshPart,
+			damageInflicted: number,
+			spreadParticleName: string,
+			spreadDuration: number,
+			humanoid: Humanoid
+		)
+			if not limb then
+				warn("[GunSignals.PlayerHit] Limb reference invalid")
+				return
+			end
+			if not humanoid then
+				warn("[GunSignals.PlayerHit] humanoid reference invalid")
+				return
+			end
+
+			local humanClass = PlayerManager:GetHumanClass(humanoid)
+
+			if not humanClass then
+				warn("[InflictLimbDamage] humanClass invalid")
+				return
+			end
+
+			DamageModule:ApplyInflictingDamage(spreadParticleName, spreadDuration, damageInflicted, humanClass, limb)
+		end
+	),
 
 	GunSignals.DisplayBulletHole:Connect(function(cframeTarget: CFrame?)
 		assert(cframeTarget, "[GunSignals.DisplayBulletHole] cframeTarget is nil!")

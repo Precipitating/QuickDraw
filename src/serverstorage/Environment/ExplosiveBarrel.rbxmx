@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBX73A0FE2AA4B04B43B22C90A8BFC63B2B">
+	<Item class="MeshPart" referent="RBXD7B36F19CEFA4E0F89309A7AFB17D749">
 		<Properties>
 			<bool name="DoubleSided">false</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -53,9 +53,9 @@
 			<token name="BottomSurface">0</token>
 			<token name="BottomSurfaceInput">0</token>
 			<CoordinateFrame name="CFrame">
-				<X>-123.912643</X>
-				<Y>3.5882194</Y>
-				<Z>-210.232269</Z>
+				<X>-128.233978</X>
+				<Y>3.58821845</Y>
+				<Z>-210.879898</Z>
 				<R00>1</R00>
 				<R01>0</R01>
 				<R02>0</R02>
@@ -132,16 +132,16 @@
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 			<bool name="DefinesCapabilities">false</bool>
-			<string name="Name">FireBarrel</string>
+			<string name="Name">ExplosiveBarrel</string>
 			<int64 name="SourceAssetId">14452389275</int64>
 			<BinaryString name="Tags">RGVzdHJveWFibGU=</BinaryString>
 		</Properties>
-		<Item class="SurfaceAppearance" referent="RBX5D867168E2334100965E85A7A03ED095">
+		<Item class="SurfaceAppearance" referent="RBXCA77F4A55A7246AF912AA9C8C25AE4C5">
 			<Properties>
 				<token name="AlphaMode">0</token>
 				<Color3 name="Color">
-					<R>1</R>
-					<G>1</G>
+					<R>0.0666666701</R>
+					<G>0</G>
 					<B>1</B>
 				</Color3>
 				<Content name="ColorMap"><url>rbxassetid://14452332877</url></Content>

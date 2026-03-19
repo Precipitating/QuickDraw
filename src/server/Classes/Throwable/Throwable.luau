@@ -23,18 +23,31 @@ function Throwable.new(throwableName: string, humanRef: Human?)
 	assert(ThrowableData[throwableName], "Throwable name missing, cannot initialize")
 	--assert(humanRef, "Human reference missing from throwable class")
 	local self = setmetatable({}, Throwable)
+	local throwableData = ThrowableData[throwableName]
 	self.Owner = humanRef
-	self.Name = throwableName
 	self.Tool = nil
-	self.Type = ThrowableData[throwableName].Type
-	self.CurrentAmmo = ThrowableData[throwableName].MaxAmmo
-	self.DetonationTime = ThrowableData[throwableName].DetonationTime
+
+	self.Name = throwableName
+	self.Type = throwableData.Type
+	self.CurrentAmmo = throwableData.MaxAmmo
+	self.DetonationTime = throwableData.DetonationTime
+	self.FragmentCount = throwableData.FragmentCount
+	self.FragmentRange = throwableData.FragmentRange
+	self.FragmentDamage = throwableData.Damage
+	self.FragmentType = throwableData.Type
+	self.ThrowDelay = throwableData.ThrowDelay
+	self.Damage = throwableData.Damage
+	self.Velocity = throwableData.Velocity
+	self.ImpactParticle = throwableData.ImpactParticle
+	self.SpreadParticle = throwableData.SpreadParticle
+	self.SpreadDuration = throwableData.SpreadDuration
+
 	self.ThrowForce = nil
 	self.CanThrow = true
 	self.Janitor = Janitor.new()
 
 	self.FastCast = FastCast.new()
-	self.ThrowVelocity = ThrowableData[throwableName].Velocity
+	self.ThrowVelocity = throwableData.Velocity
 	self.ProjectileData = FastCast.newBehavior()
 	self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.CosmeticBulletTemplate = nil
@@ -73,41 +86,11 @@ function Throwable:Throw(cameraLookVector: Vector3)
 	return true
 end
 
-function Throwable:ApplyInflictingDamage(humanoid: Humanoid?, hit: RaycastResult)
-	assert(humanoid, "Missing humanoid")
-
-	local spreadParticle = if Effects[ThrowableData[self.Name].SpreadParticle]
-		then Effects[ThrowableData[self.Name].SpreadParticle]:Clone()
-		else nil
-
-	local spreadDuration = ThrowableData[self.Name].SpreadDuration
-	local damage = ThrowableData[self.Name].Damage
-	if not spreadParticle then
-		warn("[SpawnFragments] Missing spread particle reference")
-		return
-	end
-
-	-- visualize the effect
-	spreadParticle.Enabled = true
-	spreadParticle.Parent = hit.Instance
-	Debris:AddItem(spreadParticle, spreadDuration)
-
-	task.spawn(function()
-		for _ = 1, spreadDuration do
-			GunSignals.PlayerHit:Fire(hit, humanoid, damage)
-			task.wait(1)
-		end
-	end)
-end
 function Throwable:SpawnFragments(spawnPos: Vector3)
-	local fragmentCount = ThrowableData[self.Name].FragmentCount
-	local fragmentRange = ThrowableData[self.Name].FragmentRange
-	local fragmentDamage = ThrowableData[self.Name].Damage
-	local fragmentType = ThrowableData[self.Name].Type
-	for _ = 1, fragmentCount do
+	for _ = 1, self.FragmentCount do
 		local dir = RandomModule.GetNextUnitVector()
 
-		local hit = workspace:Raycast(spawnPos, dir * fragmentRange)
+		local hit = workspace:Raycast(spawnPos, dir * self.FragmentRange)
 
 		if hit then
 			local hitInstance = hit.Instance
@@ -120,10 +103,16 @@ function Throwable:SpawnFragments(spawnPos: Vector3)
 			if isModel then
 				local humanoid = isModel:FindFirstChild("Humanoid")
 				if humanoid then
-					if fragmentType == "Explosive" then
-						GunSignals.PlayerHit:Fire(hit, humanoid, fragmentDamage)
-					elseif fragmentType == "Spread" then
-						self:ApplyInflictingDamage(humanoid, hit)
+					if self.FragmentType == "Explosive" then
+						GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage)
+					elseif self.FragmentType == "Spread" then
+						GunSignals.InflictLimbDamage:Fire(
+							hit.Instance,
+							self.Damage,
+							self.SpreadParticle,
+							self.SpreadDuration,
+							humanoid
+						)
 					end
 				end
 			end
@@ -142,7 +131,7 @@ end
 
 function Throwable:OnThrowImpact(cosmeticBulletObj)
 	-- get particle name
-	local throwEffect = ThrowableData[self.Name].ImpactParticle
+	local throwEffect = self.ImpactParticle
 	-- clone particle if valid
 	local effect = if Effects[throwEffect] then Effects[throwEffect]:Clone() else nil
 

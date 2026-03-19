@@ -7,4 +7,6 @@ return {
 	DisplayBulletHole = Signal.new(),
 	DisconnectGun = Signal.new(),
 	PlayerHit = Signal.new(),
+	InflictLimbDamage = Signal.new(),
+	NormalLimbDamage = Signal.new(),
 }

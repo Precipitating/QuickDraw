@@ -27,6 +27,7 @@ local LimbDamageMultiplier = {
 }
 
 local DamageModule = {}
+local Effects = ReplicatedStorage.Shared.Effects
 
 local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 	local highlight = Instance.new("Highlight")
@@ -38,6 +39,10 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 end
 
 local function ApplyDamage(humanClass, limbName: string, damage: number)
+	if not humanClass.LimbHealth[limbName] then
+		return
+	end
+
 	local multiplier = LimbDamageMultiplier[limbName] or 1
 
 	humanClass.LimbHealth[limbName] -= damage
@@ -50,6 +55,37 @@ local function ApplyDamage(humanClass, limbName: string, damage: number)
 	end
 
 	ApplyDamageHighlight(humanClass, limbName)
+end
+
+function DamageModule:ApplyInflictingDamage(
+	spreadParticleName: string?,
+	spreadDuration: number,
+	damage: number,
+	humanClass: Human,
+	damagedLimb: MeshPart
+)
+	if spreadParticleName then
+		local spreadParticle = if Effects[spreadParticleName] then Effects[spreadParticleName]:Clone() else nil
+
+		if not spreadParticle then
+			warn("[SpawnFragments] Missing spread particle reference")
+			return
+		end
+
+		-- visualize the effect
+		if spreadParticle then
+			spreadParticle.Parent = damagedLimb
+			spreadParticle:Emit(1)
+			Debris:AddItem(spreadParticle, spreadDuration)
+		end
+	end
+
+	task.spawn(function()
+		for _ = 1, spreadDuration do
+			ApplyDamage(humanClass, damagedLimb.Name, damage)
+			task.wait(1)
+		end
+	end)
 end
 
 local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)

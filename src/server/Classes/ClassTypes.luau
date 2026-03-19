@@ -75,4 +75,15 @@ export type HumanPlayer = Human & {
 	Player: Player,
 }
 
+export type Destroyable = {
+	ModelRef: Instance?,
+	Name: string,
+	Health: number,
+	Type: string,
+	HumanEffect: string,
+
+	Damage: (self: Destroyable, damageAmount: number) -> (),
+	Destroy: (self: Destroyable) -> (),
+}
+
 return nil
