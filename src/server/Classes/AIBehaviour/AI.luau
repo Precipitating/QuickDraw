@@ -19,6 +19,7 @@ function AI.new(owner: Human)
 	self.ReachedConnection = nil
 	self.BlockedConnection = nil
 	self.CurrentlyMoving = false
+	self.LineOfSight = 0
 	self.PathfindTolerance = 2
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	return self
@@ -26,7 +27,7 @@ end
 
 function AI:PathFindTo(targetPos: Vector3)
 	local path = PathfindingService:CreatePath({
-		AgentRadius = 2,
+		AgentRadius = 3,
 		AgentHeight = 6,
 		AgentCanJump = true,
 		AgentCanClimb = true,
