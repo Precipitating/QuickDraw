@@ -27,7 +27,7 @@ end
 
 function AI:PathFindTo(targetPos: Vector3)
 	local path = PathfindingService:CreatePath({
-		AgentRadius = 3,
+		AgentRadius = 2,
 		AgentHeight = 6,
 		AgentCanJump = true,
 		AgentCanClimb = true,
@@ -72,6 +72,7 @@ function AI:PathFindTo(targetPos: Vector3)
 		self.ReachedConnection = humanoid.MoveToFinished:Connect(function(reached)
 			if reached and self.NextWaypointIndex < #waypoints then
 				self.NextWaypointIndex += 1
+
 				humanoid:MoveTo(waypoints[self.NextWaypointIndex].Position)
 			else
 				self.CurrentlyMoving = false

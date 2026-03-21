@@ -1,4 +1,3 @@
-local Debris = game:GetService("Debris")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
@@ -198,6 +197,7 @@ function RangeAI:StartAttackState(target: BasePart)
 				task.spawn(function()
 					local validPos = self:FindAnglePosition(charPos, target, attackDist)
 					if validPos then
+						self:ToggleRightArmAimer(false)
 						AI.PathFindTo(self, validPos)
 					end
 				end)

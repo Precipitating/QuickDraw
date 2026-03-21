@@ -1,7 +1,10 @@
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
 local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
+local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local DestroyableData = require(ReplicatedStorage.Shared.DestroyableData)
 local Effects = ReplicatedStorage.Shared.Effects
@@ -9,6 +12,7 @@ local Effects = ReplicatedStorage.Shared.Effects
 local Destroyable = {}
 Destroyable.__index = Destroyable
 
+type Human = ClassTypes.Human
 function Destroyable.new(object: Instance)
 	assert(DestroyableData[object.Name], "Destroyable name doesn't exist to initialize")
 	local self = setmetatable({}, Destroyable)
@@ -35,7 +39,23 @@ function Destroyable:Damage(damageAmount: number)
 	end
 end
 
-function Destroyable:BodyPartDamage(damagedObject: Instance?)
+function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
+	local parent = damagedObject.Parent
+	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
+	local humanClass = if humanoid then PlayerManager:GetHumanClass(humanoid) else nil
+
+	local root = humanClass.HRP
+	local dir = (root.Position - self.ModelRef:GetPivot().Position)
+	local dirUpBias = (dir + Vector3.new(0, 0.5, 0)).Unit
+
+	local force = 100
+	local impulse = dirUpBias * force * root.AssemblyMass
+
+	humanClass:Ragdoll(4)
+	HumanNetwork.networker:fireAll("ApplyImpulse", humanClass.RootPart, impulse)
+end
+
+function Destroyable:BodyPartDamage(damagedObject: BasePart?)
 	if not damagedObject then
 		return false
 	end
@@ -58,17 +78,23 @@ function Destroyable:BodyPartDamage(damagedObject: Instance?)
 				GunSignals.InflictLimbDamage:Fire(damagedObject, self.BaseDamage, nil, 1, humanoid)
 			end
 		end
+		return true
 	end
-
-	return true
+	return false
 end
 
 function Destroyable:ApplyRadiusDamage()
-	local partsInRadius = workspace:GetPartBoundsInRadius(self.ModelRef:GetPivot().Position, self.Radius)
-
+	local modelPos = self.ModelRef:GetPivot().Position
+	local partsInRadius = workspace:GetPartBoundsInRadius(modelPos, self.Radius)
+	local appliedImpulse = false
 	for _, obj in pairs(partsInRadius) do
 		local hitBodyPart = self:BodyPartDamage(obj)
 		if hitBodyPart then
+			-- explosion force
+			if not appliedImpulse then
+				self:ApplyHumanExplosionImpulse(obj)
+				appliedImpulse = true
+			end
 			continue
 		end
 	end

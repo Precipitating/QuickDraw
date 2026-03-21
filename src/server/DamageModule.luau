@@ -39,7 +39,7 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 end
 
 local function ApplyDamage(humanClass, limbName: string, damage: number)
-	if not humanClass.LimbHealth[limbName] then
+	if not humanClass or not humanClass.LimbHealth or not humanClass.LimbHealth[limbName] then
 		return
 	end
 

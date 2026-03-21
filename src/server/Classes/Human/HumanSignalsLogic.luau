@@ -7,8 +7,8 @@ return {
 	HumanSignals.ConnectHumanGUIs:Connect(function(player: Player, humanoid: Humanoid)
 		StaminaBarGUI:Connect(player, humanoid)
 	end),
-	HumanSignals.RagdollClient:Connect(function(player: Player)
-		HumanNetwork.networker:fire(player, "RagdollClient")
+	HumanSignals.RagdollClient:Connect(function(player: Player, ragdollTime: number)
+		HumanNetwork.networker:fire(player, "RagdollClient", ragdollTime)
 	end),
 
 	HumanSignals.AdjustGrayscale:Connect(function(player: Player, saturationTarget: number)

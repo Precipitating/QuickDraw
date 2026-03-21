@@ -346,8 +346,7 @@ function Human:SetCrawlState()
 		self.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
 
 		if self.HumanType == "Player" then
-			HumanSignals.RagdollClient:Fire(self.Player)
-			self.Humanoid:UnequipTools()
+			HumanSignals.RagdollClient:Fire(self.Player, 3)
 		end
 
 		AnimationHandler.StopAllAnimationTracks(self.Humanoid)
@@ -461,6 +460,10 @@ function Human:OnDeath()
 	self:Destroy()
 end
 
+function Human:Ragdoll(ragdollTime: number)
+	HumanSignals.RagdollClient:Fire(self.Player, ragdollTime)
+end
+
 --[=[
 	Applies an impulse force to the ragdolled character (e.g., for knockback effects).
 	
@@ -475,6 +478,7 @@ function Human:ApplyImpulse(force: Vector3, position: Vector3?)
 	if position then
 		self.RootPart:ApplyImpulseAtPosition(force, position)
 	else
+		self.RootPart:SetNetworkOwner(nil)
 		self.RootPart:ApplyImpulse(force)
 	end
 end

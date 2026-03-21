@@ -59,7 +59,7 @@ export type Human = {
 	Janitor: any,
 
 	-- Methods
-	Ragdoll: (self: Human) -> (),
+	Ragdoll: (self: Human, stunTime: number) -> (),
 	UnRagdoll: (self: Human) -> (),
 	ToggleRagdoll: (self: Human) -> (),
 	IsAlive: (self: Human) -> boolean,

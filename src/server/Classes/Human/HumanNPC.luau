@@ -32,7 +32,7 @@ function HumanNPC:InitializeRightArmAimer()
 	aimer.Name = "RightArmAimer"
 	aimer.MaxTorque = 90000
 	aimer.MaxAngularVelocity = 15000
-	aimer.Responsiveness = 150
+	aimer.Responsiveness = 50
 	aimer.Enabled = false
 	aimer.Parent = rightArm
 	return aimer

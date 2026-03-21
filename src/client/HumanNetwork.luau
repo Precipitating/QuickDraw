@@ -6,8 +6,28 @@ local ColorCorrection: ColorCorrectionEffect = Lighting:WaitForChild("ColorCorre
 local HumanNetwork = {}
 HumanNetwork.networker = Networker.new("HumanNetwork", HumanNetwork)
 
-function HumanNetwork:RagdollClient()
-	PlayerContext.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
+function HumanNetwork:RagdollClient(ragdollTime: number)
+	PlayerContext.Humanoid:UnequipTools()
+	PlayerContext.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
+	PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+	task.delay(ragdollTime, function()
+		if PlayerContext.Humanoid then
+			PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+			PlayerContext.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
+	end)
+end
+
+function HumanNetwork:ApplyImpulse(target, force: Vector3, position: Vector3?)
+	if not target then
+		return
+	end
+
+	if position then
+		target:ApplyImpulseAtPosition(force, position)
+	else
+		target:ApplyImpulse(force)
+	end
 end
 
 function HumanNetwork:AdjustGrayscale(saturationTarget: number)

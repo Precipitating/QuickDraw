@@ -4,6 +4,7 @@ local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local ClientUtility = require(script.Parent.ClientUtility)
 local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
@@ -20,6 +21,7 @@ PlayerContext.Humanoid = nil
 PlayerContext.Camera = nil
 PlayerContext.RightArmYaw = nil
 PlayerContext.janitor = Janitor.new()
+PlayerContext.HRPOrientation = nil
 
 function PlayerContext.ApplyMouseLock(on: boolean)
 	if on then
@@ -41,6 +43,7 @@ function PlayerContext:PlayerFollowCamera()
 
 	align.Attachment0 = attachment
 	align.Parent = self.HRP
+	self.HRPOrientation = align
 
 	self.janitor:Add(
 		RunService.RenderStepped:Connect(function()
@@ -108,16 +111,22 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.ColorCorrector.Saturation = 0
 	CoreGUIHandler.ToggleBackpackVisibility(true)
 
+	ClientUtility.ToggleControls(true)
+
 	-- connect events
 	PlayerContext.janitor:Add(
 		humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, new: Enum.HumanoidStateType)
 			if new == Enum.HumanoidStateType.GettingUp then
 				CoreGUIHandler.ToggleBackpackVisibility(true)
 				hrp.CanCollide = true
+				PlayerContext.HRPOrientation.Enabled = true
+				ClientUtility.ToggleControls(true)
 			elseif new == Enum.HumanoidStateType.Ragdoll or new == Enum.HumanoidStateType.Dead then
 				CoreGUIHandler.ToggleBackpackVisibility(false)
 				humanoid:UnequipTools()
 				hrp.CanCollide = false
+				PlayerContext.HRPOrientation.Enabled = false
+				ClientUtility.ToggleControls(false)
 			end
 		end)
 	)
