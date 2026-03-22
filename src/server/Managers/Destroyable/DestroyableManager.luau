@@ -13,4 +13,8 @@ function DestroyableManager:RemoveDestroyable(instance: Instance)
 	self.Destroyables[instance] = nil
 end
 
+function DestroyableManager:GetDestroyable(key: Instance)
+	return self.Destroyables[key]
+end
+
 return DestroyableManager

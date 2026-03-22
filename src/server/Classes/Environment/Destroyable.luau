@@ -2,7 +2,6 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
 local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -44,15 +43,27 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
 	local humanClass = if humanoid then PlayerManager:GetHumanClass(humanoid) else nil
 
+	if not humanClass then
+		return
+	end
+
+	if humanClass.Dead then
+		return
+	end
+
+	if humanoid:GetState() == Enum.HumanoidStateType.Ragdoll then
+		return
+	end
+
 	local root = humanClass.HRP
 	local dir = (root.Position - self.ModelRef:GetPivot().Position)
-	local dirUpBias = (dir + Vector3.new(0, 0.5, 0)).Unit
+	local dirUpBias = (dir + Vector3.new(0, 3, 0)).Unit
 
 	local force = 100
 	local impulse = dirUpBias * force * root.AssemblyMass
 
-	humanClass:Ragdoll(4)
-	HumanNetwork.networker:fireAll("ApplyImpulse", humanClass.RootPart, impulse)
+	humanClass:Ragdoll(3)
+	humanClass:ApplyImpulse(impulse)
 end
 
 function Destroyable:BodyPartDamage(damagedObject: BasePart?)
@@ -86,16 +97,15 @@ end
 function Destroyable:ApplyRadiusDamage()
 	local modelPos = self.ModelRef:GetPivot().Position
 	local partsInRadius = workspace:GetPartBoundsInRadius(modelPos, self.Radius)
-	local appliedImpulse = false
-	for _, obj in pairs(partsInRadius) do
-		local hitBodyPart = self:BodyPartDamage(obj)
-		if hitBodyPart then
-			-- explosion force
-			if not appliedImpulse then
+	local humansHitAlready = {}
+
+	for _, obj in partsInRadius do
+		if self:BodyPartDamage(obj) then
+			local humanoid = if obj.Parent then obj.Parent:FindFirstChild("Humanoid") else nil
+			if humanoid and not humansHitAlready[humanoid] then
 				self:ApplyHumanExplosionImpulse(obj)
-				appliedImpulse = true
+				humansHitAlready[humanoid] = true
 			end
-			continue
 		end
 	end
 end

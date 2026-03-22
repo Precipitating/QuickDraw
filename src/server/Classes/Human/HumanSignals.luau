@@ -4,4 +4,5 @@ return {
 	ConnectHumanGUIs = Signal.new(),
 	RagdollClient = Signal.new(),
 	AdjustGrayscale = Signal.new(),
+	ApplyImpulseToClient = Signal.new(),
 }

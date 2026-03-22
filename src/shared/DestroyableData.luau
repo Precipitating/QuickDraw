@@ -3,7 +3,7 @@ return {
 		Health = 10,
 		Type = "Explosive",
 		HumanEffect = "Spread",
-		Damage = 25,
+		Damage = 5,
 		Radius = 10,
 		SpreadParticle = "Burning",
 		SpreadDuration = 5,

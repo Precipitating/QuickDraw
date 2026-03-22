@@ -43,6 +43,7 @@ export type PlayOptions = {
 local DEFAULT_POOL_SIZE = 1
 local DEFAULT_FADE_TWEEN = TweenInfo.new(0.5, Enum.EasingStyle.Linear)
 local SOUND_FOLDER_NAME = "SoundManagerSounds"
+local SOUND_COOLDOWN_TIME = 0.2
 
 -------------------------------------------------
 -- Internal State
@@ -57,6 +58,7 @@ local _tweens: { [Sound]: Tween } = {} -- active fade tweens
 local _connections: { [Sound]: RBXScriptConnection } = {}
 local _muted: boolean = false
 local _previousVolumes: { [string]: number } = {} -- stored volumes before mute
+local _lastPlayed = {}
 
 -------------------------------------------------
 -- Private Helpers
@@ -200,6 +202,10 @@ function SoundManager.Play(name: string, options: PlayOptions?): Sound?
 	local config = SoundData.Sounds[name]
 	assert(config, "[SoundManager] Unknown sound: " .. name)
 
+	if _lastPlayed[name] and (workspace:GetServerTimeNow() - _lastPlayed[name]) < SOUND_COOLDOWN_TIME then
+		return
+	end
+
 	local opts: PlayOptions = options or {}
 	local sound = _getFromPool(name)
 
@@ -256,6 +262,7 @@ function SoundManager.Play(name: string, options: PlayOptions?): Sound?
 	else
 		sound.Volume = _calcVolume(baseVol, config.Group)
 		sound:Play()
+		_lastPlayed[name] = workspace:GetServerTimeNow()
 	end
 
 	return sound

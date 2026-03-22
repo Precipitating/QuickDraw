@@ -112,6 +112,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.HRP = humanoid.RootPart
 	self.Animate = character:WaitForChild("Animate")
 	self.RootPart = rootPart :: BasePart
+	self.Dead = false
 
 	self.Stamina = 100
 	self.Sprinting = false
@@ -336,17 +337,18 @@ function Human:FixCrawlADS()
 end
 
 function Human:SetCrawlState()
-	print(self.HumanType)
 	local parts = self.DisabledBodyParts
 
 	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
+		warn("Should be crawling")
 		if self.Legless then
 			return
 		end
-		self.Humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
 
 		if self.HumanType == "Player" then
 			HumanSignals.RagdollClient:Fire(self.Player, 3)
+		else
+			self:Ragdoll(3)
 		end
 
 		AnimationHandler.StopAllAnimationTracks(self.Humanoid)
@@ -422,6 +424,11 @@ function Human:DestroyLimb(limbName: string)
 	self.BodyParts[limbName]:Destroy()
 	self.BodyParts[limbName] = nil
 	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
+
+	if self.DisabledBodyParts[limbName] == false then
+		self.DisabledBodyParts[limbName] = true
+	end
+	self:SetCrawlState()
 end
 
 --[=[
@@ -445,6 +452,9 @@ end
 	Applies death ragdoll state
 ]=]
 function Human:OnDeath()
+	if self.Dead then
+		return
+	end
 	task.spawn(function()
 		for _, obj in self.Character:GetDescendants() do
 			if obj:IsA("AnimationConstraint") then
@@ -458,6 +468,7 @@ function Human:OnDeath()
 	end)
 
 	self:Destroy()
+	self.Dead = true
 end
 
 function Human:Ragdoll(ragdollTime: number)
@@ -466,6 +477,7 @@ end
 
 --[=[
 	Applies an impulse force to the ragdolled character (e.g., for knockback effects).
+	Note if applying to player, it will be sent to client for responsiveness.
 	
 	@param force Vector3 -- The force vector to apply
 	@param position Vector3? -- Optional world position to apply force at (defaults to RootPart position)
@@ -478,12 +490,14 @@ function Human:ApplyImpulse(force: Vector3, position: Vector3?)
 	if position then
 		self.RootPart:ApplyImpulseAtPosition(force, position)
 	else
-		self.RootPart:SetNetworkOwner(nil)
 		self.RootPart:ApplyImpulse(force)
 	end
 end
 
 function Human:Destroy()
+	if self.Dead then
+		return
+	end
 	PlayerSignals.RemovePlayerClass:Fire(self.Humanoid)
 	if self.CurrentGun then
 		self.CurrentGun:Destroy()

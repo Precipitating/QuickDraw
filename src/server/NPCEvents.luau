@@ -14,6 +14,9 @@ local function AddNPCClass(taggedNPC: Model)
 
 	-- ragdoll
 	humanoid.Died:Connect(function()
+		if humanNPC.Dead then
+			return
+		end
 		humanNPC:OnDeath()
 	end)
 

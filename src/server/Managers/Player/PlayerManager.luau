@@ -47,9 +47,6 @@ function PlayerManager:GetHumanClass(key: Humanoid)
 	end
 
 	if not PlayerManager.HumanClasses[key] then
-		print(self.HumanClasses[key])
-		error(`Cannot get human class of {key}...`)
-
 		return
 	end
 

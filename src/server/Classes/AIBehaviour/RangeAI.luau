@@ -189,15 +189,18 @@ function RangeAI:StartAttackState(target: BasePart)
 
 			if self:IsTargetInView(self.Owner.BodyParts["RightUpperArm"].Position, target) then
 				-- In valid range: stop, aim, and attack
+				if self.CurrentlyMoving then
+					continue
+				end
 				self:ToggleRightArmAimer(true)
 				self:AimRightArmTowards(target)
 				self:Attack()
 			else
 				warn("AI CANT SEE TARGET")
+				self:ToggleRightArmAimer(false)
 				task.spawn(function()
 					local validPos = self:FindAnglePosition(charPos, target, attackDist)
 					if validPos then
-						self:ToggleRightArmAimer(false)
 						AI.PathFindTo(self, validPos)
 					end
 				end)

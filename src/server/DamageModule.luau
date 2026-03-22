@@ -48,8 +48,6 @@ local function ApplyDamage(humanClass, limbName: string, damage: number)
 	humanClass.LimbHealth[limbName] -= damage
 	humanClass.Health -= damage * multiplier
 
-	ServerSoundHandler:PlaySoundTo(nil, "BulletHitGroan", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
-
 	if humanClass.AdjustGrayscale then
 		humanClass:AdjustGrayscale()
 	end
@@ -64,6 +62,7 @@ function DamageModule:ApplyInflictingDamage(
 	humanClass: Human,
 	damagedLimb: MeshPart
 )
+	local humanoid = humanClass.Humanoid
 	if spreadParticleName then
 		local spreadParticle = if Effects[spreadParticleName] then Effects[spreadParticleName]:Clone() else nil
 
@@ -82,7 +81,7 @@ function DamageModule:ApplyInflictingDamage(
 
 	task.spawn(function()
 		for _ = 1, spreadDuration do
-			ApplyDamage(humanClass, damagedLimb.Name, damage)
+			self.DamageHuman(damagedLimb, humanoid, damage)
 			task.wait(1)
 		end
 	end)
@@ -105,12 +104,14 @@ local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
 	end
 
 	-- Blacked limb = spread damage to all limbs
-	for name in pairs(humanClass.LimbHealth) do
-		humanClass.LimbHealth[name] -= damage
-	end
+	task.spawn(function()
+		for name in pairs(humanClass.LimbHealth) do
+			humanClass.LimbHealth[name] -= damage
+		end
+	end)
 end
 
-function DamageModule.DamageHuman(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number)
+function DamageModule.DamageHuman(hitObj: RaycastResult? | BasePart, playerHumanoid: Humanoid?, damageInflicted: number)
 	if not hitObj then
 		warn("[DamageHuman] Invalid hit object")
 		return
@@ -121,18 +122,23 @@ function DamageModule.DamageHuman(hitObj: RaycastResult?, playerHumanoid: Humano
 	end
 
 	local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
-	local limbName = hitObj.Instance.Name
+
+	local limbName = nil
+	if typeof(hitObj) == "Instance" and hitObj:IsA("BasePart") then
+		limbName = hitObj.Name
+	elseif typeof(hitObj) == "RaycastResult" then
+		limbName = hitObj.Instance.Name
+	end
 	local limbHealth = humanClass.LimbHealth
 
 	if not limbHealth then
-		warn("[DamageHuman] LimbHealth is nil, person shot might be dead already")
 		return
 	end
 	if not limbHealth[limbName] then
-		warn("[DamageHuman] Didn't hit a limb")
 		return
 	end
 
+	ServerSoundHandler:PlaySoundTo(nil, "BulletHitGroan", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
 	ApplyDamage(humanClass, limbName, damageInflicted)
 
 	if limbHealth[limbName] <= 0 then
@@ -140,10 +146,15 @@ function DamageModule.DamageHuman(hitObj: RaycastResult?, playerHumanoid: Humano
 	end
 
 	if humanClass.Health <= 0 then
+		if humanClass.Dead then
+			return
+		end
 		humanClass.Humanoid.Health = 0
 	end
 
-	ServerGunHandler:DisplayBloodHit(hitObj.Position, hitObj.Normal)
+	if typeof(hitObj) == "RaycastResult" then
+		ServerGunHandler:DisplayBloodHit(hitObj.Position, hitObj.Normal)
+	end
 end
 
 return DamageModule

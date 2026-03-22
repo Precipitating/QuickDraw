@@ -44,6 +44,18 @@ function HumanNPC:AttackPlayer(target: Model | BasePart)
 	self.AI:StartAttackState(target)
 end
 
+function HumanNPC:Ragdoll(duration: number)
+	local humanoid = self.Humanoid
+	humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
+	humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+	task.delay(duration, function()
+		if humanoid then
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
+	end)
+end
+
 function HumanNPC:EquipGun(gunTool: Tool?)
 	if not gunTool then
 		error("[HumanNPC:EquipGun] gunTool is nil")

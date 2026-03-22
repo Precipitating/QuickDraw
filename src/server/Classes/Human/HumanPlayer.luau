@@ -13,13 +13,17 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.Player = player
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new("Revolver", self, player)
-	self.CurrentThrowable = Throwable.new("Molotov", self)
+	self.CurrentThrowable = Throwable.new("RainsGrenade", self)
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 	return self :: any
+end
+function HumanPlayer:ApplyImpulse(force: Vector3, position: Vector3?)
+	HumanSignals.ApplyImpulseToClient:Fire(self.Player, self.RootPart, force, position)
+	--HumanNetwork.networker:fireAll("ApplyImpulse", self.RootPart, force, position)
 end
 
 function HumanPlayer:ConnectGUIs()

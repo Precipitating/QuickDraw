@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -6,6 +7,7 @@ local ThrowableSignals = require(script.Parent.ThrowableSignals)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
+local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -86,35 +88,64 @@ function Throwable:Throw(cameraLookVector: Vector3)
 	return true
 end
 
+function Throwable:FragmentHitPlayer(hit: RaycastResult)
+	-- damage bodyparts if hits player
+	local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
+	if isModel then
+		local humanoid = isModel:FindFirstChild("Humanoid")
+		if humanoid then
+			if self.FragmentType == "Explosive" then
+				GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage)
+			elseif self.FragmentType == "Spread" then
+				GunSignals.InflictLimbDamage:Fire(
+					hit.Instance,
+					self.Damage,
+					self.SpreadParticle,
+					self.SpreadDuration,
+					humanoid
+				)
+			end
+		end
+	end
+end
+
+function Throwable:FragmentHitDestroyable(hit: RaycastResult)
+	-- damage bodyparts if hits player
+	local instance = hit.Instance
+	local isDestroyable = CollectionService:HasTag(instance, "Destroyable")
+	if isDestroyable then
+		local destroyableClass = DestroyableManager:GetDestroyable(instance)
+		if not destroyableClass then
+			warn("[FragmentHitDestroyable] Destroyable class is not valid?")
+			return
+		end
+
+		if self.Type == "Explosive" then
+			destroyableClass:Damage(self.Damage)
+		end
+	end
+end
+
 function Throwable:SpawnFragments(spawnPos: Vector3)
 	for _ = 1, self.FragmentCount do
 		local dir = RandomModule.GetNextUnitVector()
 
 		local hit = workspace:Raycast(spawnPos, dir * self.FragmentRange)
 
+		-- if fragment hits something damagable, it should apply damage and cease to exist
 		if hit then
 			local hitInstance = hit.Instance
 			if hitInstance:FindFirstAncestorOfClass("Accessory") then
 				continue
 			end
+			-- handle hitting player
+			if self:FragmentHitPlayer(hit) then
+				continue
+			end
 
-			-- damage bodyparts if hits player
-			local isModel = hitInstance:FindFirstAncestorOfClass("Model")
-			if isModel then
-				local humanoid = isModel:FindFirstChild("Humanoid")
-				if humanoid then
-					if self.FragmentType == "Explosive" then
-						GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage)
-					elseif self.FragmentType == "Spread" then
-						GunSignals.InflictLimbDamage:Fire(
-							hit.Instance,
-							self.Damage,
-							self.SpreadParticle,
-							self.SpreadDuration,
-							humanoid
-						)
-					end
-				end
+			-- handle hitting destroyables
+			if self:FragmentHitDestroyable(hit) then
+				continue
 			end
 		end
 
