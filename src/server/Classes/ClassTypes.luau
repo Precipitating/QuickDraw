@@ -9,10 +9,11 @@ export type Gun = {
 	CurrentCooldown: number,
 	AddGunToInventory: (self: Gun) -> (),
 	ShootGun: (self: Gun, adsPos: Vector3, adsDir: Vector3) -> (),
+	Reload: (self: Gun, incrementAmount: number) -> (),
 	MuzzleFlash: Attachment?,
 	HumanClassRef: Human?,
 }
-export type AIState = "Idle" | "Patrol" | "Chase" | "Attack" | "Dead"
+export type AIState = "Idle" | "Patrol" | "Moving" | "Attack" | "Dead"
 
 export type Throwable = {
 	Name: string,

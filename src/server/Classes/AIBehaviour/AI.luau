@@ -15,10 +15,10 @@ function AI.new(owner: Human)
 	self.TypeInfo = nil
 	self.CurrentState = "Idle" :: AIState
 	self.Owner = owner
+	self.CurrentlyMoving = false
 	self.NextWaypointIndex = nil
 	self.ReachedConnection = nil
 	self.BlockedConnection = nil
-	self.CurrentlyMoving = false
 	self.LineOfSight = 0
 	self.PathfindTolerance = 2
 	self.NoiseSeed = RandomModule.GetRandom() * 1000

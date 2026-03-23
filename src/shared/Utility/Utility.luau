@@ -22,7 +22,7 @@ return {
 			if waitForChild then
 				nextInstance = current:WaitForChild(name, 10)
 			else
-				nextInstance = current:FindFirstChild(name)
+				nextInstance = current:FindFirstChild(name, true)
 			end
 
 			if not nextInstance then
@@ -31,18 +31,6 @@ return {
 			end
 
 			current = nextInstance
-		end
-
-		ToggleControls = function(manualSet: boolean)
-			local Controls = require(PlayerModule):GetControls()
-
-			if manualSet ~= nil then
-				if manualSet == true then
-					Controls:Enable()
-				else
-					Controls:Disable()
-				end
-			end
 		end
 
 		return current

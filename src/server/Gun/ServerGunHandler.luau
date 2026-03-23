@@ -12,27 +12,9 @@ type Networker = NetworkServer
 
 local ServerGunHandler = {}
 
-function ServerGunHandler:ShootGun(player: Player, humanoid: Humanoid?, adsPos: Vector3, adsDir: Vector3)
-	if not humanoid then
-		warn("[ServerGunHandler:ShootGun] Humanoid nil, retrying with player instance")
+function ServerGunHandler:ShootGun(player: Player, adsPos: Vector3, adsDir: Vector3)
+	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 
-		local model = player.Character
-
-		if not model then
-			error("[ServerGunHandler:ShootGun] Failed to get character!")
-		end
-
-		humanoid = model:FindFirstChild("Humanoid")
-
-		if not humanoid then
-			error("[ServerGunHandler:ShootGun] Failed to get humanoid!")
-		end
-	end
-	if not humanoid then
-		return
-	end
-
-	local humanClass: Human = PlayerManager:GetHumanClass(humanoid)
 	local currentGun: Gun? = humanClass.CurrentGun
 
 	if not currentGun then
@@ -43,13 +25,40 @@ function ServerGunHandler:ShootGun(player: Player, humanoid: Humanoid?, adsPos: 
 
 	return hasShot
 end
+function ServerGunHandler:Reload(player: Player?, incrementAmount: number)
+	if not player then
+		return
+	end
+
+	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
+
+	local currentGun: Gun? = humanClass.CurrentGun
+	if not currentGun then
+		warn("[Reload] human class gun missing ref")
+		return
+	end
+
+	return currentGun:Reload(incrementAmount)
+end
+function ServerGunHandler:GetAmmoCount(player: Player?)
+	if not player then
+		return
+	end
+	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
+
+	local currentGun: Gun? = humanClass.CurrentGun
+	local currentAmmo = if currentGun then currentGun.CurrentAmmo else nil
+	local maxAmmo = if currentGun then currentGun.MaxAmmo else nil
+
+	return currentAmmo, maxAmmo
+end
 
 function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
 	if not gunTool then
 		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
-	local shotPos = gunTool:FindFirstChild("Frame")
+	local shotPos = gunTool:FindFirstChild("Frame", true)
 	if not shotPos then
 		warn("ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
 		return
@@ -89,7 +98,11 @@ function ServerGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 	self.networker:fireAll("DisplayBloodHit", position, normal)
 end
 
-ServerGunHandler.networker =
-	Networker.new("GunNetwork", ServerGunHandler, { ServerGunHandler.ShootGun, ServerGunHandler.ActivateMuzzleFlash })
+ServerGunHandler.networker = Networker.new("GunNetwork", ServerGunHandler, {
+	ServerGunHandler.ShootGun,
+	ServerGunHandler.ActivateMuzzleFlash,
+	ServerGunHandler.GetAmmoCount,
+	ServerGunHandler.Reload,
+})
 
 return ServerGunHandler

@@ -28,6 +28,7 @@ local ADSTween = nil
 local ADSTweenInfo = TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
 local HoldingRMB = false
+local Reloading = false
 local GunEquipConn = nil
 local GunDisconnectConn = nil
 local LastCrosshairHit = 0
@@ -305,19 +306,61 @@ local function ADSTweenZoom(gunTool: Tool)
 
 	ClientGunHandler.TweenADS(true)
 end
-
+-- display gun effects
 function ClientGunHandler:DisplayGunEffects(gun: Tool, shot: boolean)
-	-- display gun effects
+	local gunData = GunData[gun.Name]
+	Reloading = false
 	if shot then
 		self:ActivateMuzzleFlash(gun)
 		self:ApplyGunRecoil(gun)
-		SoundManager.Play(GunData[gun.Name].ShootSoundName, {
+		SoundManager.Play(gunData.ShootSoundName, {
 			Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 		})
+		if gunData.LoadNextRoundName then
+			SoundManager.Play(gunData.LoadNextRoundName)
+		end
 	else
-		SoundManager.Play(GunData[gun.Name].ShootNoAmmoName, {
-			Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
-		})
+		local currAmmo, _ = GunNetwork:fetch("GetAmmoCount")
+
+		if currAmmo and currAmmo <= 0 then
+			SoundManager.Play(GunData[gun.Name].ShootNoAmmoName, {
+				Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
+			})
+		end
+	end
+end
+
+function ClientGunHandler:AttemptReload(gunName: string)
+	if Reloading then
+		return
+	end
+	if PlayerContext.Humanoid.Health <= 0 then
+		return
+	end
+	local currAmmo, maxAmmo = GunNetwork:fetch("GetAmmoCount")
+
+	if currAmmo == maxAmmo then
+		return
+	end
+
+	local reloadTimePerBullet = GunData[gunName].ReloadTimePerBullet
+	local reloadSound = GunData[gunName].ReloadSoundName
+
+	Reloading = true
+	for _ = currAmmo, maxAmmo do
+		if not Reloading then
+			return
+		end
+		if PlayerContext.Humanoid.Health <= 0 then
+			return
+		end
+		SoundManager.Play(reloadSound)
+		task.wait(reloadTimePerBullet)
+
+		local newAmmoCount = GunNetwork:fetch("Reload", 1)
+		if newAmmoCount >= maxAmmo then
+			return
+		end
 	end
 end
 
@@ -354,6 +397,11 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 				ADSTweenZoom(gun)
 			end
 
+			-- reload
+			if input.KeyCode == Enum.KeyCode.R then
+				self:AttemptReload(gun.Name)
+			end
+
 			-- fix right arm orientation if pressed
 			if input.KeyCode == Enum.KeyCode.Q then
 				local rightArm = PlayerContext.BodyParts["RightUpperArm"]
@@ -380,7 +428,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		end))
 
 		self.janitor:Add(gun.Activated:Connect(function()
-			if PlayerContext.Humanoid.health <= 0 then
+			if PlayerContext.Humanoid.Health <= 0 then
 				return
 			end
 
@@ -389,14 +437,9 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 			-- holding RMB means the bullet will fire via camera's lookvector
 			-- else gun barrel
 			if HoldingRMB then
-				shot = GunNetwork:fetch(
-					"ShootGun",
-					PlayerContext.Humanoid,
-					CurrentCamera.CFrame.Position,
-					CurrentCamera.CFrame.LookVector
-				)
+				shot = GunNetwork:fetch("ShootGun", CurrentCamera.CFrame.Position, CurrentCamera.CFrame.LookVector)
 			else
-				shot = GunNetwork:fetch("ShootGun", PlayerContext.Humanoid)
+				shot = GunNetwork:fetch("ShootGun")
 			end
 
 			self:DisplayGunEffects(gun, shot)
@@ -406,6 +449,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 	GunDisconnectConn = gun.Unequipped:Connect(function()
 		print("Disconnecting gun connections!")
 		HoldingRMB = false
+		Reloading = false
 		self.janitor:Cleanup()
 		CurrentCamera.CameraSubject = PlayerContext.Humanoid
 		self:DisconnectGun()

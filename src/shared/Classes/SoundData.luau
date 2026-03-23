@@ -18,6 +18,13 @@ SoundData.Sounds = {
 		Group = "SFX",
 		PoolSize = 6,
 	},
+	RevolverReload = {
+		SoundId = "rbxassetid://3292840510",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+		PoolSize = 6,
+	},
 
 	MainTheme = {
 		SoundId = "rbxassetid://140307073043749",
@@ -33,6 +40,7 @@ SoundData.Sounds = {
 		Volume = 4,
 		PlaybackSpeed = 1,
 		Group = "SFX",
+		PoolSize = 6,
 	},
 
 	BulletHitGroan = {
@@ -40,12 +48,14 @@ SoundData.Sounds = {
 		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "SFX",
+		PoolSize = 6,
 	},
 	BoneSnap = {
 		SoundId = "rbxassetid://137260412436272",
 		Volume = 4,
 		PlaybackSpeed = 1,
 		Group = "SFX",
+		PoolSize = 6,
 	},
 	Roll = {
 		SoundId = "rbxassetid://8042841372",
@@ -76,9 +86,29 @@ SoundData.Sounds = {
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "SFX",
+		PoolSize = 6,
 	},
 	ThrowProjectile = {
 		SoundId = "rbxassetid://101808428209321",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	WinchesterLoadBullet = {
+		SoundId = "rbxassetid://75139130130084",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	WinchesterShot = {
+		SoundId = "rbxassetid://75965425749742",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+		PoolSize = 6,
+	},
+	WinchesterReload = {
+		SoundId = "rbxassetid://122039660768000",
 		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "SFX",

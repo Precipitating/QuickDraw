@@ -170,12 +170,22 @@ function Gun:Destroy()
 	setmetatable(self, nil)
 end
 
+function Gun:Reload(incrementAmount: number)
+	if incrementAmount then
+		self.CurrentAmmo = math.min(self.MaxAmmo, self.CurrentAmmo + incrementAmount)
+	else
+		self.CurrentAmmo = self.MaxAmmo
+	end
+
+	return self.CurrentAmmo
+end
+
 function Gun:AddGunToInventory()
 	local clone: Tool = ServerStorage.Templates:FindFirstChild(self.GunName):Clone()
 	self.Tool = clone
 	self.ShootPoint = clone:FindFirstChild("ShootPoint")
 
-	local muzzle = clone:FindFirstChild("MuzzleFlash")
+	local muzzle = clone:FindFirstChild("MuzzleFlash", true)
 	if not muzzle then
 		error("Missing muzzle flash reference")
 	end

@@ -125,7 +125,7 @@ end
 function RangeAI:StartAttackState(target: BasePart)
 	local attackDist = self.TypeInfo.AttackDistance
 	local minAttackDist = self.TypeInfo.MinAttackDistance
-
+	local currentState = self.CurrentState
 	self.CurrentState = "Attack"
 
 	task.spawn(function()
@@ -144,7 +144,7 @@ function RangeAI:StartAttackState(target: BasePart)
 			local distDiff = targetPos - charPos
 			local distSquared = distDiff:Dot(distDiff)
 
-			if self.CurrentState ~= "Attack" then
+			if currentState ~= "Attack" then
 				return
 			end
 

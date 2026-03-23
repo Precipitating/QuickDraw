@@ -12,7 +12,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	local self = setmetatable(Human.new(humanoid), HumanPlayer)
 	self.Player = player
 	self.HumanType = "Player"
-	self.CurrentGun = Gun.new("Revolver", self, player)
+	self.CurrentGun = Gun.new("Winchester", self, player)
 	self.CurrentThrowable = Throwable.new("RainsGrenade", self)
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
@@ -23,7 +23,6 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 end
 function HumanPlayer:ApplyImpulse(force: Vector3, position: Vector3?)
 	HumanSignals.ApplyImpulseToClient:Fire(self.Player, self.RootPart, force, position)
-	--HumanNetwork.networker:fireAll("ApplyImpulse", self.RootPart, force, position)
 end
 
 function HumanPlayer:ConnectGUIs()

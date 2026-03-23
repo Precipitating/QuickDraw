@@ -3,6 +3,8 @@ export type GunData = {
 	Velocity: number,
 	ShootSoundName: string,
 	ShootNoAmmoName: string,
+	LoadNextRoundName: string?,
+	GunType: string,
 	ArmRecoil: number,
 	GunRecoil: number,
 	CameraRecoil: number,
