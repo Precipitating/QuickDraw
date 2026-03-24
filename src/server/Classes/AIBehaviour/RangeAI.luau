@@ -2,7 +2,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local AI = require(script.Parent.AI)
-local AITypes = require(script.Parent.AITypes)
+local PatrolData = require(script.Parent.PatrolData)
 local UP = vector.create(0, 1, 0)
 
 type Human = ClassTypes.Human
@@ -10,12 +10,20 @@ type Human = ClassTypes.Human
 local RangeAI = setmetatable({}, AI)
 RangeAI.__index = RangeAI
 
+RangeAI.StatesLogic = table.clone(AI.StatesLogic)
+
+RangeAI.StatesLogic.Attack = {
+	Update = function(self, target)
+		self:StartAttackState(target)
+	end,
+}
+
 function RangeAI.new(human: Human)
 	local self = setmetatable(AI.new(human), RangeAI)
 	self.Type = "Range"
-	self.TypeInfo = AITypes[self.Type]
 	self.LineOfSight = 100
-
+	self.MinAttackDistance = 20
+	self.AttackCooldown = 1
 	return self
 end
 
@@ -56,40 +64,6 @@ function RangeAI:AimRightArmTowards(target)
 	self.Owner.RightArmAimer.CFrame = lookCF
 end
 
-function RangeAI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3)
-	local targetPos = nil
-
-	if typeof(target) == "Vector3" then
-		targetPos = target
-	elseif target:IsA("Model") then
-		targetPos = target:GetPivot().Position
-	elseif target:IsA("BasePart") then
-		targetPos = target.Position
-	end
-
-	local dir = (targetPos - originPos).Unit
-	local raycastParam = RaycastParams.new()
-	raycastParam.FilterDescendantsInstances = { self.Owner.Character }
-	local lineOfSight = workspace:Raycast(originPos, dir * self.LineOfSight, raycastParam)
-
-	-- local part = Instance.new("Part")
-	-- part.Parent = workspace
-	-- part.CFrame = CFrame.lookAt(originPos, originPos + dir) * CFrame.new(0, 0, -self.LineOfSight / 2)
-	-- part.Size = Vector3.new(0.2, 0.2, self.LineOfSight)
-	-- part.CanCollide = false
-	-- part.CanQuery = false
-	-- part.Anchored = true
-
-	--Debris:AddItem(part, 1)
-
-	if lineOfSight and (lineOfSight.Instance == target or lineOfSight.Instance.Parent == target) then
-		--part.Color = Color3.fromRGB(0, 255, 0)
-		return true
-	end
-
-	return false
-end
-
 function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart, radius: number)
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
 	local baseDir = (originPos - targetPos).Unit
@@ -115,7 +89,7 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 		-- prt.Color = Color3.fromRGB(255, 1, 1)
 		-- Debris:AddItem(prt, 1)
 
-		if self:IsTargetInView(candidate, target) then
+		if AI.IsTargetInView(self, candidate, target) then
 			return candidate
 		end
 	end
@@ -123,19 +97,16 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 	return nil
 end
 function RangeAI:StartAttackState(target: BasePart)
-	local attackDist = self.TypeInfo.AttackDistance
-	local minAttackDist = self.TypeInfo.MinAttackDistance
+	local attackDist = self.LineOfSight
 	local currentState = self.CurrentState
 	self.CurrentState = "Attack"
 
 	task.spawn(function()
-		while task.wait(self.TypeInfo.AttackCooldown) do
+		while task.wait(self.AttackCooldown) do
 			local character = self.Owner.Character
 
-			if not character then
-				return
-			end
-			if not target or not target.Parent then
+			if not character or not target or not target.Parent or currentState ~= "Attack" then
+				AI:ChangeState("Patrol", PatrolData["Test"])
 				return
 			end
 
@@ -144,15 +115,15 @@ function RangeAI:StartAttackState(target: BasePart)
 			local distDiff = targetPos - charPos
 			local distSquared = distDiff:Dot(distDiff)
 
-			if currentState ~= "Attack" then
-				return
-			end
-
 			-- Too far: move toward target (stop at attackDist range)
 			local attackDistSquared = ((attackDist + self.PathfindTolerance) ^ 2)
-			local minAttackDistSquared = minAttackDist ^ 2
+			local minAttackDistSquared = self.MinAttackDistance ^ 2
 
 			if distSquared > attackDistSquared then
+				if math.abs(distSquared - attackDistSquared) > self.LineOfSight then
+					AI.ChangeState(self, "Patrol", PatrolData["Test"])
+					return
+				end
 				if not self.CurrentlyMoving then
 					self:ToggleRightArmAimer(false)
 					-- Move TOWARD the target, stopping at attackDist away
@@ -187,7 +158,7 @@ function RangeAI:StartAttackState(target: BasePart)
 
 			-- Check if the NPC can see the player
 
-			if self:IsTargetInView(self.Owner.BodyParts["RightUpperArm"].Position, target) then
+			if AI.IsTargetInView(self, self.Owner.BodyParts["RightUpperArm"].Position, target) then
 				-- In valid range: stop, aim, and attack
 				if self.CurrentlyMoving then
 					continue
@@ -196,12 +167,15 @@ function RangeAI:StartAttackState(target: BasePart)
 				self:AimRightArmTowards(target)
 				self:Attack()
 			else
-				warn("AI CANT SEE TARGET")
 				self:ToggleRightArmAimer(false)
 				task.spawn(function()
 					local validPos = self:FindAnglePosition(charPos, target, attackDist)
 					if validPos then
 						AI.PathFindTo(self, validPos)
+					else
+						warn("AI CANT SEE TARGET")
+						AI.ChangeState(self, "Patrol", PatrolData["Test"])
+						return
 					end
 				end)
 			end

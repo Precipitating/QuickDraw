@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ServerScriptService = game:GetService("ServerScriptService")
+local PatrolData = require(ServerScriptService.Server.Classes.AIBehaviour.PatrolData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
@@ -29,7 +30,7 @@ local function Initialize()
 
 	for _, NPC: Model in ipairs(npcInstances) do
 		local npc = AddNPCClass(NPC)
-		--npc:AttackPlayer(workspace:WaitForChild("oOR0B0TOo"))
+		npc.AI:ChangeState("Patrol", PatrolData["Test"])
 	end
 end
 

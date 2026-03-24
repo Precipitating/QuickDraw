@@ -13,7 +13,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.Player = player
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new("Winchester", self, player)
-	self.CurrentThrowable = Throwable.new("RainsGrenade", self)
+	self.CurrentThrowable = Throwable.new("KetchumGrenade", self)
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)

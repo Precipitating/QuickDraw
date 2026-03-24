@@ -15,12 +15,12 @@ local ThrowableData = {
 		ImpactParticle = "Explosion",
 	},
 
-	RainsGrenade = {
+	KetchumGrenade = {
 		MaxAmmo = 1,
 		ThrowDelay = 5,
 		Damage = 30,
 		Velocity = 150,
-		DetonationTime = 3,
+		DetonationTime = 0,
 		FragmentRange = 30,
 		FragmentCount = 500,
 		ThrowSound = "ThrowProjectile",

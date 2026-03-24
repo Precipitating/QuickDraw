@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
@@ -12,6 +13,7 @@ return {
 			if not humanoid then
 				error(`Missing humanoid for {player.DisplayName}`)
 			end
+			CollectionService:AddTag(player.Character, "Player")
 
 			humanoid.WalkSpeed = 6
 
