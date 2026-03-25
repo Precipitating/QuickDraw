@@ -134,7 +134,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Legless = false
 
 	self:OnHumanoidStateChange()
-	self:AssignBodyParts()
+
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
 	self:SetupAnimationReferences()
@@ -231,32 +231,32 @@ function Human:ApplyRollForce(lookDir: Vector3)
 	end)
 end
 
-function Human:AssignBodyParts()
+function Human:AssignBodyParts(tagName: string)
 	for _, obj in self.Character:GetChildren() do
+		-- handle accessories collision
 		if obj:IsA("Accessory") then
 			local accessory: BasePart = obj:FindFirstChild("Handle")
 			if accessory then
 				accessory.CanCollide = false
 				accessory.CanQuery = false
 				accessory.CanTouch = false
-				accessory.CollisionGroup = "Player"
+				accessory.CollisionGroup = tagName
 			end
 			continue
 		end
 
+		-- add body parts to table
 		if BodyParts[obj.Name] then
 			obj.CanQuery = true
 			obj.CanCollide = true
-			obj.CollisionGroup = "Player"
+			obj.CollisionGroup = tagName
 			self.BodyParts[obj.Name] = obj
 		end
 
 		if obj:IsA("BasePart") then
-			obj.CollisionGroup = "Player"
+			obj.CollisionGroup = tagName
 		end
 	end
-	self.HRP:SetNetworkOwner(nil)
-	self.Character.PrimaryPart:SetNetworkOwner(nil)
 end
 
 function Human:SimulateDefaultLimbs()

@@ -25,7 +25,7 @@ function ServerGunHandler:ShootGun(player: Player, adsPos: Vector3, adsDir: Vect
 
 	return hasShot
 end
-function ServerGunHandler:Reload(player: Player?, incrementAmount: number)
+function ServerGunHandler:Reload(player: Player?)
 	if not player then
 		return
 	end
@@ -38,7 +38,7 @@ function ServerGunHandler:Reload(player: Player?, incrementAmount: number)
 		return
 	end
 
-	return currentGun:Reload(incrementAmount)
+	return currentGun:Reload()
 end
 function ServerGunHandler:GetAmmoCount(player: Player?)
 	if not player then

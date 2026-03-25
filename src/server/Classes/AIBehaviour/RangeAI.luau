@@ -22,7 +22,7 @@ function RangeAI.new(human: Human)
 	local self = setmetatable(AI.new(human), RangeAI)
 	self.Type = "Range"
 	self.LineOfSight = 100
-	self.MinAttackDistance = 20
+	self.MinAttackDistance = 15
 	self.AttackCooldown = 1
 	return self
 end
@@ -104,9 +104,13 @@ function RangeAI:StartAttackState(target: BasePart)
 	task.spawn(function()
 		while task.wait(self.AttackCooldown) do
 			local character = self.Owner.Character
+			if not character then
+				return
+			end
 
-			if not character or not target or not target.Parent or currentState ~= "Attack" then
-				AI:ChangeState("Patrol", PatrolData["Test"])
+			if not target or not target.Parent or currentState ~= "Attack" then
+				AI.ChangeState(self, "Patrol", PatrolData["Test"])
+
 				return
 			end
 
@@ -121,9 +125,10 @@ function RangeAI:StartAttackState(target: BasePart)
 
 			if distSquared > attackDistSquared then
 				if math.abs(distSquared - attackDistSquared) > self.LineOfSight then
-					AI.ChangeState(self, "Patrol", PatrolData["Test"])
+					AI.ChangeState(self, "Seek")
 					return
 				end
+
 				if not self.CurrentlyMoving then
 					self:ToggleRightArmAimer(false)
 					-- Move TOWARD the target, stopping at attackDist away
@@ -166,6 +171,7 @@ function RangeAI:StartAttackState(target: BasePart)
 				self:ToggleRightArmAimer(true)
 				self:AimRightArmTowards(target)
 				self:Attack()
+				self.LastSeenTargetPosition = targetPos
 			else
 				self:ToggleRightArmAimer(false)
 				task.spawn(function()
@@ -174,7 +180,7 @@ function RangeAI:StartAttackState(target: BasePart)
 						AI.PathFindTo(self, validPos)
 					else
 						warn("AI CANT SEE TARGET")
-						AI.ChangeState(self, "Patrol", PatrolData["Test"])
+						AI.ChangeState(self, "Seek")
 						return
 					end
 				end)
@@ -195,17 +201,22 @@ function RangeAI:Attack()
 		return
 	end
 
-	-- Cache these once on equip in production (see note below)
-	local handle = tool:WaitForChild("Handle", 10)
-	local shootPoint = tool:WaitForChild("ShootPoint", 10)
+	local handle = currentGun.Handle
+	local shootPoint = currentGun.ShootPoint
 	local rightArm = human.BodyParts.RightUpperArm
 
 	if not (handle and shootPoint and rightArm) then
 		return
 	end
 
-	-- Fire weapon logic first
-	currentGun:ShootGun()
+	if currentGun.CurrentAmmo <= 0 then
+		currentGun:Reload()
+	else
+		if self.Reloading then
+			return
+		end
+		currentGun:ShootGun()
+	end
 
 	--recoil impulse
 	local handleImpulse = handle.AssemblyMass * UP * 100

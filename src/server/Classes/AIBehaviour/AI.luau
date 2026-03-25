@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local PathfindingService = game:GetService("PathfindingService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local PatrolData = require(script.Parent.PatrolData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
@@ -11,13 +12,23 @@ local AI = {}
 AI.__index = AI
 
 AI.StatesLogic = {
-	Idle = { Update = function(self) end },
+	Idle = {
+		Update = function(_) end,
+	},
 	Patrol = {
 		Update = function(self, patrolData)
-			if self.RightArmAimer then
-				self.RightArmAimer.Enabled = false
+			if self.Owner.RightArmAimer then
+				self.Owner.RightArmAimer.Enabled = false
 			end
 			self:Patrol(patrolData)
+		end,
+	},
+	Seek = {
+		Update = function(self)
+			if self.Owner.RightArmAimer then
+				self.Owner.RightArmAimer.Enabled = false
+				self:Seek()
+			end
 		end,
 	},
 }
@@ -30,6 +41,8 @@ function AI.new(owner: Human)
 	self.Owner = owner
 	self.CurrentlyMoving = false
 	self.PatrolPoints = nil
+	self.Reloading = false
+	self.LastSeenTargetPosition = nil
 	self.NextWaypointIndex = nil
 	self.ReachedConnection = nil
 	self.Target = nil
@@ -43,34 +56,143 @@ function AI.new(owner: Human)
 end
 
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3)
-	local targetPos = nil
-
+	-- Resolve target position
+	local targetPos: Vector3
 	if typeof(target) == "Vector3" then
 		targetPos = target
-	elseif target:IsA("Model") then
-		targetPos = target:GetPivot().Position
-	elseif target:IsA("BasePart") then
-		targetPos = target.Position
+	elseif typeof(target) == "Instance" then
+		if target:IsA("Model") then
+			targetPos = target:GetPivot().Position
+		elseif target:IsA("BasePart") then
+			targetPos = target.Position
+		else
+			warn("AI:IsTargetInView - Unsupported instance type:", target.ClassName)
+			return false
+		end
+	else
+		warn("AI:IsTargetInView - Invalid target type:", typeof(target))
+		return false
 	end
 
-	local dir = (targetPos - originPos).Unit
-	local raycastParam = RaycastParams.new()
-	raycastParam.FilterDescendantsInstances = { self.Owner.Character }
-	local lineOfSight = workspace:Raycast(originPos, dir * self.LineOfSight, raycastParam)
+	local direction = targetPos - originPos
+	local distance = direction.Magnitude
 
-	-- local part = Instance.new("Part")
-	-- part.Parent = workspace
-	-- part.CFrame = CFrame.lookAt(originPos, originPos + dir) * CFrame.new(0, 0, -self.LineOfSight / 2)
-	-- part.Size = Vector3.new(0.2, 0.2, self.LineOfSight)
-	-- part.CanCollide = false
-	-- part.CanQuery = false
-	-- part.Anchored = true
+	-- Target is beyond line of sight range
+	if distance > self.LineOfSight then
+		return false
+	end
 
-	--Debris:AddItem(part, 1)
-
-	if lineOfSight and (lineOfSight.Instance == target or lineOfSight.Instance.Parent == target) then
-		--part.Color = Color3.fromRGB(0, 255, 0)
+	-- Early out if distance is essentially zero
+	if distance < 0.01 then
 		return true
+	end
+
+	local dirUnit = direction.Unit
+
+	-- ── FOV Check ──────────────────────────────────────────────
+	-- self.FieldOfView is the *full* cone angle in degrees (e.g. 120).
+	-- self.LookDirection should be a unit Vector3 representing the AI's
+	-- forward‑facing direction (e.g. character HumanoidRootPart.CFrame.LookVector).
+	local fov = 120
+	local lookDir = self.Owner.HRP.CFrame.LookVector
+	if self.LookDirection then
+		local halfFOV = math.rad(fov / 2)
+		local dot = lookDir:Dot(dirUnit)
+		-- Clamp to avoid floating‑point issues with math.acos
+		local angle = math.acos(math.clamp(dot, -1, 1))
+
+		if angle > halfFOV then
+			return false -- target is outside the field of view cone
+		end
+	end
+
+	-- ── Raycast (line‑of‑sight occlusion check) ───────────────
+	local raycastParams = RaycastParams.new()
+	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+	raycastParams.FilterDescendantsInstances = { self.Owner.Character }
+
+	local result = workspace:Raycast(originPos, dirUnit * distance, raycastParams)
+
+	-- Nothing was hit → clear line of sight to a Vector3 point
+	if not result then
+		-- If the target was just a position, nothing blocking means visible
+		if typeof(target) == "Vector3" then
+			return true
+		end
+		-- Ray traveled the full distance without hitting anything;
+		-- this can happen if the target has CanQuery = false, etc.
+		return false
+	end
+
+	-- ── Ancestor check ─────────────────────────────────────────
+	-- Walk up from the hit instance to see if it belongs to the target.
+	-- This handles models with nested parts (accessories, tools, etc.)
+	if typeof(target) == "Instance" then
+		local hit = result.Instance
+		while hit do
+			if hit == target then
+				return true
+			end
+			hit = hit.Parent
+		end
+	end
+
+	return false
+end
+function AI:ChangeState(newState: string, ...)
+	if newState == self.CurrentState then
+		return
+	end
+
+	local stateUpdate = self.StatesLogic[newState]
+	if not stateUpdate and not stateUpdate[newState] then
+		error("[ChangeState] Missing state logic")
+	end
+	self.CurrentState = newState
+	warn(`New state = {self.CurrentState}`)
+	stateUpdate.Update(self, ...)
+end
+
+function AI:Seek()
+	if not self.LastSeenTargetPosition then
+		AI.ChangeState(self, "Patrol", PatrolData["Test"])
+		return
+	end
+	self:PathFindTo(self.LastSeenTargetPosition)
+	local humanoid: Humanoid = self.Owner.Humanoid
+	humanoid.MoveToFinished:Wait()
+	task.delay(5, function()
+		if not self.Owner then
+			return
+		end
+		AI.ChangeState(self, "Patrol", PatrolData["Test"])
+		return
+	end)
+end
+
+function AI:CheckSurroundingsForEnemy()
+	-- check surroundings for enemy
+
+	if self.CurrentState ~= "Patrol" then
+		return false
+	end
+	local foundParts = self:CheckLineOfSight()
+	if not foundParts then
+		return false
+	end
+
+	for _, part in foundParts do
+		if part:IsA("MeshPart") then
+			local parent = part.Parent
+			local isHuman = parent and part.Parent:FindFirstChild("Humanoid")
+			if isHuman and CollectionService:HasTag(parent, "Player") then
+				local visible = AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, parent.HumanoidRootPart)
+				if visible then
+					AI.ChangeState(self, "Attack", parent)
+					return true
+				end
+			end
+		end
 	end
 
 	return false
@@ -88,47 +210,26 @@ function AI:Patrol(patrolData)
 			self:PathFindTo(patrolData[RandomModule.GetRandomIntBetween(1, #patrolData)])
 		end
 	end)
-
-	-- check surroundings for enemy
 	task.spawn(function()
-		while task.wait(1) do
-			local foundParts = self:CheckLineOfSight()
-			for _, part in foundParts do
-				if part:IsA("MeshPart") then
-					local parent = part.Parent
-					local isHuman = parent and part.Parent:FindFirstChild("Humanoid")
-					if isHuman and CollectionService:HasTag(parent, "Player") then
-						local visible =
-							AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, parent.HumanoidRootPart)
-						if visible then
-							AI.ChangeState(self, "Attack", parent)
-							return
-						end
-					end
-				end
-			end
+		while task.wait(0.5) do
+			self:CheckSurroundingsForEnemy()
 		end
 	end)
 end
-function AI:ChangeState(newState: string, ...)
-	if newState == self.CurrentState then
+
+function AI:CheckLineOfSight()
+	if not self.Owner then
+		return
+	end
+	if not self.Owner.HRP then
 		return
 	end
 
-	local stateUpdate = self.StatesLogic[newState]
-	if not stateUpdate and not stateUpdate[newState] then
-		error("[ChangeState] Missing state logic")
-	end
-	self.CurrentState = newState
-	warn(`New state = {self.CurrentState}`)
-	stateUpdate.Update(self, ...)
-end
-
-function AI:CheckLineOfSight()
+	local hrp = self.Owner.HRP.Position
 	local LineOfSightParams = OverlapParams.new()
 	LineOfSightParams.FilterType = Enum.RaycastFilterType.Exclude
 	LineOfSightParams.FilterDescendantsInstances = { self.Owner.Character }
-	local hrp = self.Owner.HRP.Position
+
 	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.LineOfSight)
 	return foundParts
 end
@@ -141,6 +242,10 @@ function AI:PathFindTo(targetPos: Vector3)
 	})
 	local character = self.Owner.Character
 	local humanoid: Humanoid = self.Owner.Humanoid
+
+	if not character or not humanoid then
+		return
+	end
 
 	local success, errorMessage = pcall(function()
 		path:ComputeAsync(character:GetPivot().Position, targetPos)

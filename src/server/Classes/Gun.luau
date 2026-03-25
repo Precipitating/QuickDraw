@@ -5,6 +5,7 @@ local ClassTypes = require(script.Parent.ClassTypes)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
 local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 
@@ -41,6 +42,7 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	self.MaxAmmo = GunData[gunName].MaxAmmo
 	self.CurrentAmmo = GunData[gunName].MaxAmmo
 	self.ShootPoint = nil
+	self.Handle = nil
 	self.ShotDelay = GunData[gunName].ShotDelay
 	self.LastShot = 0
 	self.Damage = GunData[gunName].Damage
@@ -53,6 +55,7 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	end
 	self.HumanClassRef = humanClass
 	self.MuzzleFlash = nil
+	self.Equipped = false
 
 	-- projectile data
 	self.FastCast = FastCast.new()
@@ -69,6 +72,13 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	return self
 end
 
+function Gun:AddCollisionConstraints()
+	local bodyParts = self.HumanClassRef.BodyParts
+	for i = 1, 3 do
+		local collisionConstraint = Instance.new("NoCollisionConstraint")
+		collisionConstraint.Part0 = bodyParts["UpperRightArm"]
+	end
+end
 function Gun:HitPlayer(raycastResult: RaycastResult)
 	local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
 	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
@@ -152,6 +162,10 @@ function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 
 	self:ActivateMuzzleFlash()
 
+	if self.Reloading then
+		self.Reloading = false
+	end
+
 	return true
 end
 
@@ -170,12 +184,29 @@ function Gun:Destroy()
 	setmetatable(self, nil)
 end
 
-function Gun:Reload(incrementAmount: number)
-	if incrementAmount then
-		self.CurrentAmmo = math.min(self.MaxAmmo, self.CurrentAmmo + incrementAmount)
-	else
-		self.CurrentAmmo = self.MaxAmmo
+function Gun:Reload()
+	local reloadTimePerBullet = GunData[self.GunName].ReloadTimePerBullet
+	local reloadSound = GunData[self.GunName].ReloadSoundName
+	local bulletsToReload = self.MaxAmmo - self.CurrentAmmo
+
+	if not self.Reloading then
+		self.Reloading = true
 	end
+
+	for _ = 1, bulletsToReload do
+		task.wait(reloadTimePerBullet)
+
+		if not self.Equipped or not self.Reloading or self.HumanClassRef.Dead then
+			return self.CurrentAmmo
+		end
+
+		self.CurrentAmmo = math.min(self.MaxAmmo, self.CurrentAmmo + 1)
+
+		if self.Handle then
+			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
+		end
+	end
+	self.Reloading = false
 
 	return self.CurrentAmmo
 end
@@ -183,13 +214,20 @@ end
 function Gun:AddGunToInventory()
 	local clone: Tool = ServerStorage.Templates:FindFirstChild(self.GunName):Clone()
 	self.Tool = clone
-	self.ShootPoint = clone:FindFirstChild("ShootPoint")
+	self.ShootPoint = clone:WaitForChild("ShootPoint", 10)
+	self.Handle = clone:WaitForChild("Handle", 10)
 
 	local muzzle = clone:FindFirstChild("MuzzleFlash", true)
 	if not muzzle then
 		error("Missing muzzle flash reference")
 	end
 
+	self.Janitor:Add(clone.Equipped:Connect(function(_)
+		self.Equipped = true
+	end))
+	self.Janitor:Add(clone.Unequipped:Connect(function(_)
+		self.Equipped = false
+	end))
 	-- if its NPC, playerRef should be a model instead of a player instance.
 	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or self.PlayerRef
 	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { excludeModel, self.Tool }

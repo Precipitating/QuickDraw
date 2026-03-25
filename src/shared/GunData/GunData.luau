@@ -1,6 +1,6 @@
 local GunData = {
 	Revolver = {
-		MaxAmmo = 999,
+		MaxAmmo = 6,
 		ShotDelay = 0.35,
 		Damage = 30,
 		Velocity = 900,

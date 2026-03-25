@@ -12,23 +12,40 @@ HumanNPC.__index = HumanNPC
 
 function HumanNPC.new(humanoid: Humanoid)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
-	self.CurrentGun = Gun.new("Revolver", self, self.Character)
+	Human.AssignBodyParts(self, "NPC")
+	self.CurrentGun = Gun.new("Winchester", self, self.Character)
 	self.CurrentThrowable = Throwable.new("Dynamite", self)
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.AI = RangeAI.new(self)
+	self:SetNPCNetworkOwnership()
+	self:SetWeaponCollisions()
 	print(`New human class initiated for NPC {self.Character.Name}`)
 
 	return self :: any
+end
+
+function HumanNPC:SetNPCNetworkOwnership()
+	for _, part in self.BodyParts do
+		part:SetNetworkOwner(nil)
+	end
+end
+
+function HumanNPC:SetWeaponCollisions()
+	for _, part in self.CurrentGun.Tool:GetDescendants() do
+		if part:IsA("BasePart") then
+			part.CollisionGroup = "NPC"
+		end
+	end
 end
 function HumanNPC:InitializeRightArmAimer()
 	local aimer: AlignOrientation = Instance.new("AlignOrientation")
 	local rightArm = self.BodyParts["RightUpperArm"]
 	aimer.Mode = Enum.OrientationAlignmentMode.OneAttachment
 	aimer.Attachment0 = rightArm:WaitForChild("RightShoulderAttachment")
-	aimer.RigidityEnabled = true
+	aimer.RigidityEnabled = false
 	aimer.Name = "RightArmAimer"
 	aimer.MaxTorque = 90000
 	aimer.MaxAngularVelocity = 15000

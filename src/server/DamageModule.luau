@@ -43,6 +43,11 @@ local function ApplyDamage(humanClass, limbName: string, damage: number)
 		return
 	end
 
+	-- stop reloading if hurt
+	if humanClass.CurrentGun.Reloading then
+		humanClass.CurrentGun.Reloading = false
+	end
+
 	local multiplier = LimbDamageMultiplier[limbName] or 1
 
 	humanClass.LimbHealth[limbName] -= damage
@@ -138,7 +143,12 @@ function DamageModule.DamageHuman(hitObj: RaycastResult? | BasePart, playerHuman
 		return
 	end
 
-	ServerSoundHandler:PlaySoundTo(nil, "BulletHitGroan", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
+	ServerSoundHandler:Play3DOneShotToOthers(
+		nil,
+		"BulletHitGroan",
+		humanClass.HRP,
+		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+	)
 	ApplyDamage(humanClass, limbName, damageInflicted)
 
 	if limbHealth[limbName] <= 0 then

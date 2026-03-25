@@ -28,7 +28,6 @@ local ADSTween = nil
 local ADSTweenInfo = TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
 local HoldingRMB = false
-local Reloading = false
 local GunEquipConn = nil
 local GunDisconnectConn = nil
 local LastCrosshairHit = 0
@@ -309,7 +308,7 @@ end
 -- display gun effects
 function ClientGunHandler:DisplayGunEffects(gun: Tool, shot: boolean)
 	local gunData = GunData[gun.Name]
-	Reloading = false
+
 	if shot then
 		self:ActivateMuzzleFlash(gun)
 		self:ApplyGunRecoil(gun)
@@ -330,37 +329,18 @@ function ClientGunHandler:DisplayGunEffects(gun: Tool, shot: boolean)
 	end
 end
 
-function ClientGunHandler:AttemptReload(gunName: string)
-	if Reloading then
-		return
-	end
+function ClientGunHandler:AttemptReload()
 	if PlayerContext.Humanoid.Health <= 0 then
 		return
 	end
 	local currAmmo, maxAmmo = GunNetwork:fetch("GetAmmoCount")
 
-	if currAmmo == maxAmmo then
+	if currAmmo == maxAmmo or PlayerContext.Humanoid.Health <= 0 then
 		return
 	end
-
-	local reloadTimePerBullet = GunData[gunName].ReloadTimePerBullet
-	local reloadSound = GunData[gunName].ReloadSoundName
-
-	Reloading = true
-	for _ = currAmmo, maxAmmo do
-		if not Reloading then
-			return
-		end
-		if PlayerContext.Humanoid.Health <= 0 then
-			return
-		end
-		SoundManager.Play(reloadSound)
-		task.wait(reloadTimePerBullet)
-
-		local newAmmoCount = GunNetwork:fetch("Reload", 1)
-		if newAmmoCount >= maxAmmo then
-			return
-		end
+	local newAmmoCount = GunNetwork:fetch("Reload")
+	if newAmmoCount >= maxAmmo then
+		return
 	end
 end
 
@@ -399,7 +379,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 
 			-- reload
 			if input.KeyCode == Enum.KeyCode.R then
-				self:AttemptReload(gun.Name)
+				self:AttemptReload()
 			end
 
 			-- fix right arm orientation if pressed
@@ -449,7 +429,6 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 	GunDisconnectConn = gun.Unequipped:Connect(function()
 		print("Disconnecting gun connections!")
 		HoldingRMB = false
-		Reloading = false
 		self.janitor:Cleanup()
 		CurrentCamera.CameraSubject = PlayerContext.Humanoid
 		self:DisconnectGun()
