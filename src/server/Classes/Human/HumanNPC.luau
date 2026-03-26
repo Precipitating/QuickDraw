@@ -1,11 +1,14 @@
 -- inheriting Human and defining Player only data
 local Debris = game:GetService("Debris")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
 
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
+local HumanConstants = require(script.Parent.HumanConstants)
 
 local HumanNPC = setmetatable({}, Human)
 HumanNPC.__index = HumanNPC
@@ -17,9 +20,11 @@ function HumanNPC.new(humanoid: Humanoid)
 	self.CurrentThrowable = Throwable.new("Dynamite", self)
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
+	self.TorsoAimer = self:InitializeTorsoAimer()
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.AI = RangeAI.new(self)
+	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self:SetNPCNetworkOwnership()
 	self:SetWeaponCollisions()
 	print(`New human class initiated for NPC {self.Character.Name}`)
@@ -54,7 +59,64 @@ function HumanNPC:InitializeRightArmAimer()
 	aimer.Parent = rightArm
 	return aimer
 end
+function HumanNPC:InitializeTorsoAimer()
+	local aimer: AlignOrientation = Instance.new("AlignOrientation")
+	local upperTorso = self.BodyParts["UpperTorso"]
+	aimer.Mode = Enum.OrientationAlignmentMode.OneAttachment
+	aimer.Attachment0 = upperTorso:WaitForChild("WaistRigAttachment")
+	aimer.RigidityEnabled = true
+	aimer.AlignType = Enum.AlignType.AllAxes
+	aimer.Name = "TorsoAimer"
+	aimer.MaxTorque = 90000
+	aimer.MaxAngularVelocity = 15000
+	aimer.Responsiveness = 50
+	aimer.Enabled = false
+	aimer.Parent = upperTorso
+	return aimer
+end
 
+function HumanNPC:ToggleRightArmAimer(enable: boolean)
+	local rightArmOrientator = self.RightArmAimer
+	local torsoAimer = self.TorsoAimer
+	assert(rightArmOrientator, "[HumanNPC:ToggleRightArmAimer] RightArmAimer is nil")
+	if rightArmOrientator.Enabled == enable then
+		return
+	end
+
+	if enable then
+		rightArmOrientator.Enabled = true
+		torsoAimer.Enabled = true
+	else
+		rightArmOrientator.Enabled = false
+		torsoAimer.Enabled = false
+	end
+end
+
+function HumanNPC:AimRightArmTowards(target)
+	local rightArm = self.BodyParts["RightUpperArm"]
+	local origin = rightArm.Position
+
+	local targetPos = target:IsA("Model") and target:GetPivot().Position or target.Position
+
+	local lookCF = CFrame.lookAt(origin, targetPos)
+
+	-- smooth time-based noise
+	local t = os.clock() * HumanConstants.SWAY_SPEED
+	local seed = self.NoiseSeed
+
+	local yawNoise = math.noise(seed, t, 0)
+	local pitchNoise = math.noise(seed, 0, t)
+
+	local swayYaw = yawNoise * HumanConstants.SWAY_AMOUNT
+	local swayPitch = pitchNoise * HumanConstants.SWAY_AMOUNT
+
+	lookCF *= CFrame.Angles(math.rad(90) + swayPitch, swayYaw, 0)
+
+	self.RightArmAimer.CFrame = lookCF
+
+	local flattenedLookAt = Vector3.new(targetPos.X, self.HRP.Position.Y, targetPos.Z)
+	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
+end
 function HumanNPC:AttackPlayer(target: Model | BasePart)
 	assert(target, "[HumanNPC:AttackPlayer] Target is invalid")
 

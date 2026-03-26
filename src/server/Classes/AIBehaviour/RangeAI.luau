@@ -1,6 +1,5 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local AI = require(script.Parent.AI)
 local PatrolData = require(script.Parent.PatrolData)
 local UP = vector.create(0, 1, 0)
@@ -25,43 +24,6 @@ function RangeAI.new(human: Human)
 	self.MinAttackDistance = 15
 	self.AttackCooldown = 1
 	return self
-end
-
-function RangeAI:ToggleRightArmAimer(enable: boolean)
-	local rightArmOrientator = self.Owner.RightArmAimer
-	assert(rightArmOrientator, "[HumanNPC:ToggleRightArmAimer] RightArmAimer is nil")
-	if rightArmOrientator.Enabled == enable then
-		return
-	end
-
-	if enable then
-		rightArmOrientator.Enabled = true
-	else
-		rightArmOrientator.Enabled = false
-	end
-end
-
-function RangeAI:AimRightArmTowards(target)
-	local rightArm = self.Owner.BodyParts["RightUpperArm"]
-	local origin = rightArm.Position
-
-	local targetPos = target:IsA("Model") and target:GetPivot().Position or target.Position
-
-	local lookCF = CFrame.lookAt(origin, targetPos)
-
-	-- smooth time-based noise
-	local t = os.clock() * HumanConstants.SWAY_SPEED
-	local seed = self.NoiseSeed
-
-	local yawNoise = math.noise(seed, t, 0)
-	local pitchNoise = math.noise(seed, 0, t)
-
-	local swayYaw = yawNoise * HumanConstants.SWAY_AMOUNT
-	local swayPitch = pitchNoise * HumanConstants.SWAY_AMOUNT
-
-	lookCF *= CFrame.Angles(math.rad(90) + swayPitch, swayYaw, 0)
-
-	self.Owner.RightArmAimer.CFrame = lookCF
 end
 
 function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart, radius: number)
@@ -97,6 +59,7 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 	return nil
 end
 function RangeAI:StartAttackState(target: BasePart)
+	self.CurrentlyMoving = false
 	local attackDist = self.LineOfSight
 	local currentState = self.CurrentState
 	self.CurrentState = "Attack"
@@ -109,7 +72,7 @@ function RangeAI:StartAttackState(target: BasePart)
 			end
 
 			if not target or not target.Parent or currentState ~= "Attack" then
-				AI.ChangeState(self, "Patrol", PatrolData["Test"])
+				AI.ChangeState(self, "Seek")
 
 				return
 			end
@@ -130,7 +93,7 @@ function RangeAI:StartAttackState(target: BasePart)
 				end
 
 				if not self.CurrentlyMoving then
-					self:ToggleRightArmAimer(false)
+					self.Owner:ToggleRightArmAimer(false)
 					-- Move TOWARD the target, stopping at attackDist away
 					local dir = distDiff.Unit
 					local moveGoal = targetPos - (dir * attackDist)
@@ -141,7 +104,7 @@ function RangeAI:StartAttackState(target: BasePart)
 				continue
 			elseif distSquared < minAttackDistSquared then
 				if not self.CurrentlyMoving then
-					self:ToggleRightArmAimer(false)
+					self.Owner:ToggleRightArmAimer(false)
 					-- Move AWAY from the target along X/Z, keeping Y neutral
 					-- Direction from target to self (away from target)
 					local awayDir = (charPos - targetPos)
@@ -163,17 +126,17 @@ function RangeAI:StartAttackState(target: BasePart)
 
 			-- Check if the NPC can see the player
 
-			if AI.IsTargetInView(self, self.Owner.BodyParts["RightUpperArm"].Position, target) then
+			if AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, target) then
 				-- In valid range: stop, aim, and attack
 				if self.CurrentlyMoving then
 					continue
 				end
-				self:ToggleRightArmAimer(true)
-				self:AimRightArmTowards(target)
+				self.Owner:ToggleRightArmAimer(true)
+				self.Owner:AimRightArmTowards(target)
 				self:Attack()
 				self.LastSeenTargetPosition = targetPos
 			else
-				self:ToggleRightArmAimer(false)
+				self.Owner:ToggleRightArmAimer(false)
 				task.spawn(function()
 					local validPos = self:FindAnglePosition(charPos, target, attackDist)
 					if validPos then

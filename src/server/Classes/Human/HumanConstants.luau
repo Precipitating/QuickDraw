@@ -14,5 +14,5 @@ return {
 	SPRINT_SPEED = 25,
 
 	SWAY_SPEED = 1.5,
-	SWAY_AMOUNT = math.rad(2), -- 2 degrees max
+	SWAY_AMOUNT = math.rad(5), -- 2 degrees max
 }

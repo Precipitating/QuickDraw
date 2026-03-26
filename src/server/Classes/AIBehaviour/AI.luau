@@ -17,18 +17,15 @@ AI.StatesLogic = {
 	},
 	Patrol = {
 		Update = function(self, patrolData)
-			if self.Owner.RightArmAimer then
-				self.Owner.RightArmAimer.Enabled = false
-			end
+			self.Owner:ToggleRightArmAimer(false)
 			self:Patrol(patrolData)
 		end,
 	},
 	Seek = {
 		Update = function(self)
-			if self.Owner.RightArmAimer then
-				self.Owner.RightArmAimer.Enabled = false
-				self:Seek()
-			end
+			self.Owner:ToggleRightArmAimer(false)
+
+			self:Seek()
 		end,
 	},
 }
@@ -47,11 +44,11 @@ function AI.new(owner: Human)
 	self.ReachedConnection = nil
 	self.Target = nil
 	self.BlockedConnection = nil
+	self.FinishedPathFind = nil
 	self.LineOfSight = 0
 	self.PathfindTolerance = 2
 	self.MinAttackDistance = 0
 
-	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	return self
 end
 
@@ -90,9 +87,6 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 	local dirUnit = direction.Unit
 
 	-- ── FOV Check ──────────────────────────────────────────────
-	-- self.FieldOfView is the *full* cone angle in degrees (e.g. 120).
-	-- self.LookDirection should be a unit Vector3 representing the AI's
-	-- forward‑facing direction (e.g. character HumanoidRootPart.CFrame.LookVector).
 	local fov = 120
 	local lookDir = self.Owner.HRP.CFrame.LookVector
 	if self.LookDirection then
@@ -153,21 +147,61 @@ function AI:ChangeState(newState: string, ...)
 	stateUpdate.Update(self, ...)
 end
 
+-- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
+function AI:LookAround()
+	local torsoAimer = self.Owner.TorsoAimer
+	torsoAimer.Enabled = true
+	self.CurrentlyMoving = false
+	if not torsoAimer then
+		warn("[LookAround] Missing torso aimer!")
+		return
+	end
+
+	for _ = 1, 4 do
+		if self.CurrentState ~= "Seek" then
+			return false
+		end
+		local hrp = self.Owner.HRP
+		local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z).Unit
+		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(90), 0)
+		local foundEnemy = self:CheckSurroundingsForEnemy()
+		if foundEnemy then
+			torsoAimer.Enabled = false
+			return true
+		end
+		task.wait(1)
+	end
+	torsoAimer.Enabled = false
+
+	return false
+end
+
 function AI:Seek()
 	if not self.LastSeenTargetPosition then
 		AI.ChangeState(self, "Patrol", PatrolData["Test"])
 		return
 	end
+
+	-- move to last seen position
 	self:PathFindTo(self.LastSeenTargetPosition)
-	local humanoid: Humanoid = self.Owner.Humanoid
-	humanoid.MoveToFinished:Wait()
-	task.delay(5, function()
-		if not self.Owner then
-			return
-		end
-		AI.ChangeState(self, "Patrol", PatrolData["Test"])
+
+	while not self.FinishedPathFind do
+		task.wait()
+	end
+	self.CurrentlyMoving = false
+	self.LastSeenTargetPosition = nil
+
+	-- have a look around 4 directions for any enemies
+	local foundEnemy = self:LookAround()
+
+	if foundEnemy then
 		return
-	end)
+	end
+
+	if not self.Owner then
+		return
+	end
+	AI.ChangeState(self, "Patrol", PatrolData["Test"])
 end
 
 function AI:CheckSurroundingsForEnemy()
@@ -211,7 +245,7 @@ function AI:Patrol(patrolData)
 		end
 	end)
 	task.spawn(function()
-		while task.wait(0.5) do
+		while task.wait(0.1) do
 			self:CheckSurroundingsForEnemy()
 		end
 	end)
@@ -247,6 +281,7 @@ function AI:PathFindTo(targetPos: Vector3)
 		return
 	end
 
+	self.FinishedPathFind = false
 	local success, errorMessage = pcall(function()
 		path:ComputeAsync(character:GetPivot().Position, targetPos)
 	end)
@@ -282,6 +317,9 @@ function AI:PathFindTo(targetPos: Vector3)
 
 		-- Always create a fresh connection so it closes over the current `waypoints`
 		self.ReachedConnection = humanoid.MoveToFinished:Connect(function(reached)
+			if not self.CurrentlyMoving then
+				return
+			end
 			if reached and self.NextWaypointIndex < #waypoints then
 				self.NextWaypointIndex += 1
 
@@ -296,6 +334,7 @@ function AI:PathFindTo(targetPos: Vector3)
 					self.BlockedConnection:Disconnect()
 					self.BlockedConnection = nil
 				end
+				self.FinishedPathFind = true
 			end
 		end)
 
