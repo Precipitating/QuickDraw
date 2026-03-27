@@ -12,9 +12,15 @@ RangeAI.__index = RangeAI
 RangeAI.StatesLogic = table.clone(AI.StatesLogic)
 
 RangeAI.StatesLogic.Attack = {
+	Enter = function(self, target)
+		self:StateChangeReset()
+		self.CurrentState = "Attack"
+		self.StatesLogic["Attack"].Update(self, target)
+	end,
 	Update = function(self, target)
 		self:StartAttackState(target)
 	end,
+	Exit = function(self) end,
 }
 
 function RangeAI.new(human: Human)
@@ -59,21 +65,33 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 	return nil
 end
 function RangeAI:StartAttackState(target: BasePart)
-	self.CurrentlyMoving = false
 	local attackDist = self.LineOfSight
-	local currentState = self.CurrentState
-	self.CurrentState = "Attack"
+
+	-- Unique token for this attack state invocation
+	local stateToken = {}
+	self.AttackStateToken = stateToken
+
+	local function isActive()
+		return self.AttackStateToken == stateToken and self.CurrentState == "Attack"
+	end
 
 	task.spawn(function()
 		while task.wait(self.AttackCooldown) do
+			-- Bail immediately if state changed
+			if not isActive() then
+				return
+			end
+
 			local character = self.Owner.Character
 			if not character then
 				return
 			end
 
-			if not target or not target.Parent or currentState ~= "Attack" then
+			if not target or not target.Parent then
+				if not isActive() then
+					return
+				end
 				AI.ChangeState(self, "Seek")
-
 				return
 			end
 
@@ -82,11 +100,15 @@ function RangeAI:StartAttackState(target: BasePart)
 			local distDiff = targetPos - charPos
 			local distSquared = distDiff:Dot(distDiff)
 
-			-- Too far: move toward target (stop at attackDist range)
-			local attackDistSquared = ((attackDist + self.PathfindTolerance) ^ 2)
+			local attackDistSquared = (attackDist + self.PathfindTolerance) ^ 2
 			local minAttackDistSquared = self.MinAttackDistance ^ 2
 
+			-- Too far
 			if distSquared > attackDistSquared then
+				if not isActive() then
+					return
+				end
+
 				if math.abs(distSquared - attackDistSquared) > self.LineOfSight then
 					AI.ChangeState(self, "Seek")
 					return
@@ -94,40 +116,49 @@ function RangeAI:StartAttackState(target: BasePart)
 
 				if not self.CurrentlyMoving then
 					self.Owner:ToggleRightArmAimer(false)
-					-- Move TOWARD the target, stopping at attackDist away
 					local dir = distDiff.Unit
 					local moveGoal = targetPos - (dir * attackDist)
+					-- Spawn so the loop doesn't freeze
 					task.spawn(function()
+						if not isActive() then
+							return
+						end
 						AI.PathFindTo(self, moveGoal)
 					end)
 				end
 				continue
+
+			-- Too close
 			elseif distSquared < minAttackDistSquared then
+				if not isActive() then
+					return
+				end
+
 				if not self.CurrentlyMoving then
 					self.Owner:ToggleRightArmAimer(false)
-					-- Move AWAY from the target along X/Z, keeping Y neutral
-					-- Direction from target to self (away from target)
 					local awayDir = (charPos - targetPos)
-					-- Flatten Y so the AI doesn't try to fly up/down
 					awayDir = Vector3.new(awayDir.X, 0, awayDir.Z)
-					-- Fallback if directly on top of target
 					if awayDir.Magnitude < 0.01 then
 						awayDir = Vector3.new(1, 0, 0)
 					end
 					awayDir = awayDir.Unit
-					-- Move to a point that is attackDist away from the target (in the away direction)
 					local moveGoal = targetPos + (awayDir * attackDist)
 					task.spawn(function()
+						if not isActive() then
+							return
+						end
 						AI.PathFindTo(self, moveGoal)
 					end)
 				end
 				continue
 			end
 
-			-- Check if the NPC can see the player
+			if not isActive() then
+				return
+			end
 
+			-- In range
 			if AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, target) then
-				-- In valid range: stop, aim, and attack
 				if self.CurrentlyMoving then
 					continue
 				end
@@ -138,13 +169,21 @@ function RangeAI:StartAttackState(target: BasePart)
 			else
 				self.Owner:ToggleRightArmAimer(false)
 				task.spawn(function()
+					if not isActive() then
+						return
+					end
 					local validPos = self:FindAnglePosition(charPos, target, attackDist)
+					if not isActive() then
+						return
+					end
 					if validPos then
 						AI.PathFindTo(self, validPos)
 					else
+						if not isActive() then
+							return
+						end
 						warn("AI CANT SEE TARGET")
 						AI.ChangeState(self, "Seek")
-						return
 					end
 				end)
 			end

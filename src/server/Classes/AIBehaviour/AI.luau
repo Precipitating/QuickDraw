@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local PathfindingService = game:GetService("PathfindingService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local AISignals = require(script.Parent.AISignals)
 local PatrolData = require(script.Parent.PatrolData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
@@ -13,22 +14,38 @@ AI.__index = AI
 
 AI.StatesLogic = {
 	Idle = {
+		Enter = function(self)
+			self:StateChangeReset()
+		end,
 		Update = function(_) end,
+		Exit = function(self)
+			self:StateChangeReset()
+		end,
 	},
 	Patrol = {
+		Enter = function(self, patrolData)
+			self:StateChangeReset()
+			self.CurrentState = "Patrol"
+			self.StatesLogic["Patrol"].Update(self, patrolData)
+		end,
 		Update = function(self, patrolData)
-			self.Owner:ToggleRightArmAimer(false)
 			self:Patrol(patrolData)
 		end,
+		Exit = function(self) end,
 	},
 	Seek = {
+		Enter = function(self)
+			self:StateChangeReset()
+			self.CurrentState = "Seek"
+			self.StatesLogic["Seek"].Update(self)
+		end,
 		Update = function(self)
-			self.Owner:ToggleRightArmAimer(false)
-
 			self:Seek()
 		end,
+		Exit = function(self) end,
 	},
 }
+
 function AI.new(owner: Human)
 	local self = setmetatable({}, AI)
 	assert(owner, "Owner incorrect for AI class initialization")
@@ -44,24 +61,61 @@ function AI.new(owner: Human)
 	self.ReachedConnection = nil
 	self.Target = nil
 	self.BlockedConnection = nil
-	self.FinishedPathFind = nil
 	self.LineOfSight = 0
 	self.PathfindTolerance = 2
 	self.MinAttackDistance = 0
+	self.AttackStateToken = nil
+
+	self:EnableEnemyDetection()
 
 	return self
 end
 
+function AI:StateChangeReset()
+	self.AttackStateToken = nil
+	self:CancelPathFind()
+	self.CurrentlyMoving = false
+	self.Owner:ToggleRightArmAimer(false)
+
+	if self.ReachedConnection then
+		self.ReachedConnection:Disconnect()
+		self.ReachedConnection = nil
+	end
+	if self.BlockedConnection then
+		self.BlockedConnection:Disconnect()
+		self.BlockedConnection = nil
+	end
+end
+
+function AI:CancelPathFind()
+	self.Owner.Humanoid:MoveTo(self.Owner.HRP.Position)
+	print("Cancel pathfind")
+end
+
+function AI:EnableEnemyDetection()
+	task.spawn(function()
+		while task.wait(0.1) do
+			if self.CurrentState == "Attack" then
+				continue
+			end
+			self:CheckSurroundingsForEnemy()
+		end
+	end)
+end
+
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3)
-	-- Resolve target position
 	local targetPos: Vector3
+	local targetAncestor: Instance? = nil
+
 	if typeof(target) == "Vector3" then
 		targetPos = target
 	elseif typeof(target) == "Instance" then
 		if target:IsA("Model") then
 			targetPos = target:GetPivot().Position
+			targetAncestor = target
 		elseif target:IsA("BasePart") then
 			targetPos = target.Position
+			targetAncestor = target:FindFirstAncestorOfClass("Model") or target
 		else
 			warn("AI:IsTargetInView - Unsupported instance type:", target.ClassName)
 			return false
@@ -74,60 +128,73 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 	local direction = targetPos - originPos
 	local distance = direction.Magnitude
 
-	-- Target is beyond line of sight range
 	if distance > self.LineOfSight then
 		return false
 	end
 
-	-- Early out if distance is essentially zero
 	if distance < 0.01 then
 		return true
 	end
 
 	local dirUnit = direction.Unit
 
-	-- ── FOV Check ──────────────────────────────────────────────
+	-- ── FOV Check (ALWAYS runs) ────────────────────────────────
 	local fov = 120
-	local lookDir = self.Owner.HRP.CFrame.LookVector
-	if self.LookDirection then
-		local halfFOV = math.rad(fov / 2)
-		local dot = lookDir:Dot(dirUnit)
-		-- Clamp to avoid floating‑point issues with math.acos
-		local angle = math.acos(math.clamp(dot, -1, 1))
+	local lookDir = self.Owner.BodyParts["Head"].CFrame.LookVector
+	local halfFOV = math.rad(fov / 2)
+	local dot = lookDir:Dot(dirUnit)
+	local angle = math.acos(math.clamp(dot, -1, 1))
 
-		if angle > halfFOV then
-			return false -- target is outside the field of view cone
-		end
+	if angle > halfFOV then
+		return false
 	end
 
-	-- ── Raycast (line‑of‑sight occlusion check) ───────────────
+	-- ── Raycast (multi-point) ──────────────────────────────────
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 	raycastParams.FilterDescendantsInstances = { self.Owner.Character }
 
-	local result = workspace:Raycast(originPos, dirUnit * distance, raycastParams)
+	local checkPoints = { targetPos }
 
-	-- Nothing was hit → clear line of sight to a Vector3 point
-	if not result then
-		-- If the target was just a position, nothing blocking means visible
-		if typeof(target) == "Vector3" then
-			return true
+	if targetAncestor and typeof(target) == "Instance" then
+		local head = targetAncestor:FindFirstChild("Head")
+		local upperTorso = targetAncestor:FindFirstChild("UpperTorso") or targetAncestor:FindFirstChild("Torso")
+		local hrp = targetAncestor:FindFirstChild("HumanoidRootPart")
+
+		if head and head:IsA("BasePart") then
+			table.insert(checkPoints, head.Position)
 		end
-		-- Ray traveled the full distance without hitting anything;
-		-- this can happen if the target has CanQuery = false, etc.
-		return false
+		if upperTorso and upperTorso:IsA("BasePart") then
+			table.insert(checkPoints, upperTorso.Position)
+		end
+		if hrp and hrp:IsA("BasePart") then
+			table.insert(checkPoints, hrp.Position)
+		end
 	end
 
-	-- ── Ancestor check ─────────────────────────────────────────
-	-- Walk up from the hit instance to see if it belongs to the target.
-	-- This handles models with nested parts (accessories, tools, etc.)
-	if typeof(target) == "Instance" then
-		local hit = result.Instance
-		while hit do
-			if hit == target then
-				return true
+	for _, point in checkPoints do
+		local dir = point - originPos
+		local dist = dir.Magnitude
+
+		if dist < 0.01 then
+			return true
+		end
+
+		local unit = dir.Unit
+		local result = workspace:Raycast(originPos, unit * dist, raycastParams)
+
+		if not result then
+			return true
+		end
+
+		if targetAncestor then
+			local hit = result.Instance
+			while hit do
+				if hit == targetAncestor then
+					return true
+				end
+				hit = hit.Parent
 			end
-			hit = hit.Parent
 		end
 	end
 
@@ -138,13 +205,21 @@ function AI:ChangeState(newState: string, ...)
 		return
 	end
 
+	-- exit state
+
+	local stateExit = self.StatesLogic[self.CurrentState]
+	if not stateExit and not self.StatesLogic[self.CurrentState] then
+		error("[ChangeState] Missing state exit logic")
+	end
+	stateExit.Exit(self, ...)
+
 	local stateUpdate = self.StatesLogic[newState]
 	if not stateUpdate and not stateUpdate[newState] then
 		error("[ChangeState] Missing state logic")
 	end
-	self.CurrentState = newState
-	warn(`New state = {self.CurrentState}`)
-	stateUpdate.Update(self, ...)
+
+	warn(`New state = {newState}`)
+	stateUpdate.Enter(self, ...)
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
@@ -157,18 +232,14 @@ function AI:LookAround()
 		return
 	end
 
-	for _ = 1, 4 do
+	for _ = 1, 8 do
 		if self.CurrentState ~= "Seek" then
 			return false
 		end
 		local hrp = self.Owner.HRP
 		local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z).Unit
-		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(90), 0)
-		local foundEnemy = self:CheckSurroundingsForEnemy()
-		if foundEnemy then
-			torsoAimer.Enabled = false
-			return true
-		end
+		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(45), 0)
+
 		task.wait(1)
 	end
 	torsoAimer.Enabled = false
@@ -177,18 +248,18 @@ function AI:LookAround()
 end
 
 function AI:Seek()
-	if not self.LastSeenTargetPosition then
-		AI.ChangeState(self, "Patrol", PatrolData["Test"])
+	if not self.LastSeenTargetPosition or not self.Owner then
+		if self.CurrentState == "Seek" then
+			AI.ChangeState(self, "Patrol", PatrolData["Test"])
+		end
 		return
 	end
 
 	-- move to last seen position
 	self:PathFindTo(self.LastSeenTargetPosition)
 
-	while not self.FinishedPathFind do
-		task.wait()
-	end
-	self.CurrentlyMoving = false
+	AISignals.PathfindComplete:Wait()
+
 	self.LastSeenTargetPosition = nil
 
 	-- have a look around 4 directions for any enemies
@@ -198,18 +269,13 @@ function AI:Seek()
 		return
 	end
 
-	if not self.Owner then
-		return
+	if self.CurrentState == "Seek" then
+		AI.ChangeState(self, "Patrol", PatrolData["Test"])
 	end
-	AI.ChangeState(self, "Patrol", PatrolData["Test"])
 end
 
 function AI:CheckSurroundingsForEnemy()
 	-- check surroundings for enemy
-
-	if self.CurrentState ~= "Patrol" then
-		return false
-	end
 	local foundParts = self:CheckLineOfSight()
 	if not foundParts then
 		return false
@@ -244,11 +310,6 @@ function AI:Patrol(patrolData)
 			self:PathFindTo(patrolData[RandomModule.GetRandomIntBetween(1, #patrolData)])
 		end
 	end)
-	task.spawn(function()
-		while task.wait(0.1) do
-			self:CheckSurroundingsForEnemy()
-		end
-	end)
 end
 
 function AI:CheckLineOfSight()
@@ -281,7 +342,8 @@ function AI:PathFindTo(targetPos: Vector3)
 		return
 	end
 
-	self.FinishedPathFind = false
+	self.Owner:ToggleRightArmAimer(false)
+
 	local success, errorMessage = pcall(function()
 		path:ComputeAsync(character:GetPivot().Position, targetPos)
 	end)
@@ -334,7 +396,7 @@ function AI:PathFindTo(targetPos: Vector3)
 					self.BlockedConnection:Disconnect()
 					self.BlockedConnection = nil
 				end
-				self.FinishedPathFind = true
+				AISignals.PathfindComplete:Fire()
 			end
 		end)
 
