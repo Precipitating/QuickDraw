@@ -6,6 +6,7 @@ local AISignals = require(script.Parent.AISignals)
 local PatrolData = require(script.Parent.PatrolData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 
 type Human = ClassTypes.Human
 type AIState = ClassTypes.AIState
@@ -37,12 +38,15 @@ AI.StatesLogic = {
 		Enter = function(self)
 			self:StateChangeReset()
 			self.CurrentState = "Seek"
+			self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
 			self.StatesLogic["Seek"].Update(self)
 		end,
 		Update = function(self)
 			self:Seek()
 		end,
-		Exit = function(self) end,
+		Exit = function(self)
+			self.Owner.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+		end,
 	},
 }
 
@@ -61,10 +65,10 @@ function AI.new(owner: Human)
 	self.ReachedConnection = nil
 	self.Target = nil
 	self.BlockedConnection = nil
-	self.LineOfSight = 0
+
 	self.PathfindTolerance = 2
 	self.MinAttackDistance = 0
-	self.AttackStateToken = nil
+	self.MaxAttackDistance = 0
 
 	self:EnableEnemyDetection()
 
@@ -72,7 +76,6 @@ function AI.new(owner: Human)
 end
 
 function AI:StateChangeReset()
-	self.AttackStateToken = nil
 	self:CancelPathFind()
 	self.CurrentlyMoving = false
 	self.Owner:ToggleRightArmAimer(false)
@@ -103,7 +106,7 @@ function AI:EnableEnemyDetection()
 	end)
 end
 
-function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3)
+function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean)
 	local targetPos: Vector3
 	local targetAncestor: Instance? = nil
 
@@ -128,7 +131,7 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 	local direction = targetPos - originPos
 	local distance = direction.Magnitude
 
-	if distance > self.LineOfSight then
+	if distance > self.MaxAttackDistance then
 		return false
 	end
 
@@ -138,37 +141,46 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 
 	local dirUnit = direction.Unit
 
-	-- ── FOV Check (ALWAYS runs) ────────────────────────────────
-	local fov = 120
-	local lookDir = self.Owner.BodyParts["Head"].CFrame.LookVector
-	local halfFOV = math.rad(fov / 2)
-	local dot = lookDir:Dot(dirUnit)
-	local angle = math.acos(math.clamp(dot, -1, 1))
+	-- ── FOV Check ────────────────────────────────
+	if useFOV then
+		local fov = 120
+		local head = self.Owner.BodyParts["Head"]
+		if head then
+			local lookDir = head.CFrame.LookVector
+			local halfFOV = math.rad(fov / 2)
+			local dot = lookDir:Dot(dirUnit)
+			local angle = math.acos(math.clamp(dot, -1, 1))
 
-	if angle > halfFOV then
-		return false
+			if angle > halfFOV then
+				return false
+			end
+		end
 	end
 
 	-- ── Raycast (multi-point) ──────────────────────────────────
 	local raycastParams = RaycastParams.new()
 	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	raycastParams.FilterDescendantsInstances = { self.Owner.Character }
 
+	local filterList = { self.Owner.Character }
+
+	-- When originPos is a candidate position (not on a character), we don't need
+	-- extra filtering beyond the AI's own character. But if the origin is inside
+	-- the AI's character, we already exclude it above.
+	raycastParams.FilterDescendantsInstances = filterList
+
+	-- Build check points — start with targetPos, add body parts if available
 	local checkPoints = { targetPos }
 
-	if targetAncestor and typeof(target) == "Instance" then
-		local head = targetAncestor:FindFirstChild("Head")
-		local upperTorso = targetAncestor:FindFirstChild("UpperTorso") or targetAncestor:FindFirstChild("Torso")
-		local hrp = targetAncestor:FindFirstChild("HumanoidRootPart")
-
-		if head and head:IsA("BasePart") then
-			table.insert(checkPoints, head.Position)
-		end
-		if upperTorso and upperTorso:IsA("BasePart") then
-			table.insert(checkPoints, upperTorso.Position)
-		end
-		if hrp and hrp:IsA("BasePart") then
-			table.insert(checkPoints, hrp.Position)
+	if targetAncestor then
+		for _, partName in { "Head", "UpperTorso", "Torso", "HumanoidRootPart" } do
+			local part = targetAncestor:FindFirstChild(partName)
+			if part and part:IsA("BasePart") then
+				-- Avoid duplicates when targetPos already matches one of these
+				local pos = part.Position
+				if (pos - targetPos).Magnitude > 0.5 then
+					table.insert(checkPoints, pos)
+				end
+			end
 		end
 	end
 
@@ -180,20 +192,17 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 			return true
 		end
 
-		local unit = dir.Unit
-		local result = workspace:Raycast(originPos, unit * dist, raycastParams)
+		local result = workspace:Raycast(originPos, dir.Unit * dist, raycastParams)
 
+		-- Nothing hit = clear line of sight
 		if not result then
 			return true
 		end
 
+		-- Something hit — check if it belongs to the target
 		if targetAncestor then
-			local hit = result.Instance
-			while hit do
-				if hit == targetAncestor then
-					return true
-				end
-				hit = hit.Parent
+			if result.Instance:IsDescendantOf(targetAncestor) or result.Instance == targetAncestor then
+				return true
 			end
 		end
 	end
@@ -286,9 +295,11 @@ function AI:CheckSurroundingsForEnemy()
 			local parent = part.Parent
 			local isHuman = parent and part.Parent:FindFirstChild("Humanoid")
 			if isHuman and CollectionService:HasTag(parent, "Player") then
-				local visible = AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, parent.HumanoidRootPart)
+				local visible =
+					AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, parent.HumanoidRootPart, true)
 				if visible then
 					AI.ChangeState(self, "Attack", parent)
+
 					return true
 				end
 			end
@@ -325,7 +336,7 @@ function AI:CheckLineOfSight()
 	LineOfSightParams.FilterType = Enum.RaycastFilterType.Exclude
 	LineOfSightParams.FilterDescendantsInstances = { self.Owner.Character }
 
-	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.LineOfSight)
+	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.MaxAttackDistance)
 	return foundParts
 end
 function AI:PathFindTo(targetPos: Vector3)
@@ -342,8 +353,6 @@ function AI:PathFindTo(targetPos: Vector3)
 		return
 	end
 
-	self.Owner:ToggleRightArmAimer(false)
-
 	local success, errorMessage = pcall(function()
 		path:ComputeAsync(character:GetPivot().Position, targetPos)
 	end)
@@ -354,6 +363,7 @@ function AI:PathFindTo(targetPos: Vector3)
 	end
 
 	if path.Status == Enum.PathStatus.Success then
+		self.Owner:ToggleRightArmAimer(false)
 		self.CurrentlyMoving = true
 		local waypoints = path:GetWaypoints()
 
@@ -370,7 +380,11 @@ function AI:PathFindTo(targetPos: Vector3)
 		-- Detect if path becomes blocked
 		self.BlockedConnection = path.Blocked:Connect(function(blockedWaypointIndex)
 			if blockedWaypointIndex >= self.NextWaypointIndex then
-				self:PathFindTo(targetPos)
+				print("Waypoint blocked, trying again with an offset")
+				local angle = math.random() * math.pi * 2
+				local radius = 6
+				local randomOffset = Vector3.new(math.cos(angle), 0, math.sin(angle)) * radius
+				self:PathFindTo(targetPos + randomOffset)
 			end
 		end)
 

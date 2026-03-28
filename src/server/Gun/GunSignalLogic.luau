@@ -21,19 +21,25 @@ return {
 		ServerGunHandler:ActivateMuzzleFlash(player, gunTool)
 	end),
 
-	GunSignals.PlayerHit:Connect(function(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number)
-		if not hitObj then
-			warn("[GunSignals.PlayerHit] Hit object reference invalid")
-			return
-		end
+	GunSignals.PlayerHit:Connect(
+		function(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number, shotPos: Vector3)
+			if not hitObj then
+				warn("[GunSignals.PlayerHit] Hit object reference invalid")
+				return
+			end
 
-		if not playerHumanoid then
-			warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
-			return
-		end
+			if not playerHumanoid then
+				warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
+				return
+			end
+			if not shotPos then
+				warn("[GunSignals.PlayerHit] shotPos reference invalid")
+				return
+			end
 
-		DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted)
-	end),
+			DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted, shotPos)
+		end
+	),
 
 	GunSignals.InflictLimbDamage:Connect(
 		function(

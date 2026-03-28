@@ -38,7 +38,7 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 	TweenService:Create(highlight, TweenInfo.new(0.5), { FillTransparency = 1 }):Play()
 end
 
-local function ApplyDamage(humanClass, limbName: string, damage: number)
+local function ApplyDamage(humanClass, limbName: string, damage: number, shotPos: Vector3)
 	if not humanClass or not humanClass.LimbHealth or not humanClass.LimbHealth[limbName] then
 		return
 	end
@@ -46,6 +46,12 @@ local function ApplyDamage(humanClass, limbName: string, damage: number)
 	-- stop reloading if hurt
 	if humanClass.CurrentGun.Reloading then
 		humanClass.CurrentGun.Reloading = false
+	end
+
+	-- if npc damaged on patrol, seek immediately the target
+	if humanClass.AI and humanClass.AI.CurrentState == "Patrol" and shotPos then
+		humanClass.AI.LastSeenTargetPosition = shotPos
+		humanClass.AI:ChangeState("Seek")
 	end
 
 	local multiplier = LimbDamageMultiplier[limbName] or 1
@@ -116,7 +122,12 @@ local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
 	end)
 end
 
-function DamageModule.DamageHuman(hitObj: RaycastResult? | BasePart, playerHumanoid: Humanoid?, damageInflicted: number)
+function DamageModule.DamageHuman(
+	hitObj: RaycastResult? | BasePart,
+	playerHumanoid: Humanoid?,
+	damageInflicted: number,
+	shotPos: Vector3
+)
 	if not hitObj then
 		warn("[DamageHuman] Invalid hit object")
 		return
@@ -149,7 +160,7 @@ function DamageModule.DamageHuman(hitObj: RaycastResult? | BasePart, playerHuman
 		humanClass.HRP,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
-	ApplyDamage(humanClass, limbName, damageInflicted)
+	ApplyDamage(humanClass, limbName, damageInflicted, shotPos)
 
 	if limbHealth[limbName] <= 0 then
 		HandleLimbDestroyed(humanClass, limbName, damageInflicted)

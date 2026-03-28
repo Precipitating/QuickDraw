@@ -27,6 +27,7 @@ function HumanNPC.new(humanoid: Humanoid)
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self:SetNPCNetworkOwnership()
 	self:SetWeaponCollisions()
+	humanoid.WalkSpeed = HumanConstants.WALKSPEED
 	print(`New human class initiated for NPC {self.Character.Name}`)
 
 	return self :: any
@@ -85,7 +86,10 @@ function HumanNPC:ToggleRightArmAimer(enable: boolean)
 
 	if enable then
 		rightArmOrientator.Enabled = true
-		torsoAimer.Enabled = true
+
+		if not self.Legless then
+			torsoAimer.Enabled = true
+		end
 	else
 		rightArmOrientator.Enabled = false
 		torsoAimer.Enabled = false
@@ -113,9 +117,12 @@ function HumanNPC:AimRightArmTowards(target)
 	lookCF *= CFrame.Angles(math.rad(90) + swayPitch, swayYaw, 0)
 
 	self.RightArmAimer.CFrame = lookCF
-
 	local flattenedLookAt = Vector3.new(targetPos.X, self.HRP.Position.Y, targetPos.Z)
-	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
+	if not self.Legless then
+		self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
+	else
+		self.TorsoAimer.CFrame = CFrame.lookAt(self.BodyParts["UpperTorso"].Position, targetPos)
+	end
 end
 function HumanNPC:AttackPlayer(target: Model | BasePart)
 	assert(target, "[HumanNPC:AttackPlayer] Target is invalid")

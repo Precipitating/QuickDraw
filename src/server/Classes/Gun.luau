@@ -92,7 +92,7 @@ function Gun:HitPlayer(raycastResult: RaycastResult)
 	end
 
 	-- hit body part
-	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage)
+	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage, self.Tool.Handle.Position)
 	print(`{raycastResult.Instance.Name} hit!`)
 	return true
 end

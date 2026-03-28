@@ -1,6 +1,12 @@
+local Debris = game:GetService("Debris")
+local DeviceIdService = game:GetService("DeviceIdService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local AI = require(script.Parent.AI)
+local AISignals = require(script.Parent.AISignals)
 local PatrolData = require(script.Parent.PatrolData)
 local UP = vector.create(0, 1, 0)
 
@@ -26,15 +32,18 @@ RangeAI.StatesLogic.Attack = {
 function RangeAI.new(human: Human)
 	local self = setmetatable(AI.new(human), RangeAI)
 	self.Type = "Range"
-	self.LineOfSight = 100
-	self.MinAttackDistance = 15
+	self.MaxAttackDistance = 100
+	self.MinAttackDistance = 20
 	self.AttackCooldown = 1
 	return self
 end
 
-function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart, radius: number)
-	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart, radius: number, recursing: boolean)
+	local targetPos = if (typeof(target) == "Vector3" or not target:IsA("Model"))
+		then target
+		else target:GetPivot().Position
 	local baseDir = (originPos - targetPos).Unit
+	local candidates = {}
 
 	for angle = 0, 360, 30 do
 		local radians = math.rad(angle)
@@ -55,138 +64,104 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 		-- prt.Size = Vector3.new(1, 1, 1)
 		-- prt.Position = candidate
 		-- prt.Color = Color3.fromRGB(255, 1, 1)
+		-- prt.Transparency = 0.8
 		-- Debris:AddItem(prt, 1)
 
-		if AI.IsTargetInView(self, candidate, target) then
-			return candidate
+		if AI.IsTargetInView(self, candidate, target, false) then
+			--prt.Color = Color3.fromRGB(1, 255, 1)
+			table.insert(candidates, candidate)
+		end
+	end
+
+	if #candidates > 0 then
+		return candidates[RandomModule.GetRandomIntBetween(1, #candidates)]
+	end
+
+	if recursing then
+		return nil
+	end
+
+	for _ = 1, 6 do
+		radius *= 1.1
+		local hasCandidate = self:FindAnglePosition(originPos, target, radius, true)
+		if hasCandidate then
+			return hasCandidate
 		end
 	end
 
 	return nil
 end
-function RangeAI:StartAttackState(target: BasePart)
-	local attackDist = self.LineOfSight
 
-	-- Unique token for this attack state invocation
-	local stateToken = {}
-	self.AttackStateToken = stateToken
+-- Ensure the AI is within the shooting position
+function RangeAI:CorrectRangePosition(target, targetPos)
+	local currentPos = self.Owner.Character:GetPivot().Position
+	local halfAttackDist = self.MaxAttackDistance * 0.5
+	local distance = (targetPos - currentPos).Magnitude
 
-	local function isActive()
-		return self.AttackStateToken == stateToken and self.CurrentState == "Attack"
+	-- If target too far, change to seek state
+	if distance >= self.MaxAttackDistance then
+		self.LastSeenTargetPosition = targetPos
+		AI.ChangeState(self, "Seek")
+		return false
 	end
 
+	-- Target too close to NPC, back off.
+	if distance <= self.MinAttackDistance then
+		if not self.CurrentlyMoving then
+			-- find a suitable position around player to go to
+			local safePos = self:FindAnglePosition(currentPos, target, halfAttackDist, false)
+			if safePos then
+				AI.PathFindTo(self, safePos)
+				if not self.Owner.Legless then
+					self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+				end
+
+				AISignals.PathfindComplete:Wait()
+			end
+		else
+			AISignals.PathfindComplete:Wait()
+		end
+	end
+
+	if not self.Owner.Legless then
+		self.Owner.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+	end
+	return true
+end
+
+function RangeAI:StartAttackState(target: BasePart | Model)
 	task.spawn(function()
 		while task.wait(self.AttackCooldown) do
-			-- Bail immediately if state changed
-			if not isActive() then
+			if self.CurrentState ~= "Attack" then
 				return
 			end
-
-			local character = self.Owner.Character
-			if not character then
-				return
-			end
-
 			if not target or not target.Parent then
-				if not isActive() then
-					return
-				end
+				AI.ChangeState(self, "Seek")
+				return
+			end
+			local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+			local NPCAimArm = self.Owner.BodyParts["RightUpperArm"]
+
+			-- 1. Check if in shooting range, true if still attack state afterwards
+			local inRange = self:CorrectRangePosition(target, targetPos)
+			if not inRange then
+				return
+			end
+
+			-- 2. Aim at target
+			self.Owner:ToggleRightArmAimer(true)
+			self.Owner:AimRightArmTowards(target)
+			task.wait(0.5)
+			local isInLineOfSight = AI.IsTargetInView(self, NPCAimArm.Position, target, true)
+
+			if not isInLineOfSight then
 				AI.ChangeState(self, "Seek")
 				return
 			end
 
-			local charPos = character:GetPivot().Position
-			local targetPos = target:GetPivot().Position
-			local distDiff = targetPos - charPos
-			local distSquared = distDiff:Dot(distDiff)
-
-			local attackDistSquared = (attackDist + self.PathfindTolerance) ^ 2
-			local minAttackDistSquared = self.MinAttackDistance ^ 2
-
-			-- Too far
-			if distSquared > attackDistSquared then
-				if not isActive() then
-					return
-				end
-
-				if math.abs(distSquared - attackDistSquared) > self.LineOfSight then
-					AI.ChangeState(self, "Seek")
-					return
-				end
-
-				if not self.CurrentlyMoving then
-					self.Owner:ToggleRightArmAimer(false)
-					local dir = distDiff.Unit
-					local moveGoal = targetPos - (dir * attackDist)
-					-- Spawn so the loop doesn't freeze
-					task.spawn(function()
-						if not isActive() then
-							return
-						end
-						AI.PathFindTo(self, moveGoal)
-					end)
-				end
-				continue
-
-			-- Too close
-			elseif distSquared < minAttackDistSquared then
-				if not isActive() then
-					return
-				end
-
-				if not self.CurrentlyMoving then
-					self.Owner:ToggleRightArmAimer(false)
-					local awayDir = (charPos - targetPos)
-					awayDir = Vector3.new(awayDir.X, 0, awayDir.Z)
-					if awayDir.Magnitude < 0.01 then
-						awayDir = Vector3.new(1, 0, 0)
-					end
-					awayDir = awayDir.Unit
-					local moveGoal = targetPos + (awayDir * attackDist)
-					task.spawn(function()
-						if not isActive() then
-							return
-						end
-						AI.PathFindTo(self, moveGoal)
-					end)
-				end
-				continue
-			end
-
-			if not isActive() then
-				return
-			end
-
-			-- In range
-			if AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, target) then
-				if self.CurrentlyMoving then
-					continue
-				end
-				self.Owner:ToggleRightArmAimer(true)
-				self.Owner:AimRightArmTowards(target)
-				self:Attack()
-				self.LastSeenTargetPosition = targetPos
-			else
-				self.Owner:ToggleRightArmAimer(false)
-				task.spawn(function()
-					if not isActive() then
-						return
-					end
-					local validPos = self:FindAnglePosition(charPos, target, attackDist)
-					if not isActive() then
-						return
-					end
-					if validPos then
-						AI.PathFindTo(self, validPos)
-					else
-						if not isActive() then
-							return
-						end
-						warn("AI CANT SEE TARGET")
-						AI.ChangeState(self, "Seek")
-					end
-				end)
-			end
+			-- 3. Aiming at target, shoot
+			self.LastSeenTargetPosition = targetPos
+			self:Attack()
 		end
 	end)
 end
