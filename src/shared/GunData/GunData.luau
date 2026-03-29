@@ -26,6 +26,19 @@ local GunData = {
 		GunRecoil = 38,
 		CameraRecoil = 12,
 	},
+	Coach = {
+		MaxAmmo = 2,
+		ShotDelay = 1,
+		Damage = 7,
+		Velocity = 450,
+		ReloadTimePerBullet = 1,
+		GunType = "Shotgun",
+		ShootSoundName = "CoachShot",
+		ShootNoAmmoName = "CoachClick",
+		ReloadSoundName = "CoachReload",
+		GunRecoil = 70,
+		CameraRecoil = 40,
+	},
 }
 
 for _, gun in GunData do

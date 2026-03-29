@@ -95,7 +95,7 @@ function Throwable:FragmentHitPlayer(hit: RaycastResult)
 		local humanoid = isModel:FindFirstChild("Humanoid")
 		if humanoid then
 			if self.FragmentType == "Explosive" then
-				GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage, self.Tool.Handle.Position)
+				GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage, nil)
 			elseif self.FragmentType == "Spread" then
 				GunSignals.InflictLimbDamage:Fire(
 					hit.Instance,

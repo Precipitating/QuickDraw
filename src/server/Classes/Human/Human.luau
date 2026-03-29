@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(script.Parent.HumanConstants)
@@ -12,6 +13,7 @@ local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+
 type Gun = ClassTypes.Gun
 type Human = ClassTypes.Human
 
@@ -297,6 +299,10 @@ function Human:OnHumanoidStateChange()
 					j.Enabled = self.AnimationControllerState
 				end
 			end
+
+			if newState == Enum.HumanoidStateType.Dead then
+				self:OnDeath()
+			end
 		end)
 	)
 end
@@ -463,12 +469,14 @@ function Human:OnDeath()
 				obj.MaxFrictionTorque = 10
 			elseif obj:IsA("BasePart") then
 				obj.CollisionGroup = "Dead"
+				CollectionService:RemoveTag(obj, "NPC")
 			end
 		end
 	end)
 
-	self:Destroy()
 	self.Dead = true
+
+	self:Destroy()
 end
 
 function Human:Ragdoll(ragdollTime: number)

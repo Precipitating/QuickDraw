@@ -13,14 +13,6 @@ local function AddNPCClass(taggedNPC: Model)
 	end
 	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid)
 
-	-- ragdoll
-	humanoid.Died:Connect(function()
-		if humanNPC.Dead then
-			return
-		end
-		humanNPC:OnDeath()
-	end)
-
 	return humanNPC
 end
 

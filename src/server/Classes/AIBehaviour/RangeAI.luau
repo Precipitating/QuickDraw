@@ -1,5 +1,3 @@
-local Debris = game:GetService("Debris")
-local DeviceIdService = game:GetService("DeviceIdService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -8,6 +6,7 @@ local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanCon
 local AI = require(script.Parent.AI)
 local AISignals = require(script.Parent.AISignals)
 local PatrolData = require(script.Parent.PatrolData)
+
 local UP = vector.create(0, 1, 0)
 
 type Human = ClassTypes.Human
@@ -19,6 +18,9 @@ RangeAI.StatesLogic = table.clone(AI.StatesLogic)
 
 RangeAI.StatesLogic.Attack = {
 	Enter = function(self, target)
+		if self.Owner.Dead then
+			return
+		end
 		self:StateChangeReset()
 		self.CurrentState = "Attack"
 		self.StatesLogic["Attack"].Update(self, target)
@@ -113,6 +115,9 @@ function RangeAI:CorrectRangePosition(target, targetPos)
 			if safePos then
 				AI.PathFindTo(self, safePos)
 				if not self.Owner.Legless then
+					if not self.Owner then
+						return
+					end
 					self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
 				end
 
@@ -131,14 +136,13 @@ end
 
 function RangeAI:StartAttackState(target: BasePart | Model)
 	task.spawn(function()
-		while task.wait(self.AttackCooldown) do
-			if self.CurrentState ~= "Attack" then
+		while task.wait(self.AttackCooldown) and self.CurrentState == "Attack" do
+			if self.Owner.Dead then
 				return
 			end
-			if not target or not target.Parent then
-				AI.ChangeState(self, "Seek")
-				return
-			end
+
+			AISignals.HandleTargetDead:Fire(self, target)
+
 			local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
 			local NPCAimArm = self.Owner.BodyParts["RightUpperArm"]
 
@@ -154,12 +158,13 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 			task.wait(0.5)
 			local isInLineOfSight = AI.IsTargetInView(self, NPCAimArm.Position, target, true)
 
+			-- 2.1 Seek state if not in LOS
 			if not isInLineOfSight then
 				AI.ChangeState(self, "Seek")
 				return
 			end
 
-			-- 3. Aiming at target, shoot
+			-- 3. Target in view, Save their position, aiming at target, SHOOT
 			self.LastSeenTargetPosition = targetPos
 			self:Attack()
 		end

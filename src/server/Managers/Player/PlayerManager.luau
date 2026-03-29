@@ -42,7 +42,7 @@ end
 
 function PlayerManager:GetHumanClass(key: Humanoid)
 	if not key then
-		error(`GetHumanClass argument 'key' is invalid`)
+		warn(`GetHumanClass argument 'key' is invalid`)
 		return
 	end
 

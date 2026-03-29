@@ -34,18 +34,22 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	if not GunData[gunName] then
 		error("Gun doesn't exist")
 	end
+	local gunData = GunData[gunName]
 
 	local self = setmetatable({}, Gun)
+
 	self.Janitor = Janitor.new()
 	self.Tool = nil
+
 	self.GunName = gunName
-	self.MaxAmmo = GunData[gunName].MaxAmmo
-	self.CurrentAmmo = GunData[gunName].MaxAmmo
+	self.MaxAmmo = gunData.MaxAmmo
+	self.CurrentAmmo = gunData.MaxAmmo
+	self.GunType = gunData.GunType
 	self.ShootPoint = nil
 	self.Handle = nil
-	self.ShotDelay = GunData[gunName].ShotDelay
+	self.ShotDelay = gunData.ShotDelay
 	self.LastShot = 0
-	self.Damage = GunData[gunName].Damage
+	self.Damage = gunData.Damage
 	self.CurrentCooldown = -1
 
 	-- if its NPC, its their model, else player instance
@@ -59,7 +63,7 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 
 	-- projectile data
 	self.FastCast = FastCast.new()
-	self.BulletVelocity = GunData[gunName].Velocity
+	self.BulletVelocity = gunData.Velocity
 	self.ProjectileData = FastCast.newBehavior()
 	self.ProjectileData.RaycastParams = RaycastParams.new()
 	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -72,13 +76,6 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	return self
 end
 
-function Gun:AddCollisionConstraints()
-	local bodyParts = self.HumanClassRef.BodyParts
-	for i = 1, 3 do
-		local collisionConstraint = Instance.new("NoCollisionConstraint")
-		collisionConstraint.Part0 = bodyParts["UpperRightArm"]
-	end
-end
 function Gun:HitPlayer(raycastResult: RaycastResult)
 	local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
 	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")

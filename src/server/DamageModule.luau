@@ -139,6 +139,10 @@ function DamageModule.DamageHuman(
 
 	local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
 
+	if humanClass.Dead then
+		return
+	end
+
 	local limbName = nil
 	if typeof(hitObj) == "Instance" and hitObj:IsA("BasePart") then
 		limbName = hitObj.Name

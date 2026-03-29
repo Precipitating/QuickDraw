@@ -344,6 +344,34 @@ function ClientGunHandler:AttemptReload()
 	end
 end
 
+function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
+	local bodyParts = PlayerContext.BodyParts
+	local gunParts = gunTool:GetChildren()
+	for _, bodyPart in pairs(bodyParts) do
+		local collisionConstraint = Instance.new("NoCollisionConstraint")
+
+		for _, gunPart in pairs(gunParts) do
+			if not gunPart:IsA("BasePart") then
+				continue
+			end
+			collisionConstraint.Part0 = gunPart
+			collisionConstraint.Part1 = bodyPart
+			collisionConstraint.Parent = gunTool
+		end
+	end
+
+	-- terrain
+	for _, gunPart in pairs(gunParts) do
+		if not gunPart:IsA("BasePart") then
+			continue
+		end
+		local collisionConstraint = Instance.new("NoCollisionConstraint")
+		collisionConstraint.Part0 = gunPart
+		collisionConstraint.Part1 = workspace:FindFirstChildOfClass("Terrain")
+		collisionConstraint.Parent = gunTool
+	end
+end
+
 function ClientGunHandler:ConnectGun(gun: Tool?)
 	print("connecting gun")
 	if not gun then
@@ -361,6 +389,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		AimAndDisplayCrosshair(gun)
 		ApplyCameraGunRecoil()
 		Crosshair3DPositionSetter(crosshairBB)
+		self:AddCollisionConstraints(gun)
 
 		self.janitor:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
 			if gameProcessed then

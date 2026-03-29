@@ -4,7 +4,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
-
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
@@ -154,9 +153,8 @@ function HumanNPC:UnEquipCurrentTool()
 end
 
 function HumanNPC:OnDeath()
-	self.AI.CurrentState = "Dead"
 	Debris:AddItem(self.Character, 30)
-
+	self.AI:ChangeState("Dead")
 	Human.OnDeath(self)
 end
 

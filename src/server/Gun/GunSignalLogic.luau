@@ -32,10 +32,6 @@ return {
 				warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
 				return
 			end
-			if not shotPos then
-				warn("[GunSignals.PlayerHit] shotPos reference invalid")
-				return
-			end
 
 			DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted, shotPos)
 		end

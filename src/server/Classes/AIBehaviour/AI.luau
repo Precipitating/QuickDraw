@@ -38,7 +38,9 @@ AI.StatesLogic = {
 		Enter = function(self)
 			self:StateChangeReset()
 			self.CurrentState = "Seek"
-			self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+			if not self.Owner.Legless then
+				self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+			end
 			self.StatesLogic["Seek"].Update(self)
 		end,
 		Update = function(self)
@@ -46,6 +48,12 @@ AI.StatesLogic = {
 		end,
 		Exit = function(self)
 			self.Owner.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+		end,
+	},
+
+	Dead = {
+		Enter = function(self)
+			self:StateChangeReset()
 		end,
 	},
 }
@@ -100,6 +108,9 @@ function AI:EnableEnemyDetection()
 		while task.wait(0.1) do
 			if self.CurrentState == "Attack" then
 				continue
+			end
+			if self.CurrentState == "Idle" or self.CurrentState == "Dead" or self.Owner.Dead then
+				return
 			end
 			self:CheckSurroundingsForEnemy()
 		end
@@ -214,21 +225,22 @@ function AI:ChangeState(newState: string, ...)
 		return
 	end
 
-	-- exit state
-
+	-- run current exit state
 	local stateExit = self.StatesLogic[self.CurrentState]
-	if not stateExit and not self.StatesLogic[self.CurrentState] then
-		error("[ChangeState] Missing state exit logic")
+	if stateExit then
+		stateExit.Exit(self, ...)
+	else
+		error(`[ChangeState] Missing exit function for {stateExit}`)
 	end
-	stateExit.Exit(self, ...)
 
-	local stateUpdate = self.StatesLogic[newState]
-	if not stateUpdate and not stateUpdate[newState] then
-		error("[ChangeState] Missing state logic")
+	local stateEnter = self.StatesLogic[newState]
+	if stateEnter then
+		stateEnter.Enter(self, ...)
+	else
+		error(`[ChangeState] Missing enter function for {stateEnter}`)
 	end
 
 	warn(`New state = {newState}`)
-	stateUpdate.Enter(self, ...)
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
@@ -282,28 +294,37 @@ function AI:Seek()
 		AI.ChangeState(self, "Patrol", PatrolData["Test"])
 	end
 end
-
 function AI:CheckSurroundingsForEnemy()
-	-- check surroundings for enemy
 	local foundParts = self:CheckLineOfSight()
 	if not foundParts then
 		return false
 	end
 
 	for _, part in foundParts do
-		if part:IsA("MeshPart") then
-			local parent = part.Parent
-			local isHuman = parent and part.Parent:FindFirstChild("Humanoid")
-			if isHuman and CollectionService:HasTag(parent, "Player") then
-				local visible =
-					AI.IsTargetInView(self, self.Owner.BodyParts["Head"].Position, parent.HumanoidRootPart, true)
-				if visible then
-					AI.ChangeState(self, "Attack", parent)
-
-					return true
-				end
-			end
+		if not part or not part:IsA("MeshPart") then
+			continue
 		end
+
+		local parent = part.Parent
+		local hrp = parent and parent:FindFirstChild("HumanoidRootPart")
+		local humanoid = parent and parent:FindFirstChild("Humanoid")
+
+		if not hrp or not humanoid or not CollectionService:HasTag(parent, "NPC") then
+			continue
+		end
+
+		local head = self.Owner and self.Owner.BodyParts and self.Owner.BodyParts["Head"]
+		if not head then
+			continue
+		end
+
+		local visible = AI.IsTargetInView(self, head.Position, hrp, true)
+		if not visible then
+			continue
+		end
+
+		AI.ChangeState(self, "Attack", parent)
+		return true
 	end
 
 	return false
