@@ -72,6 +72,15 @@ function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 	end
 
 	for _, effect in pairs(muzzleFolder:GetChildren()) do
+		if effect:IsA("SpotLight") then
+			effect.Enabled = true
+			task.delay(0.1, function()
+				if effect then
+					effect.Enabled = false
+				end
+			end)
+			continue
+		end
 		if not effect:IsA("ParticleEmitter") then
 			continue
 		end

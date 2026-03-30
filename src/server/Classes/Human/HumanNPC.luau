@@ -16,7 +16,7 @@ function HumanNPC.new(humanoid: Humanoid)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
 	self.CurrentGun = Gun.new("Winchester", self, self.Character)
-	self.CurrentThrowable = Throwable.new("Dynamite", self)
+	self.CurrentThrowable = Throwable.new("Molotov", self)
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()
@@ -24,11 +24,12 @@ function HumanNPC.new(humanoid: Humanoid)
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.AI = RangeAI.new(self)
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
+
 	self:SetNPCNetworkOwnership()
 	self:SetWeaponCollisions()
+
 	humanoid.WalkSpeed = HumanConstants.WALKSPEED
 	print(`New human class initiated for NPC {self.Character.Name}`)
-
 	return self :: any
 end
 
@@ -79,9 +80,7 @@ function HumanNPC:ToggleRightArmAimer(enable: boolean)
 	local rightArmOrientator = self.RightArmAimer
 	local torsoAimer = self.TorsoAimer
 	assert(rightArmOrientator, "[HumanNPC:ToggleRightArmAimer] RightArmAimer is nil")
-	if rightArmOrientator.Enabled == enable then
-		return
-	end
+	assert(torsoAimer, "[HumanNPC:ToggleRightArmAimer] torsoAimer is nil")
 
 	if enable then
 		rightArmOrientator.Enabled = true

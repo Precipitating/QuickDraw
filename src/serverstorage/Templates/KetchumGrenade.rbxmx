@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Tool" referent="RBX8C113D8220C04982AA93585E8F06EDFB">
+	<Item class="Tool" referent="RBX099150B242464B4E8C6EA9D7E418C27A">
 		<Properties>
 			<bool name="CanBeDropped">true</bool>
 			<bool name="Enabled">true</bool>
@@ -11,13 +11,13 @@
 				<Y>0.800000012</Y>
 				<Z>0</Z>
 				<R00>1</R00>
-				<R01>8.74227837e-08</R01>
-				<R02>8.74227766e-08</R02>
-				<R10>8.74227766e-08</R10>
+				<R01>0</R01>
+				<R02>0</R02>
+				<R10>0</R10>
 				<R11>-1</R11>
-				<R12>8.74227766e-08</R12>
-				<R20>8.74227837e-08</R20>
-				<R21>-8.74227695e-08</R21>
+				<R12>0</R12>
+				<R20>0</R20>
+				<R21>0</R21>
 				<R22>-1</R22>
 			</CoordinateFrame>
 			<bool name="ManualActivationOnly">false</bool>
@@ -73,7 +73,7 @@
 			<int64 name="SourceAssetId">104866780217391</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="MeshPart" referent="RBX7A465ED196A4400FA4EB08412DA5CEFD">
+		<Item class="MeshPart" referent="RBXD67DAE306A17462A8DC5DEFEBC73AEB6">
 			<Properties>
 				<bool name="DoubleSided">false</bool>
 				<bool name="HasJointOffset">false</bool>
@@ -141,7 +141,7 @@
 				<bool name="CanQuery">true</bool>
 				<bool name="CanTouch">true</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Throwable</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -207,7 +207,34 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="SurfaceAppearance" referent="RBX42AFE391705F42788DEA0C8CDC70C85F">
+			<Item class="WeldConstraint" referent="RBX0BD99DCCBEEE4D9680BB7054B197F75E">
+				<Properties>
+					<CoordinateFrame name="CFrame0">
+						<X>0.0103225708</X>
+						<Y>-0.0214157104</Y>
+						<Z>-0.770141602</Z>
+						<R00>-1.52587891e-05</R00>
+						<R01>-1.6080853e-16</R01>
+						<R02>-1</R02>
+						<R10>-0.0938616842</R10>
+						<R11>0.995585263</R11>
+						<R12>1.06293913e-16</R12>
+						<R20>0.995585263</R20>
+						<R21>0.0938616842</R21>
+						<R22>-1.51914255e-05</R22>
+					</CoordinateFrame>
+					<Ref name="Part0Internal">null</Ref>
+					<Ref name="Part1Internal">RBXD67DAE306A17462A8DC5DEFEBC73AEB6</Ref>
+					<int name="State">1</int>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+					<bool name="DefinesCapabilities">false</bool>
+					<string name="Name">WeldConstraint</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<BinaryString name="Tags"></BinaryString>
+				</Properties>
+			</Item>
+			<Item class="SurfaceAppearance" referent="RBXCBAB8F39B4AE46CB9C796A5501F82C69">
 				<Properties>
 					<token name="AlphaMode">0</token>
 					<Color3 name="Color">
@@ -233,33 +260,6 @@
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
 					<string name="Name">SurfaceAppearance</string>
-					<int64 name="SourceAssetId">-1</int64>
-					<BinaryString name="Tags"></BinaryString>
-				</Properties>
-			</Item>
-			<Item class="WeldConstraint" referent="RBXBE2D40F4D1B44805A8D8B0C694805964">
-				<Properties>
-					<CoordinateFrame name="CFrame0">
-						<X>0.0103225708</X>
-						<Y>-0.0214157104</Y>
-						<Z>-0.770141602</Z>
-						<R00>-1.52587891e-05</R00>
-						<R01>-1.6080853e-16</R01>
-						<R02>-1</R02>
-						<R10>-0.0938616842</R10>
-						<R11>0.995585263</R11>
-						<R12>1.06293913e-16</R12>
-						<R20>0.995585263</R20>
-						<R21>0.0938616842</R21>
-						<R22>-1.51914255e-05</R22>
-					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX5E088040BD3342D8980BC49B0C7B6B08</Ref>
-					<Ref name="Part1Internal">RBX7A465ED196A4400FA4EB08412DA5CEFD</Ref>
-					<int name="State">1</int>
-					<BinaryString name="AttributesSerialize"></BinaryString>
-					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-					<bool name="DefinesCapabilities">false</bool>
-					<string name="Name">WeldConstraint</string>
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>

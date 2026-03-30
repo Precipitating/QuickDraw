@@ -8,6 +8,7 @@ local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyab
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 
 type Human = ClassTypes.Human
 type Gun = ClassTypes.Gun
@@ -130,6 +131,54 @@ function Gun:ConnectProjectileEvents()
 	end))
 end
 
+function Gun:SingleShot(adsDir: Vector3?, adsPosition: Vector3?)
+	if adsDir and adsPosition then
+		self.FastCast:Fire(adsPosition, adsDir, self.BulletVelocity, self.ProjectileData)
+	else
+		self.FastCast:Fire(
+			self.ShootPoint.WorldPosition,
+			self.ShootPoint.WorldCFrame.LookVector,
+			self.BulletVelocity,
+			self.ProjectileData
+		)
+	end
+end
+
+function Gun:GetSpreadDirection(baseDirection: Vector3, maxDegrees: number)
+	-- Use a circular spread pattern
+	-- Pick a random angle and random radius within the cone
+	local angle = RandomModule.GetRandom() * 2 * math.pi
+	local radius = math.sqrt(RandomModule.GetRandom()) * math.rad(maxDegrees)
+
+	local randomX = math.cos(angle) * radius
+	local randomY = math.sin(angle) * radius
+
+	local spreadCFrame = CFrame.new(Vector3.zero, baseDirection) * CFrame.Angles(randomX, randomY, 0)
+
+	return spreadCFrame.LookVector
+end
+
+function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
+	local pelletCount = GunData[self.GunName].PelletsPerShot
+	local maxSpreadAngle = GunData[self.GunName].MaxSpreadAngle
+	if not pelletCount then
+		warn(`Pellet count not specified for {self.GunName}`)
+		return
+	end
+
+	if adsDir and adsPosition then
+		for _ = 1, pelletCount do
+			local spreadDir = self:GetSpreadDirection(adsDir, maxSpreadAngle)
+			self.FastCast:Fire(adsPosition, spreadDir, self.BulletVelocity, self.ProjectileData)
+		end
+	else
+		for _ = 1, pelletCount do
+			local spreadDir = self:GetSpreadDirection(self.ShootPoint.WorldCFrame.LookVector, maxSpreadAngle)
+			self.FastCast:Fire(self.ShootPoint.WorldPosition, spreadDir, self.BulletVelocity, self.ProjectileData)
+		end
+	end
+end
+
 -- if adsPosition and adsDir is specified, we shoot from middle of screen
 function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 	local now = os.clock()
@@ -141,15 +190,10 @@ function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 		return false
 	end
 
-	if adsDir and adsPosition then
-		self.FastCast:Fire(adsPosition, adsDir, self.BulletVelocity, self.ProjectileData)
+	if self.GunType == "Shotgun" then
+		self:SpreadShot(adsDir, adsPosition)
 	else
-		self.FastCast:Fire(
-			self.ShootPoint.WorldPosition,
-			self.ShootPoint.WorldCFrame.LookVector,
-			self.BulletVelocity,
-			self.ProjectileData
-		)
+		self:SingleShot(adsDir, adsPosition)
 	end
 
 	self.CurrentAmmo -= 1

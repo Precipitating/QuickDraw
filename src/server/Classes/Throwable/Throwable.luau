@@ -67,16 +67,27 @@ function Throwable:Throw(cameraLookVector: Vector3)
 	if not self.CanThrow then
 		return false
 	end
+	if self.CurrentAmmo <= 0 then
+		self:Remove()
+		return false
+	end
+
 	self.CanThrow = false
 	self.Tool.Handle.Transparency = 1
 	self.CurrentAmmo = math.max(0, self.CurrentAmmo - 1)
-	local rightHand = self.Owner.BodyParts["RightHand"]
-	self.FastCast:Fire(rightHand.CFrame.Position, cameraLookVector, self.ThrowVelocity, self.ProjectileData)
+	local head = self.Owner.BodyParts["Head"]
+	local launchPos = head.Position + Vector3.new(0, 2, 0)
 
-	if self.CurrentAmmo == 0 then
+	task.defer(function()
+		self.FastCast:Fire(launchPos, cameraLookVector, self.ThrowVelocity, self.ProjectileData)
+	end)
+
+	if self.CurrentAmmo <= 0 then
 		self:Remove()
+		return false
 	end
 
+	-- cooldown for next throw
 	task.delay(ThrowableData[self.Name].ThrowDelay, function()
 		self.CanThrow = true
 
@@ -226,9 +237,6 @@ function Throwable:Remove()
 		if toolInHands then
 			toolInHands:Destroy()
 		end
-	else
-		-- HumanNPC
-		self.Owner:UnEquipCurrentTool()
 	end
 end
 

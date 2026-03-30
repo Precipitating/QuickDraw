@@ -13,8 +13,8 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	Human.AssignBodyParts(self, "Player")
 	self.Player = player
 	self.HumanType = "Player"
-	self.CurrentGun = Gun.new("Winchester", self, player)
-	self.CurrentThrowable = Throwable.new("Dynamite", self)
+	self.CurrentGun = Gun.new("Coach", self, player)
+	self.CurrentThrowable = Throwable.new("KetchumGrenade", self)
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)

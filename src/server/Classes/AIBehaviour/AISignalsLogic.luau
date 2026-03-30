@@ -13,6 +13,7 @@ return {
 		local humanClass = PlayerManager:GetHumanClass(isHuman)
 		if humanClass and humanClass.Dead then
 			CollectionService:RemoveTag(target, "NPC")
+			CollectionService:RemoveTag(target, "Player")
 			AI.ChangeState(AIClass, "Patrol", PatrolData["Test"])
 			return
 		end

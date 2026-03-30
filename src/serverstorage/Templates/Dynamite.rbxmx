@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Tool" referent="RBX63D4CD1BB9AF47ADA4027CC481AA8EDC">
+	<Item class="Tool" referent="RBX2100FA66A0F64824B20D649AEBEC43AE">
 		<Properties>
 			<bool name="CanBeDropped">false</bool>
 			<bool name="Enabled">true</bool>
@@ -30,9 +30,9 @@
 				<Y>2</Y>
 				<Z>-207.95462</Z>
 				<R00>1</R00>
-				<R01>-1.27092531e-10</R01>
+				<R01>0</R01>
 				<R02>0</R02>
-				<R10>-1.27092531e-10</R10>
+				<R10>0</R10>
 				<R11>1</R11>
 				<R12>0</R12>
 				<R20>0</R20>
@@ -73,7 +73,7 @@
 			<int64 name="SourceAssetId">13906548629</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Part" referent="RBX5452C5344E34482DBB3C534699EBCDD1">
+		<Item class="Part" referent="RBXA4DAF9AE34F740868F2D188CD4A6FFB8">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">1</token>
@@ -92,9 +92,9 @@
 					<Y>3.01223302</Y>
 					<Z>-200.025742</Z>
 					<R00>-1</R00>
-					<R01>-1.27092545e-10</R01>
+					<R01>0</R01>
 					<R02>0</R02>
-					<R10>1.27092545e-10</R10>
+					<R10>0</R10>
 					<R11>1</R11>
 					<R12>0</R12>
 					<R20>0</R20>
@@ -105,7 +105,7 @@
 				<bool name="CanQuery">true</bool>
 				<bool name="CanTouch">true</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Throwable</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -171,7 +171,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="SpecialMesh" referent="RBX6E2FA595813B4F018C4DD7DCE0852343">
+			<Item class="SpecialMesh" referent="RBX0A0AECD31AE5434BB9340FCCB5044A29">
 				<Properties>
 					<token name="MeshType">5</token>
 					<Content name="MeshId"><url>http://www.roblox.com/asset/?id=12551202</url></Content>
@@ -199,18 +199,18 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX1FB45114A36247448050C7616E8475CD">
+			<Item class="Attachment" referent="RBXD2D0D127B18248DF97C58A4F9F97F119">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0</X>
 						<Y>1.63135171</Y>
 						<Z>0</Z>
 						<R00>1</R00>
-						<R01>-3.67451153e-29</R01>
+						<R01>0</R01>
 						<R02>0</R02>
-						<R10>3.67451153e-29</R10>
+						<R10>0</R10>
 						<R11>1</R11>
-						<R12>-0</R12>
+						<R12>0</R12>
 						<R20>0</R20>
 						<R21>0</R21>
 						<R22>1</R22>
@@ -223,7 +223,7 @@
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
-				<Item class="Fire" referent="RBX0621B9326657450494A82D1C12CBD337">
+				<Item class="Fire" referent="RBX43A0BCCC9C40488AB8351C07D5E2C45B">
 					<Properties>
 						<Color3 name="Color">
 							<R>0.92549026</R>

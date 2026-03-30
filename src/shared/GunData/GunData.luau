@@ -2,7 +2,7 @@ local GunData = {
 	Revolver = {
 		MaxAmmo = 6,
 		ShotDelay = 0.35,
-		Damage = 30,
+		Damage = 25,
 		Velocity = 900,
 		ReloadTimePerBullet = 0.5,
 		GunType = "Revolver",
@@ -29,15 +29,17 @@ local GunData = {
 	Coach = {
 		MaxAmmo = 2,
 		ShotDelay = 1,
-		Damage = 7,
+		Damage = 20,
 		Velocity = 450,
+		PelletsPerShot = 8,
+		MaxSpreadAngle = 8,
 		ReloadTimePerBullet = 1,
 		GunType = "Shotgun",
 		ShootSoundName = "CoachShot",
 		ShootNoAmmoName = "CoachClick",
 		ReloadSoundName = "CoachReload",
-		GunRecoil = 70,
-		CameraRecoil = 40,
+		GunRecoil = 100,
+		CameraRecoil = 80,
 	},
 }
 

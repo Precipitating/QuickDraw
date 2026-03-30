@@ -3,9 +3,9 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local AI = require(script.Parent.AI)
 local AISignals = require(script.Parent.AISignals)
-local PatrolData = require(script.Parent.PatrolData)
 
 local UP = vector.create(0, 1, 0)
 
@@ -35,6 +35,7 @@ function RangeAI.new(human: Human)
 	local self = setmetatable(AI.new(human), RangeAI)
 	self.Type = "Range"
 	self.MaxAttackDistance = 100
+
 	self.MinAttackDistance = 20
 	self.AttackCooldown = 1
 	return self
@@ -155,7 +156,7 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 			-- 2. Aim at target
 			self.Owner:ToggleRightArmAimer(true)
 			self.Owner:AimRightArmTowards(target)
-			task.wait(0.5)
+
 			local isInLineOfSight = AI.IsTargetInView(self, NPCAimArm.Position, target, true)
 
 			-- 2.1 Seek state if not in LOS
@@ -166,6 +167,11 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 
 			-- 3. Target in view, Save their position, aiming at target, SHOOT
 			self.LastSeenTargetPosition = targetPos
+
+			if self:ThrowThrowable(targetPos) then
+				continue
+			end
+
 			self:Attack()
 		end
 	end)

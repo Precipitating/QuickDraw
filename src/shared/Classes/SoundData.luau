@@ -125,6 +125,12 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	CoachClick = {
+		SoundId = "rbxassetid://321719832",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 }
 
 -- Default group volumes

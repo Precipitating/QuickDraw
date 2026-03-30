@@ -68,6 +68,7 @@ function AI.new(owner: Human)
 	self.CurrentlyMoving = false
 	self.PatrolPoints = nil
 	self.Reloading = false
+	self.EnemyList = { Player = true }
 	self.LastSeenTargetPosition = nil
 	self.NextWaypointIndex = nil
 	self.ReachedConnection = nil
@@ -85,7 +86,6 @@ end
 
 function AI:StateChangeReset()
 	self:CancelPathFind()
-	self.CurrentlyMoving = false
 	self.Owner:ToggleRightArmAimer(false)
 
 	if self.ReachedConnection then
@@ -100,6 +100,7 @@ end
 
 function AI:CancelPathFind()
 	self.Owner.Humanoid:MoveTo(self.Owner.HRP.Position)
+	self.CurrentlyMoving = false
 	print("Cancel pathfind")
 end
 
@@ -268,6 +269,19 @@ function AI:LookAround()
 	return false
 end
 
+-- Check if target has a tag that is considered an enemy to the AI
+function AI:TargetIsEnemy(target)
+	local targetTags = CollectionService:GetTags(target)
+
+	for _, tag in targetTags do
+		if self.EnemyList[tag] then
+			return true
+		end
+	end
+
+	return false
+end
+
 function AI:Seek()
 	if not self.LastSeenTargetPosition or not self.Owner then
 		if self.CurrentState == "Seek" then
@@ -294,6 +308,47 @@ function AI:Seek()
 		AI.ChangeState(self, "Patrol", PatrolData["Test"])
 	end
 end
+
+-- Get angle required for object to hit a position (if possible)
+function AI:GetThrowAngle(origin, target, velocity)
+	local diff = target - origin
+	local horizontalDist = Vector3.new(diff.X, 0, diff.Z).Magnitude
+	local verticalDist = diff.Y
+	local v2 = velocity * velocity
+	local g = workspace.Gravity
+
+	local discriminant = v2 * v2 - g * (g * horizontalDist * horizontalDist + 2 * verticalDist * v2)
+	if discriminant < 0 then
+		return nil, nil -- target out of range for this velocity
+	end
+
+	-- two solutions, low arc and high arc
+	local lowArc = math.atan((v2 - math.sqrt(discriminant)) / (g * horizontalDist))
+	local highArc = math.atan((v2 + math.sqrt(discriminant)) / (g * horizontalDist))
+
+	return lowArc, highArc -- in radians
+end
+function AI:ThrowThrowable(targetPos)
+	local throwable = self.Owner.CurrentThrowable
+	if throwable.CurrentAmmo <= 0 then
+		return false
+	end
+	local rightHand = self.Owner.BodyParts["RightHand"]
+	local toTargetDir = (targetPos - rightHand.Position).Unit
+
+	local hrpPos = self.Owner.HRP.Position
+	local lowArc, _ = self:GetThrowAngle(hrpPos, targetPos, throwable.Velocity)
+
+	if not lowArc then
+		return false
+	end
+
+	local throwDirection = (CFrame.new(Vector3.zero, toTargetDir) * CFrame.Angles(lowArc, 0, 0)).LookVector
+
+	throwable:Throw(throwDirection)
+	return true
+end
+
 function AI:CheckSurroundingsForEnemy()
 	local foundParts = self:CheckLineOfSight()
 	if not foundParts then
@@ -309,7 +364,7 @@ function AI:CheckSurroundingsForEnemy()
 		local hrp = parent and parent:FindFirstChild("HumanoidRootPart")
 		local humanoid = parent and parent:FindFirstChild("Humanoid")
 
-		if not hrp or not humanoid or not CollectionService:HasTag(parent, "NPC") then
+		if not hrp or not humanoid or not self:TargetIsEnemy(parent) then
 			continue
 		end
 
