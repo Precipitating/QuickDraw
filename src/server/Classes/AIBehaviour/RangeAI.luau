@@ -104,27 +104,29 @@ function RangeAI:CorrectRangePosition(target, targetPos)
 	-- If target too far, change to seek state
 	if distance >= self.MaxAttackDistance then
 		self.LastSeenTargetPosition = targetPos
-		AI.ChangeState(self, "Seek")
+
 		return false
 	end
 
 	-- Target too close to NPC, back off.
 	if distance <= self.MinAttackDistance then
-		if not self.CurrentlyMoving then
+		if self.CurrentlyMoving then
+			AISignals.PathfindComplete:Wait()
+		else
+			self.Owner.CurrentGun.Reloading = false
 			-- find a suitable position around player to go to
 			local safePos = self:FindAnglePosition(currentPos, target, halfAttackDist, false)
-			if safePos then
-				AI.PathFindTo(self, safePos)
-				if not self.Owner.Legless then
-					if not self.Owner then
-						return
-					end
-					self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
-				end
-
-				AISignals.PathfindComplete:Wait()
+			if not safePos then
+				return false
 			end
-		else
+
+			AI.PathFindTo(self, safePos)
+			if not self.Owner.Legless then
+				if not self.Owner then
+					return false
+				end
+				self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+			end
 			AISignals.PathfindComplete:Wait()
 		end
 	end
@@ -149,7 +151,8 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 
 			-- 1. Check if in shooting range, true if still attack state afterwards
 			local inRange = self:CorrectRangePosition(target, targetPos)
-			if not inRange then
+			if not inRange and self.CurrentState == "Attack" then
+				AI.ChangeState(self, "Seek")
 				return
 			end
 
@@ -198,9 +201,14 @@ function RangeAI:Attack()
 	end
 
 	if currentGun.CurrentAmmo <= 0 then
-		currentGun:Reload()
+		if self.Owner.CurrentGun.Reloading then
+			return
+		end
+		task.spawn(function()
+			currentGun:Reload()
+		end)
 	else
-		if self.Reloading then
+		if self.Owner.CurrentGun.Reloading then
 			return
 		end
 		currentGun:ShootGun()

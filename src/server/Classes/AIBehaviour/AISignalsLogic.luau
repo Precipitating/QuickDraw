@@ -10,6 +10,7 @@ return {
 			then target:FindFirstChild("Humanoid")
 			else nil
 
+		-- If target is dead, remove its tags and change AI's state to patrol
 		local humanClass = PlayerManager:GetHumanClass(isHuman)
 		if humanClass and humanClass.Dead then
 			CollectionService:RemoveTag(target, "NPC")
@@ -18,6 +19,7 @@ return {
 			return
 		end
 
+		-- Go seek state if target is somehow NIL, it will transition to Patrol mode automatically afterwards.
 		if not target or not target.Parent then
 			AI.ChangeState(AIClass, "Seek")
 			return

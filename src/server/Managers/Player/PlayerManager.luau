@@ -58,10 +58,10 @@ end
 
 function PlayerManager:GetHumanClassFromPlayer(player: Player)
 	local character = player.Character
-	local humanoid: Humanoid? = Utility.GetInstance(character, true, "Humanoid")
-	assert(humanoid, "[Inputs:ApplyJumpDrain] Humanoid is nil")
+	local humanoid: Humanoid? = Utility.GetInstance(character, false, "Humanoid")
+	assert(humanoid, "[Inputs:GetHumanClassFromPlayer] Humanoid is nil")
 	local humanClass = PlayerManager:GetHumanClass(humanoid)
-	assert(humanClass, "[Inputs:ToggleSprint] Reference to humanClass is nil")
+	assert(humanClass, "[Inputs:GetHumanClassFromPlayer] Reference to humanClass is nil")
 
 	return humanClass, humanoid
 end

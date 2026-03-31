@@ -45,6 +45,7 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	self.GunName = gunName
 	self.MaxAmmo = gunData.MaxAmmo
 	self.CurrentAmmo = gunData.MaxAmmo
+	self.Reloading = false
 	self.GunType = gunData.GunType
 	self.ShootPoint = nil
 	self.Handle = nil

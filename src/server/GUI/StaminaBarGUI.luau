@@ -46,7 +46,9 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 		currentStamina = math.clamp(currentStamina, 0, HumanConstants.MAX_STAMINA)
 
 		if currentStamina <= 0 then
-			Inputs:ToggleSprint(player, false)
+			if humanoid and humanoid.Health > 0 then
+				Inputs:ToggleSprint(player, false)
+			end
 		end
 
 		numberValue.Value = currentStamina

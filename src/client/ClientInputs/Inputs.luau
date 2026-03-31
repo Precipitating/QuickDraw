@@ -17,7 +17,9 @@ function Inputs:Initialize()
 
 		-- sprint
 		if input.KeyCode == Enum.KeyCode.LeftShift then
-			self.networker:fire("ToggleSprint", true)
+			if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
+				self.networker:fire("ToggleSprint", true)
+			end
 		end
 
 		-- roll
@@ -64,7 +66,9 @@ function Inputs:Initialize()
 			return
 		end
 		if input.KeyCode == Enum.KeyCode.LeftShift then
-			self.networker:fire("ToggleSprint", false)
+			if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
+				self.networker:fire("ToggleSprint", false)
+			end
 		end
 	end)
 end

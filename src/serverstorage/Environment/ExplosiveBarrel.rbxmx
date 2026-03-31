@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBXD7B36F19CEFA4E0F89309A7AFB17D749">
+	<Item class="MeshPart" referent="RBXEB1185274E584B959E1EC488A4E6568D">
 		<Properties>
 			<bool name="DoubleSided">false</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -42,7 +42,7 @@
 				<Z>-0.00863975286</Z>
 			</Vector3>
 			<float name="UnscaledVolume">2.81316066</float>
-			<bool name="Anchored">false</bool>
+			<bool name="Anchored">true</bool>
 			<bool name="AudioCanCollide">true</bool>
 			<float name="BackParamA">-0.5</float>
 			<float name="BackParamB">0.5</float>
@@ -53,9 +53,9 @@
 			<token name="BottomSurface">0</token>
 			<token name="BottomSurfaceInput">0</token>
 			<CoordinateFrame name="CFrame">
-				<X>-128.233978</X>
-				<Y>3.58821845</Y>
-				<Z>-210.879898</Z>
+				<X>-83.2132034</X>
+				<Y>3.5882194</Y>
+				<Z>-172.343094</Z>
 				<R00>1</R00>
 				<R01>0</R01>
 				<R02>0</R02>
@@ -74,7 +74,13 @@
 			<int name="CollisionGroupId">0</int>
 			<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 			<PhysicalProperties name="CustomPhysicalProperties">
-				<CustomPhysics>false</CustomPhysics>
+				<CustomPhysics>true</CustomPhysics>
+				<Density>100</Density>
+				<Friction>0.300000012</Friction>
+				<Elasticity>0.150000006</Elasticity>
+				<FrictionWeight>0.5</FrictionWeight>
+				<ElasticityWeight>0.5</ElasticityWeight>
+				<AcousticAbsorption>0.300000012</AcousticAbsorption>
 			</PhysicalProperties>
 			<bool name="EnableFluidForces">true</bool>
 			<float name="FrontParamA">-0.5</float>
@@ -136,7 +142,7 @@
 			<int64 name="SourceAssetId">14452389275</int64>
 			<BinaryString name="Tags">RGVzdHJveWFibGU=</BinaryString>
 		</Properties>
-		<Item class="SurfaceAppearance" referent="RBXCA77F4A55A7246AF912AA9C8C25AE4C5">
+		<Item class="SurfaceAppearance" referent="RBXB29B7D87F0D04CE0B40EBC194A055D32">
 			<Properties>
 				<token name="AlphaMode">0</token>
 				<Color3 name="Color">

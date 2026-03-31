@@ -67,10 +67,10 @@ function AI.new(owner: Human)
 	self.Owner = owner
 	self.CurrentlyMoving = false
 	self.PatrolPoints = nil
-	self.Reloading = false
 	self.EnemyList = { Player = true }
 	self.LastSeenTargetPosition = nil
 	self.NextWaypointIndex = nil
+	self.SeekTurnDelay = 1
 	self.ReachedConnection = nil
 	self.Target = nil
 	self.BlockedConnection = nil
@@ -226,6 +226,9 @@ function AI:ChangeState(newState: string, ...)
 		return
 	end
 
+	if self.CurrentState == "Dead" then
+		return
+	end
 	-- run current exit state
 	local stateExit = self.StatesLogic[self.CurrentState]
 	if stateExit then
@@ -247,6 +250,7 @@ end
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
 function AI:LookAround()
 	local torsoAimer = self.Owner.TorsoAimer
+	local hrp = self.Owner.HRP
 	torsoAimer.Enabled = true
 	self.CurrentlyMoving = false
 	if not torsoAimer then
@@ -258,11 +262,11 @@ function AI:LookAround()
 		if self.CurrentState ~= "Seek" then
 			return false
 		end
-		local hrp = self.Owner.HRP
+
 		local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z).Unit
 		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(45), 0)
 
-		task.wait(1)
+		task.wait(self.SeekTurnDelay)
 	end
 	torsoAimer.Enabled = false
 
