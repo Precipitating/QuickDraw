@@ -3,7 +3,7 @@ local Networker = require(ReplicatedStorage.Packages.Networker).server
 local AnimationHandler = {}
 
 -- setting default animation ids inside the Animate script
-function AnimationHandler.SetAnimation(animation: Animation? | {}, id: string)
+function AnimationHandler:SetAnimation(animation: Animation? | {}, id: string)
 	assert(animation, "[AnimationHandler.SetAnimation] animation input is nil!")
 
 	-- if table inputted, we'll loop and set all animations to same ID provided

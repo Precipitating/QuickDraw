@@ -157,9 +157,9 @@ function Human:SetupAnimationReferences()
 	end
 
 	-- set defaults
-	AnimationHandler.SetAnimation(self.AnimationRefs["walk"], `rbxassetid://{AnimationIds.WalkSlow}`)
-	AnimationHandler.SetAnimation(self.AnimationRefs["run"], `rbxassetid://{AnimationIds.Run}`)
-	AnimationHandler.SetAnimation(self.AnimationRefs["toolnone"], `rbxassetid://{AnimationIds.GunAim}`)
+	AnimationHandler:SetAnimation(self.AnimationRefs["walk"], `rbxassetid://{AnimationIds.WalkSlow}`)
+	AnimationHandler:SetAnimation(self.AnimationRefs["run"], `rbxassetid://{AnimationIds.Run}`)
+	AnimationHandler:SetAnimation(self.AnimationRefs["toolnone"], `rbxassetid://{AnimationIds.GunAim}`)
 end
 
 function Human:SetupPhysicsSettings()
@@ -193,35 +193,48 @@ function Human:SetupPhysicsSettings()
 	rightLowerArmSocket.TwistLowerAngle = 0
 end
 
-function Human:ApplyRollForce(lookDir: Vector3)
+function Human:ApplyRollForce()
 	local hrp = self.HRP
 	if not hrp then
 		return
 	end
-	-- Get forward direction flattened to XZ plane
-	local forward = lookDir
-	forward = Vector3.new(forward.X, 0, forward.Z).Unit
+
+	local humanoid = hrp.Parent and hrp.Parent:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		return
+	end
+
+	-- Get current movement direction from Humanoid
+	local moveDir = humanoid.MoveDirection
+
+	-- If not moving, fall back to facing direction
+	if moveDir.Magnitude < 0.1 then
+		moveDir = hrp.CFrame.LookVector
+	end
+
+	-- Flatten to XZ plane
+	local forward = Vector3.new(moveDir.X, 0, moveDir.Z)
+	if forward.Magnitude < 0.01 then
+		forward = hrp.CFrame.LookVector
+	end
+	forward = forward.Unit
 
 	local attachment = Instance.new("Attachment")
 	attachment.Parent = hrp
+
 	local lv = Instance.new("LinearVelocity")
 	lv.Attachment0 = attachment
-
 	lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
 	lv.RelativeTo = Enum.ActuatorRelativeTo.World
 
-	-- Define plane axes (XZ movement only)
 	lv.PrimaryTangentAxis = Vector3.new(1, 0, 0)
 	lv.SecondaryTangentAxis = Vector3.new(0, 0, 1)
 
-	-- Apply planar velocity
 	lv.PlaneVelocity = Vector2.new(forward.X * HumanConstants.ROLL_FORCE, forward.Z * HumanConstants.ROLL_FORCE)
 
 	lv.MaxForce = hrp.AssemblyMass * 7000
-
 	lv.Parent = hrp
 
-	-- Cleanup after duration
 	task.delay(HumanConstants.ROLL_DURATION, function()
 		if lv and lv.Parent then
 			lv:Destroy()
@@ -375,11 +388,11 @@ function Human:SetCrawlState()
 		-- set crawl anims
 		local hrp = self.Character:FindFirstChild("HumanoidRootPart")
 		hrp.CanCollide = false
-		AnimationHandler.SetAnimation(idle, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		AnimationHandler.SetAnimation(run, `rbxassetid://{AnimationIds.LeglessMove}`)
-		AnimationHandler.SetAnimation(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
-		AnimationHandler.SetAnimation(toolequip, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		AnimationHandler.SetAnimation(fall, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		AnimationHandler:SetAnimation(idle, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		AnimationHandler:SetAnimation(run, `rbxassetid://{AnimationIds.LeglessMove}`)
+		AnimationHandler:SetAnimation(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
+		AnimationHandler:SetAnimation(toolequip, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		AnimationHandler:SetAnimation(fall, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
 
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
@@ -427,6 +440,9 @@ function Human:DisableLimb(limbName: string)
 end
 
 function Human:DestroyLimb(limbName: string)
+	if not self.BodyParts or not self.BodyParts[limbName] then
+		return
+	end
 	self.BodyParts[limbName]:Destroy()
 	self.BodyParts[limbName] = nil
 	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })

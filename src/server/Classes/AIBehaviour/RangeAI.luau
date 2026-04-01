@@ -150,8 +150,9 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 			local NPCAimArm = self.Owner.BodyParts["RightUpperArm"]
 
 			-- 1. Check if in shooting range, true if still attack state afterwards
-			local inRange = self:CorrectRangePosition(target, targetPos)
-			if not inRange and self.CurrentState == "Attack" then
+			self:CorrectRangePosition(target, targetPos)
+			if self.CurrentState ~= "Attack" then
+				print("Not in range, seeking")
 				AI.ChangeState(self, "Seek")
 				return
 			end
@@ -164,6 +165,7 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 
 			-- 2.1 Seek state if not in LOS
 			if not isInLineOfSight then
+				print("Not in LOS, seeking")
 				AI.ChangeState(self, "Seek")
 				return
 			end

@@ -16,7 +16,7 @@ function HumanNPC.new(humanoid: Humanoid)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
 	self.CurrentGun = Gun.new("Winchester", self, self.Character)
-	self.CurrentThrowable = Throwable.new("Molotov", self)
+	self.CurrentThrowable = Throwable.new("Dynamite", self)
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()
@@ -115,12 +115,9 @@ function HumanNPC:AimRightArmTowards(target)
 	lookCF *= CFrame.Angles(math.rad(90) + swayPitch, swayYaw, 0)
 
 	self.RightArmAimer.CFrame = lookCF
+
 	local flattenedLookAt = Vector3.new(targetPos.X, self.HRP.Position.Y, targetPos.Z)
-	if not self.Legless then
-		self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
-	else
-		self.TorsoAimer.CFrame = CFrame.lookAt(self.BodyParts["UpperTorso"].Position, targetPos)
-	end
+	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
 end
 function HumanNPC:AttackPlayer(target: Model | BasePart)
 	assert(target, "[HumanNPC:AttackPlayer] Target is invalid")
