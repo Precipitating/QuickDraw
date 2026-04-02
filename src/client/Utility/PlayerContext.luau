@@ -8,9 +8,24 @@ local ClientUtility = require(script.Parent.ClientUtility)
 local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local HumanGUIHandler = require(script.Parent.Parent.GUI.HumanGUIHandler)
 local CurrentCamera = workspace.CurrentCamera
+local DefaultAnimations = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
+local DefaultAnimateParams = {
+	ApplyRigScale = true,
+	SprintDetectSpeed = 30,
+	SprintSpeedDividend = 16,
+	RunDetectSpeed = 24,
+	RunSpeedDividend = 16,
+	WalkSpeedDividend = 6,
+	JumpDuration = 0.3,
+	ClimbSpeedDividend = 12,
+	SwimSpeedDividend = 16,
+	LandedDuration = 0.6,
+}
+
 local PlayerContext = {}
 
 PlayerContext.Player = nil
@@ -93,6 +108,8 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.CanJump = true
 	PlayerContext.CanRoll = true
 	PlayerContext.PlayerGui = player:WaitForChild("PlayerGui", 10)
+	PlayerContext.AnimationController = AnimationController.new(character, DefaultAnimations, DefaultAnimateParams)
+
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
 	for _, obj in pairs(character:GetChildren()) do
@@ -149,6 +166,7 @@ end
 local function ReloadCustomAnimations()
 	assert(PlayerContext.Humanoid, "PlayerContext missing humanoid ref")
 	AnimationsHandler.LoadCustomAnimations(PlayerContext.Humanoid)
+	PlayerContext.AnimationController:Load()
 end
 
 -- if we die, update the refs

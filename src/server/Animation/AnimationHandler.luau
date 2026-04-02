@@ -1,24 +1,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local AnimationHandler = {}
+AnimationHandler.networker = Networker.new("AnimationNetwork", AnimationHandler)
 
 -- setting default animation ids inside the Animate script
-function AnimationHandler:SetAnimation(animation: Animation? | {}, id: string)
-	assert(animation, "[AnimationHandler.SetAnimation] animation input is nil!")
-
-	-- if table inputted, we'll loop and set all animations to same ID provided
-	if typeof(animation) == "table" then
-		for _, anim: Animation in pairs(animation) do
-			if not anim:IsA("Animation") then
-				continue
-			end
-			anim.AnimationId = id
-		end
-		return
+function AnimationHandler:SetAnimationFolder(player: Player, folderName: string)
+	if player then
+		self.networker:fire(player, "SetAnimationFolder", folderName)
+	else
+		self.networker:fireAll("SetAnimationFolder", folderName)
 	end
-
-	-- else its a single animation
-	animation.AnimationId = id
 end
 
 function AnimationHandler.StopAllAnimationTracks(humanoid: Humanoid?)
@@ -31,5 +22,4 @@ function AnimationHandler.StopAllAnimationTracks(humanoid: Humanoid?)
 	end
 end
 
-AnimationHandler.networker = Networker.new("AnimationNetwork", AnimationHandler)
 return AnimationHandler

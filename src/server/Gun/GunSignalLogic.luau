@@ -22,7 +22,13 @@ return {
 	end),
 
 	GunSignals.PlayerHit:Connect(
-		function(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number, shotPos: Vector3)
+		function(
+			hitObj: RaycastResult?,
+			playerHumanoid: Humanoid?,
+			damageInflicted: number,
+			shotPos: Vector3,
+			shooter: Player?
+		)
 			if not hitObj then
 				warn("[GunSignals.PlayerHit] Hit object reference invalid")
 				return
@@ -33,7 +39,7 @@ return {
 				return
 			end
 
-			DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted, shotPos)
+			DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted, shotPos, shooter)
 		end
 	),
 
@@ -43,7 +49,8 @@ return {
 			damageInflicted: number,
 			spreadParticleName: string,
 			spreadDuration: number,
-			humanoid: Humanoid
+			humanoid: Humanoid,
+			shooter: Player?
 		)
 			if not limb then
 				warn("[GunSignals.PlayerHit] Limb reference invalid")
@@ -61,7 +68,14 @@ return {
 				return
 			end
 
-			DamageModule:ApplyInflictingDamage(spreadParticleName, spreadDuration, damageInflicted, humanClass, limb)
+			DamageModule:ApplyInflictingDamage(
+				spreadParticleName,
+				spreadDuration,
+				damageInflicted,
+				humanClass,
+				limb,
+				shooter
+			)
 		end
 	),
 

@@ -38,7 +38,7 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 	TweenService:Create(highlight, TweenInfo.new(0.5), { FillTransparency = 1 }):Play()
 end
 
-local function ApplyDamage(humanClass, limbName: string, damage: number, shotPos: Vector3)
+local function ApplyDamage(humanClass, limbName: string, damage: number, shotPos: Vector3, shooter: Player?)
 	if not humanClass or not humanClass.LimbHealth or not humanClass.LimbHealth[limbName] then
 		return
 	end
@@ -56,8 +56,7 @@ local function ApplyDamage(humanClass, limbName: string, damage: number, shotPos
 
 	local multiplier = LimbDamageMultiplier[limbName] or 1
 
-	humanClass.LimbHealth[limbName] -= damage
-	humanClass.Health -= damage * multiplier
+	humanClass:OnHit(damage, multiplier, limbName, shooter)
 
 	if humanClass.AdjustGrayscale then
 		humanClass:AdjustGrayscale()
@@ -71,7 +70,8 @@ function DamageModule:ApplyInflictingDamage(
 	spreadDuration: number,
 	damage: number,
 	humanClass: Human,
-	damagedLimb: MeshPart
+	damagedLimb: MeshPart,
+	shooter: Player?
 )
 	local humanoid = humanClass.Humanoid
 	if spreadParticleName then
@@ -92,7 +92,7 @@ function DamageModule:ApplyInflictingDamage(
 
 	task.spawn(function()
 		for _ = 1, spreadDuration do
-			self.DamageHuman(damagedLimb, humanoid, damage)
+			self.DamageHuman(damagedLimb, humanoid, damage, nil, shooter)
 			task.wait(1)
 		end
 	end)
@@ -126,7 +126,8 @@ function DamageModule.DamageHuman(
 	hitObj: RaycastResult? | BasePart,
 	playerHumanoid: Humanoid?,
 	damageInflicted: number,
-	shotPos: Vector3
+	shotPos: Vector3,
+	shooter: Player?
 )
 	if not hitObj then
 		warn("[DamageHuman] Invalid hit object")
@@ -164,17 +165,14 @@ function DamageModule.DamageHuman(
 		humanClass.HRP,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
-	ApplyDamage(humanClass, limbName, damageInflicted, shotPos)
+	ApplyDamage(humanClass, limbName, damageInflicted, shotPos, shooter)
 
 	if limbHealth[limbName] <= 0 then
 		HandleLimbDestroyed(humanClass, limbName, damageInflicted)
 	end
 
 	if humanClass.Health <= 0 then
-		if humanClass.Dead then
-			return
-		end
-		humanClass.Humanoid.Health = 0
+		humanClass:Die(shooter)
 	end
 
 	if typeof(hitObj) == "RaycastResult" then

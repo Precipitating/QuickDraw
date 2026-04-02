@@ -91,7 +91,7 @@ function Gun:HitPlayer(raycastResult: RaycastResult)
 	end
 
 	-- hit body part
-	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage, self.Tool.Handle.Position)
+	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage, self.Tool.Handle.Position, self.PlayerRef)
 	print(`{raycastResult.Instance.Name} hit!`)
 	return true
 end
@@ -103,7 +103,7 @@ function Gun:HitDestroyable(raycastResult: RaycastResult)
 		return
 	end
 
-	destroyableClass:Damage(self.Damage)
+	destroyableClass:Damage(self.Damage, self.PlayerRef)
 
 	return true
 end

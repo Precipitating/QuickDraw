@@ -331,7 +331,7 @@ function ClientGunHandler:DisplayGunEffects(gun: Tool, shot: boolean)
 		local currAmmo, _ = GunNetwork:fetch("GetAmmoCount")
 
 		if currAmmo and currAmmo <= 0 then
-			SoundManager.Play(GunData[gun.Name].ShootNoAmmoName, {
+			SoundManager.Play(gunData.ShootNoAmmoName, {
 				Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 			})
 		end

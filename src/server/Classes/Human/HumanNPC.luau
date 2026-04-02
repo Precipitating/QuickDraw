@@ -78,18 +78,29 @@ end
 
 function HumanNPC:ToggleRightArmAimer(enable: boolean)
 	local rightArmOrientator = self.RightArmAimer
-	local torsoAimer = self.TorsoAimer
+
 	assert(rightArmOrientator, "[HumanNPC:ToggleRightArmAimer] RightArmAimer is nil")
-	assert(torsoAimer, "[HumanNPC:ToggleRightArmAimer] torsoAimer is nil")
 
 	if enable then
 		rightArmOrientator.Enabled = true
-
-		if not self.Legless then
-			torsoAimer.Enabled = true
-		end
 	else
 		rightArmOrientator.Enabled = false
+	end
+end
+
+function HumanNPC:ToggleTorsoAimer(enable: boolean)
+	local torsoAimer = self.TorsoAimer
+
+	assert(torsoAimer, "[HumanNPC:ToggleTorsoAimer] torsoAimer is nil")
+
+	if self.Legless then
+		torsoAimer.Enabled = false
+		return
+	end
+
+	if enable then
+		torsoAimer.Enabled = true
+	else
 		torsoAimer.Enabled = false
 	end
 end

@@ -7,6 +7,7 @@ local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationH
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
+local ServerData = require(ServerScriptService.Server.ServerData)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
@@ -139,7 +140,6 @@ function Human.new(humanoid: Humanoid?): Human
 
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
-	self:SetupAnimationReferences()
 
 	return self :: any
 end
@@ -148,18 +148,6 @@ function Human:GetHealthPercentage()
 		return -1
 	end
 	return self.Health / HumanConstants.MAX_HP
-end
-function Human:SetupAnimationReferences()
-	for _, animName in self.Animate:GetChildren() do
-		if self.AnimationRefs[animName.Name] then
-			self.AnimationRefs[animName.Name] = animName:GetChildren()
-		end
-	end
-
-	-- set defaults
-	AnimationHandler:SetAnimation(self.AnimationRefs["walk"], `rbxassetid://{AnimationIds.WalkSlow}`)
-	AnimationHandler:SetAnimation(self.AnimationRefs["run"], `rbxassetid://{AnimationIds.Run}`)
-	AnimationHandler:SetAnimation(self.AnimationRefs["toolnone"], `rbxassetid://{AnimationIds.GunAim}`)
 end
 
 function Human:SetupPhysicsSettings()
@@ -320,6 +308,41 @@ function Human:OnHumanoidStateChange()
 	)
 end
 
+-- apply damage to self
+function Human:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player?)
+	self.LimbHealth[limbName] -= damage
+	self.Health -= damage * damageMultiplier
+
+	-- damage dealer's client plays headshot sound
+	if shooter and shooter:IsA("Player") then
+		if limbName == "Head" then
+			ServerSoundHandler:PlaySoundTo(
+				shooter,
+				"Headshot",
+				{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+			)
+		end
+	end
+end
+
+-- Set humanoid health to 0 to initiate death
+function Human:Die(shooter: Player?)
+	if self.Dead then
+		return
+	end
+	if self.Humanoid then
+		self.Humanoid.Health = 0
+		local victimIsPlayer = self.Player
+		-- shooter should get a money reward for killing
+		if shooter and shooter:IsA("Player") and victimIsPlayer ~= shooter then
+			ServerData.UpdateMoney(shooter, 50)
+		end
+		self.Dead = true
+	else
+		warn(`[Human:Die] Missing humanoid, so can't kill`)
+	end
+end
+
 -- fix right arm to face forward correctly and make gun non collidable so shooting
 -- works whilst legless
 function Human:FixCrawlADS()
@@ -370,29 +393,19 @@ function Human:SetCrawlState()
 			self:Ragdoll(3)
 		end
 
-		AnimationHandler.StopAllAnimationTracks(self.Humanoid)
-
-		local idle: Animation = self.AnimationRefs["idle"]
-		local run: Animation = self.AnimationRefs["run"]
-		local toolequip = self.AnimationRefs["toolnone"]
-		local walk: Animation = self.AnimationRefs["walk"]
-		local fall: Animation = self.AnimationRefs["fall"]
-
-		if not idle or not run then
-			warn("Missing animation references to enable crawl anim")
-			return
-		end
-
 		print("Both legs disabled")
 
 		-- set crawl anims
 		local hrp = self.Character:FindFirstChild("HumanoidRootPart")
 		hrp.CanCollide = false
-		AnimationHandler:SetAnimation(idle, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		AnimationHandler:SetAnimation(run, `rbxassetid://{AnimationIds.LeglessMove}`)
-		AnimationHandler:SetAnimation(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
-		AnimationHandler:SetAnimation(toolequip, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		AnimationHandler:SetAnimation(fall, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		if self.HumanType == "Player" then
+			AnimationHandler:SetAnimationFolder(self.Player, "CrawlAnimations")
+		end
+		-- AnimationHandler:SetAnimation(idle, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		-- AnimationHandler:SetAnimation(run, `rbxassetid://{AnimationIds.LeglessMove}`)
+		-- AnimationHandler:SetAnimation(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
+		-- AnimationHandler:SetAnimation(toolequip, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
+		-- AnimationHandler:SetAnimation(fall, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
 
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
@@ -474,9 +487,6 @@ end
 	Applies death ragdoll state
 ]=]
 function Human:OnDeath()
-	if self.Dead then
-		return
-	end
 	task.spawn(function()
 		for _, obj in self.Character:GetDescendants() do
 			if obj:IsA("AnimationConstraint") then
@@ -489,8 +499,6 @@ function Human:OnDeath()
 			end
 		end
 	end)
-
-	self.Dead = true
 
 	self:Destroy()
 end

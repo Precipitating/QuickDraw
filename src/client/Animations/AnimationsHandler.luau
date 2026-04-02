@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local AnimationSignals = require(script.Parent.AnimationSignals)
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
@@ -33,6 +34,11 @@ function AnimationsHandler.PlayCustomAnimation(name: string)
 
 	return animationInstance
 end
+
+function AnimationsHandler:SetAnimationFolder(folderName: string)
+	AnimationSignals.ChangeAnimationFolder:Fire(folderName)
+end
+
 function AnimationsHandler.StopCustomAnimation(name: string)
 	local animationInstance = LoadedAnimations[name]
 	if not animationInstance then

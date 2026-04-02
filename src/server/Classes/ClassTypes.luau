@@ -66,6 +66,7 @@ export type Human = {
 	IsAlive: (self: Human) -> boolean,
 	Destroy: (self: Human) -> (),
 	OnDeath: (self: Human) -> (),
+	Die: (self: Human, shooter: Player?) -> (),
 
 	DisableLimb: (self: Human, limbName: string) -> (),
 	ApplyImpulse: (self: Human, force: Vector3, position: Vector3?) -> (),
@@ -83,7 +84,7 @@ export type Destroyable = {
 	Type: string,
 	HumanEffect: string,
 
-	Damage: (self: Destroyable, damageAmount: number) -> (),
+	Damage: (self: Destroyable, damageAmount: number, shooter: Player?) -> (),
 	Destroy: (self: Destroyable) -> (),
 }
 

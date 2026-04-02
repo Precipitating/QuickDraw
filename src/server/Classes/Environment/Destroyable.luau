@@ -21,6 +21,7 @@ function Destroyable.new(object: Instance)
 	self.Health = data.Health
 	self.Type = data.Type
 	self.HumanEffect = data.HumanEffect
+	self.PlayerWhoDestroyed = nil
 	self.Radius = data.Radius
 	self.BaseDamage = data.Damage
 	self.Particles = object:FindFirstChild("Particles")
@@ -30,10 +31,11 @@ function Destroyable.new(object: Instance)
 	return self
 end
 
-function Destroyable:Damage(damageAmount: number)
+function Destroyable:Damage(damageAmount: number, shooter: Player?)
 	self.Health = math.max(0, self.Health - damageAmount)
 
 	if self.Health <= 0 then
+		self.PlayerWhoDestroyed = shooter
 		self:Destroy()
 	end
 end
@@ -82,11 +84,19 @@ function Destroyable:BodyPartDamage(damagedObject: BasePart?)
 				self.BaseDamage,
 				self.SpreadParticle,
 				self.SpreadDuration or 1,
-				humanoid
+				humanoid,
+				self.PlayerWhoDestroyed
 			)
 		else
 			if self.HumanEffect == "Damage" then
-				GunSignals.InflictLimbDamage:Fire(damagedObject, self.BaseDamage, nil, 1, humanoid)
+				GunSignals.InflictLimbDamage:Fire(
+					damagedObject,
+					self.BaseDamage,
+					nil,
+					1,
+					humanoid,
+					self.PlayerWhoDestroyed
+				)
 			end
 		end
 		return true

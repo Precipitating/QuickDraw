@@ -147,7 +147,14 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 			AISignals.HandleTargetDead:Fire(self, target)
 
 			local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-			local NPCAimArm = self.Owner.BodyParts["RightUpperArm"]
+			local NPCAimArm = if self.Owner and self.Owner.BodyParts["RightUpperArm"]
+				then self.Owner.BodyParts["RightUpperArm"]
+				else nil
+
+			if not NPCAimArm then
+				warn("Right arm missing, NPC probably dead")
+				return
+			end
 
 			-- 1. Check if in shooting range, true if still attack state afterwards
 			self:CorrectRangePosition(target, targetPos)
@@ -159,6 +166,7 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 
 			-- 2. Aim at target
 			self.Owner:ToggleRightArmAimer(true)
+			self.Owner:ToggleTorsoAimer(true)
 			self.Owner:AimRightArmTowards(target)
 
 			local isInLineOfSight = AI.IsTargetInView(self, NPCAimArm.Position, target, true)
@@ -202,6 +210,7 @@ function RangeAI:Attack()
 		return
 	end
 
+	-- Reload if 0 ammo
 	if currentGun.CurrentAmmo <= 0 then
 		if self.Owner.CurrentGun.Reloading then
 			return
@@ -210,6 +219,8 @@ function RangeAI:Attack()
 			currentGun:Reload()
 		end)
 	else
+		-- Keep reloading if we still have ammo, unless interrupted by getting hit
+		-- OR player goes too close to enemy
 		if self.Owner.CurrentGun.Reloading then
 			return
 		end

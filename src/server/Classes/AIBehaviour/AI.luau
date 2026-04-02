@@ -88,6 +88,7 @@ end
 function AI:StateChangeReset()
 	self:CancelPathFind()
 	self.Owner:ToggleRightArmAimer(false)
+	self.Owner:ToggleTorsoAimer(false)
 
 	if self.ReachedConnection then
 		self.ReachedConnection:Disconnect()
