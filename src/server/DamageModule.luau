@@ -116,7 +116,7 @@ local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
 
 	-- Blacked limb = spread damage to all limbs
 	task.spawn(function()
-		for name in pairs(humanClass.LimbHealth) do
+		for name in humanClass.LimbHealth do
 			humanClass.LimbHealth[name] -= damage
 		end
 	end)
@@ -140,6 +140,10 @@ function DamageModule.DamageHuman(
 
 	local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
 
+	if not humanClass then
+		warn("Missing human class of hit human")
+		return
+	end
 	if humanClass.Dead then
 		return
 	end
@@ -150,6 +154,7 @@ function DamageModule.DamageHuman(
 	elseif typeof(hitObj) == "RaycastResult" then
 		limbName = hitObj.Instance.Name
 	end
+
 	local limbHealth = humanClass.LimbHealth
 
 	if not limbHealth then

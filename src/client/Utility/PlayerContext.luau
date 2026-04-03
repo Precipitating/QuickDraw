@@ -1,6 +1,6 @@
 -- used to get up to date references to the player even if player dies
 local Lighting = game:GetService("Lighting")
-
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -13,6 +13,7 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local HumanGUIHandler = require(script.Parent.Parent.GUI.HumanGUIHandler)
 local CurrentCamera = workspace.CurrentCamera
 local DefaultAnimations = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
+local Player = Players.LocalPlayer
 local DefaultAnimateParams = {
 	ApplyRigScale = true,
 	SprintDetectSpeed = 30,
@@ -112,7 +113,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
-	for _, obj in pairs(character:GetChildren()) do
+	for _, obj in character:GetChildren() do
 		if not obj:IsA("MeshPart") then
 			continue
 		end
@@ -184,6 +185,13 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 	UserInputService.MouseIconEnabled = false
 
 	warn("Local character references updated!")
+end
+
+function PlayerContext:Initialize()
+	-- Needs reinitializing on respawn
+	Player.CharacterAdded:Connect(function(character: Model)
+		self.OnCharacterAdded(Player, character)
+	end)
 end
 
 return PlayerContext

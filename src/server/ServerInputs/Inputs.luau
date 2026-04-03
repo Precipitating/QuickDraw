@@ -51,11 +51,9 @@ end
 function Inputs:ToggleSprint(player: Player, active: boolean)
 	local humanClass, humanoid = PlayerManager:GetHumanClassFromPlayer(player)
 	local stamina = humanClass.Stamina
-
 	if humanClass.Legless then
 		return
 	end
-
 	if active and stamina and stamina > 0 then
 		humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
 		stamina = math.clamp(stamina, 0, HumanConstants.MAX_STAMINA)

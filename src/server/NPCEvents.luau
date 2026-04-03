@@ -20,7 +20,7 @@ end
 local function Initialize()
 	local npcInstances = CollectionService:GetTagged("NPC")
 
-	for _, NPC: Model in ipairs(npcInstances) do
+	for _, NPC: Model in npcInstances do
 		local npc = AddNPCClass(NPC)
 		npc.AI:ChangeState("Patrol", PatrolData["Test"])
 	end

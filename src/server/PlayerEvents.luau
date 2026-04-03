@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
+local DamageModule = require(script.Parent.DamageModule)
 local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -27,5 +28,15 @@ return {
 			end)
 		end)
 		ServerData.WaitForPlayerData(player)
+
+		--task.wait(5)
+		-- DamageModule.DamageHuman(
+		-- 	workspace.oOR0B0TOo.RightUpperLeg,
+		-- 	workspace.oOR0B0TOo.Humanoid,
+		-- 	150,
+		-- 	Vector3.zero,
+		-- 	nil
+		-- )
+		-- DamageModule.DamageHuman(workspace.oOR0B0TOo.LeftUpperLeg, workspace.oOR0B0TOo.Humanoid, 150, Vector3.zero, nil)
 	end),
 }

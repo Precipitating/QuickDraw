@@ -71,7 +71,7 @@ function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 		return
 	end
 
-	for _, effect in pairs(muzzleFolder:GetChildren()) do
+	for _, effect in muzzleFolder:GetChildren() do
 		if effect:IsA("SpotLight") then
 			effect.Enabled = true
 			task.delay(0.1, function()
@@ -131,7 +131,7 @@ local function StopCurrentTween()
 	end
 end
 local function ADSTransparency(on: boolean)
-	for _, part in pairs(PlayerContext.Character:GetDescendants()) do
+	for _, part in PlayerContext.Character:GetDescendants() do
 		if not part:IsA("MeshPart") then
 			continue
 		end
@@ -258,7 +258,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 	ProjectileData.RaycastParams.FilterDescendantsInstances =
 		{ PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
 
-	local parentPart = if HumanNetwork.networker:fetch("IsLegless")
+	local parentPart = if HumanNetwork.networker:fetch("IsLegless", PlayerContext.Player)
 		then PlayerContext.HRP
 		else PlayerContext.BodyParts["UpperTorso"]
 
@@ -356,10 +356,10 @@ end
 function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
 	local bodyParts = PlayerContext.BodyParts
 	local gunParts = gunTool:GetChildren()
-	for _, bodyPart in pairs(bodyParts) do
+	for _, bodyPart in bodyParts do
 		local collisionConstraint = Instance.new("NoCollisionConstraint")
 
-		for _, gunPart in pairs(gunParts) do
+		for _, gunPart in gunParts do
 			if not gunPart:IsA("BasePart") then
 				continue
 			end
@@ -370,7 +370,7 @@ function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
 	end
 
 	-- terrain
-	for _, gunPart in pairs(gunParts) do
+	for _, gunPart in gunParts do
 		if not gunPart:IsA("BasePart") then
 			continue
 		end
@@ -495,7 +495,7 @@ function ClientGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 	availableBlood:PivotTo(hitPos)
 
 	-- enable blood and disable after a short time
-	for _, particle in ipairs(availableBlood:GetChildren()) do
+	for _, particle in availableBlood:GetChildren() do
 		particle:Emit(1)
 	end
 end

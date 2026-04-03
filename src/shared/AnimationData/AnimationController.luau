@@ -153,7 +153,7 @@ constructor.R6AnimateParams = {
 local function FolderToAnimations(folder: Instance): Animations
 	local animations: Animations = {}
 
-	for _, child in ipairs(folder:GetChildren()) do
+	for _, child in folder:GetChildren() do
 		animations[child.Name] = child:IsA("Animation") and child or child:GetChildren()
 	end
 
@@ -288,7 +288,7 @@ function controller.RegisterAnimation(
 	if typeof(reference) == "Instance" then
 		Load(reference :: Animation)
 	else
-		for _, animation in ipairs(reference) do
+		for _, animation in reference do
 			Load(animation)
 		end
 	end
@@ -666,7 +666,7 @@ function controller.Unload(self: AnimateController): ()
 	self.Reload = nil
 
 	for _, group in self.AnimationRegisters do
-		for _, register in ipairs(group.Animations) do
+		for _, register in group.Animations do
 			register.AnimationTrack:Stop(0)
 			register.AnimationTrack:Destroy()
 		end

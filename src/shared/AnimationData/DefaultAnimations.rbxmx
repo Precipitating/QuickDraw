@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Folder" referent="RBX3B24EB48B1684696802EB9BE654A57D7">
+	<Item class="Folder" referent="RBXEE83E1C9023E44DC9899600CDBF504D7">
 		<Properties>
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -11,7 +11,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Animation" referent="RBX728C261E958A4FA095A0B86EF17C6A27">
+		<Item class="Animation" referent="RBXB250D1AFC6C446F698ED801A4B6D19F6">
 			<Properties>
 				<Content name="AnimationId"><url>http://www.roblox.com/asset/?id=507765644</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -22,7 +22,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXF143D7FF4C254D3F84CAD722D6E1D9C0">
+		<Item class="Animation" referent="RBXB6D0F0D403B24F9B9EBB7AF88BDA2D14">
 			<Properties>
 				<Content name="AnimationId"><url>http://www.roblox.com/asset/?id=507765000</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAA==</BinaryString>
@@ -33,7 +33,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX486DEC6A0D404B8CB7ECD6814DBB967C">
+		<Item class="Animation" referent="RBX122DC62BFC524DF88F643DAD4E17E67A">
 			<Properties>
 				<Content name="AnimationId"><url>rbxassetid://82474325722923</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -44,7 +44,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXBCB982E4AA3748159F1E58738AED31F7">
+		<Item class="Animation" referent="RBX3F615F6362E24215A1C82D75529EC31F">
 			<Properties>
 				<Content name="AnimationId"><url>rbxassetid://110034364860119</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -55,7 +55,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX214CED0095414C99BF3D046E8D8B52ED">
+		<Item class="Animation" referent="RBX257BBBE820BD41B3B6FB397EBA126A9B">
 			<Properties>
 				<Content name="AnimationId"><url>http://www.roblox.com/asset/?id=913384386</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -66,7 +66,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX6413E14BD56E4241B1B48819E402E2E9">
+		<Item class="Animation" referent="RBX993B3245EF504E1E88CCF905CA2D9139">
 			<Properties>
 				<Content name="AnimationId"><url>http://www.roblox.com/asset/?id=507768375</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -77,7 +77,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXF7856452C52C4A8E8784A76B24DCCC8A">
+		<Item class="Animation" referent="RBXE77363AAD0F04CAE93242EF53D9C509B">
 			<Properties>
 				<Content name="AnimationId"><url>http://www.roblox.com/asset/?id=913389285</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -88,7 +88,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXE71DEEBE4FDF4C9DA648EB3B0B041A3D">
+		<Item class="Animation" referent="RBX6E08484475E5448B8540F6A2BB91A3E8">
 			<Properties>
 				<Content name="AnimationId"><url>http://www.roblox.com/asset/?id=507767968</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -99,7 +99,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX5D50BC5799CB4BCC866F32DE8DB93D3A">
+		<Item class="Animation" referent="RBX1F5D6998CB74484187F099114939D71A">
 			<Properties>
 				<Content name="AnimationId"><url>http://www.roblox.com/asset/?id=2506281703</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -110,7 +110,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXDC7D824AC23846E69A82CE73A6CD4563">
+		<Item class="Animation" referent="RBX6A38744AA0FC4D3889D0ECDCCA40CA66">
 			<Properties>
 				<Content name="AnimationId"><url>rbxassetid://12521158637</url></Content>
 				<BinaryString name="AttributesSerialize">AgAAAAYAAABMb29wZWQDAQYAAABXZWlnaHQGAAAAAAAAIkA=</BinaryString>

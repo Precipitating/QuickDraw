@@ -15,7 +15,7 @@ function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)
 	assert(humanoid, "Humanoid is nil loading custom animations!")
 	local animator: Animator = Utility.GetInstance(humanoid, true, "Animator")
 
-	for key: string, _ in pairs(LoadedAnimations) do
+	for key, _ in LoadedAnimations do
 		local loadedAnim: Animation = Instance.new("Animation")
 		loadedAnim.AnimationId = `rbxassetid://{AnimationIds[key]}`
 		LoadedAnimations[key] = animator:LoadAnimation(loadedAnim)
@@ -35,8 +35,8 @@ function AnimationsHandler.PlayCustomAnimation(name: string)
 	return animationInstance
 end
 
-function AnimationsHandler:SetAnimationFolder(folderName: string)
-	AnimationSignals.ChangeAnimationFolder:Fire(folderName)
+function AnimationsHandler:SetAnimationFolder(folderName: string, characterModel: Model?)
+	AnimationSignals.ChangeAnimationFolder:Fire(folderName, characterModel)
 end
 
 function AnimationsHandler.StopCustomAnimation(name: string)

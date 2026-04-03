@@ -1,5 +1,6 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
+local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
@@ -28,6 +29,39 @@ end
 
 function HumanPlayer:ConnectGUIs()
 	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
+end
+
+function Human:SetCrawlState()
+	if self.Dead then
+		return
+	end
+	local parts = self.DisabledBodyParts
+
+	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
+		warn("Should be crawling")
+		if self.Legless then
+			return
+		end
+
+		HumanSignals.RagdollClient:Fire(self.Player, 3)
+		print("Both legs disabled")
+
+		-- set crawl anims
+		local hrp = self.Character:FindFirstChild("HumanoidRootPart")
+		hrp.CanCollide = false
+		AnimationHandler:SetAnimationFolder(self.Player, "CrawlAnimations", nil)
+
+		self.Humanoid.UseJumpPower = true
+		self.Humanoid.JumpPower = 0
+		self.Humanoid.WalkSpeed = 8
+		self.Humanoid.HipHeight = 0.5
+
+		self:FixCrawlADS()
+
+		self.Legless = true
+
+		warn(`Player should be legless now`)
+	end
 end
 
 -- scale gray screen tint on client via current health

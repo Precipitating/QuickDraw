@@ -1,7 +1,7 @@
 return {
 	SumNumberTable = function(tbl: {})
 		local sum = 0
-		for _, num in pairs(tbl) do
+		for _, num in tbl do
 			sum += num
 		end
 
@@ -13,6 +13,10 @@ return {
 	GetInstance = function(parent: Instance, waitForChild: boolean, ...)
 		local current: Instance = parent
 		local paths = table.pack(...)
+
+		if not current then
+			return nil
+		end
 
 		for i = 1, paths.n do
 			local name = paths[i]

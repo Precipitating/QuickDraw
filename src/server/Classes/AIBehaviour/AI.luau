@@ -295,7 +295,9 @@ function AI:LookAround()
 	local legless = self.Owner.Legless
 	local hrp = self.Owner.HRP
 
-	self.CurrentlyMoving = false
+	if self.CurrentlyMoving then
+		self:CancelPathFind()
+	end
 
 	if not torsoAimer then
 		warn("[LookAround] Missing torso aimer!")

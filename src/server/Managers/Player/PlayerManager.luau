@@ -47,16 +47,16 @@ function PlayerManager:GetHumanClass(key: Humanoid)
 	end
 
 	if not PlayerManager.HumanClasses[key] then
+		warn(`GetHumanClass invalid key`)
 		return
 	end
-
-	local humanoidParent = key.Parent
-
-	print(`Succesfully obtained human class reference of player {humanoidParent.Name}`)
 	return self.HumanClasses[key]
 end
 
 function PlayerManager:GetHumanClassFromPlayer(player: Player)
+	if not player then
+		return
+	end
 	local character = player.Character
 	local humanoid: Humanoid? = Utility.GetInstance(character, false, "Humanoid")
 	assert(humanoid, "[Inputs:GetHumanClassFromPlayer] Humanoid is nil")

@@ -6,7 +6,7 @@ local TagAssigner = {}
 
 function TagAssigner.Initialize()
 	local destroyable = CollectionService:GetTagged("Destroyable")
-	for _, obj in pairs(destroyable) do
+	for _, obj in destroyable do
 		warn(`Initialize destroyable class on {obj.Name}`)
 		local destroyableClass = Destroyable.new(obj)
 		DestroyableManager:AddDestroyable(obj, destroyableClass)

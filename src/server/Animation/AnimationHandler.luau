@@ -4,11 +4,12 @@ local AnimationHandler = {}
 AnimationHandler.networker = Networker.new("AnimationNetwork", AnimationHandler)
 
 -- setting default animation ids inside the Animate script
-function AnimationHandler:SetAnimationFolder(player: Player, folderName: string)
-	if player then
-		self.networker:fire(player, "SetAnimationFolder", folderName)
+function AnimationHandler:SetAnimationFolder(player: Player?, folderName: string, characterModel: Model?)
+	if player and not characterModel then
+		self.networker:fire(player, "SetAnimationFolder", folderName, nil)
 	else
-		self.networker:fireAll("SetAnimationFolder", folderName)
+		-- character model as NPCAnimationsHandler stores NPC animations using the model as key
+		self.networker:fireAll("SetAnimationFolder", folderName, characterModel)
 	end
 end
 
@@ -17,7 +18,7 @@ function AnimationHandler.StopAllAnimationTracks(humanoid: Humanoid?)
 	local animator: Animator? = humanoid:FindFirstChild("Animator") :: Animator?
 	assert(animator, "[AnimationHandler.StopAllAnimationTracks] Animator missing from humanoid ")
 
-	for _, v in pairs(animator:GetPlayingAnimationTracks()) do
+	for _, v in animator:GetPlayingAnimationTracks() do
 		v:Stop()
 	end
 end

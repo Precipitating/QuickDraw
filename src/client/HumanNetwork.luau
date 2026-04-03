@@ -7,6 +7,10 @@ local HumanNetwork = {}
 HumanNetwork.networker = Networker.new("HumanNetwork", HumanNetwork)
 
 function HumanNetwork:RagdollClient(ragdollTime: number)
+	if not PlayerContext.Humanoid then
+		warn("Can't ragdoll on client, humanoid missing")
+		return
+	end
 	PlayerContext.Humanoid:UnequipTools()
 	PlayerContext.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
 	PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)

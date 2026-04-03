@@ -1,14 +1,20 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
-local PlayerContext = require(StarterPlayer.StarterPlayerScripts.Client.Utility.PlayerContext)
+local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local AnimationSignals = require(script.Parent.AnimationSignals)
+local NPCAnimationsHandler = require(script.Parent.NPCAnimationsHandler)
 return {
-	AnimationSignals.ChangeAnimationFolder:Connect(function(folderName: string)
+	AnimationSignals.ChangeAnimationFolder:Connect(function(folderName: string, characterModel: Model?)
 		local folder = ReplicatedStorage.Shared.AnimationData:WaitForChild(folderName, 10)
 		if not folder then
 			warn("Animation folder name not found")
 			return
 		end
-		PlayerContext.AnimationController:ChangeAllAnimations(folderName)
+		-- means this is for NPC
+		if characterModel then
+			local npcAnimationController = NPCAnimationsHandler:GetNPCAnimations(characterModel)
+			npcAnimationController:ChangeAllAnimations(folder)
+		else
+			PlayerContext.AnimationController:ChangeAllAnimations(folder)
+		end
 	end),
 }

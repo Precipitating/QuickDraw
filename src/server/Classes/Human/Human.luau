@@ -3,7 +3,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
-local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
@@ -11,7 +10,7 @@ local ServerData = require(ServerScriptService.Server.ServerData)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
+
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
@@ -47,14 +46,6 @@ local LimbHealth = {
 	LeftLowerLeg = 40,
 	RightUpperLeg = 40,
 	RightLowerLeg = 40,
-}
-
-local Animations = {
-	idle = true,
-	fall = true,
-	run = true,
-	walk = true,
-	toolnone = true,
 }
 
 local BodyParts = {
@@ -113,10 +104,9 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Character = character
 	self.Humanoid = humanoid
 	self.HRP = humanoid.RootPart
-	self.Animate = character:WaitForChild("Animate")
 	self.RootPart = rootPart :: BasePart
 	self.Dead = false
-
+	self.Animator = humanoid:FindFirstChildOfClass("Animator")
 	self.Stamina = 100
 	self.Sprinting = false
 	self.JumpSignalled = false
@@ -125,7 +115,6 @@ function Human.new(humanoid: Humanoid?): Human
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
 	self.DisabledBodyParts = table.clone(DisabledBodyParts)
-	self.AnimationRefs = table.clone(Animations)
 
 	self.IsRagdolled = false
 
@@ -370,7 +359,7 @@ function Human:FixCrawlADS()
 	rightShoulderBallSocket.UpperAngle = 100
 
 	-- disable gun's collision
-	for _, part: MeshPart in pairs(gun:GetChildren()) do
+	for _, part: MeshPart in gun:GetChildren() do
 		if not part:IsA("MeshPart") then
 			continue
 		end
@@ -379,45 +368,7 @@ function Human:FixCrawlADS()
 end
 
 function Human:SetCrawlState()
-	local parts = self.DisabledBodyParts
-
-	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
-		warn("Should be crawling")
-		if self.Legless then
-			return
-		end
-
-		if self.HumanType == "Player" then
-			HumanSignals.RagdollClient:Fire(self.Player, 3)
-		else
-			self:Ragdoll(3)
-		end
-
-		print("Both legs disabled")
-
-		-- set crawl anims
-		local hrp = self.Character:FindFirstChild("HumanoidRootPart")
-		hrp.CanCollide = false
-		if self.HumanType == "Player" then
-			AnimationHandler:SetAnimationFolder(self.Player, "CrawlAnimations")
-		end
-		-- AnimationHandler:SetAnimation(idle, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		-- AnimationHandler:SetAnimation(run, `rbxassetid://{AnimationIds.LeglessMove}`)
-		-- AnimationHandler:SetAnimation(walk, `rbxassetid://{AnimationIds.LeglessMove}`)
-		-- AnimationHandler:SetAnimation(toolequip, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-		-- AnimationHandler:SetAnimation(fall, `rbxassetid://{AnimationIds.LeglessGunIdle}`)
-
-		self.Humanoid.UseJumpPower = true
-		self.Humanoid.JumpPower = 0
-		self.Humanoid.WalkSpeed = 8
-
-		if self.HumanType == "Player" then
-			self.Humanoid.HipHeight = 0.5
-		end
-		self:FixCrawlADS()
-
-		self.Legless = true
-	end
+	warn("Ran SetCrawlState base class, you shouldn't be able to see this")
 end
 
 function Human:DisableLimb(limbName: string)

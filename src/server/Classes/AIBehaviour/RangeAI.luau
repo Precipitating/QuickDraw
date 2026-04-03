@@ -147,7 +147,9 @@ function RangeAI:StartAttackState(target: BasePart | Model)
 			AISignals.HandleTargetDead:Fire(self, target)
 
 			local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-			local NPCAimArm = if self.Owner and self.Owner.BodyParts["RightUpperArm"]
+			local NPCAimArm = if self.Owner
+					and self.Owner.BodyParts
+					and self.Owner.BodyParts["RightUpperArm"]
 				then self.Owner.BodyParts["RightUpperArm"]
 				else nil
 
