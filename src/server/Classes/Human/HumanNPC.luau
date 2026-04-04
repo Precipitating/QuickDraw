@@ -176,11 +176,6 @@ function HumanNPC:AimRightArmTowards(target)
 	local flattenedLookAt = Vector3.new(targetPos.X, self.HRP.Position.Y, targetPos.Z)
 	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
 end
-function HumanNPC:AttackPlayer(target: Model | BasePart)
-	assert(target, "[HumanNPC:AttackPlayer] Target is invalid")
-
-	self.AI:StartAttackState(target)
-end
 
 function HumanNPC:Ragdoll(duration: number)
 	local humanoid = self.Humanoid
@@ -208,7 +203,7 @@ end
 
 function HumanNPC:OnDeath()
 	Debris:AddItem(self.Character, 30)
-	self.AI:ChangeState("Dead")
+	self.AI.StateMachine:Transition("Dead")
 	Human.OnDeath(self)
 end
 

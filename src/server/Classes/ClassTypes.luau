@@ -13,7 +13,6 @@ export type Gun = {
 	MuzzleFlash: Attachment?,
 	HumanClassRef: Human?,
 }
-export type AIState = "Idle" | "Patrol" | "Seek" | "Attack" | "Dead"
 
 export type Throwable = {
 	Name: string,

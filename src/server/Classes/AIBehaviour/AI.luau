@@ -3,86 +3,53 @@ local PathfindingService = game:GetService("PathfindingService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
+local Dead = require(ServerScriptService.Server.Classes.AIBehaviour.States.Dead)
+local Idle = require(ServerScriptService.Server.Classes.AIBehaviour.States.Idle)
+local Seek = require(ServerScriptService.Server.Classes.AIBehaviour.States.Seek)
 local AISignals = require(script.Parent.AISignals)
-local PatrolData = require(script.Parent.PatrolData)
+
+local StateMachine = require(script.Parent.StateMachine)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 
 type Human = ClassTypes.Human
-type AIState = ClassTypes.AIState
+
 local AI = {}
 AI.__index = AI
-
-AI.StatesLogic = {
-	Idle = {
-		Enter = function(self)
-			self:StateChangeReset()
-		end,
-		Update = function(_) end,
-		Exit = function(self)
-			self:StateChangeReset()
-		end,
-	},
-	Patrol = {
-		Enter = function(self, patrolData)
-			self:StateChangeReset()
-			self.CurrentState = "Patrol"
-			self.StatesLogic["Patrol"].Update(self, patrolData)
-		end,
-		Update = function(self, patrolData)
-			self:Patrol(patrolData)
-		end,
-		Exit = function(self) end,
-	},
-	Seek = {
-		Enter = function(self)
-			self:StateChangeReset()
-			self.CurrentState = "Seek"
-			if not self.Owner.Legless then
-				self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
-			end
-			self.StatesLogic["Seek"].Update(self)
-		end,
-		Update = function(self)
-			self:Seek()
-		end,
-		Exit = function(self)
-			self.Owner.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
-		end,
-	},
-
-	Dead = {
-		Enter = function(self)
-			self:StateChangeReset()
-		end,
-	},
-}
 
 function AI.new(owner: Human)
 	local self = setmetatable({}, AI)
 	assert(owner, "Owner incorrect for AI class initialization")
 	self.Type = nil
 	self.TypeInfo = nil
-	self.CurrentState = "Idle" :: AIState
 	self.Owner = owner
+	self.StateMachine = StateMachine.new()
 	self.CurrentlyMoving = false
 	self.PatrolPoints = nil
 	self.EnemyList = { Player = true }
-	self.LastSeenTargetPosition = nil
+	self.AttackStateName = ""
+
 	self.NextWaypointIndex = nil
 	self.SeekTurnDelay = 1
 	self.ReachedConnection = nil
-	self.Target = nil
 	self.BlockedConnection = nil
 
 	self.PathfindTolerance = 2
 	self.MinAttackDistance = 0
 	self.MaxAttackDistance = 0
 
-	self:EnableEnemyDetection()
+	--self:EnableEnemyDetection()
+	self:Initialize()
 
 	return self
+end
+
+-- Initialize state machine states
+function AI:Initialize()
+	self.StateMachine:AddState("Idle", Idle.new(self.StateMachine, self))
+	self.StateMachine:AddState("Seek", Seek.new(self.StateMachine, self))
+
+	self.StateMachine:AddState("Dead", Dead.new(self.StateMachine, self))
 end
 
 function AI:StateChangeReset()
@@ -104,20 +71,6 @@ function AI:CancelPathFind()
 	self.Owner.Humanoid:MoveTo(self.Owner.HRP.Position)
 	self.CurrentlyMoving = false
 	print("Cancel pathfind")
-end
-
-function AI:EnableEnemyDetection()
-	task.spawn(function()
-		while task.wait(0.1) do
-			if self.CurrentState == "Attack" then
-				continue
-			end
-			if self.CurrentState == "Idle" or self.CurrentState == "Dead" or self.Owner.Dead then
-				return
-			end
-			self:CheckSurroundingsForEnemy()
-		end
-	end)
 end
 
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean)
@@ -223,37 +176,10 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 
 	return false
 end
-function AI:ChangeState(newState: string, ...)
-	if newState == self.CurrentState then
-		return
-	end
 
-	if self.CurrentState == "Dead" then
-		return
-	end
-	-- run current exit state
-	local stateExit = self.StatesLogic[self.CurrentState]
-	if stateExit then
-		stateExit.Exit(self, ...)
-	else
-		error(`[ChangeState] Missing exit function for {stateExit}`)
-	end
-
-	local stateEnter = self.StatesLogic[newState]
-	if stateEnter then
-		stateEnter.Enter(self, ...)
-	else
-		error(`[ChangeState] Missing enter function for {stateEnter}`)
-	end
-
-	warn(`New state = {newState}`)
-end
 function AI:TweenLookAround(hrp: BasePart, remaining: number)
 	if remaining <= 0 then
-		return
-	end
-	if self.CurrentState ~= "Seek" then
-		return
+		return false
 	end
 
 	-- Preserve the current position, only rotate yaw by 45 degrees
@@ -270,23 +196,29 @@ function AI:TweenLookAround(hrp: BasePart, remaining: number)
 	)
 	tween:Play()
 	tween.Completed:Wait()
-	if self.CurrentState ~= "Seek" then
-		return
+
+	local foundTargetModel = self:CheckSurroundingsForEnemy()
+	if foundTargetModel then
+		return foundTargetModel
 	end
 	self:TweenLookAround(hrp, remaining - 1)
+	return false
 end
 
 function AI:AlignOrientationLookAround(hrp: BasePart, torsoAimer: AlignOrientation)
 	torsoAimer.Enabled = true
-	for _ = 1, 8 do
-		if self.CurrentState ~= "Seek" then
-			return
-		end
+	for _ = 1, 4 do
 		local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z).Unit
-		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(45), 0)
+		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(90), 0)
 		task.wait(self.SeekTurnDelay)
+		local foundTargetModel = self:CheckSurroundingsForEnemy()
+		if foundTargetModel then
+			torsoAimer.Enabled = false
+			return foundTargetModel
+		end
 	end
 	torsoAimer.Enabled = false
+	return false
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
@@ -301,17 +233,16 @@ function AI:LookAround()
 
 	if not torsoAimer then
 		warn("[LookAround] Missing torso aimer!")
-		return
+		return false
 	end
 
 	-- if legless, tween instead
 	if legless then
-		self:TweenLookAround(hrp, 8)
-		return
+		return self:TweenLookAround(hrp, 8)
 	end
 
 	-- use align orientation if legs exist
-	self:AlignOrientationLookAround(hrp, torsoAimer)
+	return self:AlignOrientationLookAround(hrp, torsoAimer)
 end
 
 -- Check if target has a tag that is considered an enemy to the AI
@@ -325,34 +256,6 @@ function AI:TargetIsEnemy(target)
 	end
 
 	return false
-end
-
-function AI:Seek()
-	if not self.LastSeenTargetPosition or not self.Owner then
-		if self.CurrentState == "Seek" then
-			print("LastSeenTargetPosition is nil, patrolling")
-			AI.ChangeState(self, "Patrol", PatrolData["Test"])
-		end
-		return
-	end
-
-	-- move to last seen position
-	self:PathFindTo(self.LastSeenTargetPosition)
-
-	AISignals.PathfindComplete:Wait()
-
-	self.LastSeenTargetPosition = nil
-
-	-- have a look around 4 directions for any enemies
-	local foundEnemy = self:LookAround()
-	if foundEnemy then
-		return
-	end
-
-	if self.CurrentState == "Seek" then
-		print("Seek finished, no targets found so patrolling")
-		AI.ChangeState(self, "Patrol", PatrolData["Test"])
-	end
 end
 
 -- Get angle required for object to hit a position (if possible)
@@ -424,8 +327,7 @@ function AI:CheckSurroundingsForEnemy()
 			continue
 		end
 
-		AI.ChangeState(self, "Attack", parent)
-		return true
+		return parent or false
 	end
 
 	return false
@@ -434,7 +336,7 @@ end
 function AI:Patrol(patrolData)
 	task.spawn(function()
 		while task.wait(RandomModule.GetRandomIntBetween(1, 5)) do
-			if self.CurrentState ~= "Patrol" then
+			if self.StateMachine:GetState() ~= "Patrol" then
 				return
 			end
 			if self.CurrentlyMoving then
@@ -464,9 +366,12 @@ end
 function AI:PathFindTo(targetPos: Vector3)
 	local path = PathfindingService:CreatePath({
 		AgentRadius = 2,
-		AgentHeight = 6,
+		AgentHeight = 5,
 		AgentCanJump = true,
 		AgentCanClimb = true,
+		PathSettings = {
+			SupportPartialPath = true,
+		},
 	})
 	local character = self.Owner.Character
 	local humanoid: Humanoid = self.Owner.Humanoid
@@ -484,7 +389,7 @@ function AI:PathFindTo(targetPos: Vector3)
 		return
 	end
 
-	if path.Status == Enum.PathStatus.Success then
+	if path.Status == Enum.PathStatus.Success or path.Status == Enum.PathStatus.ClosestNoPath then
 		self.Owner:ToggleRightArmAimer(false)
 		self.CurrentlyMoving = true
 		local waypoints = path:GetWaypoints()

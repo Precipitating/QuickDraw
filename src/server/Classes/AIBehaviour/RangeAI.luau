@@ -1,9 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
+local RangeAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.RangeAttack)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
-local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
+
 local AI = require(script.Parent.AI)
 local AISignals = require(script.Parent.AISignals)
 
@@ -14,33 +16,25 @@ type Human = ClassTypes.Human
 local RangeAI = setmetatable({}, AI)
 RangeAI.__index = RangeAI
 
-RangeAI.StatesLogic = table.clone(AI.StatesLogic)
-
-RangeAI.StatesLogic.Attack = {
-	Enter = function(self, target)
-		if self.Owner.Dead then
-			return
-		end
-		self:StateChangeReset()
-		self.CurrentState = "Attack"
-		self.StatesLogic["Attack"].Update(self, target)
-	end,
-	Update = function(self, target)
-		self:StartAttackState(target)
-	end,
-	Exit = function(self) end,
-}
-
 function RangeAI.new(human: Human)
 	local self = setmetatable(AI.new(human), RangeAI)
 	self.Type = "Range"
 	self.MaxAttackDistance = 100
-
+	self.PatrolStayTime = 5
 	self.MinAttackDistance = 20
+	self.DefaultPatrolKey = "RangeAI"
+	self.AttackStateName = "RangeAttack"
 	self.AttackCooldown = 1
+	self:RangeInitialize()
 	return self
 end
 
+function RangeAI:RangeInitialize()
+	self.StateMachine:AddState("Patrol", Patrol.new(self.StateMachine, self))
+	self.StateMachine:AddState("RangeAttack", RangeAttack.new(self.StateMachine, self))
+
+	self.StateMachine:Transition("Patrol", self.DefaultPatrolKey)
+end
 function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart, radius: number, recursing: boolean)
 	local targetPos = if (typeof(target) == "Vector3" or not target:IsA("Model"))
 		then target
@@ -135,61 +129,6 @@ function RangeAI:CorrectRangePosition(target, targetPos)
 		self.Owner.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
 	end
 	return true
-end
-
-function RangeAI:StartAttackState(target: BasePart | Model)
-	task.spawn(function()
-		while task.wait(self.AttackCooldown) and self.CurrentState == "Attack" do
-			if self.Owner.Dead then
-				return
-			end
-
-			AISignals.HandleTargetDead:Fire(self, target)
-
-			local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-			local NPCAimArm = if self.Owner
-					and self.Owner.BodyParts
-					and self.Owner.BodyParts["RightUpperArm"]
-				then self.Owner.BodyParts["RightUpperArm"]
-				else nil
-
-			if not NPCAimArm then
-				warn("Right arm missing, NPC probably dead")
-				return
-			end
-
-			-- 1. Check if in shooting range, true if still attack state afterwards
-			self:CorrectRangePosition(target, targetPos)
-			if self.CurrentState ~= "Attack" then
-				print("Not in range, seeking")
-				AI.ChangeState(self, "Seek")
-				return
-			end
-
-			-- 2. Aim at target
-			self.Owner:ToggleRightArmAimer(true)
-			self.Owner:ToggleTorsoAimer(true)
-			self.Owner:AimRightArmTowards(target)
-
-			local isInLineOfSight = AI.IsTargetInView(self, NPCAimArm.Position, target, true)
-
-			-- 2.1 Seek state if not in LOS
-			if not isInLineOfSight then
-				print("Not in LOS, seeking")
-				AI.ChangeState(self, "Seek")
-				return
-			end
-
-			-- 3. Target in view, Save their position, aiming at target, SHOOT
-			self.LastSeenTargetPosition = targetPos
-
-			if self:ThrowThrowable(targetPos) then
-				continue
-			end
-
-			self:Attack()
-		end
-	end)
 end
 
 function RangeAI:Attack()

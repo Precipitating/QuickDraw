@@ -107,7 +107,7 @@ function Throwable:FragmentHitPlayer(hit: RaycastResult)
 		local isPlayer = if self.Owner and self.Owner.Player then self.Owner.Player else nil
 		if humanoid then
 			if self.FragmentType == "Explosive" then
-				GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage, nil, isPlayer)
+				GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage, self.Owner.HRP.Position, isPlayer)
 			elseif self.FragmentType == "Spread" then
 				GunSignals.InflictLimbDamage:Fire(
 					hit.Instance,

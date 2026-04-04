@@ -49,9 +49,9 @@ local function ApplyDamage(humanClass, limbName: string, damage: number, shotPos
 	end
 
 	-- if npc damaged on patrol, seek immediately the target
-	if humanClass.AI and humanClass.AI.CurrentState == "Patrol" and shotPos then
+	if humanClass.AI and humanClass.AI.StateMachine:GetState() == "Patrol" and shotPos then
 		humanClass.AI.LastSeenTargetPosition = shotPos
-		humanClass.AI:ChangeState("Seek")
+		humanClass.AI.StateMachine:Transition("Seek")
 	end
 
 	local multiplier = LimbDamageMultiplier[limbName] or 1
