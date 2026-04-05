@@ -80,20 +80,20 @@ function Destroyable:BodyPartDamage(damagedObject: BasePart?)
 	if isBodyPart then
 		if self.HumanEffect == "Spread" then
 			GunSignals.InflictLimbDamage:Fire(
-				damagedObject,
-				self.BaseDamage,
 				self.SpreadParticle,
 				self.SpreadDuration or 1,
+				self.BaseDamage,
+				damagedObject,
 				humanoid,
 				self.PlayerWhoDestroyed
 			)
 		else
 			if self.HumanEffect == "Damage" then
 				GunSignals.InflictLimbDamage:Fire(
-					damagedObject,
-					self.BaseDamage,
 					nil,
 					1,
+					self.BaseDamage,
+					damagedObject,
 					humanoid,
 					self.PlayerWhoDestroyed
 				)

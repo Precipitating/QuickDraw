@@ -10,13 +10,11 @@ function Idle.new(machine, ai)
 end
 
 function Idle:Enter(previous)
-	print("Entered Idle from", previous)
+	warn("Entered Idle from", previous)
 end
 
 function Idle:Update(dt) end
 
-function Idle:Exit(nextState)
-	print("Leaving Idle to", nextState)
-end
+function Idle:Exit(nextState) end
 
 return Idle

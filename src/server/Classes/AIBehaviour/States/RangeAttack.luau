@@ -15,7 +15,10 @@ function RangeAttack.new(machine, ai)
 end
 
 function RangeAttack:Enter(previous, target: BasePart | Model)
-	print("Entered RangeAttack from", previous)
+	warn("Entered RangeAttack from", previous)
+	self.AI:StateChangeReset()
+	self.Human:ToggleRightArmAimer(true)
+	self.Human:ToggleTorsoAimer(true)
 	self.Target = target
 
 	self.Machine:Start()
@@ -24,20 +27,29 @@ end
 function RangeAttack:Update(dt)
 	local now = os.clock()
 	local lastAttacked = now - self.LastAttacked
+	local human = self.Human
+	local ai = self.AI
 
 	if lastAttacked <= self.AI.AttackCooldown then
 		return
 	end
 
+	if ai.CurrentlyMoving then
+		return
+	end
+
 	self.LastAttacked = now
 	local target = self.Target
-	local human = self.Human
-	local ai = self.AI
+
 	-- this should transition to patrol if target is dead, so further code shouldnt be executed
-	AISignals.HandleTargetDead:Fire(self, target)
+	AISignals.HandleTargetDead:Fire(self.AI, target)
 
 	-- target is valid
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+	local targetDir = if target:IsA("Model")
+		then target.HumanoidRootPart.AssemblyLinearVelocity.Unit
+		else target.AssemblyLinearVelocity.Unit
+
 	local NPCAimArm = if human
 			and human.BodyParts
 			and human.BodyParts["RightUpperArm"]
@@ -49,37 +61,33 @@ function RangeAttack:Update(dt)
 		return
 	end
 
-	-- 1. Check if in shooting range, true if still attack state afterwards
-	ai:CorrectRangePosition(target, targetPos)
+	-- 1. Check if in shooting range, will move within range if a valid point was found
+	ai:CorrectRangePosition(target, targetPos, targetDir)
 
-	-- 2. Aim at target
-	human:ToggleRightArmAimer(true)
-	human:ToggleTorsoAimer(true)
 	human:AimRightArmTowards(target)
-
+	task.wait(0.5)
 	local isInLineOfSight = AI.IsTargetInView(ai, NPCAimArm.Position, target, true)
 
-	-- 2.1 Seek state if not in LOS
+	-- 2. Seek state if not in LOS
 	if not isInLineOfSight then
 		print("Not in LOS, seeking")
-		self.Machine:Transition("Seek")
+		self.Machine:Transition("Seek", { ShotPosition = targetPos, TargetDirection = targetDir })
 		return
 	end
 
-	-- 3. Target in view
-	self.Machine.LastSeenTargetPosition = targetPos
-
-	-- 4. Throw nade if possible
+	-- 3. Throw nade if possible
 	if ai:ThrowThrowable(targetPos) then
 		return
 	end
+
+	-- 4 Aim at target
+	human:AimRightArmTowards(target)
 
 	-- 5. SHOOT
 	ai:Attack()
 end
 
 function RangeAttack:Exit(nextState)
-	print("Leaving RangeAttack to", nextState)
 	self.Machine:Stop()
 end
 

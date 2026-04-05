@@ -41,43 +41,30 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 		else target:GetPivot().Position
 	local baseDir = (originPos - targetPos).Unit
 	local candidates = {}
-
 	for angle = 0, 360, 30 do
 		local radians = math.rad(angle)
-
 		local rotated = Vector3.new(
 			baseDir.X * math.cos(radians) - baseDir.Z * math.sin(radians),
 			0,
 			baseDir.X * math.sin(radians) + baseDir.Z * math.cos(radians)
 		)
-
 		local candidate = targetPos + rotated * radius
 
-		-- local prt = Instance.new("Part")
-		-- prt.Anchored = true
-		-- prt.Parent = workspace
-		-- prt.CanCollide = false
-		-- prt.CanQuery = false
-		-- prt.Size = Vector3.new(1, 1, 1)
-		-- prt.Position = candidate
-		-- prt.Color = Color3.fromRGB(255, 1, 1)
-		-- prt.Transparency = 0.8
-		-- Debris:AddItem(prt, 1)
+		local candidateDir = (candidate - targetPos).Unit
+		if candidateDir:Dot(baseDir) < 0 then
+			continue
+		end
 
 		if AI.IsTargetInView(self, candidate, target, false) then
-			--prt.Color = Color3.fromRGB(1, 255, 1)
 			table.insert(candidates, candidate)
 		end
 	end
-
 	if #candidates > 0 then
 		return candidates[RandomModule.GetRandomIntBetween(1, #candidates)]
 	end
-
 	if recursing then
 		return nil
 	end
-
 	for _ = 1, 6 do
 		radius *= 1.1
 		local hasCandidate = self:FindAnglePosition(originPos, target, radius, true)
@@ -85,44 +72,35 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 			return hasCandidate
 		end
 	end
-
 	return nil
 end
 
 -- Ensure the AI is within the shooting position
-function RangeAI:CorrectRangePosition(target, targetPos)
+function RangeAI:CorrectRangePosition(target, targetPos: Vector3, targetDir: Vector3?)
 	local currentPos = self.Owner.Character:GetPivot().Position
 	local halfAttackDist = self.MaxAttackDistance * 0.5
 	local distance = (targetPos - currentPos).Magnitude
 
 	-- If target too far, change to seek state
 	if distance >= self.MaxAttackDistance then
-		self.LastSeenTargetPosition = targetPos
-
+		self.StateMachine:Transition("Seek", { ShotPosition = targetPos, TargetDirection = targetDir })
 		return false
 	end
 
 	-- Target too close to NPC, back off.
 	if distance <= self.MinAttackDistance then
-		if self.CurrentlyMoving then
-			AISignals.PathfindComplete:Wait()
-		else
-			self.Owner.CurrentGun.Reloading = false
-			-- find a suitable position around player to go to
-			local safePos = self:FindAnglePosition(currentPos, target, halfAttackDist, false)
-			if not safePos then
-				return false
-			end
-
-			AI.PathFindTo(self, safePos)
-			if not self.Owner.Legless then
-				if not self.Owner then
-					return false
-				end
-				self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
-			end
-			AISignals.PathfindComplete:Wait()
+		self.Owner.CurrentGun.Reloading = false
+		-- find a suitable position around player to go to
+		local safePos = self:FindAnglePosition(currentPos, target, halfAttackDist, false)
+		if not safePos then
+			return false
 		end
+
+		AI.PathFindTo(self, safePos)
+		if not self.Owner.Legless then
+			self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+		end
+		AISignals.PathfindComplete:Wait()
 	end
 
 	if not self.Owner.Legless then

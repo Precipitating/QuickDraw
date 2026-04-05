@@ -18,10 +18,9 @@ function Patrol.new(machine, ai)
 end
 
 function Patrol:Enter(previous, patrolData)
-	print("Entered Patrol from", previous)
-	local ai = self.AI
+	warn("Entered Patrol from", previous)
 	self.PatrolData = PatrolData[patrolData]
-	ai:StateChangeReset()
+	self.AI:StateChangeReset()
 	self.Machine:Start()
 end
 
@@ -51,7 +50,6 @@ end
 
 function Patrol:Exit(nextState)
 	self.Machine:Stop()
-	print("Leaving Patrol to", nextState)
 end
 
 return Patrol

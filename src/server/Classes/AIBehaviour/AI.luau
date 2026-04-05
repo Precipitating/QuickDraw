@@ -181,14 +181,11 @@ function AI:TweenLookAround(hrp: BasePart, remaining: number)
 	if remaining <= 0 then
 		return false
 	end
-
-	-- Preserve the current position, only rotate yaw by 45 degrees
 	local position = hrp.Position
+
 	local currentYaw = select(2, hrp.CFrame:ToEulerAnglesYXZ())
 	local newYaw = currentYaw + math.rad(45)
-
 	local target = CFrame.new(position) * CFrame.Angles(0, newYaw, 0)
-
 	local tween = TweenService:Create(
 		hrp,
 		TweenInfo.new(self.SeekTurnDelay, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
@@ -197,43 +194,55 @@ function AI:TweenLookAround(hrp: BasePart, remaining: number)
 	tween:Play()
 	tween.Completed:Wait()
 
+	if self.StateMachine:GetState() ~= "Seek" then
+		return false
+	end
+
 	local foundTargetModel = self:CheckSurroundingsForEnemy()
 	if foundTargetModel then
 		return foundTargetModel
 	end
-	self:TweenLookAround(hrp, remaining - 1)
-	return false
+
+	return self:TweenLookAround(hrp, remaining - 1)
 end
 
-function AI:AlignOrientationLookAround(hrp: BasePart, torsoAimer: AlignOrientation)
-	torsoAimer.Enabled = true
-	for _ = 1, 4 do
+function AI:AlignOrientationLookAround(hrp: BasePart, seekDir: Vector3?)
+	local torsoAimer = self.Owner.TorsoAimer
+	self.Owner:ToggleTorsoAimer(true)
+
+	-- First look at the predicted direction the target may have went to
+	if seekDir then
+		local flatSeek = Vector3.new(seekDir.X, 0, seekDir.Z)
+		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatSeek)
+		task.wait(self.SeekTurnDelay)
+		local foundTargetModel = self:CheckSurroundingsForEnemy()
+		if foundTargetModel then
+			self.Owner:ToggleTorsoAimer(false)
+			return foundTargetModel
+		end
+	end
+
+	for _ = 1, 3 do
 		local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z).Unit
 		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(90), 0)
 		task.wait(self.SeekTurnDelay)
 		local foundTargetModel = self:CheckSurroundingsForEnemy()
 		if foundTargetModel then
-			torsoAimer.Enabled = false
+			self.Owner:ToggleTorsoAimer(false)
 			return foundTargetModel
 		end
 	end
-	torsoAimer.Enabled = false
+	self.Owner:ToggleTorsoAimer(false)
 	return false
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
-function AI:LookAround()
-	local torsoAimer = self.Owner.TorsoAimer
+function AI:LookAround(seekDir: Vector3)
 	local legless = self.Owner.Legless
 	local hrp = self.Owner.HRP
 
 	if self.CurrentlyMoving then
 		self:CancelPathFind()
-	end
-
-	if not torsoAimer then
-		warn("[LookAround] Missing torso aimer!")
-		return false
 	end
 
 	-- if legless, tween instead
@@ -242,7 +251,7 @@ function AI:LookAround()
 	end
 
 	-- use align orientation if legs exist
-	return self:AlignOrientationLookAround(hrp, torsoAimer)
+	return self:AlignOrientationLookAround(hrp, seekDir)
 end
 
 -- Check if target has a tag that is considered an enemy to the AI
@@ -322,7 +331,7 @@ function AI:CheckSurroundingsForEnemy()
 			continue
 		end
 
-		local visible = AI.IsTargetInView(self, head.Position, hrp, true)
+		local visible = self:IsTargetInView(head.Position, hrp, true)
 		if not visible then
 			continue
 		end
@@ -364,6 +373,7 @@ function AI:CheckLineOfSight()
 	return foundParts
 end
 function AI:PathFindTo(targetPos: Vector3)
+	self:StateChangeReset()
 	local path = PathfindingService:CreatePath({
 		AgentRadius = 2,
 		AgentHeight = 5,

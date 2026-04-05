@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -22,13 +24,7 @@ return {
 	end),
 
 	GunSignals.PlayerHit:Connect(
-		function(
-			hitObj: RaycastResult?,
-			playerHumanoid: Humanoid?,
-			damageInflicted: number,
-			shotPos: Vector3,
-			shooter: Player?
-		)
+		function(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number, shooter: Player? | Model?)
 			if not hitObj then
 				warn("[GunSignals.PlayerHit] Hit object reference invalid")
 				return
@@ -38,17 +34,40 @@ return {
 				warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
 				return
 			end
+			local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
 
-			DamageModule.DamageHuman(hitObj, playerHumanoid, damageInflicted, shotPos, shooter)
+			-- if model, NPC shot
+			-- if player, player shot
+			-- if nil, its a throwable
+			local shooterCharacter = if shooter and shooter:IsA("Player") then shooter.Character else shooter
+
+			local hrp = if shooterCharacter
+				then Utility.GetInstance(shooterCharacter, true, "HumanoidRootPart")
+				else nil
+
+			local gunShotData: ClassTypes.GunShotDamage = {
+				Type = "Shot",
+				RaycastResult = hitObj,
+				TargetHuman = humanClass,
+				Damage = damageInflicted,
+				ShotPosition = hrp.Position,
+				-- if standing still, set nil
+				TargetDirection = if hrp.AssemblyLinearVelocity.Magnitude > 0.05
+					then hrp.AssemblyLinearVelocity.Unit
+					else nil,
+				Shooter = shooter,
+			}
+
+			DamageModule.DamageHuman(gunShotData)
 		end
 	),
 
 	GunSignals.InflictLimbDamage:Connect(
 		function(
-			limb: MeshPart,
-			damageInflicted: number,
 			spreadParticleName: string,
 			spreadDuration: number,
+			damageInflicted: number,
+			limb: MeshPart,
 			humanoid: Humanoid,
 			shooter: Player?
 		)
@@ -68,14 +87,17 @@ return {
 				return
 			end
 
-			DamageModule:ApplyInflictingDamage(
-				spreadParticleName,
-				spreadDuration,
-				damageInflicted,
-				humanClass,
-				limb,
-				shooter
-			)
+			local shotData: ClassTypes.InflictingDamage = {
+				Type = "Inflict",
+				SpreadParticleName = spreadParticleName,
+				SpreadDuration = spreadDuration,
+				Damage = damageInflicted,
+				TargetHuman = humanClass,
+				LimbHit = limb,
+				shooter = shooter,
+			}
+
+			DamageModule:ApplyInflictingDamage(shotData)
 		end
 	),
 

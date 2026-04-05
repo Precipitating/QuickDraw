@@ -5,10 +5,11 @@ local TweenService = game:GetService("TweenService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerGunHandler = require(ServerScriptService.Server.Gun.ServerGunHandler)
-local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 type Human = ClassTypes.Human
+type HumanPlayer = ClassTypes.HumanPlayer
+type HumanNPC = ClassTypes.HumanNPC
 
 local LimbDamageMultiplier = {
 	Head = 2.5,
@@ -38,42 +39,51 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 	TweenService:Create(highlight, TweenInfo.new(0.5), { FillTransparency = 1 }):Play()
 end
 
-local function ApplyDamage(humanClass, limbName: string, damage: number, shotPos: Vector3, shooter: Player?)
-	if not humanClass or not humanClass.LimbHealth or not humanClass.LimbHealth[limbName] then
+local function ApplyDamage(
+	human: HumanPlayer | HumanNPC,
+	limbName: string,
+	damage: number,
+	shotPos: Vector3,
+	targetDirection: Vector3?,
+	shooter: Player?
+)
+	if not human or not human.LimbHealth or not human.LimbHealth[limbName] then
 		return
 	end
+	local gun = human.CurrentGun
+	local reloading = gun.Reloading
 
 	-- stop reloading if hurt
-	if humanClass.CurrentGun.Reloading then
-		humanClass.CurrentGun.Reloading = false
+	if reloading then
+		gun.Reloading = false
 	end
 
-	-- if npc damaged on patrol, seek immediately the target
-	if humanClass.AI and humanClass.AI.StateMachine:GetState() == "Patrol" and shotPos then
-		humanClass.AI.LastSeenTargetPosition = shotPos
-		humanClass.AI.StateMachine:Transition("Seek")
+	if human.HumanType == "NPC" then
+		human = human :: HumanNPC
+		local ai = human.AI
+
+		-- if npc damaged on patrol, seek immediately the target
+		-- only applies to SHOT damage type
+		if ai and ai.StateMachine:GetState() == "Patrol" and shotPos then
+			ai.StateMachine:Transition("Seek", { ShotPosition = shotPos, TargetDirection = targetDirection })
+		end
+	elseif human.HumanType == "Player" then
+		human = human :: HumanPlayer
+		human:AdjustGrayscale()
 	end
 
 	local multiplier = LimbDamageMultiplier[limbName] or 1
 
-	humanClass:OnHit(damage, multiplier, limbName, shooter)
+	human:OnHit(damage, multiplier, limbName, shooter)
 
-	if humanClass.AdjustGrayscale then
-		humanClass:AdjustGrayscale()
-	end
-
-	ApplyDamageHighlight(humanClass, limbName)
+	ApplyDamageHighlight(human, limbName)
 end
 
-function DamageModule:ApplyInflictingDamage(
-	spreadParticleName: string?,
-	spreadDuration: number,
-	damage: number,
-	humanClass: Human,
-	damagedLimb: MeshPart,
-	shooter: Player?
-)
-	local humanoid = humanClass.Humanoid
+function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.InflictingDamage)
+	local spreadParticleName = inflictingDamageData.SpreadParticleName
+	local damagedLimb = inflictingDamageData.LimbHit
+	local spreadDuration = inflictingDamageData.SpreadDuration
+
 	if spreadParticleName then
 		local spreadParticle = if Effects[spreadParticleName] then Effects[spreadParticleName]:Clone() else nil
 
@@ -92,13 +102,14 @@ function DamageModule:ApplyInflictingDamage(
 
 	task.spawn(function()
 		for _ = 1, spreadDuration do
-			self.DamageHuman(damagedLimb, humanoid, damage, nil, shooter)
+			--self.DamageHuman(damagedLimb, humanoid, damagePerHit, nil, shooter)
+			self.DamageHuman(inflictingDamageData)
 			task.wait(1)
 		end
 	end)
 end
 
-local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
+local function HandleLimbDestroyed(humanClass: Human, limbName: string, damage: number)
 	if limbName ~= "UpperTorso" and limbName ~= "LowerTorso" then
 		if humanClass.LimbHealth[limbName] <= -60 then
 			humanClass:DestroyLimb(limbName)
@@ -122,29 +133,24 @@ local function HandleLimbDestroyed(humanClass, limbName: string, damage: number)
 	end)
 end
 
-function DamageModule.DamageHuman(
-	hitObj: RaycastResult? | BasePart,
-	playerHumanoid: Humanoid?,
-	damageInflicted: number,
-	shotPos: Vector3,
-	shooter: Player?
-)
+function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage)
+	local hitObj = if damageData.Type == "Inflict" then damageData.LimbHit else damageData.RaycastResult
+	local human = damageData.TargetHuman
+	local limbHealth = human.LimbHealth
+	local damage = damageData.Damage
+	local shooter = damageData.Shooter
+	local shotPos = if damageData.Type == "Shot" then damageData.ShotPosition else nil
+	local targetDirection = if damageData.Type == "Shot" then damageData.TargetDirection else nil
+
 	if not hitObj then
 		warn("[DamageHuman] Invalid hit object")
 		return
 	end
-	if not playerHumanoid then
-		warn("[DamageHuman] Invalid humanoid")
+	if human.Dead then
 		return
 	end
 
-	local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
-
-	if not humanClass then
-		warn("Missing human class of hit human")
-		return
-	end
-	if humanClass.Dead then
+	if not limbHealth then
 		return
 	end
 
@@ -155,11 +161,6 @@ function DamageModule.DamageHuman(
 		limbName = hitObj.Instance.Name
 	end
 
-	local limbHealth = humanClass.LimbHealth
-
-	if not limbHealth then
-		return
-	end
 	if not limbHealth[limbName] then
 		return
 	end
@@ -167,17 +168,17 @@ function DamageModule.DamageHuman(
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
 		"BulletHitGroan",
-		humanClass.HRP,
+		human.HRP,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
-	ApplyDamage(humanClass, limbName, damageInflicted, shotPos, shooter)
+	ApplyDamage(human, limbName, damage, shotPos, targetDirection, shooter)
 
 	if limbHealth[limbName] <= 0 then
-		HandleLimbDestroyed(humanClass, limbName, damageInflicted)
+		HandleLimbDestroyed(human, limbName, damage)
 	end
 
-	if humanClass.Health <= 0 then
-		humanClass:Die(shooter)
+	if human.Health <= 0 then
+		human:Die(shooter)
 	end
 
 	if typeof(hitObj) == "RaycastResult" then

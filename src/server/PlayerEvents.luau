@@ -28,15 +28,5 @@ return {
 			end)
 		end)
 		ServerData.WaitForPlayerData(player)
-
-		--task.wait(5)
-		-- DamageModule.DamageHuman(
-		-- 	workspace.oOR0B0TOo.RightUpperLeg,
-		-- 	workspace.oOR0B0TOo.Humanoid,
-		-- 	150,
-		-- 	Vector3.zero,
-		-- 	nil
-		-- )
-		-- DamageModule.DamageHuman(workspace.oOR0B0TOo.LeftUpperLeg, workspace.oOR0B0TOo.Humanoid, 150, Vector3.zero, nil)
 	end),
 }

@@ -10,7 +10,6 @@ function StateMachine.new()
 	self.CurrentState = nil
 	self.CurrentStateName = nil
 	self.PreviousState = nil
-	self.LastSeenTargetPosition = nil
 
 	self._updating = false
 	self._connection = nil

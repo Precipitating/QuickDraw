@@ -17,7 +17,7 @@ function Inputs:Initialize()
 
 		-- sprint
 		if input.KeyCode == Enum.KeyCode.LeftShift then
-			if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
+			if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and PlayerContext.IsMoving then
 				self.networker:fire("ToggleSprint", true)
 			end
 		end

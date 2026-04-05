@@ -10,14 +10,12 @@ function Dead.new(machine, ai)
 end
 
 function Dead:Enter(previous)
-	print("Entered Dead from", previous)
+	warn("Entered Dead from", previous)
 	self.AI:StateChangeReset()
 end
 
 function Dead:Update(dt) end
 
-function Dead:Exit(nextState)
-	print("Leaving Dead to", nextState)
-end
+function Dead:Exit(nextState) end
 
 return Dead

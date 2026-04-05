@@ -110,7 +110,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.CanRoll = true
 	PlayerContext.PlayerGui = player:WaitForChild("PlayerGui", 10)
 	PlayerContext.AnimationController = AnimationController.new(character, DefaultAnimations, DefaultAnimateParams)
-
+	PlayerContext.IsMoving = false
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
 	for _, obj in character:GetChildren() do
@@ -149,6 +149,14 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 			end
 		end)
 	)
+
+	PlayerContext.janitor:Add(humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+		if humanoid.MoveDirection.Magnitude > 0 then
+			PlayerContext.IsMoving = true
+		else
+			PlayerContext.IsMoving = false
+		end
+	end))
 end
 
 local function ConnectGUIConnections(character: Model)

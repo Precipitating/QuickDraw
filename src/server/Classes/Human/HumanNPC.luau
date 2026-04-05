@@ -75,7 +75,7 @@ function HumanNPC:InitializeTorsoAimer()
 	aimer.Name = "TorsoAimer"
 	aimer.MaxTorque = 90000
 	aimer.MaxAngularVelocity = 15000
-	aimer.Responsiveness = 50
+	aimer.Responsiveness = 150
 	aimer.Enabled = false
 	aimer.Parent = upperTorso
 	return aimer
@@ -149,9 +149,13 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	else
 		torsoAimer.Enabled = false
 	end
+
+	warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 
 function HumanNPC:AimRightArmTowards(target)
+	self:ToggleRightArmAimer(true)
+	self:ToggleTorsoAimer(true)
 	local rightArm = self.BodyParts["RightUpperArm"]
 	local origin = rightArm.Position
 

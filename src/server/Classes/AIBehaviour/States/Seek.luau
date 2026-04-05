@@ -12,42 +12,42 @@ function Seek.new(machine, ai)
 	return self
 end
 
-function Seek:Enter(previous)
-	print("Entered Seek from", previous)
-
-	if not self.Machine.LastSeenTargetPosition then
+function Seek:Enter(previous, seekPos)
+	warn("Entered Seek from", previous)
+	self.AI:StateChangeReset()
+	if not seekPos then
+		warn("No last seen target, back to patrol")
 		self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
 		return
 	end
 
+	local seekPosition = seekPos.ShotPosition
+	local seekDir = seekPos.TargetDirection
+
 	local ai = self.AI
 	local legless = self.Human.Legless
 	local humanoid = self.Human.Humanoid
-	ai:StateChangeReset()
 
 	if not legless then
 		humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
 	end
 
 	-- move to last seen position
-	ai:PathFindTo(self.Machine.LastSeenTargetPosition)
+	ai:PathFindTo(seekPosition)
 
-	AISignals.PathfindComplete:Wait()
-
-	self.Machine.LastSeenTargetPosition = nil
-
-	-- have a look around 4 directions for any enemies
-	local foundEnemy = ai:LookAround()
-	if foundEnemy then
-		self.Machine:Transition(self.AI.AttackStateName, foundEnemy)
-		return
-	else
-		self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
-	end
+	self.Connections["PathfindComplete"] = AISignals.PathfindComplete:Connect(function()
+		-- have a look around 4 directions for any enemies
+		local foundEnemy = ai:LookAround(seekDir)
+		if foundEnemy then
+			self.Machine:Transition(self.AI.AttackStateName, foundEnemy)
+			return
+		else
+			self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
+		end
+	end)
 end
 
 function Seek:Exit(nextState)
-	print("Leaving Seek to", nextState)
 	self.Human.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
 end
 

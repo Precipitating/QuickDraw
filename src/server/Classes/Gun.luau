@@ -91,7 +91,7 @@ function Gun:HitPlayer(raycastResult: RaycastResult)
 	end
 
 	-- hit body part
-	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage, self.Tool.Handle.Position, self.PlayerRef)
+	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage, self.PlayerRef)
 	print(`{raycastResult.Instance.Name} hit!`)
 	return true
 end
@@ -145,6 +145,7 @@ function Gun:SingleShot(adsDir: Vector3?, adsPosition: Vector3?)
 	end
 end
 
+-- For shotgun
 function Gun:GetSpreadDirection(baseDirection: Vector3, maxDegrees: number)
 	-- Use a circular spread pattern
 	-- Pick a random angle and random radius within the cone
@@ -167,6 +168,7 @@ function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
 		return
 	end
 
+	-- If ADS...
 	if adsDir and adsPosition then
 		for _ = 1, pelletCount do
 			local spreadDir = self:GetSpreadDirection(adsDir, maxSpreadAngle)

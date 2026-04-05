@@ -24,56 +24,113 @@ export type Throwable = {
 
 	Throw: (self: Throwable, cameraLookVector: Vector3) -> (),
 }
-export type Human = {
-	-- Core
-	Player: Player?, -- not set in constructor, so optional unless assigned elsewhere
-	HumanType: string,
-	Health: number,
-	Stamina: number,
 
-	-- Character References
+export type AI = {
+	-- Identity
+	Type: string?,
+	TypeInfo: any?,
+	Owner: Human,
+
+	-- State
+	StateMachine: any,
+	CurrentlyMoving: boolean,
+	PatrolPoints: { Vector3 }?,
+	EnemyList: { [string]: boolean },
+	AttackStateName: string,
+
+	-- Pathfinding
+	NextWaypointIndex: number?,
+	SeekTurnDelay: number,
+	ReachedConnection: RBXScriptConnection?,
+	BlockedConnection: RBXScriptConnection?,
+	PathfindTolerance: number,
+	MinAttackDistance: number,
+	MaxAttackDistance: number,
+
+	-- Methods
+	new: (owner: Human) -> AI,
+	Initialize: (self: AI) -> (),
+	StateChangeReset: (self: AI) -> (),
+	CancelPathFind: (self: AI) -> (),
+	IsTargetInView: (self: AI, originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean) -> boolean,
+	TweenLookAround: (self: AI, hrp: BasePart, remaining: number) -> boolean | Model,
+	AlignOrientationLookAround: (self: AI, hrp: BasePart, torsoAimer: AlignOrientation) -> boolean | Model,
+	LookAround: (self: AI, seekDir: Vector3?) -> boolean | Model,
+	TargetIsEnemy: (self: AI, target: Instance) -> boolean,
+	GetThrowAngle: (self: AI, origin: Vector3, target: Vector3, velocity: number) -> (number?, number?),
+	ThrowThrowable: (self: AI, targetPos: Vector3) -> boolean,
+	CheckSurroundingsForEnemy: (self: AI) -> Model | boolean,
+	Patrol: (self: AI, patrolData: { Vector3 }) -> (),
+	CheckLineOfSight: (self: AI) -> { BasePart }?,
+	PathFindTo: (self: AI, targetPos: Vector3) -> (),
+}
+
+export type Human = {
+	-- Identity
+	HumanType: string,
+	Dead: boolean,
+	Legless: boolean,
+	IsRagdolled: boolean,
+	AnimationControllerState: boolean,
+
+	-- References
 	Character: Model,
 	Humanoid: Humanoid,
-	RootPart: BasePart,
 	HRP: BasePart,
-	Animate: Instance,
+	RootPart: BasePart,
+	Animator: Animator?,
+	Player: Player?,
 
-	-- State Flags
+	-- Stats
+	Health: number,
+	Stamina: number,
 	Sprinting: boolean,
 	JumpSignalled: boolean,
 	RollSignalled: boolean,
-	IsRagdolled: boolean,
-	AnimationControllerState: boolean,
-	Legless: boolean,
+
+	-- Limbs
+	LimbHealth: { [string]: number },
+	BodyParts: { [string]: BasePart | boolean },
+	DisabledBodyParts: { [string]: boolean },
 
 	-- Equipment
 	CurrentGun: Gun?,
-	CurrentThrowable: Throwable?,
+	CurrentThrowable: any?,
 
-	-- Data Tables
-	LimbHealth: {},
-	BodyParts: {},
-	AnimationRefs: {},
-
-	-- Utilities
+	-- Janitor
 	Janitor: any,
 
 	-- Methods
-	Ragdoll: (self: Human, stunTime: number) -> (),
-	UnRagdoll: (self: Human) -> (),
-	ToggleRagdoll: (self: Human) -> (),
-	IsAlive: (self: Human) -> boolean,
-	Destroy: (self: Human) -> (),
-	OnDeath: (self: Human) -> (),
+	new: (humanoid: Humanoid?) -> Human,
+	GetHealthPercentage: (self: Human) -> number,
+	SetupPhysicsSettings: (self: Human) -> (),
+	ApplyRollForce: (self: Human) -> (),
+	AssignBodyParts: (self: Human, tagName: string) -> (),
+	SimulateDefaultLimbs: (self: Human) -> (),
+	OnHumanoidStateChange: (self: Human) -> (),
+	OnHit: (self: Human, damage: number, damageMultiplier: number, limbName: string, shooter: Player?) -> (),
 	Die: (self: Human, shooter: Player?) -> (),
-
+	FixCrawlADS: (self: Human) -> (),
+	SetCrawlState: (self: Human) -> (),
 	DisableLimb: (self: Human, limbName: string) -> (),
+	DestroyLimb: (self: Human, limbName: string) -> (),
+	IsAlive: (self: Human) -> boolean,
+	OnDeath: (self: Human) -> (),
+	Ragdoll: (self: Human, ragdollTime: number) -> (),
 	ApplyImpulse: (self: Human, force: Vector3, position: Vector3?) -> (),
-	ApplyImpulseOnLimb: (self: Human, limbName: string, force: Vector3) -> (),
+	Destroy: (self: Human) -> (),
 }
 
 export type HumanPlayer = Human & {
+	HumanType: "Player",
 	Player: Player,
+
+	AdjustGrayscale: (self: HumanPlayer) -> (),
+}
+
+export type HumanNPC = Human & {
+	HumanType: "NPC",
+	AI: AI,
 }
 
 export type Destroyable = {
@@ -85,6 +142,25 @@ export type Destroyable = {
 
 	Damage: (self: Destroyable, damageAmount: number, shooter: Player?) -> (),
 	Destroy: (self: Destroyable) -> (),
+}
+
+export type DamageData = {
+	TargetHuman: Human,
+	Damage: number,
+	Shooter: Player?,
+}
+export type InflictingDamage = DamageData & {
+	Type: "Inflict",
+	SpreadParticleName: string?,
+	SpreadDuration: number?,
+	LimbHit: BasePart,
+}
+
+export type GunShotDamage = DamageData & {
+	Type: "Shot",
+	RaycastResult: RaycastResult,
+	ShotPosition: Vector3?,
+	TargetDirection: Vector3?,
 }
 
 return nil
