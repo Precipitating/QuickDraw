@@ -70,7 +70,6 @@ end
 function AI:CancelPathFind()
 	self.Owner.Humanoid:MoveTo(self.Owner.HRP.Position)
 	self.CurrentlyMoving = false
-	print("Cancel pathfind")
 end
 
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean)
@@ -177,81 +176,58 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 	return false
 end
 
-function AI:TweenLookAround(hrp: BasePart, remaining: number)
-	if remaining <= 0 then
-		return false
-	end
-	local position = hrp.Position
+function AI:AlignOrientLookAround()
+	local torsoAimer = self.Owner.TorsoAimer
 
-	local currentYaw = select(2, hrp.CFrame:ToEulerAnglesYXZ())
-	local newYaw = currentYaw + math.rad(45)
-	local target = CFrame.new(position) * CFrame.Angles(0, newYaw, 0)
-	local tween = TweenService:Create(
-		hrp,
-		TweenInfo.new(self.SeekTurnDelay, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
-		{ CFrame = target }
-	)
-	tween:Play()
-	tween.Completed:Wait()
-
-	if self.StateMachine:GetState() ~= "Seek" then
+	if not torsoAimer then
+		warn("[AI:AlignOrientLookAround] Missing torso aimer reference")
 		return false
 	end
 
+	for _ = 1, 3 do
+		torsoAimer.CFrame *= CFrame.Angles(0, math.rad(45), 0)
+		task.wait(1)
+		local foundTargetModel = self:CheckSurroundingsForEnemy()
+		if foundTargetModel then
+			return foundTargetModel
+		end
+	end
+	return false
+end
+function AI:TweenTowardsSeekDir(seekDir: Vector3)
+	local torsoAimer: AlignOrientation = self.Owner.TorsoAimer
+
+	if not torsoAimer then
+		warn("[AI:TweenTowardsSeekDir] Torso aimer missing!")
+	end
+	local flat = Vector3.new(seekDir.X, 0, seekDir.Z).Unit
+	local hrp = self.Owner.HRP
+	local goal = CFrame.lookAt(hrp.Position, hrp.Position + flat)
+	torsoAimer.CFrame = goal
+	task.wait(0.5)
 	local foundTargetModel = self:CheckSurroundingsForEnemy()
 	if foundTargetModel then
 		return foundTargetModel
 	end
-
-	return self:TweenLookAround(hrp, remaining - 1)
-end
-
-function AI:AlignOrientationLookAround(hrp: BasePart, seekDir: Vector3?)
-	local torsoAimer = self.Owner.TorsoAimer
-	self.Owner:ToggleTorsoAimer(true)
-
-	-- First look at the predicted direction the target may have went to
-	if seekDir then
-		local flatSeek = Vector3.new(seekDir.X, 0, seekDir.Z)
-		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatSeek)
-		task.wait(self.SeekTurnDelay)
-		local foundTargetModel = self:CheckSurroundingsForEnemy()
-		if foundTargetModel then
-			self.Owner:ToggleTorsoAimer(false)
-			return foundTargetModel
-		end
-	end
-
-	for _ = 1, 3 do
-		local flatLook = Vector3.new(hrp.CFrame.LookVector.X, 0, hrp.CFrame.LookVector.Z).Unit
-		torsoAimer.CFrame = CFrame.lookAt(hrp.Position, hrp.Position + flatLook) * CFrame.Angles(0, math.rad(90), 0)
-		task.wait(self.SeekTurnDelay)
-		local foundTargetModel = self:CheckSurroundingsForEnemy()
-		if foundTargetModel then
-			self.Owner:ToggleTorsoAimer(false)
-			return foundTargetModel
-		end
-	end
-	self.Owner:ToggleTorsoAimer(false)
 	return false
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
 function AI:LookAround(seekDir: Vector3)
-	local legless = self.Owner.Legless
-	local hrp = self.Owner.HRP
+	local targetFound = nil
 
 	if self.CurrentlyMoving then
 		self:CancelPathFind()
 	end
 
-	-- if legless, tween instead
-	if legless then
-		return self:TweenLookAround(hrp, 8)
+	if seekDir then
+		targetFound = self:TweenTowardsSeekDir(seekDir)
+	end
+	if not targetFound then
+		targetFound = self:AlignOrientLookAround()
 	end
 
-	-- use align orientation if legs exist
-	return self:AlignOrientationLookAround(hrp, seekDir)
+	return targetFound
 end
 
 -- Check if target has a tag that is considered an enemy to the AI

@@ -54,7 +54,6 @@ export type AI = {
 	CancelPathFind: (self: AI) -> (),
 	IsTargetInView: (self: AI, originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean) -> boolean,
 	TweenLookAround: (self: AI, hrp: BasePart, remaining: number) -> boolean | Model,
-	AlignOrientationLookAround: (self: AI, hrp: BasePart, torsoAimer: AlignOrientation) -> boolean | Model,
 	LookAround: (self: AI, seekDir: Vector3?) -> boolean | Model,
 	TargetIsEnemy: (self: AI, target: Instance) -> boolean,
 	GetThrowAngle: (self: AI, origin: Vector3, target: Vector3, velocity: number) -> (number?, number?),

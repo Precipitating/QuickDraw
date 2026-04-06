@@ -9,6 +9,8 @@ Seek.__index = Seek
 function Seek.new(machine, ai)
 	local self = BaseState.new(machine, ai)
 	setmetatable(self, Seek)
+	self.LastChecked = os.clock()
+	self.Human.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
 	return self
 end
 
@@ -34,9 +36,11 @@ function Seek:Enter(previous, seekPos)
 
 	-- move to last seen position
 	ai:PathFindTo(seekPosition)
+	self.Machine:Start()
 
-	self.Connections["PathfindComplete"] = AISignals.PathfindComplete:Connect(function()
+	self.Connections["PathFindComplete"] = AISignals.PathfindComplete:Connect(function()
 		-- have a look around 4 directions for any enemies
+		self.Human:ToggleTorsoAimer(true)
 		local foundEnemy = ai:LookAround(seekDir)
 		if foundEnemy then
 			self.Machine:Transition(self.AI.AttackStateName, foundEnemy)
@@ -47,8 +51,25 @@ function Seek:Enter(previous, seekPos)
 	end)
 end
 
+-- Check for enemy during pathfind
+function Seek:Update(dt)
+	local ai = self.AI
+	local now = os.clock()
+	if now - self.LastChecked < 1 then
+		return
+	end
+
+	self.LastChecked = now
+	local foundEnemy = ai:CheckSurroundingsForEnemy()
+	if foundEnemy then
+		self.Machine:Transition(self.AI.AttackStateName, foundEnemy)
+		return
+	end
+end
+
 function Seek:Exit(nextState)
 	self.Human.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+	self.Machine:Stop()
 end
 
 return Seek

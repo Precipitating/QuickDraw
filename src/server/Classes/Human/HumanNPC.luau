@@ -67,9 +67,8 @@ function HumanNPC:InitializeRightArmAimer()
 end
 function HumanNPC:InitializeTorsoAimer()
 	local aimer: AlignOrientation = Instance.new("AlignOrientation")
-	local upperTorso = self.BodyParts["UpperTorso"]
 	aimer.Mode = Enum.OrientationAlignmentMode.OneAttachment
-	aimer.Attachment0 = upperTorso:WaitForChild("WaistRigAttachment")
+	aimer.Attachment0 = self.HRP.RootAttachment
 	aimer.RigidityEnabled = true
 	aimer.AlignType = Enum.AlignType.AllAxes
 	aimer.Name = "TorsoAimer"
@@ -77,15 +76,16 @@ function HumanNPC:InitializeTorsoAimer()
 	aimer.MaxAngularVelocity = 15000
 	aimer.Responsiveness = 150
 	aimer.Enabled = false
-	aimer.Parent = upperTorso
+	aimer.Parent = self.HRP
 	return aimer
 end
 
 function HumanNPC:ToggleRightArmAimer(enable: boolean)
 	local rightArmOrientator = self.RightArmAimer
-
 	assert(rightArmOrientator, "[HumanNPC:ToggleRightArmAimer] RightArmAimer is nil")
-
+	if rightArmOrientator.Enabled == enable then
+		return
+	end
 	if enable then
 		rightArmOrientator.Enabled = true
 	else
@@ -136,11 +136,8 @@ function HumanNPC:SetCrawlState()
 end
 function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	local torsoAimer = self.TorsoAimer
-
 	assert(torsoAimer, "[HumanNPC:ToggleTorsoAimer] torsoAimer is nil")
-
-	if self.Legless then
-		torsoAimer.Enabled = false
+	if torsoAimer.Enabled == enable then
 		return
 	end
 
