@@ -40,6 +40,22 @@ function Inputs:Initialize()
 				end)
 			end
 		end
+
+		-- kick
+		if input.KeyCode == Enum.KeyCode.F then
+			if not PlayerContext.CanKick then
+				return
+			end
+			local kickActivated = self.networker:fetch("ApplyKickDrain")
+
+			if kickActivated then
+				PlayerContext.CanKick = false
+				local kickAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Kick")
+				kickAnim.Stopped:Once(function()
+					PlayerContext.CanKick = true
+				end)
+			end
+		end
 	end)
 
 	UserInputService.JumpRequest:Connect(function()

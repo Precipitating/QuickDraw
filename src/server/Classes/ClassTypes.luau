@@ -104,6 +104,7 @@ export type Human = {
 	GetHealthPercentage: (self: Human) -> number,
 	SetupPhysicsSettings: (self: Human) -> (),
 	ApplyRollForce: (self: Human) -> (),
+	ApplyKickForce: (self: Human) -> (),
 	AssignBodyParts: (self: Human, tagName: string) -> (),
 	SimulateDefaultLimbs: (self: Human) -> (),
 	OnHumanoidStateChange: (self: Human) -> (),

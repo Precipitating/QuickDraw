@@ -22,7 +22,7 @@ function RangeAI.new(human: Human)
 	self.MaxAttackDistance = 100
 	self.PatrolStayTime = 5
 	self.MinAttackDistance = 20
-	self.DefaultPatrolKey = "RangeAI"
+	self.DefaultPatrolKey = "1"
 	self.AttackStateName = "RangeAttack"
 	self.AttackCooldown = 1
 	self:RangeInitialize()

@@ -1,15 +1,15 @@
 local CollectionService = game:GetService("CollectionService")
 local PathfindingService = game:GetService("PathfindingService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local ServerScriptService = game:GetService("ServerScriptService")
-local TweenService = game:GetService("TweenService")
+
 local Dead = require(ServerScriptService.Server.Classes.AIBehaviour.States.Dead)
 local Idle = require(ServerScriptService.Server.Classes.AIBehaviour.States.Idle)
 local Seek = require(ServerScriptService.Server.Classes.AIBehaviour.States.Seek)
 local AISignals = require(script.Parent.AISignals)
 
 local StateMachine = require(script.Parent.StateMachine)
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 type Human = ClassTypes.Human
@@ -316,20 +316,6 @@ function AI:CheckSurroundingsForEnemy()
 	end
 
 	return false
-end
-
-function AI:Patrol(patrolData)
-	task.spawn(function()
-		while task.wait(RandomModule.GetRandomIntBetween(1, 5)) do
-			if self.StateMachine:GetState() ~= "Patrol" then
-				return
-			end
-			if self.CurrentlyMoving then
-				continue
-			end
-			self:PathFindTo(patrolData[RandomModule.GetRandomIntBetween(1, #patrolData)])
-		end
-	end)
 end
 
 function AI:CheckLineOfSight()

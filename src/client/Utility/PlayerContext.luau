@@ -108,6 +108,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.HRP = hrp
 	PlayerContext.CanJump = true
 	PlayerContext.CanRoll = true
+	PlayerContext.CanKick = true
 	PlayerContext.PlayerGui = player:WaitForChild("PlayerGui", 10)
 	PlayerContext.AnimationController = AnimationController.new(character, DefaultAnimations, DefaultAnimateParams)
 	PlayerContext.IsMoving = false

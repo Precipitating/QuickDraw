@@ -111,6 +111,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Sprinting = false
 	self.JumpSignalled = false
 	self.RollSignalled = false
+	self.KickSignalled = false
 
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
@@ -170,6 +171,23 @@ function Human:SetupPhysicsSettings()
 	rightLowerArmSocket.TwistLowerAngle = 0
 end
 
+function Human:ApplyKickForce()
+	local rightFoot = self.BodyParts["RightFoot"]
+	if not rightFoot then
+		return
+	end
+	local overlapParams = OverlapParams.new()
+	overlapParams.FilterType = Enum.RaycastFilterType.Exclude
+	overlapParams:AddToFilter(self.Character)
+
+	local kickedObjects = workspace:GetPartBoundsInRadius(rightFoot.Position, HumanConstants.KICK_RADIUS, overlapParams)
+
+	for _, obj in kickedObjects do
+		if CollectionService:HasTag(obj, "Destroyable") then
+			obj:ApplyImpulse((self.HRP.CFrame.LookVector + Vector3.new(0, 0.8, 0)) * HumanConstants.KICK_FORCE)
+		end
+	end
+end
 function Human:ApplyRollForce()
 	local hrp = self.HRP
 	if not hrp then
@@ -434,7 +452,7 @@ function Human.IsAlive(self: any): boolean
 	return true
 end
 
---[=[
+--[=[d
 	Applies death ragdoll state
 ]=]
 function Human:OnDeath()

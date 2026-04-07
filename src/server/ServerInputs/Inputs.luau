@@ -48,6 +48,24 @@ function Inputs:ApplyRollDrain(player: Player, lookDir: Vector3)
 	return true
 end
 
+function Inputs:ApplyKickDrain(player: Player)
+	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
+	if humanClass.Legless then
+		return false
+	end
+	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+		return false
+	end
+	if humanClass.Stamina < HumanConstants.KICK_DRAIN then
+		return false
+	end
+
+	humanClass.KickSignalled = true
+	humanClass:ApplyKickForce()
+
+	return true
+end
+
 function Inputs:ToggleSprint(player: Player, active: boolean)
 	local humanClass, humanoid = PlayerManager:GetHumanClassFromPlayer(player)
 	local stamina = humanClass.Stamina
@@ -64,6 +82,9 @@ function Inputs:ToggleSprint(player: Player, active: boolean)
 	end
 end
 
-Inputs.networker =
-	Networker.new("InputNetwork", Inputs, { Inputs.ToggleSprint, Inputs.ApplyJumpDrain, Inputs.ApplyRollDrain })
+Inputs.networker = Networker.new(
+	"InputNetwork",
+	Inputs,
+	{ Inputs.ToggleSprint, Inputs.ApplyJumpDrain, Inputs.ApplyRollDrain, Inputs.ApplyKickDrain }
+)
 return Inputs

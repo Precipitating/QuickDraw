@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
-
-local PatrolData = require(ServerScriptService.Server.Classes.AIBehaviour.PatrolData)
+local ServerStorage = game:GetService("ServerStorage")
+local PatrolData = ServerStorage.PatrolData
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local BaseState = require(script.Parent.BaseState)
 
@@ -45,7 +44,10 @@ function Patrol:Update(dt)
 	self.LastPatrol = now
 	local patrolData = self.PatrolData
 
-	ai:PathFindTo(patrolData[RandomModule.GetRandomIntBetween(1, #patrolData)])
+	local patrolFolder = patrolData:GetChildren()
+	local wayPoint = patrolFolder[RandomModule.GetRandomIntBetween(1, #patrolFolder)]
+	local wayPointPos = wayPoint.Position
+	ai:PathFindTo(wayPointPos)
 end
 
 function Patrol:Exit(nextState)

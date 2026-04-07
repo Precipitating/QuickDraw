@@ -41,6 +41,14 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 		-- roll
 		if playerClass.RollSignalled and currentStamina >= HumanConstants.ROLL_DRAIN then
 			currentStamina -= HumanConstants.ROLL_DRAIN
+			playerClass.RollSignalled = false
+		end
+
+		-- kick
+
+		if playerClass.KickSignalled and currentStamina >= HumanConstants.KICK_DRAIN then
+			currentStamina -= HumanConstants.KICK_DRAIN
+			playerClass.KickSignalled = false
 		end
 
 		currentStamina = math.clamp(currentStamina, 0, HumanConstants.MAX_STAMINA)
