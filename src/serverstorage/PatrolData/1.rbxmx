@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Folder" referent="RBX307B658CD15647D9BA48BC8879761E32">
+	<Item class="Folder" referent="RBXD8A0B648DEE04C8E9A6A698002052980">
 		<Properties>
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -11,7 +11,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Part" referent="RBX5BDDA1B892084B94BBDC25361127A346">
+		<Item class="Part" referent="RBX2A07E2DE1B1B49D18C67E87FDDC84BB2">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -26,9 +26,9 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>87.0239334</X>
+					<X>17.0239334</X>
 					<Y>2.50000381</Y>
-					<Z>-256.002838</Z>
+					<Z>-61.0028381</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -110,7 +110,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBXFD5C6CD784BA4864975F0F373C1F3134">
+		<Item class="Part" referent="RBX3E92074C5FBB4D05A0D020033A14764D">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -125,9 +125,9 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>87.0239334</X>
+					<X>17.0239334</X>
 					<Y>2.50000381</Y>
-					<Z>-343.730591</Z>
+					<Z>-148.730591</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>
@@ -209,7 +209,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBXE87CFC2F83AE474DB2D42B842A7FA6D0">
+		<Item class="Part" referent="RBXB1680F350A754688B8FE60B52C3CB8C8">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -224,9 +224,9 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>87.0239334</X>
+					<X>17.0239334</X>
 					<Y>2.50000381</Y>
-					<Z>-133.761261</Z>
+					<Z>61.238739</Z>
 					<R00>1</R00>
 					<R01>0</R01>
 					<R02>0</R02>

@@ -336,6 +336,10 @@ function AI:CheckLineOfSight()
 end
 function AI:PathFindTo(targetPos: Vector3)
 	self:StateChangeReset()
+
+	if self.Owner.IsRagdolled then
+		return
+	end
 	local path = PathfindingService:CreatePath({
 		AgentRadius = 2,
 		AgentHeight = 5,

@@ -1,8 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 SoundManager.Init()
 SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
 require(script.Utility.PlayerContext):Initialize()
+require(script.ClientInputs.ProximityPromptHandler).Initialize()
 require(script.Animations.AnimationSignalsLogic)
 require(script.ClientData).Initialize()
 require(script.Sound.ClientSoundHandler)

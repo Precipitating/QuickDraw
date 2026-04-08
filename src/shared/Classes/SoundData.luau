@@ -130,18 +130,21 @@ SoundData.Sounds = {
 		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "SFX",
+		PoolSize = 3,
 	},
 	Headshot = {
 		SoundId = "rbxassetid://132435334799057",
 		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "SFX",
+		PoolSize = 3,
 	},
 	AddMoney = {
 		SoundId = "rbxassetid://139922061047157",
 		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "UI",
+		PoolSize = 3,
 	},
 }
 

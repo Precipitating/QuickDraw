@@ -45,6 +45,9 @@ return {
 				then Utility.GetInstance(shooterCharacter, true, "HumanoidRootPart")
 				else nil
 
+			if not hrp then
+				return
+			end
 			local gunShotData: ClassTypes.GunShotDamage = {
 				Type = "Shot",
 				RaycastResult = hitObj,

@@ -33,6 +33,10 @@ function Patrol:Update(dt)
 		return
 	end
 
+	if self.Human.IsRagdolled then
+		return
+	end
+
 	if timeElapsedSincePatrol < self.PatrolStayTime then
 		return
 	end

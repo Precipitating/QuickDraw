@@ -14,6 +14,7 @@ local HumanGUIHandler = require(script.Parent.Parent.GUI.HumanGUIHandler)
 local CurrentCamera = workspace.CurrentCamera
 local DefaultAnimations = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
 local Player = Players.LocalPlayer
+local Crosshair = ReplicatedStorage.Shared.Templates.Crosshair
 local DefaultAnimateParams = {
 	ApplyRigScale = true,
 	SprintDetectSpeed = 30,
@@ -201,6 +202,10 @@ function PlayerContext:Initialize()
 	Player.CharacterAdded:Connect(function(character: Model)
 		self.OnCharacterAdded(Player, character)
 	end)
+
+	-- Crosshair
+	local crosshair = Crosshair:Clone()
+	crosshair.Parent = workspace
 end
 
 return PlayerContext

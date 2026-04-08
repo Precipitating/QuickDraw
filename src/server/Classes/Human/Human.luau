@@ -180,11 +180,15 @@ function Human:ApplyKickForce()
 	overlapParams.FilterType = Enum.RaycastFilterType.Exclude
 	overlapParams:AddToFilter(self.Character)
 
-	local kickedObjects = workspace:GetPartBoundsInRadius(rightFoot.Position, HumanConstants.KICK_RADIUS, overlapParams)
+	local kickedObjects = workspace:GetPartBoundsInRadius(
+		rightFoot.Position + self.HRP.CFrame.LookVector * HumanConstants.KICK_RADIUS,
+		HumanConstants.KICK_RADIUS,
+		overlapParams
+	)
 
 	for _, obj in kickedObjects do
 		if CollectionService:HasTag(obj, "Destroyable") then
-			obj:ApplyImpulse((self.HRP.CFrame.LookVector + Vector3.new(0, 0.8, 0)) * HumanConstants.KICK_FORCE)
+			obj:ApplyImpulse((self.HRP.CFrame.LookVector + HumanConstants.KICK_HEIGHT) * HumanConstants.KICK_FORCE)
 		end
 	end
 end
@@ -298,8 +302,10 @@ function Human:OnHumanoidStateChange()
 		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
 			if RagdollDisabledStates[newState] then
 				self.AnimationControllerState = false
+				self.IsRagdolled = true
 			else
 				self.AnimationControllerState = true
+				self.IsRagdolled = false
 			end
 
 			for _, j in self.Character:GetDescendants() do

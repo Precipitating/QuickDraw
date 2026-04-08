@@ -38,6 +38,10 @@ function RangeAttack:Update(dt)
 		return
 	end
 
+	if self.Human.IsRagdolled then
+		return
+	end
+
 	self.LastAttacked = now
 	local target = self.Target
 

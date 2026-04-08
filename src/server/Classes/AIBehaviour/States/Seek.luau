@@ -59,6 +59,10 @@ function Seek:Update(dt)
 		return
 	end
 
+	if self.Human.IsRagdolled then
+		return
+	end
+
 	self.LastChecked = now
 	local foundEnemy = ai:CheckSurroundingsForEnemy()
 	if foundEnemy then

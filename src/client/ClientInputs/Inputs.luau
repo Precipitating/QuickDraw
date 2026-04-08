@@ -1,6 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
+local ClientUtility = require(StarterPlayer.StarterPlayerScripts.Client.Utility.ClientUtility)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local ClientSoundHandler = require(script.Parent.Parent.Sound.ClientSoundHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -50,9 +52,11 @@ function Inputs:Initialize()
 
 			if kickActivated then
 				PlayerContext.CanKick = false
+				ClientUtility.ToggleControls(false)
 				local kickAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Kick")
 				kickAnim.Stopped:Once(function()
 					PlayerContext.CanKick = true
+					ClientUtility.ToggleControls(true)
 				end)
 			end
 		end
