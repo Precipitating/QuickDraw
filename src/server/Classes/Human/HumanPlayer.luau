@@ -15,8 +15,9 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.Player = player
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new("Winchester", self, player)
-	self.CurrentThrowable = Throwable.new("KetchumGrenade", self)
 	self.CurrentGun:AddGunToInventory()
+	self.CurrentThrowable = Throwable.new("KetchumGrenade", self)
+
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 
@@ -25,6 +26,13 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 end
 function HumanPlayer:ApplyImpulse(force: Vector3, position: Vector3?)
 	HumanSignals.ApplyImpulseToClient:Fire(self.Player, self.RootPart, force, position)
+end
+
+function HumanPlayer:ChangeGun(newGun: string)
+	if self.CurrentGun then
+		self.CurrentGun:Destroy()
+	end
+	self.CurrentGun = Gun.new(newGun, self, self.Player)
 end
 
 function HumanPlayer:ConnectGUIs()

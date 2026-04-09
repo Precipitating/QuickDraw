@@ -1,4 +1,5 @@
 -- used to get up to date references to the player even if player dies
+local ContextActionService = game:GetService("ContextActionService")
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -206,6 +207,10 @@ function PlayerContext:Initialize()
 	-- Crosshair
 	local crosshair = Crosshair:Clone()
 	crosshair.Parent = workspace
+
+	ContextActionService:BindActionAtPriority("RightMouseDisable", function()
+		return Enum.ContextActionResult.Sink
+	end, false, Enum.ContextActionPriority.Low.Value, Enum.UserInputType.MouseButton2)
 end
 
 return PlayerContext

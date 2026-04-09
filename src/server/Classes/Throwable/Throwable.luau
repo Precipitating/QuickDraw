@@ -89,6 +89,9 @@ function Throwable:Throw(cameraLookVector: Vector3)
 
 	-- cooldown for next throw
 	task.delay(ThrowableData[self.Name].ThrowDelay, function()
+		if not self then
+			return
+		end
 		self.CanThrow = true
 
 		if self.Tool and self.Tool:FindFirstChild("Handle") then
@@ -171,6 +174,10 @@ function Throwable:SpawnFragments(spawnPos: Vector3)
 		-- debugPart.Size = Vector3.new(0.1, 0.1, fragmentRange)
 		-- debugPart.Parent = workspace
 	end
+
+	if self.CurrentAmmo <= 0 then
+		self:Destroy()
+	end
 end
 
 function Throwable:OnThrowImpact(cosmeticBulletObj)
@@ -196,6 +203,13 @@ function Throwable:OnThrowImpact(cosmeticBulletObj)
 	cosmeticBulletObj:Destroy()
 
 	Debris:AddItem(explosion, 1)
+end
+
+function Throwable:Destroy()
+	self.Owner.CurrentThrowable = nil
+	self.Janitor:Destroy()
+	setmetatable(self, nil)
+	warn("Throwable class destroyed")
 end
 
 function Throwable:ConnectProjectileEvents()

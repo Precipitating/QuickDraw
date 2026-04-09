@@ -146,6 +146,20 @@ SoundData.Sounds = {
 		Group = "UI",
 		PoolSize = 3,
 	},
+	Error = {
+		SoundId = "rbxassetid://140650754692075",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "UI",
+		PoolSize = 3,
+	},
+	Purchase = {
+		SoundId = "rbxassetid://134952684776633",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "UI",
+		PoolSize = 3,
+	},
 }
 
 -- Default group volumes

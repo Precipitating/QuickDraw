@@ -110,7 +110,7 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 	-- ── FOV Check ────────────────────────────────
 	if useFOV then
 		local fov = 120
-		local head = self.Owner.BodyParts["Head"]
+		local head = self.Owner and self.Owner.BodyParts and self.Owner.BodyParts["Head"]
 		if head then
 			local lookDir = head.CFrame.LookVector
 			local halfFOV = math.rad(fov / 2)
@@ -264,6 +264,9 @@ function AI:GetThrowAngle(origin, target, velocity)
 end
 function AI:ThrowThrowable(targetPos)
 	local throwable = self.Owner.CurrentThrowable
+	if not throwable then
+		return
+	end
 	if throwable.CurrentAmmo <= 0 then
 		return false
 	end

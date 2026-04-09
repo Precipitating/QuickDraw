@@ -25,4 +25,8 @@ function ServerData.UpdateMoney(player: Player, amount: number)
 	end)
 end
 
+function ServerData.GetMoney(player: Player)
+	return DataService:get(player, { "currency" })
+end
+
 return ServerData

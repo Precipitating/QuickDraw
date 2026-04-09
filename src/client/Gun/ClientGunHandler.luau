@@ -1,3 +1,4 @@
+local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -165,18 +166,17 @@ function ClientGunHandler.TweenADS(tweenIn: boolean)
 
 	ADSTween:Play()
 end
-
 function ClientGunHandler.CancelADS()
-	StopCurrentTween()
-	local _: Part, crosshairBB: BillboardGui, _: ImageLabel = Get3DCrosshair()
-	crosshairBB.Enabled = false
-
 	CurrentCamera.CameraSubject = PlayerContext.Humanoid
 	PlayerContext.Player.CameraMaxZoomDistance = GunConfig.NORMAL_MAX_ZOOM_DIST
+
+	StopCurrentTween()
+	ClientGunHandler.TweenADS(false)
+
+	local _: Part, crosshairBB: BillboardGui, _: ImageLabel = Get3DCrosshair()
+	crosshairBB.Enabled = false
 	ADSTransparency(false)
 	CrosshairHandler:ToggleCrosshairVisibility(false)
-
-	ClientGunHandler.TweenADS(false)
 end
 
 local function DisableCrosshairIfOOB(crosshairBB: BillboardGui)
@@ -400,48 +400,31 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		Crosshair3DPositionSetter(crosshairBB)
 		self:AddCollisionConstraints(gun)
 
-		self.janitor:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
-			if gameProcessed then
-				return
-			end
-
-			-- RMB = aim down sight
-			if input.UserInputType == Enum.UserInputType.MouseButton2 then
+		-- we use this because we disabled the default RMB camera movement by sinking RMB, but we want RMB to work
+		-- so we set this at a higher priority so we can still allow RMB inputs for this only
+		ContextActionService:BindActionAtPriority("ADSAction", function(_, inputState, input)
+			if inputState == Enum.UserInputState.Begin then
 				HoldingRMB = true
 				crosshairBB.Enabled = false
 				Crosshair3DPosition = nil
 				Crosshair3DSize = nil
 				self.janitor:Remove("RayHit")
 				ADSTweenZoom(gun)
-			end
-
-			-- reload
-			if input.KeyCode == Enum.KeyCode.R then
-				self:AttemptReload()
-			end
-
-			-- fix right arm orientation if pressed
-			if input.KeyCode == Enum.KeyCode.Q then
-				local rightArm = PlayerContext.BodyParts["RightUpperArm"]
-				if rightArm then
-					local shoulder: AnimationConstraint = rightArm:WaitForChild("RightShoulder", 10)
-					if not shoulder then
-						warn("Missing shoulder ref when fixing arm")
-						return
-					end
-					shoulder.Enabled = false
-					task.wait()
-					shoulder.Enabled = true
-				end
-			end
-		end))
-
-		self.janitor:Add(UserInputService.InputEnded:Connect(function(input)
-			-- get out of aim down sight and revert back to 3D crosshair aiming
-			if input.UserInputType == Enum.UserInputType.MouseButton2 then
+			elseif inputState == Enum.UserInputState.End then
 				HoldingRMB = false
 				ClientGunHandler.CancelADS()
 				Crosshair3DPositionSetter(crosshairBB)
+			end
+			return Enum.ContextActionResult.Pass -- still let RMB through to other listeners
+		end, false, Enum.ContextActionPriority.Low.Value + 100, Enum.UserInputType.MouseButton2)
+
+		self.janitor:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
+			if gameProcessed then
+				return
+			end
+			-- reload
+			if input.KeyCode == Enum.KeyCode.R then
+				self:AttemptReload()
 			end
 		end))
 
@@ -468,6 +451,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		print("Disconnecting gun connections!")
 		HoldingRMB = false
 		self.janitor:Cleanup()
+		ContextActionService:UnbindAction("ADSAction")
 		CurrentCamera.CameraSubject = PlayerContext.Humanoid
 		self:DisconnectGun()
 		ClientGunHandler.CancelADS()

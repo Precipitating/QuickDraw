@@ -36,12 +36,10 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 		error("Gun doesn't exist")
 	end
 	local gunData = GunData[gunName]
-
 	local self = setmetatable({}, Gun)
-
 	self.Janitor = Janitor.new()
-	self.Tool = nil
 
+	self.Tool = nil
 	self.GunName = gunName
 	self.MaxAmmo = gunData.MaxAmmo
 	self.CurrentAmmo = gunData.MaxAmmo
@@ -225,7 +223,9 @@ end
 
 function Gun:Destroy()
 	self.Janitor:Destroy()
+	self.Tool:Destroy()
 	setmetatable(self, nil)
+	table.clear(self)
 end
 
 function Gun:Reload()
