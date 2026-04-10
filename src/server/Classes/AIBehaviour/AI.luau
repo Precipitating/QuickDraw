@@ -11,6 +11,7 @@ local AISignals = require(script.Parent.AISignals)
 local StateMachine = require(script.Parent.StateMachine)
 
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 type Human = ClassTypes.Human
 
@@ -37,6 +38,7 @@ function AI.new(owner: Human)
 	self.PathfindTolerance = 2
 	self.MinAttackDistance = 0
 	self.MaxAttackDistance = 0
+	self.EyeRange = 0
 
 	--self:EnableEnemyDetection()
 	self:Initialize()
@@ -184,14 +186,19 @@ function AI:AlignOrientLookAround()
 		return false
 	end
 
-	for _ = 1, 3 do
-		torsoAimer.CFrame *= CFrame.Angles(0, math.rad(45), 0)
+	for _ = 1, 4 do
+		torsoAimer.CFrame *= CFrame.Angles(0, math.rad(90), 0)
 		task.wait(1)
+		if not self.Owner or self.Owner.TorsoAimer then
+			return false
+		end
+
 		local foundTargetModel = self:CheckSurroundingsForEnemy()
 		if foundTargetModel then
 			return foundTargetModel
 		end
 	end
+
 	return false
 end
 function AI:TweenTowardsSeekDir(seekDir: Vector3)
@@ -334,7 +341,7 @@ function AI:CheckLineOfSight()
 	LineOfSightParams.FilterType = Enum.RaycastFilterType.Exclude
 	LineOfSightParams.FilterDescendantsInstances = { self.Owner.Character }
 
-	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.MaxAttackDistance)
+	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.EyeRange)
 	return foundParts
 end
 function AI:PathFindTo(targetPos: Vector3)
@@ -344,7 +351,7 @@ function AI:PathFindTo(targetPos: Vector3)
 		return
 	end
 	local path = PathfindingService:CreatePath({
-		AgentRadius = 2,
+		AgentRadius = 3,
 		AgentHeight = 5,
 		AgentCanJump = true,
 		AgentCanClimb = true,

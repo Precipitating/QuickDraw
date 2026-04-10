@@ -27,6 +27,7 @@ function HumanNPC.new(humanoid: Humanoid)
 	self.CurrentTrack = nil
 	self.AI = RangeAI.new(self)
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
+	self.VoicelineSound = self:SetupVoicelineSound()
 
 	self:SetNPCNetworkOwnership()
 	self:SetWeaponCollisions()
@@ -36,7 +37,12 @@ function HumanNPC.new(humanoid: Humanoid)
 	return self :: any
 end
 
-function HumanNPC:LoadServerAnimationTracks() end
+function HumanNPC:SetupVoicelineSound()
+	local sound = Instance.new("Sound")
+	sound.Name = "VoicelineSound"
+	sound.Parent = self.HRP
+	return sound
+end
 
 function HumanNPC:SetNPCNetworkOwnership()
 	for _, part in self.BodyParts do
@@ -91,6 +97,7 @@ function HumanNPC:ToggleRightArmAimer(enable: boolean)
 	else
 		rightArmOrientator.Enabled = false
 	end
+	rightArmOrientator.CFrame = CFrame.identity
 end
 
 function HumanNPC:SetCrawlState()
@@ -125,7 +132,7 @@ function HumanNPC:SetCrawlState()
 
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
-		self.Humanoid.WalkSpeed = 8
+		self.Humanoid.WalkSpeed = HumanConstants.CRAWL_SPEED
 
 		self:FixCrawlADS()
 
@@ -146,7 +153,7 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	else
 		torsoAimer.Enabled = false
 	end
-
+	torsoAimer.CFrame = CFrame.identity
 	warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 

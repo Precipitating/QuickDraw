@@ -4,6 +4,7 @@ local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationH
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
+local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
@@ -61,7 +62,7 @@ function Human:SetCrawlState()
 
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
-		self.Humanoid.WalkSpeed = 8
+		self.Humanoid.WalkSpeed = HumanConstants.CRAWL_SPEED
 		self.Humanoid.HipHeight = 0.5
 
 		self:FixCrawlADS()

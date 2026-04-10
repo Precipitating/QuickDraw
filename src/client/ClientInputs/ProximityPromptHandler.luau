@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ShopGUIHandler = require(script.Parent.Parent.GUI.ShopGUIHandler)
 local GUI = ReplicatedStorage.Shared.GUI
 local PROMPT_HANDLERS = {
@@ -7,7 +8,7 @@ local PROMPT_HANDLERS = {
 		local shop = GUI.ShopGUI:Clone()
 		shop.Parent = player.PlayerGui
 		shop.Enabled = true
-
+		SoundManager.PlayKeyed("Voiceline", "ShopGreeting")
 		ShopGUIHandler:ConnectShopGUI(shop, prompt)
 	end,
 }

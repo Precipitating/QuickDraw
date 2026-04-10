@@ -255,6 +255,13 @@ function Gun:Reload()
 	return self.CurrentAmmo
 end
 
+function Gun:DisableCollision(tool: Tool)
+	for _, object in tool:GetChildren() do
+		if object:IsA("BasePart") then
+			object.CanCollide = false
+		end
+	end
+end
 function Gun:AddGunToInventory()
 	local clone: Tool = ServerStorage.Templates:FindFirstChild(self.GunName):Clone()
 	self.Tool = clone
@@ -287,7 +294,8 @@ function Gun:AddGunToInventory()
 		self.Janitor:Add(self.Tool)
 	else
 		-- should be HumanNPC class
-		-- remove this later, NPC auto equips gun for now
+		-- NPC auto equips gun for now
+		self:DisableCollision(clone)
 		self.HumanClassRef:EquipGun(clone)
 	end
 end

@@ -5,6 +5,7 @@ local RangeAttack = require(ServerScriptService.Server.Classes.AIBehaviour.State
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 local AI = require(script.Parent.AI)
 local AISignals = require(script.Parent.AISignals)
@@ -22,6 +23,7 @@ function RangeAI.new(human: Human)
 	self.MaxAttackDistance = 100
 	self.PatrolStayTime = 5
 	self.MinAttackDistance = 20
+	self.EyeRange = 250
 	self.DefaultPatrolKey = "1"
 	self.AttackStateName = "RangeAttack"
 	self.AttackCooldown = 1
@@ -88,7 +90,13 @@ function RangeAI:CorrectRangePosition(target, targetPos: Vector3, targetDir: Vec
 	end
 
 	-- Target too close to NPC, back off.
-	if distance <= self.MinAttackDistance then
+	if distance <= self.MinAttackDistance and not self.Owner.Legless then
+		ServerSoundHandler:Play3DNPCVoiceline(
+			nil,
+			`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}`,
+			self.Owner.VoicelineSound,
+			{ MaxDistance = 200 }
+		)
 		self.Owner.CurrentGun.Reloading = false
 		-- find a suitable position around player to go to
 		local safePos = self:FindAnglePosition(currentPos, target, halfAttackDist, false)
@@ -97,9 +105,9 @@ function RangeAI:CorrectRangePosition(target, targetPos: Vector3, targetDir: Vec
 		end
 
 		AI.PathFindTo(self, safePos)
-		if not self.Owner.Legless then
-			self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
-		end
+
+		self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+
 		AISignals.PathfindComplete:Wait()
 	end
 

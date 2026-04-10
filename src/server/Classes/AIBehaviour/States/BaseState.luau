@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local BaseState = {}
 BaseState.__index = BaseState
 
@@ -8,7 +10,7 @@ function BaseState.new(machine, ai)
 	self.Name = "Unnamed"
 	self.AI = ai
 	self.Human = ai.Owner
-	self.Connections = {}
+	self.Janitor = Janitor.new()
 	return self
 end
 
@@ -39,10 +41,7 @@ end
 
 -- Cleanup helper
 function BaseState:Cleanup()
-	for _, conn in ipairs(self.Connections) do
-		conn:Disconnect()
-	end
-	self.Connections = {}
+	self.Janitor:Cleanup()
 end
 
 return BaseState

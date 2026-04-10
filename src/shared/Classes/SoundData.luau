@@ -160,6 +160,82 @@ SoundData.Sounds = {
 		Group = "UI",
 		PoolSize = 3,
 	},
+	ShopGreeting = {
+		SoundId = "rbxassetid://109511115443460",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
+	ShopExit = {
+		SoundId = "rbxassetid://136198373467944",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
+
+	-- Ranged AI
+	RangedAIAttack1 = {
+		SoundId = "rbxassetid://91004211172905",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack2 = {
+		SoundId = "rbxassetid://103394204160530",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack3 = {
+		SoundId = "rbxassetid://85256539261027",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff1 = {
+		SoundId = "rbxassetid://86287484064562",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff2 = {
+		SoundId = "rbxassetid://136531213004679",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff3 = {
+		SoundId = "rbxassetid://73868325417106",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar1 = {
+		SoundId = "rbxassetid://136403756554183",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar2 = {
+		SoundId = "rbxassetid://101594553347016",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar3 = {
+		SoundId = "rbxassetid://129013076301243",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAILostSight1 = {
+		SoundId = "rbxassetid://122246927608111",
+		Volume = 3,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
 }
 
 -- Default group volumes

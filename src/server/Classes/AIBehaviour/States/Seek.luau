@@ -1,6 +1,9 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local AISignals = require(ServerScriptService.Server.Classes.AIBehaviour.AISignals)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
 local Seek = setmetatable({}, BaseState)
@@ -10,7 +13,6 @@ function Seek.new(machine, ai)
 	local self = BaseState.new(machine, ai)
 	setmetatable(self, Seek)
 	self.LastChecked = os.clock()
-	self.Human.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
 	return self
 end
 
@@ -34,21 +36,36 @@ function Seek:Enter(previous, seekPos)
 		humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
 	end
 
+	ServerSoundHandler:Play3DNPCVoiceline(
+		nil,
+		`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}`,
+		self.Human.VoicelineSound,
+		{ MaxDistance = 200 }
+	)
 	-- move to last seen position
 	ai:PathFindTo(seekPosition)
-	self.Machine:Start()
 
-	self.Connections["PathFindComplete"] = AISignals.PathfindComplete:Connect(function()
+	AISignals.PathfindComplete:Once(function()
+		if not self.Human then
+			return
+		end
 		-- have a look around 4 directions for any enemies
 		self.Human:ToggleTorsoAimer(true)
 		local foundEnemy = ai:LookAround(seekDir)
 		if foundEnemy then
 			self.Machine:Transition(self.AI.AttackStateName, foundEnemy)
-			return
 		else
+			ServerSoundHandler:Play3DNPCVoiceline(
+				nil,
+				"RangedAILostSight1",
+				self.Human.VoicelineSound,
+				{ MaxDistance = 200 }
+			)
 			self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
 		end
+		return
 	end)
+	self.Machine:Start()
 end
 
 -- Check for enemy during pathfind

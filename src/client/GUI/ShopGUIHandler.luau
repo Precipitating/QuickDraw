@@ -90,6 +90,7 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
 		self:Disconnect()
 		gui:Destroy()
+		SoundManager.PlayKeyed("Voiceline", "ShopExit")
 		PlayerContext.ApplyMouseLock(true)
 		ClientUtility.ToggleControls(true)
 		CrosshairHandler:ToggleCrosshairVisibility(false)

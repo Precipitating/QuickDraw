@@ -449,6 +449,31 @@ end
 -- 3D / Spatial Sound
 -------------------------------------------------
 
+function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound, options: PlayOptions?)
+	local opts: PlayOptions = options or {}
+	if not soundInstance then
+		warn("[Play3DNPCVoiceline] missing soundInstance reference")
+		return
+	end
+
+	if soundInstance.IsPlaying then
+		soundInstance:Stop()
+	end
+
+	if not SoundData.Sounds[soundName] then
+		warn("[Play3DNPCVoiceline] Sound name invalid")
+		return
+	end
+	local config = SoundData.Sounds[soundName]
+	soundInstance.SoundId = config.SoundId
+	soundInstance.RollOffMaxDistance = opts.MaxDistance or 100
+	soundInstance.RollOffMinDistance = opts.MinDistance or 10
+	local baseVol = opts.Volume or config.Volume or 1
+	soundInstance.Volume = _calcVolume(baseVol, config.Group)
+	soundInstance.PlaybackSpeed = opts.Pitch or config.PlaybackSpeed or 1
+	soundInstance:Play()
+end
+
 --- Play a sound at a world position (attaches to a temporary part)
 function SoundManager.PlayAtPosition(name: string, position: Vector3, options: PlayOptions?): Sound?
 	local opts: PlayOptions = options or {}

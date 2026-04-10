@@ -19,4 +19,8 @@ function ClientSoundHandler:Play3DOneShotToOthers(soundName: string, emitterCFra
 	SoundManager.PlayAtPosition(soundName, emitterCFrame.Position, config)
 end
 
+function ClientSoundHandler:Play3DNPCVoiceline(soundName: string, soundInstance: Sound, config: PlayOptions?)
+	SoundManager.Play3DNPCVoiceline(soundName, soundInstance, config)
+end
+
 return ClientSoundHandler

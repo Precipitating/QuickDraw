@@ -18,7 +18,7 @@ return {
 			return
 		end
 
-		-- Go seek state if target is somehow NIL, it will transition to Patrol mode automatically afterwards.
+		-- Go patrol state if target is somehow NIL
 		if not target or not target.Parent then
 			AIClass.StateMachine:Transition("Patrol", AIClass.DefaultPatrolKey)
 			return

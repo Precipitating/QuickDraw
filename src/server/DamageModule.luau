@@ -102,7 +102,6 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 
 	task.spawn(function()
 		for _ = 1, spreadDuration do
-			--self.DamageHuman(damagedLimb, humanoid, damagePerHit, nil, shooter)
 			self.DamageHuman(inflictingDamageData)
 			task.wait(1)
 		end

@@ -1,6 +1,9 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
 local AISignals = require(ServerScriptService.Server.Classes.AIBehaviour.AISignals)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
 local RangeAttack = setmetatable({}, BaseState)
@@ -20,6 +23,12 @@ function RangeAttack:Enter(previous, target: BasePart | Model)
 	self.Human:ToggleRightArmAimer(true)
 	self.Human:ToggleTorsoAimer(true)
 	self.Target = target
+	ServerSoundHandler:Play3DNPCVoiceline(
+		nil,
+		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}`,
+		self.Human.VoicelineSound,
+		{ MaxDistance = 200 }
+	)
 
 	self.Machine:Start()
 end
@@ -39,8 +48,11 @@ function RangeAttack:Update(dt)
 	end
 
 	if self.Human.IsRagdolled then
+		self.Human:ToggleTorsoAimer(false)
 		return
 	end
+
+	self.Human:ToggleTorsoAimer(true)
 
 	self.LastAttacked = now
 	local target = self.Target

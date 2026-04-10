@@ -7,7 +7,7 @@ local AnimationController = require(ReplicatedStorage.Shared.AnimationData.Anima
 --
 local RunLoop = false
 local CheckTime = 1
-local RenderDistance = 150
+local RenderDistance = 300
 --
 local DefaultAnims = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
 local CrawlAnims = ReplicatedStorage.Shared.AnimationData.CrawlAnimations

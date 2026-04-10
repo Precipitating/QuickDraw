@@ -15,6 +15,19 @@ function ServerSoundHandler:Play3DOneShotToOthers(
 	end
 end
 
+function ServerSoundHandler:Play3DNPCVoiceline(
+	playerToExclude: Player?,
+	soundName: string,
+	NPCSoundInstance: Sound?,
+	config
+)
+	if playerToExclude then
+		self.networker:fireAllExcept(playerToExclude, "Play3DNPCVoiceline", soundName, NPCSoundInstance, config)
+	else
+		self.networker:fireAll("Play3DNPCVoiceline", soundName, NPCSoundInstance, config)
+	end
+end
+
 function ServerSoundHandler:PlaySoundTo(player: Player?, soundName: string, options)
 	if not player then
 		self.networker:fireAll("PlayOneShot", soundName, options)
