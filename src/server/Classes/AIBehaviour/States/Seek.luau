@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
-local AISignals = require(ServerScriptService.Server.Classes.AIBehaviour.AISignals)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
@@ -13,20 +12,21 @@ function Seek.new(machine, ai)
 	local self = BaseState.new(machine, ai)
 	setmetatable(self, Seek)
 	self.LastChecked = os.clock()
+
 	return self
 end
 
-function Seek:Enter(previous, seekPos)
+function Seek:Enter(previous, seekData)
 	warn("Entered Seek from", previous)
 	self.AI:StateChangeReset()
-	if not seekPos then
+	if not seekData then
 		warn("No last seen target, back to patrol")
 		self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
 		return
 	end
 
-	local seekPosition = seekPos.ShotPosition
-	local seekDir = seekPos.TargetDirection
+	local seekPosition = seekData.ShotPosition
+	local seekDir = seekData.TargetDirection
 
 	local ai = self.AI
 	local legless = self.Human.Legless
@@ -42,29 +42,50 @@ function Seek:Enter(previous, seekPos)
 		self.Human.VoicelineSound,
 		{ MaxDistance = 200 }
 	)
-	-- move to last seen position
+
+	-- 1. Move to last seen position
 	ai:PathFindTo(seekPosition)
 
-	AISignals.PathfindComplete:Once(function()
-		if not self.Human then
+	-- 2. Wait until destination reached
+	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
+		if success then
+			warn("Reached")
+			if not self.Human then
+				return
+			end
+
+			-- 2.1 Have a look around 4 directions for any enemies
+			local foundEnemy = ai:LookAround(seekDir)
+
+			-- 2.2 If enemy spotted
+			if foundEnemy then
+				local targetPos = if foundEnemy:IsA("Model")
+					then foundEnemy:GetPivot().Position
+					else foundEnemy.Position
+
+				-- 2.2.1 Fall back if too close
+				local inRange = ai:CorrectRangePosition(targetPos)
+				if inRange and typeof(inRange) == "string" then
+					if inRange == "Fallback" then
+						self.Machine:Transition("Fallback", { Target = foundEnemy })
+						return
+					end
+				end
+				-- Else Attack state
+				self.Machine:Transition(self.AI.AttackStateName, { Target = foundEnemy })
+			else
+				-- If not enemy spotted, lost them.
+				ServerSoundHandler:Play3DNPCVoiceline(
+					nil,
+					"RangedAILostSight1",
+					self.Human.VoicelineSound,
+					{ MaxDistance = 200 }
+				)
+				self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
+			end
 			return
 		end
-		-- have a look around 4 directions for any enemies
-		self.Human:ToggleTorsoAimer(true)
-		local foundEnemy = ai:LookAround(seekDir)
-		if foundEnemy then
-			self.Machine:Transition(self.AI.AttackStateName, foundEnemy)
-		else
-			ServerSoundHandler:Play3DNPCVoiceline(
-				nil,
-				"RangedAILostSight1",
-				self.Human.VoicelineSound,
-				{ MaxDistance = 200 }
-			)
-			self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
-		end
-		return
-	end)
+	end))
 	self.Machine:Start()
 end
 
@@ -83,7 +104,7 @@ function Seek:Update(dt)
 	self.LastChecked = now
 	local foundEnemy = ai:CheckSurroundingsForEnemy()
 	if foundEnemy then
-		self.Machine:Transition(self.AI.AttackStateName, foundEnemy)
+		self.Machine:Transition(self.AI.AttackStateName, { Target = foundEnemy })
 		return
 	end
 end

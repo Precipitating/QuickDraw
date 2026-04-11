@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
 local RangeAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.RangeAttack)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -34,16 +35,24 @@ end
 function RangeAI:RangeInitialize()
 	self.StateMachine:AddState("Patrol", Patrol.new(self.StateMachine, self))
 	self.StateMachine:AddState("RangeAttack", RangeAttack.new(self.StateMachine, self))
+	self.StateMachine:AddState("Fallback", Fallback.new(self.StateMachine, self))
 
 	self.StateMachine:Transition("Patrol", self.DefaultPatrolKey)
 end
-function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart, radius: number, recursing: boolean)
-	local targetPos = if (typeof(target) == "Vector3" or not target:IsA("Model"))
-		then target
-		else target:GetPivot().Position
+
+-- Find a valid position around target (circular around)
+function RangeAI:FindAnglePosition(
+	originPos: Vector3,
+	target: Model | BasePart,
+	radius: number,
+	recursing: boolean
+): Vector3?
+	local targetPos = if target:IsA("Model") then target:GetPivot().Position else (target :: BasePart).Position
+
 	local baseDir = (originPos - targetPos).Unit
 	local candidates = {}
-	for angle = 0, 360, 30 do
+
+	for angle = 0, 359, 30 do
 		local radians = math.rad(angle)
 		local rotated = Vector3.new(
 			baseDir.X * math.cos(radians) - baseDir.Z * math.sin(radians),
@@ -52,63 +61,45 @@ function RangeAI:FindAnglePosition(originPos: Vector3, target: Model | BasePart,
 		)
 		local candidate = targetPos + rotated * radius
 
-		local candidateDir = (candidate - targetPos).Unit
-		if candidateDir:Dot(baseDir) < 0 then
-			continue
-		end
-
 		if AI.IsTargetInView(self, candidate, target, false) then
 			table.insert(candidates, candidate)
 		end
 	end
+
 	if #candidates > 0 then
 		return candidates[RandomModule.GetRandomIntBetween(1, #candidates)]
 	end
+
 	if recursing then
 		return nil
 	end
+
+	-- expand radius if we can't find a valid position
 	for _ = 1, 6 do
-		radius *= 1.1
-		local hasCandidate = self:FindAnglePosition(originPos, target, radius, true)
-		if hasCandidate then
-			return hasCandidate
+		radius *= 1.25
+		local candidate = self:FindAnglePosition(originPos, target, radius, true)
+		if candidate then
+			return candidate
 		end
 	end
+
 	return nil
 end
 
 -- Ensure the AI is within the shooting position
-function RangeAI:CorrectRangePosition(target, targetPos: Vector3, targetDir: Vector3?)
+function RangeAI:CorrectRangePosition(targetPos: Vector3): string | boolean
 	local currentPos = self.Owner.Character:GetPivot().Position
-	local halfAttackDist = self.MaxAttackDistance * 0.5
+
 	local distance = (targetPos - currentPos).Magnitude
 
 	-- If target too far, change to seek state
 	if distance >= self.MaxAttackDistance then
-		self.StateMachine:Transition("Seek", { ShotPosition = targetPos, TargetDirection = targetDir })
-		return false
+		return "Seek"
 	end
 
 	-- Target too close to NPC, back off.
 	if distance <= self.MinAttackDistance and not self.Owner.Legless then
-		ServerSoundHandler:Play3DNPCVoiceline(
-			nil,
-			`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}`,
-			self.Owner.VoicelineSound,
-			{ MaxDistance = 200 }
-		)
-		self.Owner.CurrentGun.Reloading = false
-		-- find a suitable position around player to go to
-		local safePos = self:FindAnglePosition(currentPos, target, halfAttackDist, false)
-		if not safePos then
-			return false
-		end
-
-		AI.PathFindTo(self, safePos)
-
-		self.Owner.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
-
-		AISignals.PathfindComplete:Wait()
+		return "Fallback"
 	end
 
 	if not self.Owner.Legless then

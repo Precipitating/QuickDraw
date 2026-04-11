@@ -1,19 +1,21 @@
 local CollectionService = game:GetService("CollectionService")
-local PathfindingService = game:GetService("PathfindingService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local NoobPath = require(ReplicatedStorage.Shared.Pathfinding.NoobPath)
+local Path = require(ReplicatedStorage.Shared.Pathfinding.Path)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Dead = require(ServerScriptService.Server.Classes.AIBehaviour.States.Dead)
 local Idle = require(ServerScriptService.Server.Classes.AIBehaviour.States.Idle)
 local Seek = require(ServerScriptService.Server.Classes.AIBehaviour.States.Seek)
-local AISignals = require(script.Parent.AISignals)
 
 local StateMachine = require(script.Parent.StateMachine)
 
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 type Human = ClassTypes.Human
+type AgentParams = Path.AgentParams
 
 local AI = {}
 AI.__index = AI
@@ -32,8 +34,10 @@ function AI.new(owner: Human)
 
 	self.NextWaypointIndex = nil
 	self.SeekTurnDelay = 1
-	self.ReachedConnection = nil
-	self.BlockedConnection = nil
+	self.NoobPath = NoobPath.Humanoid(
+		self.Owner.Character,
+		{ WaypointSpacing = 10, PathSettings = { SupportPartialPath = true } } :: AgentParams
+	)
 
 	self.PathfindTolerance = 2
 	self.MinAttackDistance = 0
@@ -55,23 +59,9 @@ function AI:Initialize()
 end
 
 function AI:StateChangeReset()
-	self:CancelPathFind()
+	self.NoobPath:Stop()
 	self.Owner:ToggleRightArmAimer(false)
 	self.Owner:ToggleTorsoAimer(false)
-
-	if self.ReachedConnection then
-		self.ReachedConnection:Disconnect()
-		self.ReachedConnection = nil
-	end
-	if self.BlockedConnection then
-		self.BlockedConnection:Disconnect()
-		self.BlockedConnection = nil
-	end
-end
-
-function AI:CancelPathFind()
-	self.Owner.Humanoid:MoveTo(self.Owner.HRP.Position)
-	self.CurrentlyMoving = false
 end
 
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean)
@@ -189,7 +179,7 @@ function AI:AlignOrientLookAround()
 	for _ = 1, 4 do
 		torsoAimer.CFrame *= CFrame.Angles(0, math.rad(90), 0)
 		task.wait(1)
-		if not self.Owner or self.Owner.TorsoAimer then
+		if not self.Owner or not self.Owner.TorsoAimer then
 			return false
 		end
 
@@ -201,7 +191,7 @@ function AI:AlignOrientLookAround()
 
 	return false
 end
-function AI:TweenTowardsSeekDir(seekDir: Vector3)
+function AI:OrientTowardsSeekDir(seekDir: Vector3)
 	local torsoAimer: AlignOrientation = self.Owner.TorsoAimer
 
 	if not torsoAimer then
@@ -210,8 +200,14 @@ function AI:TweenTowardsSeekDir(seekDir: Vector3)
 	local flat = Vector3.new(seekDir.X, 0, seekDir.Z).Unit
 	local hrp = self.Owner.HRP
 	local goal = CFrame.lookAt(hrp.Position, hrp.Position + flat)
+
+	self.Owner:ToggleTorsoAimer(true)
 	torsoAimer.CFrame = goal
-	task.wait(0.5)
+	repeat
+		task.wait(0.5)
+
+	until Utility.IsVectorNear(self.Owner.HRP.AssemblyAngularVelocity, 0.05)
+
 	local foundTargetModel = self:CheckSurroundingsForEnemy()
 	if foundTargetModel then
 		return foundTargetModel
@@ -224,11 +220,11 @@ function AI:LookAround(seekDir: Vector3)
 	local targetFound = nil
 
 	if self.CurrentlyMoving then
-		self:CancelPathFind()
+		self.NoobPath:Stop()
 	end
 
 	if seekDir then
-		targetFound = self:TweenTowardsSeekDir(seekDir)
+		targetFound = self:OrientTowardsSeekDir(seekDir)
 	end
 	if not targetFound then
 		targetFound = self:AlignOrientLookAround()
@@ -350,86 +346,8 @@ function AI:PathFindTo(targetPos: Vector3)
 	if self.Owner.IsRagdolled then
 		return
 	end
-	local path = PathfindingService:CreatePath({
-		AgentRadius = 3,
-		AgentHeight = 5,
-		AgentCanJump = true,
-		AgentCanClimb = true,
-		PathSettings = {
-			SupportPartialPath = true,
-		},
-	})
-	local character = self.Owner.Character
-	local humanoid: Humanoid = self.Owner.Humanoid
 
-	if not character or not humanoid then
-		return
-	end
-
-	local success, errorMessage = pcall(function()
-		path:ComputeAsync(character:GetPivot().Position, targetPos)
-	end)
-
-	if not success then
-		warn(`AI failed to pathfind: {errorMessage}`)
-		return
-	end
-
-	if path.Status == Enum.PathStatus.Success or path.Status == Enum.PathStatus.ClosestNoPath then
-		self.Owner:ToggleRightArmAimer(false)
-		self.CurrentlyMoving = true
-		local waypoints = path:GetWaypoints()
-
-		-- Clean up old connections before creating new ones
-		if self.BlockedConnection then
-			self.BlockedConnection:Disconnect()
-			self.BlockedConnection = nil
-		end
-		if self.ReachedConnection then
-			self.ReachedConnection:Disconnect()
-			self.ReachedConnection = nil
-		end
-
-		-- Detect if path becomes blocked
-		self.BlockedConnection = path.Blocked:Connect(function(blockedWaypointIndex)
-			if blockedWaypointIndex >= self.NextWaypointIndex then
-				print("Waypoint blocked, trying again with an offset")
-				local angle = math.random() * math.pi * 2
-				local radius = 6
-				local randomOffset = Vector3.new(math.cos(angle), 0, math.sin(angle)) * radius
-				self:PathFindTo(targetPos + randomOffset)
-			end
-		end)
-
-		-- Start at index 2 (index 1 is the character's current position)
-		self.NextWaypointIndex = 2
-
-		-- Always create a fresh connection so it closes over the current `waypoints`
-		self.ReachedConnection = humanoid.MoveToFinished:Connect(function(reached)
-			if not self.CurrentlyMoving then
-				return
-			end
-			if reached and self.NextWaypointIndex < #waypoints then
-				self.NextWaypointIndex += 1
-
-				humanoid:MoveTo(waypoints[self.NextWaypointIndex].Position)
-			else
-				self.CurrentlyMoving = false
-				if self.ReachedConnection then
-					self.ReachedConnection:Disconnect()
-					self.ReachedConnection = nil
-				end
-				if self.BlockedConnection then
-					self.BlockedConnection:Disconnect()
-					self.BlockedConnection = nil
-				end
-				AISignals.PathfindComplete:Fire()
-			end
-		end)
-
-		-- Move to the first meaningful waypoint
-		humanoid:MoveTo(waypoints[self.NextWaypointIndex].Position)
-	end
+	self.NoobPath:Run(targetPos)
 end
 
 return AI

@@ -29,7 +29,7 @@ function Patrol:Update(dt)
 	local seenEnemyModel = self.AI:CheckSurroundingsForEnemy()
 
 	if seenEnemyModel then
-		self.Machine:Transition("RangeAttack", seenEnemyModel)
+		self.Machine:Transition("RangeAttack", { Target = seenEnemyModel })
 		return
 	end
 

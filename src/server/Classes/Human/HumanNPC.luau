@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
@@ -62,11 +63,9 @@ function HumanNPC:InitializeRightArmAimer()
 	local rightArm = self.BodyParts["RightUpperArm"]
 	aimer.Mode = Enum.OrientationAlignmentMode.OneAttachment
 	aimer.Attachment0 = rightArm:WaitForChild("RightShoulderAttachment")
-	aimer.RigidityEnabled = false
+	aimer.RigidityEnabled = true
 	aimer.Name = "RightArmAimer"
-	aimer.MaxTorque = 90000
-	aimer.MaxAngularVelocity = 15000
-	aimer.Responsiveness = 50
+	aimer.Responsiveness = 70
 	aimer.Enabled = false
 	aimer.Parent = rightArm
 	return aimer
@@ -78,8 +77,6 @@ function HumanNPC:InitializeTorsoAimer()
 	aimer.RigidityEnabled = true
 	aimer.AlignType = Enum.AlignType.AllAxes
 	aimer.Name = "TorsoAimer"
-	aimer.MaxTorque = 90000
-	aimer.MaxAngularVelocity = 15000
 	aimer.Responsiveness = 150
 	aimer.Enabled = false
 	aimer.Parent = self.HRP
@@ -149,6 +146,9 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	end
 
 	if enable then
+		if self.AI and not self.AI.NoobPath.Idle then
+			self.AI.NoobPath:Stop()
+		end
 		torsoAimer.Enabled = true
 	else
 		torsoAimer.Enabled = false
@@ -163,7 +163,17 @@ function HumanNPC:AimRightArmTowards(target)
 	local rightArm = self.BodyParts["RightUpperArm"]
 	local origin = rightArm.Position
 
-	local targetPos = target:IsA("Model") and target:GetPivot().Position or target.Position
+	local targetPos
+	if typeof(target) == "Instance" then
+		if target:IsA("Model") then
+			targetPos = target:GetPivot().Position
+		elseif target:IsA("BasePart") then
+			targetPos = target.Position
+		end
+	else
+		-- target is a Vector3
+		targetPos = target
+	end
 
 	local lookCF = CFrame.lookAt(origin, targetPos)
 
@@ -183,6 +193,10 @@ function HumanNPC:AimRightArmTowards(target)
 
 	local flattenedLookAt = Vector3.new(targetPos.X, self.HRP.Position.Y, targetPos.Z)
 	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
+
+	repeat
+		task.wait(0.5)
+	until Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
 end
 
 function HumanNPC:Ragdoll(duration: number)

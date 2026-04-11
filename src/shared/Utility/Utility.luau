@@ -8,6 +8,11 @@ return {
 		return sum
 	end,
 
+	IsVectorNear = function(vector: Vector3, threshold: number)
+		threshold = threshold or 0.01
+		return vector.Magnitude < threshold
+	end,
+
 	-- parent - starting instance
 	-- varargs - list of path names to traverse
 	GetInstance = function(parent: Instance, waitForChild: boolean, ...)

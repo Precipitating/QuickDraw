@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
 local AISignals = require(ServerScriptService.Server.Classes.AIBehaviour.AISignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -13,16 +14,21 @@ function RangeAttack.new(machine, ai)
 	local self = BaseState.new(machine, ai)
 	self.LastAttacked = os.clock()
 	self.Target = nil
+	self.Cornered = false
 	setmetatable(self, RangeAttack)
 	return self
 end
 
-function RangeAttack:Enter(previous, target: BasePart | Model)
+function RangeAttack:Enter(previous, targetData: any)
 	warn("Entered RangeAttack from", previous)
+	while self.Human.IsRagdolled do
+		task.wait(1)
+	end
 	self.AI:StateChangeReset()
-	self.Human:ToggleRightArmAimer(true)
-	self.Human:ToggleTorsoAimer(true)
-	self.Target = target
+	assert(targetData.Target, "[RangeAttack:Enter] Missing target ")
+	self.Target = targetData.Target
+	self.Cornered = targetData.Cornered
+
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
 		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}`,
@@ -52,8 +58,6 @@ function RangeAttack:Update(dt)
 		return
 	end
 
-	self.Human:ToggleTorsoAimer(true)
-
 	self.LastAttacked = now
 	local target = self.Target
 
@@ -77,11 +81,21 @@ function RangeAttack:Update(dt)
 		return
 	end
 
-	-- 1. Check if in shooting range, will move within range if a valid point was found
-	ai:CorrectRangePosition(target, targetPos, targetDir)
+	-- 1. Check if in shooting range, will move within range if inRange is true
+	local inRange = ai:CorrectRangePosition(targetPos)
+
+	-- if seek, target too far away, fallback means too target is too close
+	if inRange and typeof(inRange) == "string" then
+		if inRange == "Seek" then
+			self.Machine:Transition("Seek", { ShotPosition = targetPos, TargetDirection = targetDir })
+			return
+		elseif inRange == "Fallback" and not self.Cornered then
+			self.Machine:Transition("Fallback", { Target = target })
+			return
+		end
+	end
 
 	human:AimRightArmTowards(target)
-	task.wait(0.5)
 	local isInLineOfSight = AI.IsTargetInView(ai, NPCAimArm.Position, target, true)
 
 	-- 2. Seek state if not in LOS
