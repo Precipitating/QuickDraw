@@ -42,7 +42,7 @@ function NPCAnimationsHandler:Initialize()
 				continue
 			end
 
-			-- only play NPC anims if in range with camera
+			-- Only play NPC anims if in range with camera
 			local camToNPCDistance = (Camera.CFrame.Position - character:GetPivot().Position).Magnitude
 			if camToNPCDistance <= RenderDistance then
 				controller:Load()
@@ -83,7 +83,7 @@ function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
 		controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)
 	end
 
-	-- stores {animationcontroller, leglessSet}
+	-- stores animationcontroller
 	AnimatedNPCS[character] = controller
 end
 

@@ -322,7 +322,7 @@ function Human:OnHumanoidStateChange()
 end
 
 -- apply damage to self
-function Human:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player?)
+function Human:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model)
 	self.LimbHealth[limbName] -= damage
 	self.Health -= damage * damageMultiplier
 
@@ -346,7 +346,7 @@ function Human:Die(shooter: Player?)
 	if self.Humanoid then
 		self.Humanoid.Health = 0
 		local victimIsPlayer = self.Player
-		-- shooter should get a money reward for killing
+		-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
 		if shooter and shooter:IsA("Player") and victimIsPlayer ~= shooter then
 			ServerData.UpdateMoney(shooter, 50)
 		end

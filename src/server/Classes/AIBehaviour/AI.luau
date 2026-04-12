@@ -13,6 +13,7 @@ local Seek = require(ServerScriptService.Server.Classes.AIBehaviour.States.Seek)
 local StateMachine = require(script.Parent.StateMachine)
 
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 
 type Human = ClassTypes.Human
 type AgentParams = Path.AgentParams
@@ -27,19 +28,18 @@ function AI.new(owner: Human)
 	self.TypeInfo = nil
 	self.Owner = owner
 	self.StateMachine = StateMachine.new()
-	self.CurrentlyMoving = false
 	self.PatrolPoints = nil
 	self.EnemyList = { Player = true }
 	self.AttackStateName = ""
 
 	self.NextWaypointIndex = nil
-	self.SeekTurnDelay = 1
+	self.SeekTurnDelay = 0.25
 	self.NoobPath = NoobPath.Humanoid(
 		self.Owner.Character,
-		{ WaypointSpacing = 10, PathSettings = { SupportPartialPath = true } } :: AgentParams
+		{ WaypointSpacing = 5, AgentRadius = 3, PathSettings = { SupportPartialPath = true } } :: AgentParams
 	)
-
-	self.PathfindTolerance = 2
+	self.NoobPath.Timeout = true
+	self.NoobPath.Speed = HumanConstants.WALKSPEED
 	self.MinAttackDistance = 0
 	self.MaxAttackDistance = 0
 	self.EyeRange = 0
@@ -50,27 +50,34 @@ function AI.new(owner: Human)
 	return self
 end
 
+function AI:ChangeWalkSpeed(walkspeed: number)
+	self.Owner.Humanoid.WalkSpeed = walkspeed
+	self.NoobPath.Speed = walkspeed
+end
+
 -- Initialize state machine states
 function AI:Initialize()
 	self.StateMachine:AddState("Idle", Idle.new(self.StateMachine, self))
 	self.StateMachine:AddState("Seek", Seek.new(self.StateMachine, self))
-
 	self.StateMachine:AddState("Dead", Dead.new(self.StateMachine, self))
 end
 
-function AI:StateChangeReset()
+function AI:StopPathfind()
 	self.NoobPath:Stop()
-	self.Owner:ToggleRightArmAimer(false)
-	self.Owner:ToggleTorsoAimer(false)
 end
 
-function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean)
+function AI:StateChangeReset()
+	self.Owner:ToggleRightArmAimer(false)
+	self.Owner:ToggleTorsoAimer(false)
+
+	self:StopPathfind()
+end
+
+function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV: boolean)
 	local targetPos: Vector3
 	local targetAncestor: Instance? = nil
 
-	if typeof(target) == "Vector3" then
-		targetPos = target
-	elseif typeof(target) == "Instance" then
+	if typeof(target) == "Instance" then
 		if target:IsA("Model") then
 			targetPos = target:GetPivot().Position
 			targetAncestor = target
@@ -130,7 +137,7 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model | Vector
 	local checkPoints = { targetPos }
 
 	if targetAncestor then
-		for _, partName in { "Head", "UpperTorso", "Torso", "HumanoidRootPart" } do
+		for _, partName in { "Head", "UpperTorso", "Torso", "HumanoidRootPart", "RightUpperArm", "LeftUpperArm" } do
 			local part = targetAncestor:FindFirstChild(partName)
 			if part and part:IsA("BasePart") then
 				-- Avoid duplicates when targetPos already matches one of these
@@ -176,14 +183,19 @@ function AI:AlignOrientLookAround()
 		return false
 	end
 
-	for _ = 1, 4 do
-		torsoAimer.CFrame *= CFrame.Angles(0, math.rad(90), 0)
-		task.wait(1)
+	local foundTargetModel = self:CheckSurroundingsForEnemy()
+	if foundTargetModel then
+		return foundTargetModel
+	end
+
+	for _ = 1, 6 do
+		torsoAimer.CFrame *= CFrame.Angles(0, math.rad(60), 0)
+		task.wait(self.SeekTurnDelay)
 		if not self.Owner or not self.Owner.TorsoAimer then
 			return false
 		end
 
-		local foundTargetModel = self:CheckSurroundingsForEnemy()
+		foundTargetModel = self:CheckSurroundingsForEnemy()
 		if foundTargetModel then
 			return foundTargetModel
 		end
@@ -201,13 +213,11 @@ function AI:OrientTowardsSeekDir(seekDir: Vector3)
 	local hrp = self.Owner.HRP
 	local goal = CFrame.lookAt(hrp.Position, hrp.Position + flat)
 
-	self.Owner:ToggleTorsoAimer(true)
 	torsoAimer.CFrame = goal
 	repeat
-		task.wait(0.5)
-
+		task.wait()
 	until Utility.IsVectorNear(self.Owner.HRP.AssemblyAngularVelocity, 0.05)
-
+	task.wait(2)
 	local foundTargetModel = self:CheckSurroundingsForEnemy()
 	if foundTargetModel then
 		return foundTargetModel
@@ -216,20 +226,16 @@ function AI:OrientTowardsSeekDir(seekDir: Vector3)
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
-function AI:LookAround(seekDir: Vector3)
+function AI:LookAround()
 	local targetFound = nil
 
-	if self.CurrentlyMoving then
-		self.NoobPath:Stop()
-	end
+	self:StateChangeReset()
+	self.Owner:ToggleTorsoAimer(true)
+	warn("Toggled torso")
 
-	if seekDir then
-		targetFound = self:OrientTowardsSeekDir(seekDir)
-	end
-	if not targetFound then
-		targetFound = self:AlignOrientLookAround()
-	end
+	targetFound = self:AlignOrientLookAround()
 
+	self.Owner:ToggleTorsoAimer(false)
 	return targetFound
 end
 

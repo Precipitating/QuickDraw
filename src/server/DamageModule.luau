@@ -44,8 +44,7 @@ local function ApplyDamage(
 	limbName: string,
 	damage: number,
 	shotPos: Vector3,
-	targetDirection: Vector3?,
-	shooter: Player?
+	shooter: Player | Model
 )
 	if not human or not human.LimbHealth or not human.LimbHealth[limbName] then
 		return
@@ -65,7 +64,9 @@ local function ApplyDamage(
 		-- if npc damaged on patrol, seek immediately the target
 		-- only applies to SHOT damage type
 		if ai and ai.StateMachine:GetState() == "Patrol" and shotPos then
-			ai.StateMachine:Transition("Seek", { ShotPosition = shotPos, TargetDirection = targetDirection })
+			ai.StateMachine:Transition("Seek", {
+				Target = if shooter:IsA("Player") then shooter.Character else shooter,
+			})
 		end
 	elseif human.HumanType == "Player" then
 		human = human :: HumanPlayer
@@ -142,7 +143,6 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 	local damage = damageData.Damage
 	local shooter = damageData.Shooter
 	local shotPos = if damageData.Type == "Shot" then damageData.ShotPosition else nil
-	local targetDirection = if damageData.Type == "Shot" then damageData.TargetDirection else nil
 
 	if not hitObj then
 		warn("[DamageHuman] Invalid hit object")
@@ -173,7 +173,7 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 		human.HRP,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
-	ApplyDamage(human, limbName, damage, shotPos, targetDirection, shooter)
+	ApplyDamage(human, limbName, damage, shotPos, shooter)
 
 	if limbHealth[limbName] <= 0 then
 		HandleLimbDestroyed(human, limbName, damage)

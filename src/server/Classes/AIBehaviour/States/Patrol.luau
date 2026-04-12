@@ -40,7 +40,7 @@ function Patrol:Update(dt)
 	if timeElapsedSincePatrol < self.PatrolStayTime then
 		return
 	end
-	if self.AI.CurrentlyMoving then
+	if not self.AI.NoobPath.Idle or self.AI.NoobPath.InAir then
 		return
 	end
 

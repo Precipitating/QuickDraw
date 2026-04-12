@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
 local AISignals = require(ServerScriptService.Server.Classes.AIBehaviour.AISignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -49,7 +48,7 @@ function RangeAttack:Update(dt)
 		return
 	end
 
-	if ai.CurrentlyMoving then
+	if not ai.NoobPath.Idle then
 		return
 	end
 
@@ -87,7 +86,7 @@ function RangeAttack:Update(dt)
 	-- if seek, target too far away, fallback means too target is too close
 	if inRange and typeof(inRange) == "string" then
 		if inRange == "Seek" then
-			self.Machine:Transition("Seek", { ShotPosition = targetPos, TargetDirection = targetDir })
+			self.Machine:Transition("Seek", { Target = target })
 			return
 		elseif inRange == "Fallback" and not self.Cornered then
 			self.Machine:Transition("Fallback", { Target = target })
@@ -101,7 +100,7 @@ function RangeAttack:Update(dt)
 	-- 2. Seek state if not in LOS
 	if not isInLineOfSight then
 		print("Not in LOS, seeking")
-		self.Machine:Transition("Seek", { ShotPosition = targetPos, TargetDirection = targetDir })
+		self.Machine:Transition("Seek", { Target = target })
 		return
 	end
 

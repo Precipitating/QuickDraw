@@ -29,9 +29,6 @@ function BaseState:Exit(nextState) end
 -- Optional transition guard
 function BaseState:CanTransition(toStateName)
 	local currentState = self.Machine:GetState()
-	if currentState == toStateName then
-		return false
-	end
 	if currentState == "Dead" then
 		return false
 	end

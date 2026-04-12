@@ -33,7 +33,6 @@ export type AI = {
 
 	-- State
 	StateMachine: any,
-	CurrentlyMoving: boolean,
 	PatrolPoints: { Vector3 }?,
 	EnemyList: { [string]: boolean },
 	AttackStateName: string,
@@ -43,7 +42,6 @@ export type AI = {
 	SeekTurnDelay: number,
 	ReachedConnection: RBXScriptConnection?,
 	BlockedConnection: RBXScriptConnection?,
-	PathfindTolerance: number,
 	MinAttackDistance: number,
 	MaxAttackDistance: number,
 
@@ -107,7 +105,7 @@ export type Human = {
 	AssignBodyParts: (self: Human, tagName: string) -> (),
 	SimulateDefaultLimbs: (self: Human) -> (),
 	OnHumanoidStateChange: (self: Human) -> (),
-	OnHit: (self: Human, damage: number, damageMultiplier: number, limbName: string, shooter: Player?) -> (),
+	OnHit: (self: Human, damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model) -> (),
 	Die: (self: Human, shooter: Player?) -> (),
 	FixCrawlADS: (self: Human) -> (),
 	SetCrawlState: (self: Human) -> (),
@@ -159,7 +157,6 @@ export type GunShotDamage = DamageData & {
 	Type: "Shot",
 	RaycastResult: RaycastResult,
 	ShotPosition: Vector3?,
-	TargetDirection: Vector3?,
 }
 
 return nil

@@ -54,10 +54,6 @@ return {
 				TargetHuman = humanClass,
 				Damage = damageInflicted,
 				ShotPosition = hrp.Position,
-				-- if standing still, set nil
-				TargetDirection = if hrp.AssemblyLinearVelocity.Magnitude > 0.05
-					then hrp.AssemblyLinearVelocity.Unit
-					else nil,
 				Shooter = shooter,
 			}
 

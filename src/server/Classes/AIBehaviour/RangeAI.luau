@@ -1,20 +1,18 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Stack = require(ReplicatedStorage.Shared.Classes.Stack)
 local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
 local RangeAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.RangeAttack)
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
-local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 local AI = require(script.Parent.AI)
-local AISignals = require(script.Parent.AISignals)
 
 local UP = vector.create(0, 1, 0)
 
 type Human = ClassTypes.Human
-
+type Stack = Stack.Stack<Vector3>
 local RangeAI = setmetatable({}, AI)
 RangeAI.__index = RangeAI
 
@@ -29,6 +27,7 @@ function RangeAI.new(human: Human)
 	self.AttackStateName = "RangeAttack"
 	self.AttackCooldown = 1
 	self:RangeInitialize()
+
 	return self
 end
 
@@ -41,16 +40,27 @@ function RangeAI:RangeInitialize()
 end
 
 -- Find a valid position around target (circular around)
+-- It only returns positions that the the AI will have a line of sight to
 function RangeAI:FindAnglePosition(
 	originPos: Vector3,
 	target: Model | BasePart,
 	radius: number,
 	recursing: boolean
 ): Vector3?
-	local targetPos = if target:IsA("Model") then target:GetPivot().Position else (target :: BasePart).Position
+	local targetPos = nil
+
+	if typeof(target) == "Instance" then
+		if target:IsA("Model") then
+			targetPos = target:GetPivot().Position
+		elseif target:IsA("BasePart") then
+			targetPos = (target :: BasePart).Position
+		end
+	else
+		targetPos = target
+	end
 
 	local baseDir = (originPos - targetPos).Unit
-	local candidates = {}
+	local candidateStack: Stack = Stack.new()
 
 	for angle = 0, 359, 30 do
 		local radians = math.rad(angle)
@@ -59,17 +69,50 @@ function RangeAI:FindAnglePosition(
 			0,
 			baseDir.X * math.sin(radians) + baseDir.Z * math.cos(radians)
 		)
-		local candidate = targetPos + rotated * radius
+		local currentCandidate = targetPos + rotated * radius
 
-		if AI.IsTargetInView(self, candidate, target, false) then
-			table.insert(candidates, candidate)
+		if self:IsTargetInView(currentCandidate, target, false) then
+			-- Use stack and get the candidate closest to the origin
+			local lastCandidate = candidateStack:Peek()
+			if not lastCandidate then
+				candidateStack:Push(currentCandidate)
+				continue
+			end
+
+			-- Compare distances to origin, and replace the current stack value if its less
+			local currentDistance = (originPos - currentCandidate).Magnitude
+			local lastStackDistance = (originPos - lastCandidate).Magnitude
+
+			if currentDistance < lastStackDistance then
+				candidateStack:Pop()
+				candidateStack:Push(currentCandidate)
+			end
+
+			-- debug
+			-- local Point = Instance.new("Part")
+			-- Point.Color = Color3.fromRGB(0, 255, 0)
+			-- Point.CastShadow = false
+			-- Point.Material = Enum.Material.Neon
+			-- Point.Size = Vector3.new(0.5, 0.5, 0.5)
+			-- Point.Shape = Enum.PartType.Ball
+			-- Point.CanCollide = false
+			-- Point.CanTouch = false
+			-- Point.CanQuery = false
+			-- Point.Anchored = true
+			-- Point.Position = candidate
+			-- Point.Parent = workspace
+			-- task.delay(2, function()
+			-- 	Point:Destroy()
+			-- end)
 		end
 	end
 
-	if #candidates > 0 then
-		return candidates[RandomModule.GetRandomIntBetween(1, #candidates)]
+	-- If true, it should be a position within line of sight, and is the closest towards originPos
+	if candidateStack:Peek() then
+		return candidateStack:Peek()
 	end
 
+	-- If we reach here, then no valid candidates are available, expand the radius and try again.
 	if recursing then
 		return nil
 	end
@@ -103,7 +146,7 @@ function RangeAI:CorrectRangePosition(targetPos: Vector3): string | boolean
 	end
 
 	if not self.Owner.Legless then
-		self.Owner.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+		self:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 	end
 	return true
 end

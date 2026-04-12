@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
+local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
@@ -33,7 +34,8 @@ function HumanNPC.new(humanoid: Humanoid)
 	self:SetNPCNetworkOwnership()
 	self:SetWeaponCollisions()
 
-	humanoid.WalkSpeed = HumanConstants.WALKSPEED
+	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
+
 	print(`New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
 end
@@ -73,7 +75,7 @@ end
 function HumanNPC:InitializeTorsoAimer()
 	local aimer: AlignOrientation = Instance.new("AlignOrientation")
 	aimer.Mode = Enum.OrientationAlignmentMode.OneAttachment
-	aimer.Attachment0 = self.HRP.RootAttachment
+	aimer.Attachment0 = self.HRP.RootRigAttachment
 	aimer.RigidityEnabled = true
 	aimer.AlignType = Enum.AlignType.AllAxes
 	aimer.Name = "TorsoAimer"
@@ -129,7 +131,7 @@ function HumanNPC:SetCrawlState()
 
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
-		self.Humanoid.WalkSpeed = HumanConstants.CRAWL_SPEED
+		self.AI:ChangeWalkSpeed(HumanConstants.CRAWL_SPEED)
 
 		self:FixCrawlADS()
 
@@ -144,16 +146,15 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	if torsoAimer.Enabled == enable then
 		return
 	end
+	torsoAimer.CFrame = CFrame.new()
 
 	if enable then
-		if self.AI and not self.AI.NoobPath.Idle then
-			self.AI.NoobPath:Stop()
-		end
+		self.AI:StopPathfind()
+
 		torsoAimer.Enabled = true
 	else
 		torsoAimer.Enabled = false
 	end
-	torsoAimer.CFrame = CFrame.identity
 	warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 

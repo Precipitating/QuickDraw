@@ -25,15 +25,16 @@ function Seek:Enter(previous, seekData)
 		return
 	end
 
-	local seekPosition = seekData.ShotPosition
-	local seekDir = seekData.TargetDirection
+	-- Either player model or a basepart
+	local target = seekData.Target
+	assert(target, "NPC Seek state cannot proceed, target is nil")
+	local currentTargetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
 
 	local ai = self.AI
 	local legless = self.Human.Legless
-	local humanoid = self.Human.Humanoid
 
 	if not legless then
-		humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+		ai:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
 	end
 
 	ServerSoundHandler:Play3DNPCVoiceline(
@@ -43,8 +44,15 @@ function Seek:Enter(previous, seekData)
 		{ MaxDistance = 200 }
 	)
 
-	-- 1. Move to last seen position
-	ai:PathFindTo(seekPosition)
+	-- 1. Move to last seen position OR a valid position around the last seen position (respecting radius)
+	local safeSeekPos = ai:FindAnglePosition(self.Human.HRP.Position, target, self.AI.MinAttackDistance or 50, false)
+
+	if not safeSeekPos then
+		ai:PathFindTo(currentTargetPos)
+	else
+		ai:PathFindTo(safeSeekPos)
+	end
+	self.Machine:Start()
 
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
@@ -55,7 +63,7 @@ function Seek:Enter(previous, seekData)
 			end
 
 			-- 2.1 Have a look around 4 directions for any enemies
-			local foundEnemy = ai:LookAround(seekDir)
+			local foundEnemy = ai:LookAround()
 
 			-- 2.2 If enemy spotted
 			if foundEnemy then
@@ -86,7 +94,6 @@ function Seek:Enter(previous, seekData)
 			return
 		end
 	end))
-	self.Machine:Start()
 end
 
 -- Check for enemy during pathfind
@@ -110,7 +117,7 @@ function Seek:Update(dt)
 end
 
 function Seek:Exit(nextState)
-	self.Human.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 	self.Machine:Stop()
 end
 

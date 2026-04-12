@@ -3,7 +3,6 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
@@ -31,9 +30,6 @@ function Fallback:Enter(previous, fallbackData)
 		error("Fallback state missing target!")
 	end
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-	local targetDir = if target:IsA("Model")
-		then target.HumanoidRootPart.AssemblyLinearVelocity.Unit
-		else target.AssemblyLinearVelocity.Unit
 
 	-- Disable reload if we're reloading & play voiceline
 	human.CurrentGun.Reloading = false
@@ -56,11 +52,11 @@ function Fallback:Enter(previous, fallbackData)
 
 	-- 2. Position found, run and move there
 	if not self.Human.Legless then
-		human.Humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+		self.AI:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
 	end
 	self.AI:PathFindTo(safePos)
 
-	-- 3. Wait for NPC to arrive at destination (if possible)
+	-- 3. Wait for NPC to arrive at destination
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		local NPCAimArm = if human
 				and human.BodyParts
@@ -78,13 +74,21 @@ function Fallback:Enter(previous, fallbackData)
 		if isInLineOfSight then
 			self.Machine:Transition(self.AI.AttackStateName, { Target = target })
 		else
-			self.Machine:Transition("Seek", { ShotPosition = targetPos, TargetDirection = targetDir })
+			self.Machine:Transition("Seek", { Target = target })
 		end
 	end))
 end
 
+function Fallback:CanTransition(toStateName: string)
+	if toStateName == "Patrol" then
+		return false
+	end
+
+	return true
+end
+
 function Fallback:Exit(nextState)
-	self.Human.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 end
 
 return Fallback
