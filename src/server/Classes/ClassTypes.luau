@@ -49,7 +49,7 @@ export type AI = {
 	new: (owner: Human) -> AI,
 	Initialize: (self: AI) -> (),
 	StateChangeReset: (self: AI) -> (),
-	IsTargetInView: (self: AI, originPos: Vector3, target: BasePart | Model | Vector3, useFOV: boolean) -> boolean,
+	IsTargetInView: (self: AI, originPos: Vector3, target: BasePart | Model, useFOV: boolean) -> boolean,
 	TweenLookAround: (self: AI, hrp: BasePart, remaining: number) -> boolean | Model,
 	LookAround: (self: AI, seekDir: Vector3?) -> boolean | Model,
 	TargetIsEnemy: (self: AI, target: Instance) -> boolean,

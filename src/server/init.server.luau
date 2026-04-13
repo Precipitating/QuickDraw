@@ -1,5 +1,4 @@
 require(script.ServerData).Initialize()
-require(script.Classes.AIBehaviour.AISignalsLogic)
 require(script.Sound.ServerSoundHandler)
 require(script.Managers.Player.PlayerSignalsLogic)
 require(script.Classes.Human.HumanSignalsLogic)

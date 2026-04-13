@@ -14,6 +14,8 @@ local StateMachine = require(script.Parent.StateMachine)
 
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+local raycastParams = RaycastParams.new()
+raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 type Human = ClassTypes.Human
 type AgentParams = Path.AgentParams
@@ -31,13 +33,15 @@ function AI.new(owner: Human)
 	self.PatrolPoints = nil
 	self.EnemyList = { Player = true }
 	self.AttackStateName = ""
+	self.DefaultState = { Name = "", Data = nil }
 
 	self.NextWaypointIndex = nil
-	self.SeekTurnDelay = 0.25
+	self.SeekTurnDelay = 0.5
 	self.NoobPath = NoobPath.Humanoid(
 		self.Owner.Character,
 		{ WaypointSpacing = 5, AgentRadius = 3, PathSettings = { SupportPartialPath = true } } :: AgentParams
 	)
+	self.NoobPath.Visualize = true
 	self.NoobPath.Timeout = true
 	self.NoobPath.Speed = HumanConstants.WALKSPEED
 	self.MinAttackDistance = 0
@@ -60,10 +64,22 @@ function AI:Initialize()
 	self.StateMachine:AddState("Idle", Idle.new(self.StateMachine, self))
 	self.StateMachine:AddState("Seek", Seek.new(self.StateMachine, self))
 	self.StateMachine:AddState("Dead", Dead.new(self.StateMachine, self))
+
+	self.NoobPath.Trapped:Connect(function()
+		if self.Owner.Humanoid:GetState() ~= Enum.HumanoidStateType.Climbing then -- Climbing is slower than usual
+			self.NoobPath.Jump() -- Jump to unstuck
+		end
+		self.NoobPath:Run()
+		--self.StateMachine:Transition(self.DefaultState.Name, self.DefaultState.Data)
+	end)
 end
 
 function AI:StopPathfind()
 	self.NoobPath:Stop()
+end
+
+function AI:Destroy()
+	self.NoobPath:Destroy()
 end
 
 function AI:StateChangeReset()
@@ -123,8 +139,6 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV:
 	end
 
 	-- ── Raycast (multi-point) ──────────────────────────────────
-	local raycastParams = RaycastParams.new()
-	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 	local filterList = { self.Owner.Character }
 

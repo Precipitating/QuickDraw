@@ -80,7 +80,7 @@ function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
 			nil,
 			GunData[gunTool.Name].ShootSoundName,
 			shotPos:GetPivot(),
-			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
+			{ Pitch = 1 + (math.random() - 0.5) * 0.1, MaxDistance = 300 }
 		)
 	end
 

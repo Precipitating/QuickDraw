@@ -53,7 +53,8 @@ function StateMachine:Transition(toStateName, data)
 	local newState = self.States[toStateName]
 	assert(newState, "State does not exist: " .. tostring(toStateName))
 	if self.CurrentState then
-		if self.CurrentState == toStateName then
+		if self.CurrentState.Name == toStateName then
+			warn("Attempting to go to same state, denied")
 			return false
 		end
 		if not self.CurrentState:CanTransition(toStateName) then

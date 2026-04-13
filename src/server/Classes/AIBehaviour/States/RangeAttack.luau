@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -38,6 +39,10 @@ function RangeAttack:Enter(previous, targetData: any)
 	self.Machine:Start()
 end
 
+function RangeAttack:IsTargetDead(target)
+	return CollectionService:HasTag(target, "Dead")
+end
+
 function RangeAttack:Update(dt)
 	local now = os.clock()
 	local lastAttacked = now - self.LastAttacked
@@ -61,13 +66,12 @@ function RangeAttack:Update(dt)
 	local target = self.Target
 
 	-- this should transition to patrol if target is dead, so further code shouldnt be executed
-	AISignals.HandleTargetDead:Fire(self.AI, target)
-
+	if self:IsTargetDead(target) then
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+		return
+	end
 	-- target is valid
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-	local targetDir = if target:IsA("Model")
-		then target.HumanoidRootPart.AssemblyLinearVelocity.Unit
-		else target.AssemblyLinearVelocity.Unit
 
 	local NPCAimArm = if human
 			and human.BodyParts

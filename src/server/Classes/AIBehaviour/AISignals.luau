@@ -3,5 +3,4 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 
 return {
 	PathfindComplete = Signal.new(),
-	HandleTargetDead = Signal.new(),
 }

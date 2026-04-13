@@ -42,10 +42,11 @@ function Fallback:Enter(previous, fallbackData)
 
 	-- 1. Find a suitable position around player to go to
 	local halfDist = self.AI.MaxAttackDistance * 0.5
-	local safePos = self.AI:FindAnglePosition(human.HRP.Position, target, halfDist or 50, false)
+	local safePos = self.AI:FindAnglePosition(human.HRP.Position, target, nil, halfDist or 50, false)
 
 	-- 1.1 (TERMINATION) If we can't find a fallback position, got to attack state (shoots at current position)
 	if not safePos then
+		warn("Cornered, shoot from current position, ignoring distance requirements")
 		self.Machine:Transition(self.AI.AttackStateName, { Target = target, Cornered = true })
 		return
 	end

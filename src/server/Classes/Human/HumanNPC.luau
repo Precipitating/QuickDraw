@@ -227,6 +227,7 @@ end
 function HumanNPC:OnDeath()
 	Debris:AddItem(self.Character, 30)
 	self.AI.StateMachine:Transition("Dead")
+	self.AI:Destroy()
 	Human.OnDeath(self)
 end
 

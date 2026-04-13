@@ -12,8 +12,27 @@ function Seek.new(machine, ai)
 	local self = BaseState.new(machine, ai)
 	setmetatable(self, Seek)
 	self.LastChecked = os.clock()
+	self.PredictionAheadTime = 2
 
 	return self
+end
+
+-- Uses the target's velocity to predict where they may be
+function Seek:PredictTarget(target: Model | BasePart): Vector3
+	local currentTargetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+
+	local primaryPart = if target:IsA("Model") then target.PrimaryPart else target
+	if not primaryPart then
+		return currentTargetPos
+	end
+
+	local targetVelocity = primaryPart.AssemblyLinearVelocity
+	local horizontalVelocity = Vector3.new(targetVelocity.X, 0, targetVelocity.Z)
+	if horizontalVelocity.Magnitude < 0.1 then
+		return currentTargetPos -- target is stationary, no point predicting
+	end
+
+	return currentTargetPos + targetVelocity * self.PredictionAheadTime
 end
 
 function Seek:Enter(previous, seekData)
@@ -26,11 +45,14 @@ function Seek:Enter(previous, seekData)
 	end
 
 	-- Either player model or a basepart
-	local target = seekData.Target
+	local target: Model | BasePart = seekData.Target
 	assert(target, "NPC Seek state cannot proceed, target is nil")
-	local currentTargetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+
+	self.LastSeenTime = os.clock()
+	local predictedTargetLocation = self:PredictTarget(target)
 
 	local ai = self.AI
+
 	local legless = self.Human.Legless
 
 	if not legless then
@@ -44,14 +66,17 @@ function Seek:Enter(previous, seekData)
 		{ MaxDistance = 200 }
 	)
 
-	-- 1. Move to last seen position OR a valid position around the last seen position (respecting radius)
-	local safeSeekPos = ai:FindAnglePosition(self.Human.HRP.Position, target, self.AI.MinAttackDistance or 50, false)
+	-- 1. Move to last seen position OR a valid position around the last seen position (respecting radius and vision)
+	local safeSeekPos = ai:FindAnglePosition(
+		self.Human.BodyParts["RightUpperArm"].Position,
+		target,
+		predictedTargetLocation,
+		self.AI.MinAttackDistance,
+		false,
+		predictedTargetLocation
+	)
+	ai:PathFindTo(safeSeekPos)
 
-	if not safeSeekPos then
-		ai:PathFindTo(currentTargetPos)
-	else
-		ai:PathFindTo(safeSeekPos)
-	end
 	self.Machine:Start()
 
 	-- 2. Wait until destination reached

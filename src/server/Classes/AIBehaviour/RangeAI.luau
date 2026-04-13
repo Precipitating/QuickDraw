@@ -19,12 +19,13 @@ RangeAI.__index = RangeAI
 function RangeAI.new(human: Human)
 	local self = setmetatable(AI.new(human), RangeAI)
 	self.Type = "Range"
-	self.MaxAttackDistance = 100
+	self.MaxAttackDistance = 200
 	self.PatrolStayTime = 5
 	self.MinAttackDistance = 20
-	self.EyeRange = 250
+	self.EyeRange = 200
 	self.DefaultPatrolKey = "1"
 	self.AttackStateName = "RangeAttack"
+	self.DefaultState = { Name = "Patrol", Data = self.DefaultPatrolKey }
 	self.AttackCooldown = 1
 	self:RangeInitialize()
 
@@ -39,88 +40,111 @@ function RangeAI:RangeInitialize()
 	self.StateMachine:Transition("Patrol", self.DefaultPatrolKey)
 end
 
+-- Helper: raycast downward to snap candidate to ground level
+function RangeAI:GetGroundY(pos: Vector3): number?
+	local origin = Vector3.new(pos.X, pos.Y + 50, pos.Z)
+	local direction = Vector3.new(0, -200, 0)
+	local result = workspace:Raycast(origin, direction, self.RaycastParams)
+	if result then
+		return result.Position.Y
+	end
+	return nil
+end
+
 -- Find a valid position around target (circular around)
 -- It only returns positions that the the AI will have a line of sight to
 function RangeAI:FindAnglePosition(
 	originPos: Vector3,
 	target: Model | BasePart,
+	customPosition: Vector3?,
 	radius: number,
 	recursing: boolean
 ): Vector3?
-	local targetPos = nil
+	local targetPos: Vector3
 
-	if typeof(target) == "Instance" then
-		if target:IsA("Model") then
-			targetPos = target:GetPivot().Position
-		elseif target:IsA("BasePart") then
-			targetPos = (target :: BasePart).Position
-		end
+	if customPosition then
+		targetPos = customPosition
 	else
-		targetPos = target
-	end
-
-	local baseDir = (originPos - targetPos).Unit
-	local candidateStack: Stack = Stack.new()
-
-	for angle = 0, 359, 30 do
-		local radians = math.rad(angle)
-		local rotated = Vector3.new(
-			baseDir.X * math.cos(radians) - baseDir.Z * math.sin(radians),
-			0,
-			baseDir.X * math.sin(radians) + baseDir.Z * math.cos(radians)
-		)
-		local currentCandidate = targetPos + rotated * radius
-
-		if self:IsTargetInView(currentCandidate, target, false) then
-			-- Use stack and get the candidate closest to the origin
-			local lastCandidate = candidateStack:Peek()
-			if not lastCandidate then
-				candidateStack:Push(currentCandidate)
-				continue
+		if typeof(target) == "Instance" then
+			if target:IsA("Model") then
+				targetPos = target:GetPivot().Position
+			elseif target:IsA("BasePart") then
+				targetPos = (target :: BasePart).Position
+			else
+				return nil
 			end
-
-			-- Compare distances to origin, and replace the current stack value if its less
-			local currentDistance = (originPos - currentCandidate).Magnitude
-			local lastStackDistance = (originPos - lastCandidate).Magnitude
-
-			if currentDistance < lastStackDistance then
-				candidateStack:Pop()
-				candidateStack:Push(currentCandidate)
-			end
-
-			-- debug
-			-- local Point = Instance.new("Part")
-			-- Point.Color = Color3.fromRGB(0, 255, 0)
-			-- Point.CastShadow = false
-			-- Point.Material = Enum.Material.Neon
-			-- Point.Size = Vector3.new(0.5, 0.5, 0.5)
-			-- Point.Shape = Enum.PartType.Ball
-			-- Point.CanCollide = false
-			-- Point.CanTouch = false
-			-- Point.CanQuery = false
-			-- Point.Anchored = true
-			-- Point.Position = candidate
-			-- Point.Parent = workspace
-			-- task.delay(2, function()
-			-- 	Point:Destroy()
-			-- end)
 		end
 	end
 
-	-- If true, it should be a position within line of sight, and is the closest towards originPos
-	if candidateStack:Peek() then
-		return candidateStack:Peek()
+	local baseDir = (originPos - targetPos)
+	-- Flatten to XZ for rotation, but preserve a reference Y
+	local baseDirFlat = Vector3.new(baseDir.X, 0, baseDir.Z)
+	if baseDirFlat.Magnitude < 0.001 then
+		baseDirFlat = Vector3.new(1, 0, 0) -- fallback if directly above/below
+	end
+	baseDirFlat = baseDirFlat.Unit
+
+	local bestCandidate: Vector3? = nil
+	local bestScore = math.huge
+
+	-- Two-pass: coarse then fine around best coarse hit
+	local function evaluateCandidates(angleList: { number })
+		for _, angle in ipairs(angleList) do
+			local radians = math.rad(angle)
+			local cos, sin = math.cos(radians), math.sin(radians)
+			local rotated =
+				Vector3.new(baseDirFlat.X * cos - baseDirFlat.Z * sin, 0, baseDirFlat.X * sin + baseDirFlat.Z * cos)
+
+			-- Raycast downward to find ground Y so the candidate sits on terrain
+			local candidateXZ = targetPos + rotated * radius
+			local groundY = self:GetGroundY(candidateXZ) or targetPos.Y
+			local candidate = Vector3.new(candidateXZ.X, groundY, candidateXZ.Z)
+
+			if self:IsTargetInView(candidate, target, false) then
+				-- Score: weighted sum of distance to origin + distance to target (prefer mid-range)
+				local distToOrigin = (originPos - candidate).Magnitude
+				local distToTarget = (targetPos - candidate).Magnitude
+				-- Penalise straying far from the requested radius
+				local radiusDrift = math.abs(distToTarget - radius)
+				local score = distToOrigin + radiusDrift * 0.5
+
+				if score < bestScore then
+					bestScore = score
+					bestCandidate = candidate
+				end
+			end
+		end
 	end
 
-	-- If we reach here, then no valid candidates are available, expand the radius and try again.
+	-- Pass 1: coarse sweep every 15°
+	local coarseAngles = {}
+	for angle = 0, 359, 15 do
+		table.insert(coarseAngles, angle)
+	end
+	evaluateCandidates(coarseAngles)
+
+	-- Pass 2: fine sweep 15° around best coarse result in 3° steps
+	if bestCandidate then
+		local bestAngle = math.deg(math.atan2(bestCandidate.Z - targetPos.Z, bestCandidate.X - targetPos.X))
+		local fineAngles = {}
+		for offset = -15, 15, 3 do
+			table.insert(fineAngles, bestAngle + offset)
+		end
+		evaluateCandidates(fineAngles)
+	end
+
+	if bestCandidate then
+		return bestCandidate
+	end
+
+	-- Radius expansion with early-out
 	if recursing then
 		return nil
 	end
 
-	-- expand radius if we can't find a valid position
 	for _ = 1, 6 do
 		radius *= 1.25
-		local candidate = self:FindAnglePosition(originPos, target, radius, true)
+		local candidate = self:FindAnglePosition(originPos, target, customPosition, radius, true)
 		if candidate then
 			return candidate
 		end

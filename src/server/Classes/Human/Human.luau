@@ -188,7 +188,10 @@ function Human:ApplyKickForce()
 
 	for _, obj in kickedObjects do
 		if CollectionService:HasTag(obj, "Destroyable") then
-			obj:ApplyImpulse((self.HRP.CFrame.LookVector + HumanConstants.KICK_HEIGHT) * HumanConstants.KICK_FORCE)
+			local mass = obj.AssemblyMass
+			obj:ApplyImpulse(
+				(self.HRP.CFrame.LookVector + HumanConstants.KICK_HEIGHT).Unit * HumanConstants.KICK_FORCE * mass
+			)
 		end
 	end
 end
@@ -356,7 +359,7 @@ function Human:Die(shooter: Player?)
 	end
 end
 
--- fix right arm to face forward correctly and make gun non collidable so shooting
+-- Fix right arm to face forward correctly and make gun non collidable so shooting
 -- works whilst legless
 function Human:FixCrawlADS()
 	local rightHand: MeshPart = self.BodyParts["RightHand"]
@@ -463,6 +466,7 @@ end
 ]=]
 function Human:OnDeath()
 	task.spawn(function()
+		CollectionService:AddTag(self.Character, "Dead")
 		for _, obj in self.Character:GetDescendants() do
 			if obj:IsA("AnimationConstraint") then
 				obj.Enabled = false

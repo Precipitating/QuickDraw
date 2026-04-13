@@ -6,7 +6,7 @@ return {
 	JUMP_DRAIN = 30,
 
 	KICK_DRAIN = 25,
-	KICK_FORCE = 90,
+	KICK_FORCE = 50,
 	KICK_RADIUS = 3,
 	KICK_HEIGHT = Vector3.new(0, 0.8, 0),
 
@@ -20,5 +20,5 @@ return {
 	CRAWL_SPEED = 5,
 
 	SWAY_SPEED = 1.5,
-	SWAY_AMOUNT = math.rad(5), -- 2 degrees max
+	SWAY_AMOUNT = math.rad(7), -- 7 degrees max
 }
