@@ -16,18 +16,20 @@ local HumanConstants = require(script.Parent.HumanConstants)
 local HumanNPC = setmetatable({}, Human)
 HumanNPC.__index = HumanNPC
 
-function HumanNPC.new(humanoid: Humanoid)
+function HumanNPC.new(humanoid: Humanoid, classType: string)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
-	self.CurrentGun = Gun.new("Winchester", self, self.Character)
-	self.CurrentThrowable = Throwable.new("Dynamite", self)
+
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()
+	self.AI = RangeAI.new(self, classType)
+	self.CurrentGun = Gun.new(self.AI.WeaponName, self, self.Character)
+	self.CurrentThrowable = Throwable.new(self.AI.ThrowableName, self)
 	self.CurrentGun:AddGunToInventory()
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.CurrentTrack = nil
-	self.AI = RangeAI.new(self)
+
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self.VoicelineSound = self:SetupVoicelineSound()
 
@@ -227,7 +229,6 @@ end
 function HumanNPC:OnDeath()
 	Debris:AddItem(self.Character, 30)
 	self.AI.StateMachine:Transition("Dead")
-	self.AI:Destroy()
 	Human.OnDeath(self)
 end
 

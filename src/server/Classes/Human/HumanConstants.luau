@@ -6,7 +6,7 @@ return {
 	JUMP_DRAIN = 30,
 
 	KICK_DRAIN = 25,
-	KICK_FORCE = 50,
+	KICK_FORCE = 70,
 	KICK_RADIUS = 3,
 	KICK_HEIGHT = Vector3.new(0, 0.8, 0),
 

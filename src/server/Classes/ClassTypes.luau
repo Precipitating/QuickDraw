@@ -28,20 +28,16 @@ export type Throwable = {
 export type AI = {
 	-- Identity
 	Type: string?,
-	TypeInfo: any?,
 	Owner: Human,
 
 	-- State
 	StateMachine: any,
-	PatrolPoints: { Vector3 }?,
 	EnemyList: { [string]: boolean },
 	AttackStateName: string,
 
 	-- Pathfinding
-	NextWaypointIndex: number?,
 	SeekTurnDelay: number,
-	ReachedConnection: RBXScriptConnection?,
-	BlockedConnection: RBXScriptConnection?,
+
 	MinAttackDistance: number,
 	MaxAttackDistance: number,
 

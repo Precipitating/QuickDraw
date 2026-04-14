@@ -61,7 +61,7 @@ function Seek:Enter(previous, seekData)
 
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
-		`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}`,
+		`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
 		self.Human.VoicelineSound,
 		{ MaxDistance = 200 }
 	)
@@ -110,7 +110,7 @@ function Seek:Enter(previous, seekData)
 				-- If not enemy spotted, lost them.
 				ServerSoundHandler:Play3DNPCVoiceline(
 					nil,
-					"RangedAILostSight1",
+					`RangedAILostSight1{self.AI.Type}`,
 					self.Human.VoicelineSound,
 					{ MaxDistance = 200 }
 				)

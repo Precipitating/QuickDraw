@@ -23,32 +23,29 @@ type AgentParams = Path.AgentParams
 local AI = {}
 AI.__index = AI
 
-function AI.new(owner: Human)
+function AI.new(owner: Human, classType: string)
 	local self = setmetatable({}, AI)
 	assert(owner, "Owner incorrect for AI class initialization")
 	self.Type = nil
-	self.TypeInfo = nil
 	self.Owner = owner
 	self.StateMachine = StateMachine.new()
-	self.PatrolPoints = nil
 	self.EnemyList = { Player = true }
 	self.AttackStateName = ""
 	self.DefaultState = { Name = "", Data = nil }
-
-	self.NextWaypointIndex = nil
+	self.WeaponName = "Revolver"
+	self.ThrowableName = "Dynamite"
 	self.SeekTurnDelay = 0.5
 	self.NoobPath = NoobPath.Humanoid(
 		self.Owner.Character,
 		{ WaypointSpacing = 5, AgentRadius = 3, PathSettings = { SupportPartialPath = true } } :: AgentParams
 	)
-	self.NoobPath.Visualize = true
+	self.NoobPath.Visualize = false
 	self.NoobPath.Timeout = true
 	self.NoobPath.Speed = HumanConstants.WALKSPEED
 	self.MinAttackDistance = 0
 	self.MaxAttackDistance = 0
 	self.EyeRange = 0
 
-	--self:EnableEnemyDetection()
 	self:Initialize()
 
 	return self
@@ -70,12 +67,13 @@ function AI:Initialize()
 			self.NoobPath.Jump() -- Jump to unstuck
 		end
 		self.NoobPath:Run()
-		--self.StateMachine:Transition(self.DefaultState.Name, self.DefaultState.Data)
 	end)
 end
 
 function AI:StopPathfind()
-	self.NoobPath:Stop()
+	if self and self.NoobPath then
+		self.NoobPath:Stop()
+	end
 end
 
 function AI:Destroy()

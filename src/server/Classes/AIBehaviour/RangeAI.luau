@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Stack = require(ReplicatedStorage.Shared.Classes.Stack)
+local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
 local RangeAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.RangeAttack)
@@ -16,17 +17,21 @@ type Stack = Stack.Stack<Vector3>
 local RangeAI = setmetatable({}, AI)
 RangeAI.__index = RangeAI
 
-function RangeAI.new(human: Human)
-	local self = setmetatable(AI.new(human), RangeAI)
-	self.Type = "Range"
-	self.MaxAttackDistance = 200
-	self.PatrolStayTime = 5
-	self.MinAttackDistance = 20
-	self.EyeRange = 200
-	self.DefaultPatrolKey = "1"
-	self.AttackStateName = "RangeAttack"
-	self.DefaultState = { Name = "Patrol", Data = self.DefaultPatrolKey }
-	self.AttackCooldown = 1
+function RangeAI.new(human: Human, classType: string)
+	local classData = NPCTypes[classType]
+	assert(classData, "NPC Class Type doesn't exist")
+	local self = setmetatable(AI.new(human, classType), RangeAI)
+	self.Type = classType
+	self.MaxAttackDistance = classData.MaxAttackDistance
+	self.PatrolStayTime = classData.PatrolStayTime
+	self.MinAttackDistance = classData.MinAttackDistance
+	self.EyeRange = classData.EyeRange
+	self.WeaponName = classData.WeaponName
+	self.ThrowableName = classData.ThrowableName
+	self.DefaultPatrolKey = classData.DefaultPatrolKey
+	self.AttackStateName = classData.AttackStateName
+	self.DefaultState = { Name = classData.DefaultStateName, Data = self.DefaultPatrolKey }
+	self.AttackCooldown = classData.AttackCooldown
 	self:RangeInitialize()
 
 	return self

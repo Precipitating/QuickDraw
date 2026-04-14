@@ -31,7 +31,7 @@ function RangeAttack:Enter(previous, targetData: any)
 
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
-		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}`,
+		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
 		self.Human.VoicelineSound,
 		{ MaxDistance = 200 }
 	)

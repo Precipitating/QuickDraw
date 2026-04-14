@@ -126,9 +126,9 @@ end
 
 constructor.R15AnimateParams = {
 	ApplyRigScale = true,
-	SprintDetectSpeed = 24,
+	SprintDetectSpeed = 30,
 	SprintSpeedDividend = 16,
-	RunDetectSpeed = 14,
+	RunDetectSpeed = 25,
 	RunSpeedDividend = 16,
 	WalkSpeedDividend = 6,
 	JumpDuration = 0.3,

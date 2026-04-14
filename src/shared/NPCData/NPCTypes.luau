@@ -1,0 +1,26 @@
+return {
+	Sniper = {
+		WeaponName = "Winchester",
+		ThrowableName = "Dynamite",
+		MinAttackDistance = 20,
+		MaxAttackDistance = 200,
+		AttackCooldown = 2,
+		EyeRange = 250,
+		PatrolStayTime = 5,
+		DefaultStateName = "Patrol",
+		AttackStateName = "RangeAttack",
+		DefaultPatrolKey = "1",
+	},
+	Basic = {
+		WeaponName = "Revolver",
+		ThrowableName = "Molotov",
+		MinAttackDistance = 10,
+		MaxAttackDistance = 100,
+		AttackCooldown = 1,
+		EyeRange = 150,
+		PatrolStayTime = 3,
+		DefaultStateName = "Patrol",
+		AttackStateName = "RangeAttack",
+		DefaultPatrolKey = "1",
+	},
+}

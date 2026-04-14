@@ -5,12 +5,12 @@ local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerM
 
 type HumanPlayer = ClassTypes.HumanPlayer
 
-local function AddNPCClass(taggedNPC: Model)
+local function AddNPCClass(taggedNPC: Model, classType: string)
 	local humanoid = taggedNPC:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
 		error("NPC has no humanoid to initialize its class!")
 	end
-	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid)
+	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
 
 	return humanNPC
 end
@@ -20,7 +20,12 @@ local function Initialize()
 	local npcInstances = CollectionService:GetTagged("NPC")
 
 	for _, NPC: Model in npcInstances do
-		AddNPCClass(NPC)
+		for _, NPCType: string in { "Sniper", "Basic" } do
+			if CollectionService:HasTag(NPC, NPCType) then
+				AddNPCClass(NPC, NPCType)
+				break
+			end
+		end
 	end
 end
 
@@ -29,6 +34,11 @@ return {
 
 	-- for dynamically spawned npcs
 	CollectionService:GetInstanceAddedSignal("NPC"):Connect(function(taggedNPC: Model)
-		AddNPCClass(taggedNPC)
+		for _, NPCType: string in { "Sniper", "Basic" } do
+			if CollectionService:HasTag(taggedNPC, NPCType) then
+				AddNPCClass(taggedNPC, NPCType)
+				break
+			end
+		end
 	end),
 }

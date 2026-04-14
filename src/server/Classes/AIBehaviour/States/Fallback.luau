@@ -35,7 +35,7 @@ function Fallback:Enter(previous, fallbackData)
 	human.CurrentGun.Reloading = false
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
-		`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}`,
+		`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
 		self.Human.VoicelineSound,
 		{ MaxDistance = 200 }
 	)

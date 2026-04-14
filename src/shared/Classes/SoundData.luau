@@ -175,63 +175,124 @@ SoundData.Sounds = {
 		PoolSize = 1,
 	},
 
-	-- Ranged AI
-	RangedAIAttack1 = {
+	-- Ranged Sniper AI
+	RangedAIAttack1Sniper = {
 		SoundId = "rbxassetid://91004211172905",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAIAttack2 = {
+	RangedAIAttack2Sniper = {
 		SoundId = "rbxassetid://103394204160530",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAIAttack3 = {
+	RangedAIAttack3Sniper = {
 		SoundId = "rbxassetid://85256539261027",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAIBackOff1 = {
+	RangedAIBackOff1Sniper = {
 		SoundId = "rbxassetid://86287484064562",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAIBackOff2 = {
+	RangedAIBackOff2Sniper = {
 		SoundId = "rbxassetid://136531213004679",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAIBackOff3 = {
+	RangedAIBackOff3Sniper = {
 		SoundId = "rbxassetid://73868325417106",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAITooFar1 = {
+	RangedAITooFar1Sniper = {
 		SoundId = "rbxassetid://136403756554183",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAITooFar2 = {
+	RangedAITooFar2Sniper = {
 		SoundId = "rbxassetid://101594553347016",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAITooFar3 = {
+	RangedAITooFar3Sniper = {
 		SoundId = "rbxassetid://129013076301243",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAILostSight1 = {
+	RangedAILostSight1Sniper = {
 		SoundId = "rbxassetid://122246927608111",
+		Volume = 3,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	-- Ranged Basic AI
+	RangedAIAttack1Basic = {
+		SoundId = "rbxassetid://73542666227767",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack2Basic = {
+		SoundId = "rbxassetid://127774610119067",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack3Basic = {
+		SoundId = "rbxassetid://125280104379682",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff1Basic = {
+		SoundId = "rbxassetid://126114496073105",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff2Basic = {
+		SoundId = "rbxassetid://91135560219092",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff3Basic = {
+		SoundId = "rbxassetid://107233344748256",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar1Basic = {
+		SoundId = "rbxassetid://122189299597247",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar2Basic = {
+		SoundId = "rbxassetid://109645327135032",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar3Basic = {
+		SoundId = "rbxassetid://126673224914495",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAILostSight1Basic = {
+		SoundId = "rbxassetid://86979303092619",
 		Volume = 3,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
