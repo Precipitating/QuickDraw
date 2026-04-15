@@ -316,7 +316,6 @@ function Human:OnHumanoidStateChange()
 					j.Enabled = self.AnimationControllerState
 				end
 			end
-
 			if newState == Enum.HumanoidStateType.Dead then
 				self:OnDeath()
 			end
@@ -353,7 +352,6 @@ function Human:Die(shooter: Player?)
 		if shooter and shooter:IsA("Player") and victimIsPlayer ~= shooter then
 			ServerData.UpdateMoney(shooter, 50)
 		end
-		self.Dead = true
 	else
 		warn(`[Human:Die] Missing humanoid, so can't kill`)
 	end
@@ -519,7 +517,7 @@ function Human:Destroy()
 
 	table.clear(self)
 	setmetatable(self, nil)
-
+	self.Dead = true
 	print(`Human class destroyed!`)
 end
 

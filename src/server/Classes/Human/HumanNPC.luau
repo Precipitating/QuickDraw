@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
-local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
+
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
@@ -198,8 +198,8 @@ function HumanNPC:AimRightArmTowards(target)
 	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
 
 	repeat
-		task.wait(0.5)
-	until Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
+		task.wait()
+	until not self.HRP or Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
 end
 
 function HumanNPC:Ragdoll(duration: number)

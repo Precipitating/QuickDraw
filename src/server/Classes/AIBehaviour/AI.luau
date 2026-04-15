@@ -71,6 +71,9 @@ function AI:Initialize()
 end
 
 function AI:StopPathfind()
+	if not self.Owner or self.Owner.Dead then
+		return
+	end
 	if self and self.NoobPath then
 		self.NoobPath:Stop()
 	end
@@ -228,7 +231,7 @@ function AI:OrientTowardsSeekDir(seekDir: Vector3)
 	torsoAimer.CFrame = goal
 	repeat
 		task.wait()
-	until Utility.IsVectorNear(self.Owner.HRP.AssemblyAngularVelocity, 0.05)
+	until not self.HRP or Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
 	task.wait(2)
 	local foundTargetModel = self:CheckSurroundingsForEnemy()
 	if foundTargetModel then
