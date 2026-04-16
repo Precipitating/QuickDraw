@@ -18,7 +18,8 @@ function ServerGunHandler:ShootGun(player: Player, adsPos: Vector3, adsDir: Vect
 	local currentGun: Gun? = humanClass.CurrentGun
 
 	if not currentGun then
-		error(`[ServerGunHandler:ShootGun] No gun reference in human class`)
+		warn(`[ServerGunHandler:ShootGun] No gun reference in human class`)
+		return
 	end
 
 	local hasShot = currentGun:ShootGun(adsPos, adsDir)

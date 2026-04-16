@@ -297,6 +297,67 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
+	-- Shotgunner AI
+	RangedAIAttack1Shotgunner = {
+		SoundId = "rbxassetid://113866621593157",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack2Shotgunner = {
+		SoundId = "rbxassetid://109695085606228",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack3Shotgunner = {
+		SoundId = "rbxassetid://124037743927155",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff1Shotgunner = {
+		SoundId = "rbxassetid://120023968862448",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff2Shotgunner = {
+		SoundId = "rbxassetid://115393292812816",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff3Shotgunner = {
+		SoundId = "rbxassetid://105418091303400",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar1Shotgunner = {
+		SoundId = "rbxassetid://120239904391897",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar2Shotgunner = {
+		SoundId = "rbxassetid://73486286408877",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar3Shotgunner = {
+		SoundId = "rbxassetid://110930795054627",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAILostSight1Shotgunner = {
+		SoundId = "rbxassetid://116588024527765",
+		Volume = 3,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
 }
 
 -- Default group volumes

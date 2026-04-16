@@ -32,6 +32,9 @@ function BaseState:CanTransition(toStateName)
 	if currentState == "Dead" then
 		return false
 	end
+	if not self.AI or not self.AI.NoobPath or not self.Human then
+		return false
+	end
 
 	return true
 end

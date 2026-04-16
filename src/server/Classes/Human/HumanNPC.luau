@@ -24,10 +24,14 @@ function HumanNPC.new(humanoid: Humanoid, classType: string)
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()
 	self.AI = RangeAI.new(self, classType)
-	self.CurrentGun = Gun.new(self.AI.WeaponName, self, self.Character)
-	self.CurrentThrowable = Throwable.new(self.AI.ThrowableName, self)
-	self.CurrentGun:AddGunToInventory()
-	self.CurrentThrowable:AddThrowableToInventory()
+	self.CurrentGun = if self.AI.WeaponName then Gun.new(self.AI.WeaponName, self, self.Character) else nil
+	self.CurrentThrowable = if self.AI.ThrowableName then Throwable.new(self.AI.ThrowableName, self) else nil
+	if self.CurrentGun then
+		self.CurrentGun:AddGunToInventory()
+	end
+	if self.CurrentThrowable then
+		self.CurrentThrowable:AddThrowableToInventory()
+	end
 	self.CurrentTrack = nil
 
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
@@ -200,6 +204,8 @@ function HumanNPC:AimRightArmTowards(target)
 	repeat
 		task.wait()
 	until not self.HRP or Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
+
+	return true
 end
 
 function HumanNPC:Ragdoll(duration: number)

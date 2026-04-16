@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
@@ -20,6 +21,7 @@ function Fallback:Enter(previous, fallbackData)
 	while self.Human.IsRagdolled do
 		task.wait(1)
 	end
+
 	self.AI:StateChangeReset()
 
 	-- Variables
@@ -41,8 +43,9 @@ function Fallback:Enter(previous, fallbackData)
 	)
 
 	-- 1. Find a suitable position around player to go to
-	local halfDist = self.AI.MaxAttackDistance * 0.5
-	local safePos = self.AI:FindAnglePosition(human.HRP.Position, target, nil, halfDist or 50, false)
+	local randomDistWithinRange = RandomModule.GetRandomIntBetween(self.AI.MinAttackDistance, self.AI.MaxAttackDistance)
+	print(randomDistWithinRange)
+	local safePos = self.AI:FindAnglePosition(human.HRP.Position, target, nil, randomDistWithinRange, false)
 
 	-- 1.1 (TERMINATION) If we can't find a fallback position, got to attack state (shoots at current position)
 	if not safePos then
@@ -59,21 +62,37 @@ function Fallback:Enter(previous, fallbackData)
 
 	-- 3. Wait for NPC to arrive at destination
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
+		warn("arrived fallback pos")
+		-- get updated target position
+
+		if not success then
+			self.Machine:Transition("Seek", { Target = target })
+			return
+		end
 		local NPCAimArm = if human
 				and human.BodyParts
 				and human.BodyParts["RightUpperArm"]
 			then human.BodyParts["RightUpperArm"]
 			else nil
 
+		if not NPCAimArm then
+			warn("Right arm missing, NPC probably dead")
+			return
+		end
 		-- 3.1. Aim arm & torso towards last seen pos and wait until finished rotating
-		human:AimRightArmTowards(targetPos)
+		targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+		local done = human:AimRightArmTowards(targetPos)
 
-		-- 3.2. Can we see the target?
-		local isInLineOfSight = AI.IsTargetInView(self.AI, NPCAimArm.Position, target, true)
+		if done then
+			-- 3.2. Can we see the target?
+			local isInLineOfSight = AI.IsTargetInView(self.AI, NPCAimArm.Position, target, true)
 
-		-- 4. If so, transition to attack state, else seek
-		if isInLineOfSight then
-			self.Machine:Transition(self.AI.AttackStateName, { Target = target })
+			-- 4. If so, transition to attack state, else seek
+			if isInLineOfSight and not CollectionService:HasTag(target, "Dead") then
+				self.Machine:Transition(self.AI.AttackStateName, { Target = target })
+			else
+				self.Machine:Transition("Seek", { Target = target })
+			end
 		else
 			self.Machine:Transition("Seek", { Target = target })
 		end

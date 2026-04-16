@@ -12,7 +12,7 @@ type HumanPlayer = ClassTypes.HumanPlayer
 
 local NPCEvents = {}
 NPCEvents.MaxNPCSAllowed = 10
-NPCEvents.SecondsToSpawnNPC = 300
+NPCEvents.SecondsToSpawnNPC = 10
 NPCEvents.CurrentSpawnedNPCS = 0
 
 local function AddNPCClass(taggedNPC: Model, classType: string)
@@ -42,6 +42,33 @@ local function InitializeNPCS()
 	end
 end
 
+local function SpawnLoop(spawnerModel, spawnLocation)
+	if not spawnerModel or not spawnerModel.Parent then
+		return
+	end
+	local npcType = nil
+	for key, _ in NPCTypes do
+		if CollectionService:HasTag(spawnerModel, key) then
+			npcType = key
+			break
+		end
+	end
+
+	if NPCEvents.CurrentSpawnedNPCS < NPCEvents.MaxNPCSAllowed then
+		local npcModel = NPCList[RandomModule.GetRandomIntBetween(1, #NPCList)]:Clone()
+		CollectionService:AddTag(npcModel, npcType)
+		CollectionService:AddTag(npcModel, "NPC")
+		npcModel:PivotTo(spawnLocation.WorldCFrame)
+		npcModel.Parent = workspace.NPCs
+	end
+	task.delay(
+		RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
+		SpawnLoop,
+		spawnerModel,
+		spawnLocation
+	)
+end
+
 local function InitializeSpawner(spawnerModel)
 	local spawnLocation: Attachment = spawnerModel:FindFirstChildOfClass("Attachment")
 	if not spawnLocation then
@@ -49,33 +76,7 @@ local function InitializeSpawner(spawnerModel)
 		return
 	end
 
-	task.spawn(function()
-		while spawnerModel do
-			task.wait(NPCEvents.SecondsToSpawnNPC)
-			if not spawnerModel then
-				return
-			end
-			if NPCEvents.CurrentSpawnedNPCS >= NPCEvents.MaxNPCSAllowed then
-				continue
-			end
-
-			local npcModel: Model = NPCList[RandomModule.GetRandomIntBetween(1, #NPCList)]:Clone()
-			-- determine NPC type to spawn
-			local npcType = nil
-			for key, _ in NPCTypes do
-				if CollectionService:HasTag(spawnerModel, key) then
-					npcType = key
-					break
-				end
-			end
-			CollectionService:AddTag(npcModel, npcType)
-
-			-- Instance added signal will add the NPC class after this tag is added
-			CollectionService:AddTag(npcModel, "NPC")
-			npcModel:PivotTo(spawnLocation.WorldCFrame)
-			npcModel.Parent = workspace.NPCs
-		end
-	end)
+	SpawnLoop(spawnerModel, spawnLocation)
 end
 
 local function InitializeNPCSpawners()

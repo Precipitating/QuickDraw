@@ -161,19 +161,16 @@ end
 -- Ensure the AI is within the shooting position
 function RangeAI:CorrectRangePosition(targetPos: Vector3): string | boolean
 	local currentPos = self.Owner.Character:GetPivot().Position
-
 	local distance = (targetPos - currentPos).Magnitude
 
-	-- If target too far, change to seek state
-	if distance >= self.MaxAttackDistance then
+	-- Must be 5 studs PAST max before seeking, add a buffer to account for pathfinding inaccuracies
+	if distance >= self.MaxAttackDistance + 5 then
 		return "Seek"
 	end
-
-	-- Target too close to NPC, back off.
-	if distance <= self.MinAttackDistance and not self.Owner.Legless then
+	-- Must be 5 studs PAST min before falling back
+	if distance <= self.MinAttackDistance - 5 and not self.Owner.Legless then
 		return "Fallback"
 	end
-
 	if not self.Owner.Legless then
 		self:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 	end
@@ -182,7 +179,7 @@ end
 
 function RangeAI:Attack()
 	local human = self.Owner
-	local currentGun = human.CurrentGun
+	local currentGun = human and human.CurrentGun
 	if not currentGun then
 		return
 	end

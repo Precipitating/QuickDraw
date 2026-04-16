@@ -32,12 +32,12 @@ function AI.new(owner: Human, classType: string)
 	self.EnemyList = { Player = true }
 	self.AttackStateName = ""
 	self.DefaultState = { Name = "", Data = nil }
-	self.WeaponName = "Revolver"
-	self.ThrowableName = "Dynamite"
+	self.WeaponName = nil
+	self.ThrowableName = nil
 	self.SeekTurnDelay = 0.5
 	self.NoobPath = NoobPath.Humanoid(
 		self.Owner.Character,
-		{ WaypointSpacing = 5, AgentRadius = 3, PathSettings = { SupportPartialPath = true } } :: AgentParams
+		{ WaypointSpacing = 10, AgentRadius = 3, PathSettings = { SupportPartialPath = true } } :: AgentParams
 	)
 	self.NoobPath.Visualize = false
 	self.NoobPath.Timeout = true
@@ -67,6 +67,11 @@ function AI:Initialize()
 			self.NoobPath.Jump() -- Jump to unstuck
 		end
 		self.NoobPath:Run()
+	end)
+
+	self.NoobPath.Error:Connect(function()
+		print("NPC errored on pathfinding, defaulting to default state")
+		self.StateMachine:Transition(self.DefaultState.Name, self.DefaultState.Data)
 	end)
 end
 
@@ -113,12 +118,8 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV:
 	local direction = targetPos - originPos
 	local distance = direction.Magnitude
 
-	if distance > self.MaxAttackDistance then
+	if distance > self.EyeRange then
 		return false
-	end
-
-	if distance < 0.01 then
-		return true
 	end
 
 	local dirUnit = direction.Unit
@@ -324,6 +325,10 @@ function AI:CheckSurroundingsForEnemy()
 		local parent = part.Parent
 		local hrp = parent and parent:FindFirstChild("HumanoidRootPart")
 		local humanoid = parent and parent:FindFirstChild("Humanoid")
+
+		if CollectionService:HasTag(parent, "Dead") then
+			continue
+		end
 
 		if not hrp or not humanoid or not self:TargetIsEnemy(parent) then
 			continue

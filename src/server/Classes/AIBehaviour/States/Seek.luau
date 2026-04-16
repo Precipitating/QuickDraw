@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -12,7 +13,7 @@ function Seek.new(machine, ai)
 	local self = BaseState.new(machine, ai)
 	setmetatable(self, Seek)
 	self.LastChecked = os.clock()
-	self.PredictionAheadTime = 2
+	self.PredictionAheadTime = 1
 
 	return self
 end
@@ -48,7 +49,6 @@ function Seek:Enter(previous, seekData)
 	local target: Model | BasePart = seekData.Target
 	assert(target, "NPC Seek state cannot proceed, target is nil")
 
-	self.LastSeenTime = os.clock()
 	local predictedTargetLocation = self:PredictTarget(target)
 
 	local ai = self.AI
@@ -76,47 +76,48 @@ function Seek:Enter(previous, seekData)
 		predictedTargetLocation
 	)
 	ai:PathFindTo(safeSeekPos)
-
 	self.Machine:Start()
-
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
-		if success then
-			warn("Reached")
-			if not self.Human then
-				return
-			end
+		if not success then
+			warn("Seek pathfind failed, returning to patrol")
 
-			-- 2.1 Have a look around 4 directions for any enemies
-			local foundEnemy = ai:LookAround()
-
-			-- 2.2 If enemy spotted
-			if foundEnemy then
-				local targetPos = if foundEnemy:IsA("Model")
-					then foundEnemy:GetPivot().Position
-					else foundEnemy.Position
-
-				-- 2.2.1 Fall back if too close
-				local inRange = ai:CorrectRangePosition(targetPos)
-				if inRange and typeof(inRange) == "string" then
-					if inRange == "Fallback" then
-						self.Machine:Transition("Fallback", { Target = foundEnemy })
-						return
-					end
-				end
-				-- Else Attack state
-				self.Machine:Transition(self.AI.AttackStateName, { Target = foundEnemy })
-			else
-				-- If not enemy spotted, lost them.
-				ServerSoundHandler:Play3DNPCVoiceline(
-					nil,
-					`RangedAILostSight1{self.AI.Type}`,
-					self.Human.VoicelineSound,
-					{ MaxDistance = 200 }
-				)
-				self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
-			end
+			self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
 			return
+		end
+		warn("Reached")
+		if not self.Human then
+			return
+		end
+
+		local foundEnemy = ai:LookAround()
+		if foundEnemy and not CollectionService:HasTag(foundEnemy, "Dead") then
+			local targetPos = if foundEnemy:IsA("Model") then foundEnemy:GetPivot().Position else foundEnemy.Position
+			local inRange = ai:CorrectRangePosition(targetPos)
+
+			if typeof(inRange) == "string" then
+				if inRange == "Fallback" then
+					self.Machine:Transition("Fallback", { Target = foundEnemy })
+					return
+				elseif inRange == "Seek" then
+					-- Pathfinded but still too far, give up and patrol
+
+					self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
+					return
+				end
+			end
+
+			-- inRange is true, distance is valid
+			self.Machine:Transition(self.AI.AttackStateName, { Target = foundEnemy })
+		else
+			ServerSoundHandler:Play3DNPCVoiceline(
+				nil,
+				`RangedAILostSight1{self.AI.Type}`,
+				self.Human.VoicelineSound,
+				{ MaxDistance = 200 }
+			)
+
+			self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
 		end
 	end))
 end

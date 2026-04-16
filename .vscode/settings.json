@@ -2,11 +2,11 @@
     "folder-color.pathColors": [
         {
             "folderPath": "Quick Draw\\src\\server\\",
-            "color": "foldercolorizer.color_00ccff"
+            "color": "foldercolorizer.color_00d7ff"
         },
         {
             "folderPath": "Quick Draw\\src\\shared\\",
-            "color": "foldercolorizer.color_9900ff"
+            "color": "foldercolorizer.color_ff87af"
         }
     ],
     "stylua.targetReleaseVersion": "latest"

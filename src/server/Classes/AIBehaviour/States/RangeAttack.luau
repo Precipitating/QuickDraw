@@ -15,6 +15,8 @@ function RangeAttack.new(machine, ai)
 	self.LastAttacked = os.clock()
 	self.Target = nil
 	self.Cornered = false
+	self.LOSLostTime = nil
+
 	setmetatable(self, RangeAttack)
 	return self
 end
@@ -49,28 +51,16 @@ function RangeAttack:Update(dt)
 	local human = self.Human
 	local ai = self.AI
 
-	if lastAttacked <= self.AI.AttackCooldown then
-		return
-	end
-
-	if not ai.NoobPath.Idle then
-		return
-	end
-
 	if self.Human.IsRagdolled then
 		self.Human:ToggleTorsoAimer(false)
 		return
 	end
 
-	self.LastAttacked = now
 	local target = self.Target
-
-	-- this should transition to patrol if target is dead, so further code shouldnt be executed
 	if self:IsTargetDead(target) then
 		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		return
 	end
-	-- target is valid
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
 
 	local NPCAimArm = if human
@@ -78,16 +68,11 @@ function RangeAttack:Update(dt)
 			and human.BodyParts["RightUpperArm"]
 		then human.BodyParts["RightUpperArm"]
 		else nil
-
 	if not NPCAimArm then
 		warn("Right arm missing, NPC probably dead")
 		return
 	end
-
-	-- 1. Check if in shooting range, will move within range if inRange is true
 	local inRange = ai:CorrectRangePosition(targetPos)
-
-	-- if seek, target too far away, fallback means too target is too close
 	if inRange and typeof(inRange) == "string" then
 		if inRange == "Seek" then
 			self.Machine:Transition("Seek", { Target = target })
@@ -99,24 +84,32 @@ function RangeAttack:Update(dt)
 	end
 
 	human:AimRightArmTowards(target)
+
+	if lastAttacked <= self.AI.AttackCooldown then
+		return
+	end
+	if not ai.NoobPath.Idle then
+		return
+	end
+
 	local isInLineOfSight = AI.IsTargetInView(ai, NPCAimArm.Position, target, true)
 
-	-- 2. Seek state if not in LOS
+	-- 2. Seek state if not in LOS (with patience timer)
 	if not isInLineOfSight then
-		print("Not in LOS, seeking")
-		self.Machine:Transition("Seek", { Target = target })
+		self.LOSLostTime = self.LOSLostTime or os.clock()
+		if os.clock() - self.LOSLostTime > 2 then
+			self.LOSLostTime = nil
+			self.Machine:Transition("Seek", { Target = target })
+		end
+		return
+	else
+		self.LOSLostTime = nil
+	end
+	if self.Human.CurrentThrowable and ai:ThrowThrowable(targetPos) then
 		return
 	end
-
-	-- 3. Throw nade if possible
-	if ai:ThrowThrowable(targetPos) then
-		return
-	end
-
-	-- 4 Aim at target
 	human:AimRightArmTowards(target)
-
-	-- 5. SHOOT
+	self.LastAttacked = now
 	ai:Attack()
 end
 
