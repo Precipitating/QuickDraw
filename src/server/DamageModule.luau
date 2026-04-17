@@ -54,7 +54,7 @@ local function ApplyDamage(
 
 	-- stop reloading if hurt
 	if reloading then
-		gun.Reloading = false
+		gun:StopReloading()
 	end
 
 	if human.HumanType == "NPC" then
@@ -137,6 +137,10 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 	local hitObj = if damageData.Type == "Inflict" then damageData.LimbHit else damageData.RaycastResult
 	local human = damageData.TargetHuman
 	if not human then
+		return
+	end
+	if human.Invincible then
+		warn("invicible, cant hit")
 		return
 	end
 	local limbHealth = human.LimbHealth

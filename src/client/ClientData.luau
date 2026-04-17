@@ -7,12 +7,16 @@ local ClientData = {}
 
 function ClientData.Initialize()
 	DataService:init()
-
 	DataService:getChangedSignal("currency"):Connect(function(amt)
 		SoundManager.PlayKeyed("UI", "AddMoney")
 		CurrencyText.Text = `${amt}`
 		warn(`{Player.Name} client update money! {amt}`)
 	end)
+	CurrencyText.Text = `${DataService:get("currency")}`
+end
+
+function ClientData.WaitForData()
+	return DataService:waitForData()
 end
 
 return ClientData

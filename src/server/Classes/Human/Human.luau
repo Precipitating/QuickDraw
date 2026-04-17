@@ -1,8 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local HumanConstants = require(script.Parent.HumanConstants)
-local HumanSignals = require(script.Parent.HumanSignals)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
@@ -112,6 +112,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.JumpSignalled = false
 	self.RollSignalled = false
 	self.KickSignalled = false
+	self.Invincible = false
 
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
@@ -127,12 +128,12 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Legless = false
 
 	self:OnHumanoidStateChange()
-
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
 
 	return self :: any
 end
+
 function Human:GetHealthPercentage()
 	if self.Health <= 0 then
 		return -1
@@ -192,6 +193,7 @@ function Human:ApplyKickForce()
 			obj:ApplyImpulse(
 				(self.HRP.CFrame.LookVector + HumanConstants.KICK_HEIGHT).Unit * HumanConstants.KICK_FORCE * mass
 			)
+			obj:ApplyAngularImpulse(self.HRP.CFrame.LookVector * HumanConstants.KICK_ANGULAR_FORCE * mass)
 		end
 	end
 end
@@ -343,18 +345,15 @@ end
 -- Set humanoid health to 0 to initiate death
 function Human:Die(shooter: Player?)
 	if self.Dead then
-		return
+		return false
 	end
 	if self.Humanoid then
 		self.Humanoid.Health = 0
-		local victimIsPlayer = self.Player
-		-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
-		if shooter and shooter:IsA("Player") and victimIsPlayer ~= shooter then
-			ServerData.UpdateMoney(shooter, 50)
-		end
 	else
 		warn(`[Human:Die] Missing humanoid, so can't kill`)
+		return false
 	end
+	return true
 end
 
 -- Fix right arm to face forward correctly and make gun non collidable so shooting
@@ -480,8 +479,8 @@ function Human:OnDeath()
 	self:Destroy()
 end
 
-function Human:Ragdoll(ragdollTime: number)
-	HumanSignals.RagdollClient:Fire(self.Player, ragdollTime)
+function Human:Ragdoll(duration: number)
+	warn("Human:Ragdoll BASE CLASS, YOU SHOULD NOT SEE THIS")
 end
 
 --[=[

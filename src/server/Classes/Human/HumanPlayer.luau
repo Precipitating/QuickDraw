@@ -1,6 +1,8 @@
+local CollectionService = game:GetService("CollectionService")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
+local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
@@ -22,8 +24,23 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 
+	self:OnSpawnInitialize()
+
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 	return self :: any
+end
+
+function HumanPlayer:Ragdoll(duration: number)
+	HumanSignals.RagdollClient:Fire(self.Player, duration)
+end
+
+function HumanPlayer:OnSpawnInitialize()
+	self.Invincible = true
+	task.delay(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, function()
+		if self and not CollectionService:HasTag(self.Character, "Dead") then
+			self.Invincible = false
+		end
+	end)
 end
 function HumanPlayer:ApplyImpulse(force: Vector3, position: Vector3?)
 	HumanSignals.ApplyImpulseToClient:Fire(self.Player, self.RootPart, force, position)
@@ -38,6 +55,22 @@ end
 
 function HumanPlayer:ConnectGUIs()
 	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
+end
+
+function HumanPlayer:Die(shooter: Player?)
+	local dead = Human.Die(self)
+	if not dead then
+		return
+	end
+
+	if self.Player == shooter then
+		return
+	end
+
+	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
+	if shooter and shooter:IsA("Player") then
+		AwardHandler.AwardPlayerKill(shooter)
+	end
 end
 
 function Human:SetCrawlState()

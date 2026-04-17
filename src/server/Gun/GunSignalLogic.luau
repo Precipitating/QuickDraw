@@ -105,4 +105,8 @@ return {
 
 		ServerGunHandler:DisplayBulletHole(cframeTarget)
 	end),
+
+	GunSignals.StoppedReloading:Connect(function(player: Player)
+		ServerGunHandler:StopReloading(player)
+	end),
 }

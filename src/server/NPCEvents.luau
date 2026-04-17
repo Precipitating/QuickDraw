@@ -14,6 +14,7 @@ local NPCEvents = {}
 NPCEvents.MaxNPCSAllowed = 10
 NPCEvents.SecondsToSpawnNPC = 10
 NPCEvents.CurrentSpawnedNPCS = 0
+local NPCCount = 1
 
 local function AddNPCClass(taggedNPC: Model, classType: string)
 	local humanoid = taggedNPC:FindFirstChildOfClass("Humanoid")
@@ -56,10 +57,12 @@ local function SpawnLoop(spawnerModel, spawnLocation)
 
 	if NPCEvents.CurrentSpawnedNPCS < NPCEvents.MaxNPCSAllowed then
 		local npcModel = NPCList[RandomModule.GetRandomIntBetween(1, #NPCList)]:Clone()
+		npcModel.Name = `{npcType}NPC{NPCCount}`
 		CollectionService:AddTag(npcModel, npcType)
 		CollectionService:AddTag(npcModel, "NPC")
 		npcModel:PivotTo(spawnLocation.WorldCFrame)
 		npcModel.Parent = workspace.NPCs
+		NPCCount += 1
 	end
 	task.delay(
 		RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,

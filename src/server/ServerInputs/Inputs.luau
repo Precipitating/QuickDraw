@@ -33,9 +33,10 @@ function Inputs:ApplyRollDrain(player: Player, lookDir: Vector3)
 	assert(lookDir, "Missing lookDir from client to roll!")
 	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
 
-	if humanClass.Legless then
+	if not humanClass or humanClass.Legless or not humanClass.Humanoid then
 		return false
 	end
+
 	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
 		return false
 	end
@@ -50,9 +51,10 @@ end
 
 function Inputs:ApplyKickDrain(player: Player)
 	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
-	if humanClass.Legless then
+	if not humanClass or humanClass.Legless or not humanClass.Humanoid then
 		return false
 	end
+
 	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
 		return false
 	end

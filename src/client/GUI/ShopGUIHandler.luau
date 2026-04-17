@@ -81,7 +81,10 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 
 	linkedPrompt.Enabled = false
 	PlayerContext.Humanoid:UnequipTools()
-	task.wait(0.5)
+	repeat
+		task.wait()
+	until not PlayerContext.Character:FindFirstChildOfClass("Tool")
+
 	CoreGUIHandler.ToggleBackpackVisibility(false)
 	ClientUtility.ToggleControls(false)
 	PlayerContext.ApplyMouseLock(false)

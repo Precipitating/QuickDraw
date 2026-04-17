@@ -61,6 +61,10 @@ ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
 ProjectileData.MaxDistance = 250
 ProjectileData.AutoIgnoreContainer = true
 
+function ClientGunHandler:StopReloading()
+	PlayerContext.Reloading = false
+end
+
 function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 	if not gunTool then
 		warn("Client gunTool invalid")
@@ -258,7 +262,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 	ProjectileData.RaycastParams.FilterDescendantsInstances =
 		{ PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
 
-	local parentPart = if HumanNetwork.networker:fetch("IsLegless", PlayerContext.Player)
+	local parentPart = if HumanNetwork.networker:fetch("IsLegless")
 		then PlayerContext.HRP
 		else PlayerContext.BodyParts["UpperTorso"]
 
@@ -339,7 +343,7 @@ function ClientGunHandler:DisplayGunEffects(gun: Tool, shot: boolean)
 end
 
 function ClientGunHandler:AttemptReload()
-	if PlayerContext.Humanoid.Health <= 0 then
+	if PlayerContext.Humanoid.Health <= 0 or PlayerContext.Reloading then
 		return
 	end
 	local currAmmo, maxAmmo = GunNetwork:fetch("GetAmmoCount")
@@ -347,8 +351,15 @@ function ClientGunHandler:AttemptReload()
 	if currAmmo == maxAmmo or PlayerContext.Humanoid.Health <= 0 then
 		return
 	end
+	PlayerContext.Reloading = true
 	local newAmmoCount = GunNetwork:fetch("Reload")
+
+	if not currAmmo or maxAmmo then
+		return
+	end
+
 	if newAmmoCount >= maxAmmo then
+		PlayerContext.Reloading = false
 		return
 	end
 end
@@ -463,6 +474,10 @@ function ClientGunHandler:DisconnectGun()
 	warn("Gun disconnected!")
 	if HoldingRMB then
 		ClientGunHandler.CancelADS()
+	end
+
+	if PlayerContext.Reloading then
+		PlayerContext.Reloading = false
 	end
 	self.janitor:Cleanup()
 end

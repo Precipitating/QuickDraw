@@ -4,9 +4,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
+local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
@@ -161,7 +161,7 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	else
 		torsoAimer.Enabled = false
 	end
-	warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
+	--warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 
 function HumanNPC:AimRightArmTowards(target)
@@ -201,9 +201,17 @@ function HumanNPC:AimRightArmTowards(target)
 	local flattenedLookAt = Vector3.new(targetPos.X, self.HRP.Position.Y, targetPos.Z)
 	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
 
+	-- Wait until the rotation has complete, using dot product to check if facing correct direction
 	repeat
 		task.wait()
-	until not self.HRP or Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
+		if not self.HRP then
+			break
+		end
+		local currentLook = self.HRP.CFrame.LookVector
+		local targetLook = (flattenedLookAt - self.HRP.Position).Unit
+		local aligned = currentLook:Dot(targetLook) >= 0.99
+		local settled = self.HRP.AssemblyAngularVelocity.Magnitude < 0.01
+	until aligned and settled
 
 	return true
 end
@@ -230,6 +238,18 @@ end
 
 function HumanNPC:UnEquipCurrentTool()
 	self.Humanoid:UnEquipTools()
+end
+
+function HumanNPC:Die(shooter: Player?)
+	local dead = Human.Die(self)
+	if not dead then
+		return
+	end
+
+	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
+	if shooter and shooter:IsA("Player") then
+		AwardHandler.AwardNPCKill(shooter)
+	end
 end
 
 function HumanNPC:OnDeath()

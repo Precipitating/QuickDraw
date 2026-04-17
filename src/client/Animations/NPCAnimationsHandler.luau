@@ -77,9 +77,10 @@ function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
 	end
 	local isLegless = HumanNetwork.networker:fetch("IsLegless", humanoid)
 	if isLegless then
-		warn(`Adding NPC animation to {character.Name} via client`)
+		warn(`Settimg NPC crawl animation to {character.Name} via client`)
 		controller = AnimationController.new(character, CrawlAnims, DefaultAnimateParams)
 	else
+		warn(`Settimg NPC default animation to {character.Name} via client`)
 		controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)
 	end
 

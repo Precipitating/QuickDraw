@@ -54,6 +54,10 @@ function ServerGunHandler:GetAmmoCount(player: Player?)
 	return currentAmmo, maxAmmo
 end
 
+function ServerGunHandler:StopReloading(player: Player)
+	self.networker:fire(player, "StopReloading")
+end
+
 function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
 	if not gunTool then
 		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")

@@ -43,7 +43,11 @@ export type PlayOptions = {
 local DEFAULT_POOL_SIZE = 1
 local DEFAULT_FADE_TWEEN = TweenInfo.new(0.5, Enum.EasingStyle.Linear)
 local SOUND_FOLDER_NAME = "SoundManagerSounds"
-local SOUND_COOLDOWN_TIME = 0.2
+local DEFAULT_SOUND_COOLDOWN_TIME = 0.2
+
+local GROUP_COOLDOWN_TIME = {
+	Voiceline = 3,
+}
 
 -------------------------------------------------
 -- Internal State
@@ -202,7 +206,14 @@ function SoundManager.Play(name: string, options: PlayOptions?): Sound?
 	local config = SoundData.Sounds[name]
 	assert(config, "[SoundManager] Unknown sound: " .. name)
 
-	if _lastPlayed[name] and (workspace:GetServerTimeNow() - _lastPlayed[name]) < SOUND_COOLDOWN_TIME then
+	local soundCooldown = GROUP_COOLDOWN_TIME[config.Group]
+
+	if
+		_lastPlayed[name]
+		and (workspace:GetServerTimeNow() - _lastPlayed[name])
+			< if soundCooldown then soundCooldown else DEFAULT_SOUND_COOLDOWN_TIME
+	then
+		warn(`COOLDOWN of {soundCooldown}`)
 		return
 	end
 
@@ -254,6 +265,7 @@ function SoundManager.Play(name: string, options: PlayOptions?): Sound?
 	if opts.FadeIn and opts.FadeIn > 0 then
 		sound.Volume = 0
 		sound:Play()
+		_lastPlayed[name] = workspace:GetServerTimeNow()
 		local targetVol = _calcVolume(baseVol, config.Group)
 		local tweenInfo = TweenInfo.new(opts.FadeIn, Enum.EasingStyle.Linear)
 		local tween = TweenService:Create(sound, tweenInfo, { Volume = targetVol })
@@ -456,15 +468,29 @@ function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound
 		return
 	end
 
-	if soundInstance.IsPlaying then
-		soundInstance:Stop()
-	end
-
 	if not SoundData.Sounds[soundName] then
 		warn("[Play3DNPCVoiceline] Sound name invalid")
 		return
 	end
+
 	local config = SoundData.Sounds[soundName]
+	local model = soundInstance:FindFirstAncestorOfClass("Model")
+	local modelName: string? = if model and model.Name then model.Name else ""
+	local keyName = `{soundName}{modelName}`
+	local soundCooldown = GROUP_COOLDOWN_TIME[config.Group]
+	if
+		_lastPlayed[keyName]
+		and (workspace:GetServerTimeNow() - _lastPlayed[keyName])
+			< if soundCooldown then soundCooldown else DEFAULT_SOUND_COOLDOWN_TIME
+	then
+		warn(`COOLDOWN of {soundCooldown}`)
+		return
+	end
+
+	if soundInstance.IsPlaying then
+		soundInstance:Stop()
+	end
+
 	soundInstance.SoundId = config.SoundId
 	soundInstance.RollOffMaxDistance = opts.MaxDistance or 100
 	soundInstance.RollOffMinDistance = opts.MinDistance or 10
@@ -472,6 +498,7 @@ function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound
 	soundInstance.Volume = _calcVolume(baseVol, config.Group)
 	soundInstance.PlaybackSpeed = opts.Pitch or config.PlaybackSpeed or 1
 	soundInstance:Play()
+	_lastPlayed[keyName] = workspace:GetServerTimeNow()
 end
 
 --- Play a sound at a world position (attaches to a temporary part)

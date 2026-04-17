@@ -191,6 +191,10 @@ function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 		return false
 	end
 
+	if self.Reloading then
+		self:StopReloading()
+	end
+
 	if self.GunType == "Shotgun" then
 		self:SpreadShot(adsDir, adsPosition)
 	else
@@ -203,10 +207,6 @@ function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 	self.LastShot = os.clock()
 
 	self:ActivateMuzzleFlash()
-
-	if self.Reloading then
-		self.Reloading = false
-	end
 
 	return true
 end
@@ -250,9 +250,19 @@ function Gun:Reload()
 			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
 		end
 	end
-	self.Reloading = false
+
+	-- Finished loading to max ammo without interruptions, update flags.
+	self:StopReloading()
 
 	return self.CurrentAmmo
+end
+
+function Gun:StopReloading()
+	self.Reloading = false
+
+	if self.PlayerRef and self.PlayerRef:IsA("Player") then
+		GunSignals.StoppedReloading:Fire(self.PlayerRef)
+	end
 end
 
 function Gun:DisableCollision(tool: Tool)

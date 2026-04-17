@@ -9,4 +9,5 @@ return {
 	PlayerHit = Signal.new(),
 	InflictLimbDamage = Signal.new(),
 	NormalLimbDamage = Signal.new(),
+	StoppedReloading = Signal.new(),
 }

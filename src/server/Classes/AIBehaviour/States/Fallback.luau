@@ -34,7 +34,7 @@ function Fallback:Enter(previous, fallbackData)
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
 
 	-- Disable reload if we're reloading & play voiceline
-	human.CurrentGun.Reloading = false
+	human.CurrentGun:StopReloading()
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
 		`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
@@ -91,6 +91,7 @@ function Fallback:Enter(previous, fallbackData)
 			if isInLineOfSight and not CollectionService:HasTag(target, "Dead") then
 				self.Machine:Transition(self.AI.AttackStateName, { Target = target })
 			else
+				warn("Can't see target falling back, SEEKIN")
 				self.Machine:Transition("Seek", { Target = target })
 			end
 		else

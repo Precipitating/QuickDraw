@@ -4,7 +4,9 @@ local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
+local ClientData = require(StarterPlayer.StarterPlayerScripts.Client.ClientData)
 local ClientUtility = require(script.Parent.ClientUtility)
 local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
@@ -15,6 +17,7 @@ local HumanGUIHandler = require(script.Parent.Parent.GUI.HumanGUIHandler)
 local CurrentCamera = workspace.CurrentCamera
 local DefaultAnimations = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
 local Player = Players.LocalPlayer
+
 local Crosshair = ReplicatedStorage.Shared.Templates.Crosshair
 local DefaultAnimateParams = {
 	ApplyRigScale = true,
@@ -114,6 +117,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.PlayerGui = player:WaitForChild("PlayerGui", 10)
 	PlayerContext.AnimationController = AnimationController.new(character, DefaultAnimations, DefaultAnimateParams)
 	PlayerContext.IsMoving = false
+	PlayerContext.Reloading = false
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
 	for _, obj in character:GetChildren() do
@@ -199,11 +203,15 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 end
 
 function PlayerContext:Initialize()
+	ClientData.WaitForData()
 	-- Needs reinitializing on respawn
 	Player.CharacterAdded:Connect(function(character: Model)
 		self.OnCharacterAdded(Player, character)
 	end)
 
+	if Player.Character then
+		self.OnCharacterAdded(Player, Player.Character)
+	end
 	-- Crosshair
 	local crosshair = Crosshair:Clone()
 	crosshair.Parent = workspace

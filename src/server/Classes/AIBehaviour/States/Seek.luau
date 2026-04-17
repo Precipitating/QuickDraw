@@ -49,6 +49,8 @@ function Seek:Enter(previous, seekData)
 	local target: Model | BasePart = seekData.Target
 	assert(target, "NPC Seek state cannot proceed, target is nil")
 
+	self.Machine:Start()
+
 	local predictedTargetLocation = self:PredictTarget(target)
 
 	local ai = self.AI
@@ -76,7 +78,7 @@ function Seek:Enter(previous, seekData)
 		predictedTargetLocation
 	)
 	ai:PathFindTo(safeSeekPos)
-	self.Machine:Start()
+
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		if not success then
@@ -101,7 +103,6 @@ function Seek:Enter(previous, seekData)
 					return
 				elseif inRange == "Seek" then
 					-- Pathfinded but still too far, give up and patrol
-
 					self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
 					return
 				end
