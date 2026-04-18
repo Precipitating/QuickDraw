@@ -10,7 +10,6 @@ local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local PoolHandler = require(script.Parent.Parent.Pools.PoolHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
-local FastCastRedux = require(ReplicatedStorage.Packages.FastCastRedux)
 local Ripple = require(ReplicatedStorage.Packages.Ripple)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
@@ -51,15 +50,22 @@ local CrosshairScaleSpring = Ripple.createSpring(UDim2.fromScale(1, 1), {
 	frequency = 5,
 })
 
-local FastCast = FastCastRedux.new()
+--local FastCast = FastCastRedux.new()
 
-local ProjectileData = FastCast.newBehavior()
-ProjectileData.RaycastParams = RaycastParams.new()
-ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-ProjectileData.RaycastParams.FilterDescendantsInstances = {}
-ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
-ProjectileData.MaxDistance = 250
-ProjectileData.AutoIgnoreContainer = true
+local crosshairRaycastParams = RaycastParams.new()
+crosshairRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+--params.FilterType = Enum.RaycastFilterType.Exclude
+--params.FilterDescendantsInstances = { PlayerContext.Character }
+-- local ProjectileData = FastCast.newBehavior()
+-- ProjectileData.RaycastParams = RaycastParams.new()
+-- ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+-- ProjectileData.RaycastParams.FilterDescendantsInstances = {}
+-- ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
+-- ProjectileData.MaxDistance = 250
+-- ProjectileData.AutoIgnoreContainer = true
+
+local MAX_3D_CROSSHAIR_DISTANCE = 250
 
 function ClientGunHandler:StopReloading()
 	PlayerContext.Reloading = false
@@ -206,37 +212,58 @@ local function CrosshairSpringMovement(crosshairPart: Part, crosshairImg: ImageL
 	end
 end
 
-local function CastBarrelRay(gunName: string, shootPoint: Attachment)
+local function PredictBulletLanding(shootOrigin: Vector3, direction: Vector3, velocity: number): Vector3
+	local GRAVITY = workspace.Gravity
+	local STEPS = 20
+	local dt = MAX_3D_CROSSHAIR_DISTANCE / velocity / STEPS -- auto scale dt to gun velocity
+
+	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character }
+
+	local prevPos = shootOrigin
+
+	for i = 1, STEPS do
+		local t = i * dt
+		local nextPos = shootOrigin + (direction * velocity * t) + Vector3.new(0, -0.5 * GRAVITY * t ^ 2, 0)
+
+		if (nextPos - shootOrigin).Magnitude >= MAX_3D_CROSSHAIR_DISTANCE then
+			return nextPos
+		end
+
+		local result = workspace:Raycast(prevPos, nextPos - prevPos, crosshairRaycastParams)
+		if result then
+			return result.Position
+		end
+
+		prevPos = nextPos
+	end
+
+	return prevPos
+end
+
+local function CastBarrelRay(crosshairBB: BillboardGui, gunName: string, shootPoint: Attachment)
 	if not shootPoint then
 		warn("Casting ray failed, shootpoint nil")
 		return
 	end
-	local BulletVelocity = GunData[gunName].Velocity
+
+	local bulletVelocity = GunData[gunName].Velocity
 	local origin: Vector3 = shootPoint.WorldPosition
 	local direction: Vector3 = shootPoint.WorldCFrame.LookVector
+	local landLocation = PredictBulletLanding(origin, direction, bulletVelocity)
 
-	FastCast:Fire(origin, direction, BulletVelocity, ProjectileData)
-end
+	if not landLocation then
+		return
+	end
 
-local function Crosshair3DPositionSetter(crosshairBB: BillboardGui)
-	ClientGunHandler.janitor:Add(
-		FastCast.RayHit:Connect(function(_, rayHitResult: RaycastResult, _)
-			if rayHitResult then
-				if not crosshairBB.Enabled then
-					crosshairBB.Enabled = true
-				end
-				local dist = (rayHitResult.Position - CurrentCamera.CFrame.Position).Magnitude
-				local scale = math.max(0.25, dist / 50)
-				Crosshair3DSize = UDim2.fromScale(1 * scale, 1 * scale)
+	if not crosshairBB.Enabled then
+		crosshairBB.Enabled = true
+	end
 
-				Crosshair3DPosition = rayHitResult.Position
-
-				LastCrosshairHit = os.clock()
-			end
-		end),
-		"Disconnect",
-		"RayHit"
-	)
+	local dist = (landLocation - CurrentCamera.CFrame.Position).Magnitude
+	local scale = math.max(0.15, dist / 50)
+	Crosshair3DSize = UDim2.fromScale(scale, scale)
+	Crosshair3DPosition = landLocation
+	LastCrosshairHit = os.clock()
 end
 
 local function ApplyCameraGunRecoil()
@@ -259,7 +286,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 
 	local crosshairPart: Part, crosshairBB: BillboardGui, crosshairImg: ImageLabel = Get3DCrosshair()
 	local shootPoint = gunTool:WaitForChild("ShootPoint", 10) :: Attachment
-	ProjectileData.RaycastParams.FilterDescendantsInstances =
+	crosshairRaycastParams.FilterDescendantsInstances =
 		{ PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
 
 	local parentPart = if HumanNetwork.networker:fetch("IsLegless")
@@ -270,6 +297,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 	-- BindToRenderStep at the very end so nothing overwrites us
 	-----------------------------------------------------------------------
 	PlayerContext.RightArmYaw.Enabled = true
+
 	RunService:BindToRenderStep("ADS_RotateAndTilt", Enum.RenderPriority.Last.Value, function(dt)
 		local camLook = CurrentCamera.CFrame.LookVector
 		local parentCF = parentPart.CFrame
@@ -287,9 +315,9 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 		-- Arm points down by default, so the "up" vector keeps roll stable
 		local targetCF = CFrame.lookAt(Vector3.zero, direction, parentCF.UpVector) * CFrame.Angles(math.rad(90), 0, 0) -- attachment offset
 
-		PlayerContext.RightArmYaw.CFrame = targetCF
+		PlayerContext.RightArmYaw.CFrame = targetCF * CFrame.Angles(math.rad(-5), 0, 0)
 		if not HoldingRMB then
-			CastBarrelRay(gunTool.Name, shootPoint)
+			CastBarrelRay(crosshairBB, gunTool.Name, shootPoint)
 
 			if crosshairBB.Enabled then
 				CrosshairSpringMovement(crosshairPart, crosshairImg, dt)
@@ -379,17 +407,6 @@ function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
 			collisionConstraint.Parent = gunTool
 		end
 	end
-
-	-- terrain
-	for _, gunPart in gunParts do
-		if not gunPart:IsA("BasePart") then
-			continue
-		end
-		local collisionConstraint = Instance.new("NoCollisionConstraint")
-		collisionConstraint.Part0 = gunPart
-		collisionConstraint.Part1 = workspace:FindFirstChildOfClass("Terrain")
-		collisionConstraint.Parent = gunTool
-	end
 end
 
 function ClientGunHandler:ConnectGun(gun: Tool?)
@@ -408,7 +425,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		local _: Part, crosshairBB: BillboardGui, _: ImageLabel = Get3DCrosshair()
 		AimAndDisplayCrosshair(gun)
 		ApplyCameraGunRecoil()
-		Crosshair3DPositionSetter(crosshairBB)
+
 		self:AddCollisionConstraints(gun)
 
 		-- we use this because we disabled the default RMB camera movement by sinking RMB, but we want RMB to work
@@ -424,7 +441,6 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 			elseif inputState == Enum.UserInputState.End then
 				HoldingRMB = false
 				ClientGunHandler.CancelADS()
-				Crosshair3DPositionSetter(crosshairBB)
 			end
 			return Enum.ContextActionResult.Pass -- still let RMB through to other listeners
 		end, false, Enum.ContextActionPriority.Low.Value + 100, Enum.UserInputType.MouseButton2)

@@ -79,6 +79,9 @@ function Seek:Enter(previous, seekData)
 	)
 	ai:PathFindTo(safeSeekPos)
 
+	if not self.AI or not self.AI.NoobPath or not self.AI.NoobPath.Reached then
+		return
+	end
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		if not success then
@@ -127,6 +130,7 @@ end
 function Seek:Update(dt)
 	local ai = self.AI
 	local now = os.clock()
+
 	if now - self.LastChecked < 1 then
 		return
 	end
@@ -146,6 +150,7 @@ end
 function Seek:Exit(nextState)
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 	self.Machine:Stop()
+	self.AI.NoobPath:Stop()
 end
 
 return Seek

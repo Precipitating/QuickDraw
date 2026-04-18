@@ -146,6 +146,13 @@ SoundData.Sounds = {
 		Group = "UI",
 		PoolSize = 3,
 	},
+	BountyClaimed = {
+		SoundId = "rbxassetid://100295010445316",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "UI",
+		PoolSize = 2,
+	},
 	Error = {
 		SoundId = "rbxassetid://140650754692075",
 		Volume = 1,

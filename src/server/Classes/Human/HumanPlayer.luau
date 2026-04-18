@@ -5,6 +5,7 @@ local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationH
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local Gun = require(ServerScriptService.Server.Classes.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
+local ServerData = require(ServerScriptService.Server.ServerData)
 local Human = require(script.Parent.Human)
 local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
@@ -57,19 +58,21 @@ function HumanPlayer:ConnectGUIs()
 	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
 end
 
-function HumanPlayer:Die(shooter: Player?)
+function HumanPlayer:Die(killer: Player?)
 	local dead = Human.Die(self)
+
 	if not dead then
 		return
 	end
 
-	if self.Player == shooter then
+	if self.Player == killer then
 		return
 	end
 
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
-	if shooter and shooter:IsA("Player") then
-		AwardHandler.AwardPlayerKill(shooter)
+	if killer and killer:IsA("Player") then
+		warn("PLAYER KILLED PLAYAH")
+		AwardHandler.AwardPlayerKill(self.Player, killer)
 	end
 end
 

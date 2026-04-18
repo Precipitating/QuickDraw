@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local DataService = require(ReplicatedStorage.Packages.DataService).server
 
 local ServerData = {}
@@ -35,23 +34,13 @@ function ServerData.UpdateMoney(player: Player, amount: number)
 end
 
 function ServerData.UpdateBounty(player: Player, amount: number)
-	local finalBounty = nil
-	DataService:update(player, "bounty", function(currentAmt)
-		finalBounty = currentAmt + amount
-		return finalBounty
+	DataService:update(player, { "bounty" }, function(currentAmt)
+		return currentAmt + amount
 	end)
-
-	-- leaderstat update
-	local playerStats = Utility.GetInstance(player, false, "leaderstats")
-	local bounty: IntValue = Utility.GetInstance(playerStats, false, "Bounty")
-
-	bounty.Value = finalBounty
 end
 
 function ServerData.SetBounty(player: Player, amount: number)
-	DataService:update(player, "bounty", function(_)
-		return amount
-	end)
+	DataService:set(player, { "bounty" }, amount)
 end
 
 function ServerData:SetupLeaderboard(player: Player)
@@ -59,11 +48,16 @@ function ServerData:SetupLeaderboard(player: Player)
 	leaderstats.Name = "leaderstats"
 	leaderstats.Parent = player
 
-	local bounty = Instance.new("IntValue")
+	local bounty: IntValue = Instance.new("IntValue")
 	bounty.Name = "Bounty"
 	bounty.Value = self:GetBounty(player)
 	bounty.Parent = leaderstats
 	ServerData.Leaderstats = leaderstats
+
+	DataService:getChangedSignal(player, { "bounty" }):Connect(function(newBounty)
+		warn(`NEW BOUNTY SHOULD BE {newBounty}`)
+		bounty.Value = newBounty
+	end)
 end
 
 function ServerData.GetMoney(player: Player)

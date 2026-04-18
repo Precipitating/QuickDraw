@@ -46,7 +46,7 @@ local function ApplyDamage(
 	shotPos: Vector3,
 	shooter: Player | Model
 )
-	if not human or not human.LimbHealth or not human.LimbHealth[limbName] then
+	if not human or not human.LimbHealth or not human.LimbHealth[limbName] or human.Dead then
 		return
 	end
 	local gun = human.CurrentGun
@@ -74,6 +74,10 @@ local function ApplyDamage(
 	end
 
 	local multiplier = LimbDamageMultiplier[limbName] or 1
+
+	if not human or human.Dead or not human.OnHit then
+		return
+	end
 
 	human:OnHit(damage, multiplier, limbName, shooter)
 
@@ -110,6 +114,10 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 end
 
 local function HandleLimbDestroyed(humanClass: Human, limbName: string, damage: number)
+	if not humanClass or not humanClass.LimbHealth or not humanClass.LimbHealth[limbName] then
+		return
+	end
+
 	if limbName ~= "UpperTorso" and limbName ~= "LowerTorso" then
 		if humanClass.LimbHealth[limbName] <= -60 then
 			humanClass:DestroyLimb(limbName)
@@ -152,11 +160,7 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 		warn("[DamageHuman] Invalid hit object")
 		return
 	end
-	if human.Dead then
-		return
-	end
-
-	if not limbHealth then
+	if human.Dead or not limbHealth then
 		return
 	end
 
@@ -183,6 +187,9 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 		HandleLimbDestroyed(human, limbName, damage)
 	end
 
+	if not human or not human.Health then
+		return
+	end
 	if human.Health <= 0 then
 		human:Die(shooter)
 	end

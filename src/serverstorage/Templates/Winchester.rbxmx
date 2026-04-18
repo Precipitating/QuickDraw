@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Tool" referent="RBX526E4DE321B148699087C0DD6298B6E6">
+	<Item class="Tool" referent="RBX9A29C149EF5644F48EFCE8FDEDA3C2FF">
 		<Properties>
 			<bool name="CanBeDropped">true</bool>
 			<bool name="Enabled">true</bool>
@@ -73,7 +73,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Attachment" referent="RBXBC92A2DAB33E46CF92A82E605F729CB8">
+		<Item class="Attachment" referent="RBX5E8B944226FD40D9A780A0D1E5DFB5FD">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>0.0453186035</X>
@@ -98,7 +98,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBX8FC57A83DD57476796E82534335A90AE">
+		<Item class="Part" referent="RBX6486F8957A584B889E0257821D1C3D3C">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">1</token>
@@ -130,7 +130,7 @@
 				<bool name="CanQuery">false</bool>
 				<bool name="CanTouch">false</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Gun</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -197,7 +197,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBXF4350C73B95A41D09D60D6661D225CB8">
+		<Item class="Part" referent="RBXE2ACA19E4F254C02A7DFF71902C5635E">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">1</token>
@@ -229,7 +229,7 @@
 				<bool name="CanQuery">false</bool>
 				<bool name="CanTouch">false</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Gun</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -295,7 +295,7 @@
 				<int64 name="SourceAssetId">13979289996</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="Attachment" referent="RBX0ABAE7114C1A4300A82F9B196BF11B39">
+			<Item class="Attachment" referent="RBX72C519F9743147BDBFFE096312950E99">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0</X>
@@ -319,7 +319,7 @@
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
-				<Item class="ParticleEmitter" referent="RBX505A1B4C223C4BCDBE4175988837B92F">
+				<Item class="ParticleEmitter" referent="RBX44D350F0E8534422B541BBB85FD069E0">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -372,7 +372,7 @@
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
-				<Item class="ParticleEmitter" referent="RBXA1099077FDB347C09FF11CE97C2302D0">
+				<Item class="ParticleEmitter" referent="RBXD75F1A2FAC704862A44CF50D0AF01D40">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -425,7 +425,7 @@
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
-				<Item class="ParticleEmitter" referent="RBX313B5398120D4AC38FED6E169C62EB9A">
+				<Item class="ParticleEmitter" referent="RBXCCC6AB9881074729BCDCCBD49B3942F8">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -478,7 +478,7 @@
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
-				<Item class="ParticleEmitter" referent="RBX4FF6ABAF1572412981BE9660D5E3EACD">
+				<Item class="ParticleEmitter" referent="RBX4F3E698A267E4FE1818460E1D8EB1D08">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -531,7 +531,7 @@
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
 				</Item>
-				<Item class="ParticleEmitter" referent="RBX71BF3F51BC264EAE9C481CAEE1E34D20">
+				<Item class="ParticleEmitter" referent="RBX4B867B264D2C45E8B4E29F5D81FA382A">
 					<Properties>
 						<Vector3 name="Acceleration">
 							<X>0</X>
@@ -585,7 +585,7 @@
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="WeldConstraint" referent="RBX9F163688070F4180AE928C8CC38005DD">
+			<Item class="WeldConstraint" referent="RBX4C80022F058247E1AE5162247C69B613">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>-0.0331878662</X>
@@ -601,8 +601,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBXF4350C73B95A41D09D60D6661D225CB8</Ref>
-					<Ref name="Part1Internal">RBX8FC57A83DD57476796E82534335A90AE</Ref>
+					<Ref name="Part0Internal">RBXE2ACA19E4F254C02A7DFF71902C5635E</Ref>
+					<Ref name="Part1Internal">RBX6486F8957A584B889E0257821D1C3D3C</Ref>
 					<int name="State">1</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -613,7 +613,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="MeshPart" referent="RBX771A86D44AEA4AC8A5621458E52CE8DA">
+		<Item class="MeshPart" referent="RBX0430AD2304F0436FA82DED2E2D9BD7BA">
 			<Properties>
 				<bool name="DoubleSided">false</bool>
 				<bool name="HasJointOffset">false</bool>
@@ -681,7 +681,7 @@
 				<bool name="CanQuery">true</bool>
 				<bool name="CanTouch">true</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Gun</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -747,7 +747,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="SurfaceAppearance" referent="RBXA6D00CAA3E454D0C83374E2FE64DF322">
+			<Item class="SurfaceAppearance" referent="RBX4239D82BC6414834941607A336998C9F">
 				<Properties>
 					<token name="AlphaMode">0</token>
 					<Color3 name="Color">
@@ -767,6 +767,7 @@
 					</Color3>
 					<Content name="MetalnessMap"><url>rbxassetid://14894099573</url></Content>
 					<Content name="NormalMap"><url>rbxassetid://14894105195</url></Content>
+					<token name="ResampleMode">0</token>
 					<Content name="RoughnessMap"><url>rbxassetid://14894115762</url></Content>
 					<Content name="TexturePack"><url>rbxassetid://14894115956</url></Content>
 					<BinaryString name="AttributesSerialize"></BinaryString>
@@ -777,7 +778,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="WeldConstraint" referent="RBX952EDA83FC554B29AD8F167836CCE691">
+			<Item class="WeldConstraint" referent="RBX7B139936159B4EF5AB9E6FB3E2311296">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>1.21795654</X>
@@ -793,8 +794,8 @@
 						<R21>0</R21>
 						<R22>0</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX771A86D44AEA4AC8A5621458E52CE8DA</Ref>
-					<Ref name="Part1Internal">RBX8FC57A83DD57476796E82534335A90AE</Ref>
+					<Ref name="Part0Internal">RBX0430AD2304F0436FA82DED2E2D9BD7BA</Ref>
+					<Ref name="Part1Internal">RBX6486F8957A584B889E0257821D1C3D3C</Ref>
 					<int name="State">1</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -805,7 +806,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="MeshPart" referent="RBX59DD7F8DC1D9423D871E47A5D25DBAAE">
+		<Item class="MeshPart" referent="RBXE0EE5283A527426BAD0777B919498416">
 			<Properties>
 				<bool name="DoubleSided">false</bool>
 				<bool name="HasJointOffset">false</bool>
@@ -873,7 +874,7 @@
 				<bool name="CanQuery">true</bool>
 				<bool name="CanTouch">true</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Gun</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -939,7 +940,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="SurfaceAppearance" referent="RBXBD014BE239E94F8094663AA87D8890E1">
+			<Item class="SurfaceAppearance" referent="RBX7A1AE76913C74850991795584F646EA9">
 				<Properties>
 					<token name="AlphaMode">0</token>
 					<Color3 name="Color">
@@ -959,6 +960,7 @@
 					</Color3>
 					<Content name="MetalnessMap"><url>rbxassetid://14894099573</url></Content>
 					<Content name="NormalMap"><url>rbxassetid://14894105195</url></Content>
+					<token name="ResampleMode">0</token>
 					<Content name="RoughnessMap"><url>rbxassetid://14894115762</url></Content>
 					<Content name="TexturePack"><url>rbxassetid://14894115956</url></Content>
 					<BinaryString name="AttributesSerialize"></BinaryString>
@@ -969,7 +971,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="WeldConstraint" referent="RBXFE61425D74D547B3AAD562D9AC8AC3F2">
+			<Item class="WeldConstraint" referent="RBX637AAA66FCFB41D9AC4BCE8DA132FB5B">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>0.637954712</X>
@@ -985,8 +987,8 @@
 						<R21>0</R21>
 						<R22>0</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX59DD7F8DC1D9423D871E47A5D25DBAAE</Ref>
-					<Ref name="Part1Internal">RBX8FC57A83DD57476796E82534335A90AE</Ref>
+					<Ref name="Part0Internal">RBXE0EE5283A527426BAD0777B919498416</Ref>
+					<Ref name="Part1Internal">RBX6486F8957A584B889E0257821D1C3D3C</Ref>
 					<int name="State">1</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -997,7 +999,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="Part" referent="RBX1CD1ADCBB7E443FD85075D695F688100">
+		<Item class="Part" referent="RBXDA8015AA969A4368BB474E24EC119995">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">1</token>
@@ -1029,7 +1031,7 @@
 				<bool name="CanQuery">false</bool>
 				<bool name="CanTouch">false</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Gun</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -1095,7 +1097,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="WeldConstraint" referent="RBXBE7AEC636C44463491002AA8A404E947">
+			<Item class="WeldConstraint" referent="RBX0FB529210A8F4FDB8929EFF0D2771BB8">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>0.0390472412</X>
@@ -1111,8 +1113,8 @@
 						<R21>0</R21>
 						<R22>0</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX1CD1ADCBB7E443FD85075D695F688100</Ref>
-					<Ref name="Part1Internal">RBX8FC57A83DD57476796E82534335A90AE</Ref>
+					<Ref name="Part0Internal">RBXDA8015AA969A4368BB474E24EC119995</Ref>
+					<Ref name="Part1Internal">RBX6486F8957A584B889E0257821D1C3D3C</Ref>
 					<int name="State">1</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -1123,7 +1125,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="MeshPart" referent="RBX37619901848C4B63B582D453A64F7A37">
+		<Item class="MeshPart" referent="RBXC8CDA569E9B34E488D232E3E1DB9EA10">
 			<Properties>
 				<bool name="DoubleSided">false</bool>
 				<bool name="HasJointOffset">false</bool>
@@ -1191,7 +1193,7 @@
 				<bool name="CanQuery">true</bool>
 				<bool name="CanTouch">true</bool>
 				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
+				<string name="CollisionGroup">Gun</string>
 				<int name="CollisionGroupId">0</int>
 				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
 				<PhysicalProperties name="CustomPhysicalProperties">
@@ -1257,7 +1259,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="SurfaceAppearance" referent="RBX27524ACE77A044A0903D4EB13D414C25">
+			<Item class="SurfaceAppearance" referent="RBX26695A3F32C94E9C8780CA3DFD9E91C5">
 				<Properties>
 					<token name="AlphaMode">0</token>
 					<Color3 name="Color">
@@ -1277,6 +1279,7 @@
 					</Color3>
 					<Content name="MetalnessMap"><url>rbxassetid://14894099573</url></Content>
 					<Content name="NormalMap"><url>rbxassetid://14894105195</url></Content>
+					<token name="ResampleMode">0</token>
 					<Content name="RoughnessMap"><url>rbxassetid://14894115762</url></Content>
 					<Content name="TexturePack"><url>rbxassetid://14894115956</url></Content>
 					<BinaryString name="AttributesSerialize"></BinaryString>
@@ -1287,7 +1290,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="WeldConstraint" referent="RBXE6ADF487B20C498E8033711A440EFAB8">
+			<Item class="WeldConstraint" referent="RBX83EB7931555E4A1D8455685183F40818">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>0.102615356</X>
@@ -1303,8 +1306,8 @@
 						<R21>0</R21>
 						<R22>0</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX37619901848C4B63B582D453A64F7A37</Ref>
-					<Ref name="Part1Internal">RBX8FC57A83DD57476796E82534335A90AE</Ref>
+					<Ref name="Part0Internal">RBXC8CDA569E9B34E488D232E3E1DB9EA10</Ref>
+					<Ref name="Part1Internal">RBX6486F8957A584B889E0257821D1C3D3C</Ref>
 					<int name="State">1</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>

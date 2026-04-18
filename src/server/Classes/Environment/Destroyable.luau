@@ -132,9 +132,9 @@ function Destroyable:SpawnDestroyVFX(destroyEffect: ParticleEmitter)
 	explosion.Anchored = true
 	explosion.Position = pos
 	destroyEffect.Parent = explosion
-	destroyEffect:Emit(1)
+	destroyEffect:Emit(25)
 
-	Debris:AddItem(explosion, 0.3)
+	Debris:AddItem(explosion, 0.2)
 end
 
 function Destroyable:Destroy()
@@ -143,7 +143,7 @@ function Destroyable:Destroy()
 	end
 
 	if self.Type == "Explosive" then
-		ServerSoundHandler:Play3DOneShotToOthers(nil, "DynamiteExplosion", self.ModelRef.CFrame)
+		ServerSoundHandler:Play3DOneShotToOthers(nil, "DynamiteExplosion", self.ModelRef.CFrame, { MaxDistance = 500 })
 		self:ApplyRadiusDamage()
 	end
 

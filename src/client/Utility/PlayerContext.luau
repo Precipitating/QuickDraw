@@ -93,6 +93,7 @@ function PlayerContext:AddRightArmOrientation()
 	align.MaxAngularVelocity = 15000
 
 	align.Responsiveness = 150
+	align.RigidityEnabled = true
 	align.Parent = rightArm
 	align.Enabled = false
 	rightArmBallSocket.TwistLimitsEnabled = true

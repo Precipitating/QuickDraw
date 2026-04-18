@@ -353,6 +353,7 @@ function Human:Die(shooter: Player?)
 		warn(`[Human:Die] Missing humanoid, so can't kill`)
 		return false
 	end
+	self.Dead = true
 	return true
 end
 
@@ -441,23 +442,6 @@ function Human:DestroyLimb(limbName: string)
 	self:SetCrawlState()
 end
 
---[=[
-	Returns whether the character is alive (Humanoid health > 0 and character exists).
-	
-	@return boolean
-]=]
-function Human.IsAlive(self: any): boolean
-	if not self.Character or not self.Character.Parent then
-		return false
-	end
-
-	if not self.Humanoid or self.Humanoid.Health <= 0 then
-		return false
-	end
-
-	return true
-end
-
 --[=[d
 	Applies death ragdoll state
 ]=]
@@ -475,7 +459,6 @@ function Human:OnDeath()
 			end
 		end
 	end)
-
 	self:Destroy()
 end
 
@@ -503,9 +486,6 @@ function Human:ApplyImpulse(force: Vector3, position: Vector3?)
 end
 
 function Human:Destroy()
-	if self.Dead then
-		return
-	end
 	PlayerSignals.RemovePlayerClass:Fire(self.Humanoid)
 	if self.CurrentGun then
 		self.CurrentGun:Destroy()
@@ -516,7 +496,7 @@ function Human:Destroy()
 
 	table.clear(self)
 	setmetatable(self, nil)
-	self.Dead = true
+
 	print(`Human class destroyed!`)
 end
 

@@ -107,7 +107,6 @@ export type Human = {
 	SetCrawlState: (self: Human) -> (),
 	DisableLimb: (self: Human, limbName: string) -> (),
 	DestroyLimb: (self: Human, limbName: string) -> (),
-	IsAlive: (self: Human) -> boolean,
 	OnDeath: (self: Human) -> (),
 	Ragdoll: (self: Human, ragdollTime: number) -> (),
 	ApplyImpulse: (self: Human, force: Vector3, position: Vector3?) -> (),
