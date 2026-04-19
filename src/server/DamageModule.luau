@@ -4,7 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local ServerGunHandler = require(ServerScriptService.Server.Gun.ServerGunHandler)
+local ServerGunHandler = require(ServerScriptService.Server.Classes.Gun.ServerGunHandler)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
 type Human = ClassTypes.Human

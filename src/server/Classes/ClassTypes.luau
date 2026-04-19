@@ -20,7 +20,7 @@ export type Throwable = {
 	Owner: Human,
 	CurrentAmmo: number,
 	DetonationTime: number,
-	ThrowForce: number,
+	ThrowVelocity: number,
 
 	Throw: (self: Throwable, cameraLookVector: Vector3) -> (),
 }

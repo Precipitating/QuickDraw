@@ -6,13 +6,16 @@ local ServerStorage = game:GetService("ServerStorage")
 local ThrowableSignals = require(script.Parent.ThrowableSignals)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
+local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
+
 local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
+local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local BehaviorBuilder = require(ReplicatedStorage.Shared.Vetra.Builders.BehaviorBuilder)
 local Effects = ReplicatedStorage.Shared.Effects
 local Throwable = {}
 type Human = ClassTypes.Human
@@ -43,21 +46,22 @@ function Throwable.new(throwableName: string, humanRef: Human?)
 	self.ImpactParticle = throwableData.ImpactParticle
 	self.SpreadParticle = throwableData.SpreadParticle
 	self.SpreadDuration = throwableData.SpreadDuration
-
-	self.ThrowForce = nil
+	self.ThrowVelocity = throwableData.Velocity
 	self.CanThrow = true
 	self.Janitor = Janitor.new()
+	self.ProjectileData = ThrowableData[self.Name].ProjectileData
 
-	self.FastCast = FastCast.new()
-	self.ThrowVelocity = throwableData.Velocity
-	self.ProjectileData = FastCast.newBehavior()
-	self.ProjectileData.RaycastParams = RaycastParams.new()
-	self.ProjectileData.CosmeticBulletTemplate = nil
-	self.ProjectileData.CosmeticBulletContainer = workspace.ProjectilesFolder
-	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { self.Tool }
-	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
-	self.ProjectileData.AutoIgnoreContainer = true
+	-- self.FastCast = FastCast.new()
+
+	-- self.ProjectileData = FastCast.newBehavior()
+	-- self.ProjectileData.RaycastParams = RaycastParams.new()
+	-- self.ProjectileData.CosmeticBulletTemplate = nil
+	-- self.ProjectileData.CosmeticBulletContainer = workspace.ProjectilesFolder
+	self.RaycastParams = RaycastParams.new()
+	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+	self.RaycastParams.FilterDescendantsInstances = { self.Tool }
+	-- self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
+	-- self.ProjectileData.AutoIgnoreContainer = true
 
 	self:ConnectProjectileEvents()
 	return self
@@ -79,7 +83,22 @@ function Throwable:Throw(cameraLookVector: Vector3)
 	local launchPos = head.Position + Vector3.new(0, 2, 0)
 
 	task.defer(function()
-		self.FastCast:Fire(launchPos, cameraLookVector, self.ThrowVelocity, self.ProjectileData)
+		local context = ProjectileContext.BulletContext.new({
+			Origin = launchPos,
+			Direction = cameraLookVector,
+			Speed = self.ThrowVelocity,
+			RaycastParams = self.RaycastParams,
+		})
+
+		context.UserData.Owner = self.Owner
+		context.UserData.Damage = self.Damage
+		context.UserData.Type = "Grenade"
+		context.UserData.FragmentType = self.FragmentType
+
+		-- local cosmetic =
+		-- 	BehaviorBuilder.Inherit(self.ProjectileData):Cosmetic():Provider(self.CosmeticBulletTemplate):Done():Build()
+
+		ProjectileContext.Solver:Fire(context, ThrowableData[self.Name].ProjectileData)
 	end)
 
 	if self.CurrentAmmo <= 0 then
@@ -213,32 +232,32 @@ function Throwable:Destroy()
 end
 
 function Throwable:ConnectProjectileEvents()
-	self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _, cosmeticBulletObj)
-		cosmeticBulletObj.Anchored = false
+	-- self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _, cosmeticBulletObj)
+	-- 	cosmeticBulletObj.Anchored = false
 
-		ServerSoundHandler:Play3DOneShotToOthers(nil, ThrowableData[self.Name].LandSound, cosmeticBulletObj.CFrame)
-		task.delay(self.DetonationTime, function()
-			local cosmeticPos = cosmeticBulletObj.Position
-			ServerSoundHandler:Play3DOneShotToOthers(
-				nil,
-				ThrowableData[self.Name].DetonationSound,
-				cosmeticBulletObj.CFrame,
-				{ MaxDistance = 150 }
-			)
+	-- 	ServerSoundHandler:Play3DOneShotToOthers(nil, ThrowableData[self.Name].LandSound, cosmeticBulletObj.CFrame)
+	-- 	task.delay(self.DetonationTime, function()
+	-- 		local cosmeticPos = cosmeticBulletObj.Position
+	-- 		ServerSoundHandler:Play3DOneShotToOthers(
+	-- 			nil,
+	-- 			ThrowableData[self.Name].DetonationSound,
+	-- 			cosmeticBulletObj.CFrame,
+	-- 			{ MaxDistance = 150 }
+	-- 		)
 
-			self:OnThrowImpact(cosmeticBulletObj)
-			self:SpawnFragments(cosmeticPos + Vector3.new(0, 1, 0))
-		end)
-	end))
+	-- 		self:OnThrowImpact(cosmeticBulletObj)
+	-- 		self:SpawnFragments(cosmeticPos + Vector3.new(0, 1, 0))
+	-- 	end)
+	-- end))
 
-	self.Janitor:Add(
-		self.FastCast.LengthChanged:Connect(
-			function(activeCast, lastPoint, rayDir, displacement, segmentVelocity, cosmeticBulletObj)
-				local newPos = lastPoint + (rayDir * displacement)
-				cosmeticBulletObj.Position = newPos
-			end
-		)
-	)
+	-- self.Janitor:Add(
+	-- 	self.FastCast.LengthChanged:Connect(
+	-- 		function(activeCast, lastPoint, rayDir, displacement, segmentVelocity, cosmeticBulletObj)
+	-- 			local newPos = lastPoint + (rayDir * displacement)
+	-- 			cosmeticBulletObj.Position = newPos
+	-- 		end
+	-- 	)
+	-- )
 end
 
 function Throwable:Remove()
@@ -266,7 +285,7 @@ function Throwable:AddThrowableToInventory()
 	local projectileClone = self.Tool.Handle:Clone()
 	projectileClone.Anchored = true
 
-	self.ProjectileData.CosmeticBulletTemplate = projectileClone
+	self.CosmeticBulletTemplate = projectileClone
 
 	if self.Owner.HumanType == "Player" then
 		ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, clone)

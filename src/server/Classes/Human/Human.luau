@@ -1,16 +1,11 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local HumanConstants = require(script.Parent.HumanConstants)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
-local ServerData = require(ServerScriptService.Server.ServerData)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
-
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 

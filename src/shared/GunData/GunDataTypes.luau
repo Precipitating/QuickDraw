@@ -7,6 +7,7 @@ export type GunData = {
 	GunType: string,
 	GunRecoil: number,
 	CameraRecoil: number,
+	ProjectileData: {},
 }
 
 return nil

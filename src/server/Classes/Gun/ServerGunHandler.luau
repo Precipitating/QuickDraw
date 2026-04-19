@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -41,6 +42,7 @@ function ServerGunHandler:Reload(player: Player?)
 
 	return currentGun:Reload()
 end
+
 function ServerGunHandler:GetAmmoCount(player: Player?)
 	if not player then
 		return

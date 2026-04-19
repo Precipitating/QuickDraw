@@ -1,35 +1,19 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
-local ClassTypes = require(script.Parent.ClassTypes)
+local GunSignals = require(script.Parent.GunSignals)
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local GunSignals = require(ServerScriptService.Server.Gun.GunSignals)
-local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
-local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 
 type Human = ClassTypes.Human
 type Gun = ClassTypes.Gun
-type Destroyable = ClassTypes.Destroyable
+
 local Gun = {}
 Gun.__index = Gun
-
-local function GetHumanoidFromHit(instance: Instance): Humanoid?
-	local model = instance:FindFirstAncestorOfClass("Model")
-	if not model then
-		return nil
-	end
-
-	local humanoid = model:FindFirstChildOfClass("Humanoid")
-
-	if not humanoid then
-		return nil
-	end
-
-	return humanoid
-end
 
 function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gun
 	if not GunData[gunName] then
@@ -47,6 +31,7 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	self.GunType = gunData.GunType
 	self.ShootPoint = nil
 	self.Handle = nil
+	self.Speed = gunData.Velocity
 	self.ShotDelay = gunData.ShotDelay
 	self.LastShot = 0
 	self.Damage = gunData.Damage
@@ -62,85 +47,88 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	self.Equipped = false
 
 	-- projectile data
-	self.FastCast = FastCast.new()
-	self.BulletVelocity = gunData.Velocity
-	self.ProjectileData = FastCast.newBehavior()
-	self.ProjectileData.RaycastParams = RaycastParams.new()
-	self.ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+	-- self.FastCast = FastCast.new()
+	-- self.BulletVelocity = gunData.Velocity
+	-- self.ProjectileData = FastCast.newBehavior()
+	self.RaycastParams = RaycastParams.new()
+	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
-	self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
-	self.ProjectileData.AutoIgnoreContainer = true
+	-- self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
+	-- self.ProjectileData.AutoIgnoreContainer = true
 
 	self:ConnectProjectileEvents()
 
 	return self
 end
 
-function Gun:HitPlayer(raycastResult: RaycastResult)
-	local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
-	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
-
-	if not hitHumanoid then
-		return false
-	end
-
-	if isAccessory then
-		return false
-	end
-
-	-- hit body part
-	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, self.Damage, self.PlayerRef)
-	print(`{raycastResult.Instance.Name} hit!`)
-	return true
-end
-
-function Gun:HitDestroyable(raycastResult: RaycastResult)
-	local instance = raycastResult.Instance
-	local destroyableClass: Destroyable = DestroyableManager.Destroyables[instance]
-	if not destroyableClass then
-		return
-	end
-
-	destroyableClass:Damage(self.Damage, self.PlayerRef)
-
-	return true
-end
-
--- This should be executed last, as every other option should be exhausted before deciding we've hit
--- the environment.
-function Gun:HitEnvironment(raycastResult: RaycastResult)
-	-- hit environment
-	local hitPos = CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
-	GunSignals.DisplayBulletHole:Fire(hitPos)
-end
-
 function Gun:ConnectProjectileEvents()
-	self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _)
-		local hitPlayer = self:HitPlayer(raycastResult)
-		if hitPlayer then
-			return
-		end
+	-- self.Janitor:Add(VetraSignals.OnHit:Connect(function(context, result, velocity)
+	-- 	local hitPlayer = self:HitPlayer(result)
+	-- 	if hitPlayer then
+	-- 		return
+	-- 	end
 
-		local hitDestroyable = self:HitDestroyable(raycastResult)
-		if hitDestroyable then
-			return
-		end
+	-- 	local hitDestroyable = self:HitDestroyable(result)
+	-- 	if hitDestroyable then
+	-- 		return
+	-- 	end
 
-		Gun:HitEnvironment(raycastResult)
-	end))
+	-- 	Gun:HitEnvironment(result)
+	-- end))
+
+	-- Fastcast
+	-- self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _)
+	-- 	local hitPlayer = self:HitPlayer(raycastResult)
+	-- 	if hitPlayer then
+	-- 		return
+	-- 	end
+
+	-- 	local hitDestroyable = self:HitDestroyable(raycastResult)
+	-- 	if hitDestroyable then
+	-- 		return
+	-- 	end
+
+	-- 	Gun:HitEnvironment(raycastResult)
+	-- end))
 end
 
 function Gun:SingleShot(adsDir: Vector3?, adsPosition: Vector3?)
-	if adsDir and adsPosition then
-		self.FastCast:Fire(adsPosition, adsDir, self.BulletVelocity, self.ProjectileData)
-	else
-		self.FastCast:Fire(
-			self.ShootPoint.WorldPosition,
-			self.ShootPoint.WorldCFrame.LookVector,
-			self.BulletVelocity,
-			self.ProjectileData
-		)
+	local projectileData = GunData[self.GunName].ProjectileData
+	local context = nil
+	if not projectileData then
+		warn("Projectile data invalid, can't shoot")
+		return
 	end
+
+	if not ProjectileContext.Solver then
+		warn("ProjectileContext Solver reference missing in Gun class")
+		return
+	end
+
+	if adsDir and adsPosition then
+		context = ProjectileContext.BulletContext.new({
+			Origin = adsPosition,
+			Direction = adsDir,
+			Speed = self.Speed,
+			RaycastParams = self.RaycastParams,
+			UserData = { Owner = self.PlayerRef, Damage = self.Damage, Type = "Gun", GunType = self.GunType },
+		})
+	else
+		context = ProjectileContext.BulletContext.new({
+			Origin = self.ShootPoint.WorldPosition,
+			Direction = self.ShootPoint.WorldCFrame.LookVector,
+			Speed = self.Speed,
+			RaycastParams = self.RaycastParams,
+			UserData = { Owner = self.PlayerRef, Damage = self.Damage, Type = "Gun", GunType = self.GunType },
+		})
+	end
+
+	if not context then
+		warn("Singleshot context is invalid")
+		return
+	end
+
+	ProjectileContext.Solver:Fire(context, projectileData)
 end
 
 -- For shotgun
@@ -161,6 +149,12 @@ end
 function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
 	local pelletCount = GunData[self.GunName].PelletsPerShot
 	local maxSpreadAngle = GunData[self.GunName].MaxSpreadAngle
+	local projectileData = GunData[self.GunName].ProjectileData
+
+	if not projectileData then
+		warn("Vetra projectile data is missing!")
+		return
+	end
 	if not pelletCount then
 		warn(`Pellet count not specified for {self.GunName}`)
 		return
@@ -170,12 +164,35 @@ function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
 	if adsDir and adsPosition then
 		for _ = 1, pelletCount do
 			local spreadDir = self:GetSpreadDirection(adsDir, maxSpreadAngle)
-			self.FastCast:Fire(adsPosition, spreadDir, self.BulletVelocity, self.ProjectileData)
+			local context = ProjectileContext.BulletContext.new({
+				Origin = adsPosition,
+				Direction = spreadDir,
+				Speed = self.Speed,
+				RaycastParams = self.RaycastParams,
+			})
+
+			context.UserData.Owner = self.PlayerRef
+			context.UserData.Damage = self.Damage
+			context.UserData.Type = "Gun"
+			context.UserData.GunType = self.GunType
+			ProjectileContext.Solver:Fire(context, projectileData)
 		end
 	else
 		for _ = 1, pelletCount do
 			local spreadDir = self:GetSpreadDirection(self.ShootPoint.WorldCFrame.LookVector, maxSpreadAngle)
-			self.FastCast:Fire(self.ShootPoint.WorldPosition, spreadDir, self.BulletVelocity, self.ProjectileData)
+			local context = ProjectileContext.BulletContext.new({
+				Origin = self.ShootPoint.WorldPosition,
+				Direction = spreadDir,
+				Speed = self.Speed,
+				RaycastParams = self.RaycastParams,
+			})
+
+			context.UserData.Owner = self.PlayerRef
+			context.UserData.Damage = self.Damage
+			context.UserData.Type = "Gun"
+			context.UserData.GunType = self.GunType
+
+			ProjectileContext.Solver:Fire(context, projectileData)
 		end
 	end
 end
@@ -291,7 +308,7 @@ function Gun:AddGunToInventory()
 	end))
 	-- if its NPC, playerRef should be a model instead of a player instance.
 	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or self.PlayerRef
-	self.ProjectileData.RaycastParams.FilterDescendantsInstances = { excludeModel, self.Tool }
+	self.RaycastParams.FilterDescendantsInstances = { excludeModel, self.Tool }
 
 	self.MuzzleFlash = muzzle:FindFirstChildOfClass("Attachment")
 	if not self.MuzzleFlash then

@@ -65,8 +65,6 @@ crosshairRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 -- ProjectileData.MaxDistance = 250
 -- ProjectileData.AutoIgnoreContainer = true
 
-local MAX_3D_CROSSHAIR_DISTANCE = 250
-
 function ClientGunHandler:StopReloading()
 	PlayerContext.Reloading = false
 end
@@ -212,22 +210,36 @@ local function CrosshairSpringMovement(crosshairPart: Part, crosshairImg: ImageL
 	end
 end
 
-local function PredictBulletLanding(shootOrigin: Vector3, direction: Vector3, velocity: number): Vector3
+local function PredictBulletLanding(
+	shootOrigin: Vector3,
+	direction: Vector3,
+	initialVelocity: number,
+	dragCoefficient: number,
+	maxTravelDistance: number,
+	minSpeed: number
+): Vector3?
 	local GRAVITY = workspace.Gravity
-	local STEPS = 20
-	local dt = MAX_3D_CROSSHAIR_DISTANCE / velocity / STEPS -- auto scale dt to gun velocity
-
+	local dt = 0.05
 	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character }
 
 	local prevPos = shootOrigin
+	local vel = direction * initialVelocity
 
-	for i = 1, STEPS do
-		local t = i * dt
-		local nextPos = shootOrigin + (direction * velocity * t) + Vector3.new(0, -0.5 * GRAVITY * t ^ 2, 0)
-
-		if (nextPos - shootOrigin).Magnitude >= MAX_3D_CROSSHAIR_DISTANCE then
-			return nextPos
+	while true do
+		local speed = vel.Magnitude
+		if speed < minSpeed then
+			return prevPos
 		end
+		if (prevPos - shootOrigin).Magnitude >= maxTravelDistance then
+			return nil
+		end
+
+		-- position first with current velocity
+		local nextPos = prevPos + vel * dt
+
+		-- then update velocity for next step
+		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
+		vel = vel + (dragAccel + Vector3.new(0, -GRAVITY, 0)) * dt
 
 		local result = workspace:Raycast(prevPos, nextPos - prevPos, crosshairRaycastParams)
 		if result then
@@ -236,8 +248,6 @@ local function PredictBulletLanding(shootOrigin: Vector3, direction: Vector3, ve
 
 		prevPos = nextPos
 	end
-
-	return prevPos
 end
 
 local function CastBarrelRay(crosshairBB: BillboardGui, gunName: string, shootPoint: Attachment)
@@ -247,11 +257,15 @@ local function CastBarrelRay(crosshairBB: BillboardGui, gunName: string, shootPo
 	end
 
 	local bulletVelocity = GunData[gunName].Velocity
+	local dragCoefficient = GunData[gunName].DragCoefficient or 0
+	local maxCrosshairDistance = GunData[gunName].MaxSimulationDistance or 500
 	local origin: Vector3 = shootPoint.WorldPosition
 	local direction: Vector3 = shootPoint.WorldCFrame.LookVector
-	local landLocation = PredictBulletLanding(origin, direction, bulletVelocity)
+	local landLocation =
+		PredictBulletLanding(origin, direction, bulletVelocity, dragCoefficient, maxCrosshairDistance, 36)
 
 	if not landLocation then
+		DisableCrosshairIfOOB(crosshairBB)
 		return
 	end
 
@@ -322,7 +336,6 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 			if crosshairBB.Enabled then
 				CrosshairSpringMovement(crosshairPart, crosshairImg, dt)
 			end
-			DisableCrosshairIfOOB(crosshairBB)
 		end
 	end)
 

@@ -3,9 +3,10 @@ local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
-local Gun = require(ServerScriptService.Server.Classes.Gun)
+local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
+
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
-local ServerData = require(ServerScriptService.Server.ServerData)
+
 local Human = require(script.Parent.Human)
 local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
@@ -18,9 +19,9 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	Human.AssignBodyParts(self, "Player")
 	self.Player = player
 	self.HumanType = "Player"
-	self.CurrentGun = Gun.new("Winchester", self, player)
+	self.CurrentGun = Gun.new("Revolver", self, player)
 	self.CurrentGun:AddGunToInventory()
-	self.CurrentThrowable = Throwable.new("KetchumGrenade", self)
+	self.CurrentThrowable = Throwable.new("Dynamite", self)
 
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)

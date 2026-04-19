@@ -1,3 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Vetra = require(ReplicatedStorage.Shared.Vetra)
 local ThrowableData = {
 
 	Dynamite = {
@@ -14,6 +17,9 @@ local ThrowableData = {
 		DetonationSound = "DynamiteExplosion",
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
+		ProjectileData = {
+			Vetra.BehaviorBuilder.Grenade():Bounce():Max(1):Done():Build(),
+		},
 	},
 
 	KetchumGrenade = {
@@ -30,6 +36,9 @@ local ThrowableData = {
 		DetonationSound = "DynamiteExplosion",
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
+		ProjectileData = {
+			Vetra.BehaviorBuilder.Grenade():Bounce():Max(0):Done():Physics():MinSpeed(10):Done():Build(),
+		},
 	},
 
 	Molotov = {
@@ -49,6 +58,9 @@ local ThrowableData = {
 		ImpactParticle = "FireExplosion",
 		SpreadParticle = "Burning",
 		SpreadDuration = 7,
+		ProjectileData = {
+			Vetra.BehaviorBuilder.Grenade():Bounce():Max(0):Done():Physics():MinSpeed(8):Done():Build(),
+		},
 	},
 }
 

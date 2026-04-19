@@ -8,7 +8,7 @@ local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandle
 
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
-local Gun = require(ServerScriptService.Server.Classes.Gun)
+local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
 local HumanConstants = require(script.Parent.HumanConstants)
