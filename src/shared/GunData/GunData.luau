@@ -1,11 +1,18 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Vetra = require(script.Parent.Parent.Vetra)
+local pierceableMaterials = {
+	[Enum.Material.Glass] = true,
+	[Enum.Material.Ice] = true,
+	[Enum.Material.Wood] = true,
+	[Enum.Material.WoodPlanks] = true,
+}
 
 local GunData = {
 	Revolver = {
 		MaxAmmo = 6,
 		ShotDelay = 0.35,
 		Damage = 25,
-		Velocity = 977,
+		Velocity = 1250,
 		Cost = 0,
 		DragCoefficient = 0.008,
 		ReloadTimePerBullet = 0.5,
@@ -31,7 +38,7 @@ local GunData = {
 			:SpeedRetention(0.65)
 			:NormalBias(0.4)
 			:Filter(function(_ctx, _result, _vel)
-				return true
+				return pierceableMaterials[_result.Material] == true
 			end)
 			:Done()
 			:Tumble()
@@ -83,7 +90,7 @@ local GunData = {
 			:SpeedRetention(0.75)
 			:NormalBias(0.5)
 			:Filter(function(_ctx, _result, _vel)
-				return true
+				return pierceableMaterials[_result.Material] == true
 			end)
 			:Done()
 			:Tumble()
@@ -137,7 +144,7 @@ local GunData = {
 			:SpeedRetention(0.5)
 			:NormalBias(0.3)
 			:Filter(function(_ctx, _result, _vel)
-				return true
+				return _result.Material == Enum.Material.Glass
 			end)
 			:Done()
 			:Tumble()

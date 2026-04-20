@@ -220,26 +220,26 @@ local function PredictBulletLanding(
 ): Vector3?
 	local GRAVITY = workspace.Gravity
 	local dt = 0.05
+	local STEPS = math.ceil(maxTravelDistance / (initialVelocity * dt)) + 10 -- scale steps to gun
 	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character }
-
 	local prevPos = shootOrigin
 	local vel = direction * initialVelocity
 
-	while true do
+	for i = 1, STEPS do
 		local speed = vel.Magnitude
-		if speed < minSpeed then
-			return prevPos
-		end
-		if (prevPos - shootOrigin).Magnitude >= maxTravelDistance then
-			return nil
-		end
+		-- if speed < minSpeed then
+		-- 	break
+		-- end
 
-		-- position first with current velocity
+		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
+		local gravAccel = Vector3.new(0, -GRAVITY, 0)
+
+		vel = vel + (dragAccel + gravAccel) * dt
 		local nextPos = prevPos + vel * dt
 
-		-- then update velocity for next step
-		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
-		vel = vel + (dragAccel + Vector3.new(0, -GRAVITY, 0)) * dt
+		if (nextPos - shootOrigin).Magnitude >= maxTravelDistance then
+			return nil -- bullet expired, hide crosshair
+		end
 
 		local result = workspace:Raycast(prevPos, nextPos - prevPos, crosshairRaycastParams)
 		if result then
@@ -248,8 +248,9 @@ local function PredictBulletLanding(
 
 		prevPos = nextPos
 	end
-end
 
+	return prevPos
+end
 local function CastBarrelRay(crosshairBB: BillboardGui, gunName: string, shootPoint: Attachment)
 	if not shootPoint then
 		warn("Casting ray failed, shootpoint nil")

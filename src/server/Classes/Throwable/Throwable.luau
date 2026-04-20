@@ -1,23 +1,15 @@
-local CollectionService = game:GetService("CollectionService")
-local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
 local ThrowableSignals = require(script.Parent.ThrowableSignals)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
-
-local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
 local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
-local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
-local FastCast = require(ReplicatedStorage.Packages.FastCastRedux)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-local BehaviorBuilder = require(ReplicatedStorage.Shared.Vetra.Builders.BehaviorBuilder)
-local Effects = ReplicatedStorage.Shared.Effects
+
 local Throwable = {}
+
 type Human = ClassTypes.Human
 Throwable.__index = Throwable
 
@@ -51,19 +43,9 @@ function Throwable.new(throwableName: string, humanRef: Human?)
 	self.Janitor = Janitor.new()
 	self.ProjectileData = ThrowableData[self.Name].ProjectileData
 
-	-- self.FastCast = FastCast.new()
-
-	-- self.ProjectileData = FastCast.newBehavior()
-	-- self.ProjectileData.RaycastParams = RaycastParams.new()
-	-- self.ProjectileData.CosmeticBulletTemplate = nil
-	-- self.ProjectileData.CosmeticBulletContainer = workspace.ProjectilesFolder
 	self.RaycastParams = RaycastParams.new()
 	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	self.RaycastParams.FilterDescendantsInstances = { self.Tool }
-	-- self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
-	-- self.ProjectileData.AutoIgnoreContainer = true
 
-	self:ConnectProjectileEvents()
 	return self
 end
 
@@ -78,28 +60,27 @@ function Throwable:Throw(cameraLookVector: Vector3)
 
 	self.CanThrow = false
 	self.Tool.Handle.Transparency = 1
-	self.CurrentAmmo = math.max(0, self.CurrentAmmo - 1)
 	local head = self.Owner.BodyParts["Head"]
 	local launchPos = head.Position + Vector3.new(0, 2, 0)
 
-	task.defer(function()
-		local context = ProjectileContext.BulletContext.new({
-			Origin = launchPos,
-			Direction = cameraLookVector,
-			Speed = self.ThrowVelocity,
-			RaycastParams = self.RaycastParams,
-		})
+	local context = ProjectileContext.BulletContext.new({
+		Origin = launchPos,
+		Direction = cameraLookVector,
+		Speed = self.ThrowVelocity,
+		RaycastParams = self.RaycastParams,
+	})
 
-		context.UserData.Owner = self.Owner
-		context.UserData.Damage = self.Damage
-		context.UserData.Type = "Grenade"
-		context.UserData.FragmentType = self.FragmentType
+	context.UserData.Owner = self.Owner
+	context.UserData.Name = self.Name
+	context.UserData.ProjectileType = "Throwable"
+	context.UserData.Data = ThrowableData[self.Name]
 
-		-- local cosmetic =
-		-- 	BehaviorBuilder.Inherit(self.ProjectileData):Cosmetic():Provider(self.CosmeticBulletTemplate):Done():Build()
+	-- local cosmetic =
+	-- 	BehaviorBuilder.Inherit(self.ProjectileData):Cosmetic():Provider(self.CosmeticBulletTemplate):Done():Build()
 
-		ProjectileContext.Solver:Fire(context, ThrowableData[self.Name].ProjectileData)
-	end)
+	ProjectileContext.Solver:Fire(context, ThrowableData[self.Name].ProjectileData)
+
+	self.CurrentAmmo = math.max(0, self.CurrentAmmo - 1)
 
 	if self.CurrentAmmo <= 0 then
 		self:Remove()
@@ -121,143 +102,11 @@ function Throwable:Throw(cameraLookVector: Vector3)
 	return true
 end
 
-function Throwable:FragmentHitPlayer(hit: RaycastResult)
-	-- damage bodyparts if hits player
-	local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
-	if isModel then
-		local humanoid = isModel:FindFirstChild("Humanoid")
-		local isPlayer = if self.Owner and self.Owner.Player then self.Owner.Player else self.Owner.Character
-		if humanoid then
-			if self.FragmentType == "Explosive" then
-				GunSignals.PlayerHit:Fire(hit, humanoid, self.FragmentDamage, isPlayer)
-			elseif self.FragmentType == "Spread" then
-				GunSignals.InflictLimbDamage:Fire(
-					self.SpreadParticle,
-					self.SpreadDuration,
-					self.Damage,
-					hit.Instance,
-					humanoid,
-					isPlayer
-				)
-			end
-		end
-	end
-end
-
-function Throwable:FragmentHitDestroyable(hit: RaycastResult)
-	-- damage bodyparts if hits player
-	local instance = hit.Instance
-	local isDestroyable = CollectionService:HasTag(instance, "Destroyable")
-	if isDestroyable then
-		local destroyableClass = DestroyableManager:GetDestroyable(instance)
-		if not destroyableClass then
-			warn("[FragmentHitDestroyable] Destroyable class is not valid?")
-			return
-		end
-
-		if self.Type == "Explosive" then
-			destroyableClass:Damage(self.Damage)
-		end
-	end
-end
-
-function Throwable:SpawnFragments(spawnPos: Vector3)
-	for _ = 1, self.FragmentCount do
-		local dir = RandomModule.GetNextUnitVector()
-
-		local hit = workspace:Raycast(spawnPos, dir * self.FragmentRange)
-
-		-- if fragment hits something damagable, it should apply damage and cease to exist
-		if hit then
-			local hitInstance = hit.Instance
-			if hitInstance:FindFirstAncestorOfClass("Accessory") then
-				continue
-			end
-			-- handle hitting player
-			if self:FragmentHitPlayer(hit) then
-				continue
-			end
-
-			-- handle hitting destroyables
-			if self:FragmentHitDestroyable(hit) then
-				continue
-			end
-		end
-
-		--debug rays
-		-- local debugPart = Instance.new("Part")
-		-- debugPart.CanCollide = false
-		-- debugPart.CanTouch = false
-		-- debugPart.CanQuery = false
-		-- debugPart.CFrame = CFrame.lookAt(spawnPos, spawnPos + dir) * CFrame.new(0, 0, -fragmentRange / 2)
-		-- debugPart.Size = Vector3.new(0.1, 0.1, fragmentRange)
-		-- debugPart.Parent = workspace
-	end
-
-	if self.CurrentAmmo <= 0 then
-		self:Destroy()
-	end
-end
-
-function Throwable:OnThrowImpact(cosmeticBulletObj)
-	-- get particle name
-	local throwEffect = self.ImpactParticle
-	-- clone particle if valid
-	local effect = if Effects[throwEffect] then Effects[throwEffect]:Clone() else nil
-
-	if not effect then
-		warn("[Throwable:OnThrowImpact] Effect not valid to spawn")
-		return
-	end
-
-	local explosion: Part = Instance.new("Part")
-	explosion.Parent = workspace
-	explosion.CanCollide = false
-	explosion.CanQuery = false
-	explosion.Transparency = 1
-	explosion.Anchored = true
-	explosion.Position = cosmeticBulletObj.Position + Vector3.new(0, 1, 0)
-	effect.Parent = explosion
-	effect.Enabled = true
-	cosmeticBulletObj:Destroy()
-
-	Debris:AddItem(explosion, 1)
-end
-
 function Throwable:Destroy()
 	self.Owner.CurrentThrowable = nil
 	self.Janitor:Destroy()
 	setmetatable(self, nil)
 	warn("Throwable class destroyed")
-end
-
-function Throwable:ConnectProjectileEvents()
-	-- self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _, cosmeticBulletObj)
-	-- 	cosmeticBulletObj.Anchored = false
-
-	-- 	ServerSoundHandler:Play3DOneShotToOthers(nil, ThrowableData[self.Name].LandSound, cosmeticBulletObj.CFrame)
-	-- 	task.delay(self.DetonationTime, function()
-	-- 		local cosmeticPos = cosmeticBulletObj.Position
-	-- 		ServerSoundHandler:Play3DOneShotToOthers(
-	-- 			nil,
-	-- 			ThrowableData[self.Name].DetonationSound,
-	-- 			cosmeticBulletObj.CFrame,
-	-- 			{ MaxDistance = 150 }
-	-- 		)
-
-	-- 		self:OnThrowImpact(cosmeticBulletObj)
-	-- 		self:SpawnFragments(cosmeticPos + Vector3.new(0, 1, 0))
-	-- 	end)
-	-- end))
-
-	-- self.Janitor:Add(
-	-- 	self.FastCast.LengthChanged:Connect(
-	-- 		function(activeCast, lastPoint, rayDir, displacement, segmentVelocity, cosmeticBulletObj)
-	-- 			local newPos = lastPoint + (rayDir * displacement)
-	-- 			cosmeticBulletObj.Position = newPos
-	-- 		end
-	-- 	)
-	-- )
 end
 
 function Throwable:Remove()
@@ -273,19 +122,17 @@ function Throwable:Remove()
 			toolInHands:Destroy()
 		end
 	end
+
+	self:Destroy()
 end
 
 function Throwable:AddThrowableToInventory()
-	local clone: Tool = ServerStorage.Templates:FindFirstChild(self.Name):Clone()
+	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.Name):Clone()
 	self.Tool = clone
 
 	clone.Parent = if self.Owner.HumanType == "Player" then self.Owner.Player.Backpack else self.Character
 	self.Janitor:Add(self.Tool)
-
-	local projectileClone = self.Tool.Handle:Clone()
-	projectileClone.Anchored = true
-
-	self.CosmeticBulletTemplate = projectileClone
+	self.RaycastParams.FilterDescendantsInstances = { self.Tool }
 
 	if self.Owner.HumanType == "Player" then
 		ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, clone)

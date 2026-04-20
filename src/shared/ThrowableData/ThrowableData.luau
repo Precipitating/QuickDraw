@@ -18,7 +18,20 @@ local ThrowableData = {
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
 		ProjectileData = {
-			Vetra.BehaviorBuilder.Grenade():Bounce():Max(1):Done():Build(),
+			Vetra.BehaviorBuilder
+				.Grenade()
+				:Bounce()
+				:Max(1)
+				:Done()
+				:Cosmetic()
+				:AutoDelete(false)
+				:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.DynamiteCosmetic)
+				:Container(workspace.ProjectilesFolder)
+				:Done()
+				:Debug()
+				:Visualize(true)
+				:Done()
+				:Build(),
 		},
 	},
 

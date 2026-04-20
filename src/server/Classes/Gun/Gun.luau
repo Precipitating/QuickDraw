@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
 local GunSignals = require(script.Parent.GunSignals)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
@@ -111,7 +110,6 @@ function Gun:SingleShot(adsDir: Vector3?, adsPosition: Vector3?)
 			Direction = adsDir,
 			Speed = self.Speed,
 			RaycastParams = self.RaycastParams,
-			UserData = { Owner = self.PlayerRef, Damage = self.Damage, Type = "Gun", GunType = self.GunType },
 		})
 	else
 		context = ProjectileContext.BulletContext.new({
@@ -119,9 +117,13 @@ function Gun:SingleShot(adsDir: Vector3?, adsPosition: Vector3?)
 			Direction = self.ShootPoint.WorldCFrame.LookVector,
 			Speed = self.Speed,
 			RaycastParams = self.RaycastParams,
-			UserData = { Owner = self.PlayerRef, Damage = self.Damage, Type = "Gun", GunType = self.GunType },
 		})
 	end
+
+	context.UserData.Owner = self.PlayerRef
+	context.UserData.Damage = self.Damage
+	context.UserData.ProjectileType = "Bullet"
+	context.UserData.GunType = self.GunType
 
 	if not context then
 		warn("Singleshot context is invalid")
@@ -173,7 +175,7 @@ function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
 
 			context.UserData.Owner = self.PlayerRef
 			context.UserData.Damage = self.Damage
-			context.UserData.Type = "Gun"
+			context.UserData.ProjectileType = "Bullet"
 			context.UserData.GunType = self.GunType
 			ProjectileContext.Solver:Fire(context, projectileData)
 		end
@@ -189,7 +191,7 @@ function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
 
 			context.UserData.Owner = self.PlayerRef
 			context.UserData.Damage = self.Damage
-			context.UserData.Type = "Gun"
+			context.UserData.ProjectileType = "Bullet"
 			context.UserData.GunType = self.GunType
 
 			ProjectileContext.Solver:Fire(context, projectileData)
@@ -290,7 +292,7 @@ function Gun:DisableCollision(tool: Tool)
 	end
 end
 function Gun:AddGunToInventory()
-	local clone: Tool = ServerStorage.Templates:FindFirstChild(self.GunName):Clone()
+	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.GunName):Clone()
 	self.Tool = clone
 	self.ShootPoint = clone:WaitForChild("ShootPoint", 10)
 	self.Handle = clone:WaitForChild("Handle", 10)
