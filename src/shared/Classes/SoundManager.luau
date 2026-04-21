@@ -213,7 +213,6 @@ function SoundManager.Play(name: string, options: PlayOptions?): Sound?
 		and (workspace:GetServerTimeNow() - _lastPlayed[name])
 			< if soundCooldown then soundCooldown else DEFAULT_SOUND_COOLDOWN_TIME
 	then
-		warn(`COOLDOWN of {soundCooldown}`)
 		return
 	end
 
@@ -483,7 +482,6 @@ function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound
 		and (workspace:GetServerTimeNow() - _lastPlayed[keyName])
 			< if soundCooldown then soundCooldown else DEFAULT_SOUND_COOLDOWN_TIME
 	then
-		warn(`COOLDOWN of {soundCooldown}`)
 		return
 	end
 

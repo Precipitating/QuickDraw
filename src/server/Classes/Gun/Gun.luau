@@ -34,7 +34,6 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	self.ShotDelay = gunData.ShotDelay
 	self.LastShot = 0
 	self.Damage = gunData.Damage
-	self.CurrentCooldown = -1
 
 	-- if its NPC, its their model, else player instance
 	self.PlayerRef = player
@@ -55,43 +54,10 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	-- self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
 	-- self.ProjectileData.AutoIgnoreContainer = true
 
-	self:ConnectProjectileEvents()
-
 	return self
 end
 
-function Gun:ConnectProjectileEvents()
-	-- self.Janitor:Add(VetraSignals.OnHit:Connect(function(context, result, velocity)
-	-- 	local hitPlayer = self:HitPlayer(result)
-	-- 	if hitPlayer then
-	-- 		return
-	-- 	end
-
-	-- 	local hitDestroyable = self:HitDestroyable(result)
-	-- 	if hitDestroyable then
-	-- 		return
-	-- 	end
-
-	-- 	Gun:HitEnvironment(result)
-	-- end))
-
-	-- Fastcast
-	-- self.Janitor:Add(self.FastCast.RayHit:Connect(function(_, raycastResult: RaycastResult, _)
-	-- 	local hitPlayer = self:HitPlayer(raycastResult)
-	-- 	if hitPlayer then
-	-- 		return
-	-- 	end
-
-	-- 	local hitDestroyable = self:HitDestroyable(raycastResult)
-	-- 	if hitDestroyable then
-	-- 		return
-	-- 	end
-
-	-- 	Gun:HitEnvironment(raycastResult)
-	-- end))
-end
-
-function Gun:SingleShot(adsDir: Vector3?, adsPosition: Vector3?)
+function Gun:SingleShot()
 	local projectileData = GunData[self.GunName].ProjectileData
 	local context = nil
 	if not projectileData then
@@ -104,21 +70,12 @@ function Gun:SingleShot(adsDir: Vector3?, adsPosition: Vector3?)
 		return
 	end
 
-	if adsDir and adsPosition then
-		context = ProjectileContext.BulletContext.new({
-			Origin = adsPosition,
-			Direction = adsDir,
-			Speed = self.Speed,
-			RaycastParams = self.RaycastParams,
-		})
-	else
-		context = ProjectileContext.BulletContext.new({
-			Origin = self.ShootPoint.WorldPosition,
-			Direction = self.ShootPoint.WorldCFrame.LookVector,
-			Speed = self.Speed,
-			RaycastParams = self.RaycastParams,
-		})
-	end
+	context = ProjectileContext.BulletContext.new({
+		Origin = self.ShootPoint.WorldPosition,
+		Direction = self.ShootPoint.WorldAxis,
+		Speed = self.Speed,
+		RaycastParams = self.RaycastParams,
+	})
 
 	context.UserData.Owner = self.PlayerRef
 	context.UserData.Damage = self.Damage
@@ -199,6 +156,12 @@ function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
 	end
 end
 
+function Gun:UpdateAmmo(amount: number)
+	self.CurrentAmmo += amount
+
+	self.CurrentAmmo = math.clamp(self.CurrentAmmo, 0, self.MaxAmmo)
+end
+
 -- if adsPosition and adsDir is specified, we shoot from middle of screen
 function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 	local now = os.clock()
@@ -206,7 +169,7 @@ function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 		return false
 	end
 
-	if self.CurrentAmmo <= 0 or self.CurrentCooldown > 0 then
+	if self.CurrentAmmo <= 0 then
 		return false
 	end
 
@@ -220,9 +183,8 @@ function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 		self:SingleShot(adsDir, adsPosition)
 	end
 
-	self.CurrentAmmo -= 1
+	self:UpdateAmmo(-1)
 
-	self.CurrentAmmo = math.clamp(self.CurrentAmmo, 0, self.MaxAmmo)
 	self.LastShot = os.clock()
 
 	self:ActivateMuzzleFlash()

@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
-local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -13,20 +12,6 @@ type Networker = NetworkServer
 
 local ServerGunHandler = {}
 
-function ServerGunHandler:ShootGun(player: Player, adsPos: Vector3, adsDir: Vector3)
-	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
-
-	local currentGun: Gun? = humanClass.CurrentGun
-
-	if not currentGun then
-		warn(`[ServerGunHandler:ShootGun] No gun reference in human class`)
-		return
-	end
-
-	local hasShot = currentGun:ShootGun(adsPos, adsDir)
-
-	return hasShot
-end
 function ServerGunHandler:Reload(player: Player?)
 	if not player then
 		return
@@ -106,7 +91,6 @@ function ServerGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 end
 
 ServerGunHandler.networker = Networker.new("GunNetwork", ServerGunHandler, {
-	ServerGunHandler.ShootGun,
 	ServerGunHandler.ActivateMuzzleFlash,
 	ServerGunHandler.GetAmmoCount,
 	ServerGunHandler.Reload,

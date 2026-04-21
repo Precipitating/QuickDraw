@@ -2,12 +2,13 @@ local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ProjectileContext = require(script.Parent.ProjectileContext)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
+local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Effects = ReplicatedStorage.Shared.Effects
 local ProjectileEvents = {}
@@ -165,53 +166,77 @@ function ProjectileEvents:GunHitEnvironment(raycastResult: RaycastResult)
 	GunSignals.DisplayBulletHole:Fire(hitPos)
 end
 
+function ProjectileEvents:OnProjectileHitReceive(context, result: RaycastResult?)
+	-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
+	if not result then
+		return
+	end
+	print(`OnHit fired {result.Instance.Name}`)
+
+	-- GUN PROJECTILES
+	if context.UserData.ProjectileType == "Bullet" then
+		local hitPlayer = ProjectileEvents:GunHitPlayer(context.UserData, result)
+		if hitPlayer then
+			return
+		end
+
+		local hitDestroyable = ProjectileEvents:GunHitDestroyable(context.UserData, result)
+		if hitDestroyable then
+			return
+		end
+
+		ProjectileEvents:GunHitEnvironment(result)
+
+		-- THROWABLE PROJECTILES
+	elseif context.UserData.ProjectileType == "Throwable" then
+		local data = context.UserData
+		local throwableData = data.Data
+		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
+		task.delay(throwableData.DetonationTime, function()
+			if context.CosmeticBulletObject then
+				context.CosmeticBulletObject:Destroy()
+			end
+			local hitPos = result.Position
+			ServerSoundHandler:Play3DOneShotToOthers(
+				nil,
+				throwableData.DetonationSound,
+				result.Instance.CFrame,
+				{ MaxDistance = 150 }
+			)
+
+			self:OnThrowImpact(hitPos, throwableData.ImpactParticle)
+			self:SpawnFragments(hitPos + Vector3.new(0, 1, 0), data.Owner, throwableData)
+		end)
+	end
+end
+function ProjectileEvents:PlayerReduceAmmo(player: Player)
+	-- deduct ammo
+	local human = PlayerManager:GetHumanClassFromPlayer(player)
+	local gunClass = human.CurrentGun
+	gunClass:UpdateAmmo(-1)
+end
+
 function ProjectileEvents:Initialize()
 	ProjectileContext.VetraSignals.OnPierce:Connect(function(context, result, velocity, pierceCount: number)
 		print("OnPierce fired")
 	end)
 
+	ProjectileContext.Net.OnFireRejected:Connect(function(player, reason)
+		-- deduct ammo
+		self:PlayerReduceAmmo(player)
+		warn(`{player.Name} fire rejected: {reason}`)
+	end)
+
+	-- for NPCS
 	ProjectileContext.VetraSignals.OnHit:Connect(function(context, result, velocity)
-		print("OnHit fired")
+		self:OnProjectileHitReceive(context, result)
+	end)
 
-		-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
-		if not result then
-			return
-		end
-		-- GUN PROJECTILES
-		if context.UserData.ProjectileType == "Bullet" then
-			local hitPlayer = ProjectileEvents:GunHitPlayer(context.UserData, result)
-			if hitPlayer then
-				return
-			end
-
-			local hitDestroyable = ProjectileEvents:GunHitDestroyable(context.UserData, result)
-			if hitDestroyable then
-				return
-			end
-
-			ProjectileEvents:GunHitEnvironment(result)
-
-		-- THROWABLE PROJECTILES
-		elseif context.UserData.ProjectileType == "Throwable" then
-			local data = context.UserData
-			local throwableData = data.Data
-			ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
-			task.delay(throwableData.DetonationTime, function()
-				if context.CosmeticBulletObject then
-					context.CosmeticBulletObject:Destroy()
-				end
-				local hitPos = result.Position
-				ServerSoundHandler:Play3DOneShotToOthers(
-					nil,
-					throwableData.DetonationSound,
-					result.Instance.CFrame,
-					{ MaxDistance = 150 }
-				)
-
-				self:OnThrowImpact(hitPos, throwableData.ImpactParticle)
-				self:SpawnFragments(hitPos + Vector3.new(0, 1, 0), data.Owner, throwableData)
-			end)
-		end
+	-- players firing from client
+	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
+		self:PlayerReduceAmmo(player)
+		context.UserData["Owner"] = player
+		self:OnProjectileHitReceive(context, result)
 	end)
 end
 

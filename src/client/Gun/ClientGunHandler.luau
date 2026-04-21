@@ -16,6 +16,12 @@ local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local GunDataTypes = require(ReplicatedStorage.Shared.GunData.GunDataTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+--  ────── Vetra Variables ──────
+local Vetra = require(ReplicatedStorage.Shared.Vetra)
+local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
+local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
+local ClientSolver = Vetra.newParallel({ ShardCount = 4 })
+local Net = VetraNet.new(ClientSolver, VetraRegistry)
 
 type Networker = NetworkClient
 type GunData = GunDataTypes.GunData
@@ -54,6 +60,8 @@ local CrosshairScaleSpring = Ripple.createSpring(UDim2.fromScale(1, 1), {
 
 local crosshairRaycastParams = RaycastParams.new()
 crosshairRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+local gunRaycastParams = RaycastParams.new()
+gunRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 --params.FilterType = Enum.RaycastFilterType.Exclude
 --params.FilterDescendantsInstances = { PlayerContext.Character }
@@ -227,9 +235,9 @@ local function PredictBulletLanding(
 
 	for i = 1, STEPS do
 		local speed = vel.Magnitude
-		-- if speed < minSpeed then
-		-- 	break
-		-- end
+		if speed < minSpeed then
+			break
+		end
 
 		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
 		local gravAccel = Vector3.new(0, -GRAVITY, 0)
@@ -261,7 +269,7 @@ local function CastBarrelRay(crosshairBB: BillboardGui, gunName: string, shootPo
 	local dragCoefficient = GunData[gunName].DragCoefficient or 0
 	local maxCrosshairDistance = GunData[gunName].MaxSimulationDistance or 500
 	local origin: Vector3 = shootPoint.WorldPosition
-	local direction: Vector3 = shootPoint.WorldCFrame.LookVector
+	local direction: Vector3 = shootPoint.WorldAxis
 	local landLocation =
 		PredictBulletLanding(origin, direction, bulletVelocity, dragCoefficient, maxCrosshairDistance, 36)
 
@@ -361,26 +369,16 @@ local function ADSTweenZoom(gunTool: Tool)
 	ClientGunHandler.TweenADS(true)
 end
 -- display gun effects
-function ClientGunHandler:DisplayGunEffects(gun: Tool, shot: boolean)
-	local gunData = GunData[gun.Name]
+function ClientGunHandler:DisplayGunEffects(gunTool: Tool)
+	local gunData = GunData[gunTool.Name]
 
-	if shot then
-		self:ActivateMuzzleFlash(gun)
-		self:ApplyGunRecoil(gun)
-		SoundManager.Play(gunData.ShootSoundName, {
-			Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
-		})
-		if gunData.LoadNextRoundName then
-			SoundManager.Play(gunData.LoadNextRoundName)
-		end
-	else
-		local currAmmo, _ = GunNetwork:fetch("GetAmmoCount")
-
-		if currAmmo and currAmmo <= 0 then
-			SoundManager.Play(gunData.ShootNoAmmoName, {
-				Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
-			})
-		end
+	self:ActivateMuzzleFlash(gunTool)
+	self:ApplyGunRecoil(gunTool)
+	SoundManager.Play(gunData.ShootSoundName, {
+		Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
+	})
+	if gunData.LoadNextRoundName then
+		SoundManager.Play(gunData.LoadNextRoundName)
 	end
 end
 
@@ -423,9 +421,44 @@ function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
 	end
 end
 
-function ClientGunHandler:ConnectGun(gun: Tool?)
+function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
+	gunRaycastParams.FilterDescendantsInstances = { gunTool, PlayerContext.Character }
+	-- get shooting point (for non ADS)
+	local shootAttachment: Attachment? = Utility.GetInstance(gunTool, true, "ShootPoint")
+	if not shootAttachment then
+		warn("[CLIENT] Missing gun shoot attachment of current tool")
+		return
+	end
+
+	local context = nil
+	-- holding RMB means the bullet will fire via camera's lookvector
+	-- else gun barrel
+	if HoldingRMB then
+		context = Vetra.BulletContext.new({
+			Origin = CurrentCamera.CFrame.Position,
+			Direction = CurrentCamera.CFrame.LookVector,
+			Speed = gunData.Velocity,
+			RaycastParams = gunRaycastParams,
+		})
+
+		Net:Fire(context, gunTool.Name)
+	else
+		context = Vetra.BulletContext.new({
+			Origin = shootAttachment.WorldPosition,
+			Direction = shootAttachment.WorldAxis,
+			Speed = gunData.Velocity,
+			RaycastParams = gunRaycastParams,
+		})
+
+		Net:Fire(context, gunTool.Name)
+	end
+
+	self:DisplayGunEffects(gunTool)
+end
+
+function ClientGunHandler:ConnectGun(gunTool: Tool?)
 	print("connecting gun")
-	if not gun then
+	if not gunTool then
 		error("Can't connect guns, tool reference not valid!")
 	end
 
@@ -434,13 +467,13 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 		GunDisconnectConn:Disconnect()
 	end
 
-	GunEquipConn = gun.Equipped:Connect(function(_: Mouse)
+	GunEquipConn = gunTool.Equipped:Connect(function(_: Mouse)
 		-- arm moves where camera is looking + 3D crosshair
 		local _: Part, crosshairBB: BillboardGui, _: ImageLabel = Get3DCrosshair()
-		AimAndDisplayCrosshair(gun)
+		AimAndDisplayCrosshair(gunTool)
 		ApplyCameraGunRecoil()
 
-		self:AddCollisionConstraints(gun)
+		self:AddCollisionConstraints(gunTool)
 
 		-- we use this because we disabled the default RMB camera movement by sinking RMB, but we want RMB to work
 		-- so we set this at a higher priority so we can still allow RMB inputs for this only
@@ -450,8 +483,7 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 				crosshairBB.Enabled = false
 				Crosshair3DPosition = nil
 				Crosshair3DSize = nil
-				self.janitor:Remove("RayHit")
-				ADSTweenZoom(gun)
+				ADSTweenZoom(gunTool)
 			elseif inputState == Enum.UserInputState.End then
 				HoldingRMB = false
 				ClientGunHandler.CancelADS()
@@ -469,26 +501,31 @@ function ClientGunHandler:ConnectGun(gun: Tool?)
 			end
 		end))
 
-		self.janitor:Add(gun.Activated:Connect(function()
+		self.janitor:Add(gunTool.Activated:Connect(function()
 			if PlayerContext.Humanoid.Health <= 0 then
 				return
 			end
 
-			local shot = nil
-
-			-- holding RMB means the bullet will fire via camera's lookvector
-			-- else gun barrel
-			if HoldingRMB then
-				shot = GunNetwork:fetch("ShootGun", CurrentCamera.CFrame.Position, CurrentCamera.CFrame.LookVector)
-			else
-				shot = GunNetwork:fetch("ShootGun")
+			local gunData = GunData[gunTool.Name]
+			local now = os.clock()
+			if PlayerContext.LastAttacked and now - PlayerContext.LastAttacked < gunData.ShotDelay then
+				return
 			end
+			local currAmmo, _ = GunNetwork:fetch("GetAmmoCount")
 
-			self:DisplayGunEffects(gun, shot)
+			-- no ammo, return early
+			if currAmmo and currAmmo <= 0 then
+				SoundManager.Play(gunData.ShootNoAmmoName, {
+					Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
+				})
+				return
+			end
+			self:ShootGun(gunTool, gunData)
+			PlayerContext.LastAttacked = now
 		end))
 	end)
 
-	GunDisconnectConn = gun.Unequipped:Connect(function()
+	GunDisconnectConn = gunTool.Unequipped:Connect(function()
 		print("Disconnecting gun connections!")
 		HoldingRMB = false
 		self.janitor:Cleanup()

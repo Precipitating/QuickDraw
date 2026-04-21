@@ -2,7 +2,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
 local ThrowableData = {
-
 	Dynamite = {
 		MaxAmmo = 1,
 		ThrowDelay = 5,

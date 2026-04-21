@@ -54,6 +54,11 @@ local GunData = {
 			:Debug()
 			:Visualize(true)
 			:Done()
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:AutoDelete(false)
+			:Done()
 			:Build(),
 	},
 	Winchester = {
