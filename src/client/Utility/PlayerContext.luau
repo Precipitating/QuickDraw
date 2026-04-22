@@ -43,7 +43,6 @@ PlayerContext.Camera = nil
 PlayerContext.RightArmYaw = nil
 PlayerContext.janitor = Janitor.new()
 PlayerContext.HRPOrientation = nil
-PlayerContext.LastAttacked = nil
 
 function PlayerContext.ApplyMouseLock(on: boolean)
 	if on then
@@ -120,7 +119,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.AnimationController = AnimationController.new(character, DefaultAnimations, DefaultAnimateParams)
 	PlayerContext.IsMoving = false
 	PlayerContext.Reloading = false
-	PlayerContext.LastAttacked = nil
+
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
 	for _, obj in character:GetChildren() do

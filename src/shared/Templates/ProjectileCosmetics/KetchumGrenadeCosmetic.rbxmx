@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBXBC74A326E3994B0388527C063543A79C">
+	<Item class="MeshPart" referent="RBX36E18D6CB8FC4055B6A9432CA899A80D">
 		<Properties>
 			<bool name="DoubleSided">false</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -134,7 +134,7 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">KetchumGrenadeCosmetic</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags"></BinaryString>
+			<BinaryString name="Tags">VGhyb3dhYmxl</BinaryString>
 		</Properties>
 	</Item>
 	<SharedStrings>

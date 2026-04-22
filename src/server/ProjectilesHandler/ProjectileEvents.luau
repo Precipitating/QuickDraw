@@ -3,6 +3,7 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ProjectileContext = require(script.Parent.ProjectileContext)
@@ -30,7 +31,7 @@ local function GetHumanoidFromHit(instance: Instance): Humanoid?
 	return humanoid
 end
 
-function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult)
+function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, owner: Player?)
 	local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
 	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
 
@@ -43,19 +44,19 @@ function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult)
 	end
 
 	-- hit body part
-	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, hitData.Damage, hitData.Owner)
+	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, hitData.Damage, owner or hitData.Owner)
 	print(`{raycastResult.Instance.Name} hit!`)
 	return true
 end
 
-function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResult)
+function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResult, owner: Player?)
 	local instance = raycastResult.Instance
 	local destroyableClass: Destroyable = DestroyableManager.Destroyables[instance]
 	if not destroyableClass then
 		return
 	end
 
-	destroyableClass:Damage(hitData.Damage, hitData.Owner)
+	destroyableClass:Damage(hitData.Damage, owner or hitData.Owner)
 
 	return true
 end
@@ -65,7 +66,7 @@ function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwable
 	local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
 	if isModel then
 		local humanoid = isModel:FindFirstChild("Humanoid")
-		local isPlayer = if owner and owner.Player then owner.Player else owner.Character
+		local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
 		if humanoid then
 			if throwableData.Type == "Explosive" then
 				GunSignals.PlayerHit:Fire(hit, humanoid, throwableData.Damage, isPlayer)
@@ -166,12 +167,12 @@ function ProjectileEvents:GunHitEnvironment(raycastResult: RaycastResult)
 	GunSignals.DisplayBulletHole:Fire(hitPos)
 end
 
-function ProjectileEvents:OnProjectileHitReceive(context, result: RaycastResult?)
+function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastResult?)
 	-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
 	if not result then
 		return
 	end
-	print(`OnHit fired {result.Instance.Name}`)
+	print(`OnHit fired by server {result.Instance.Name}`)
 
 	-- GUN PROJECTILES
 	if context.UserData.ProjectileType == "Bullet" then
@@ -205,10 +206,79 @@ function ProjectileEvents:OnProjectileHitReceive(context, result: RaycastResult?
 			)
 
 			self:OnThrowImpact(hitPos, throwableData.ImpactParticle)
-			self:SpawnFragments(hitPos + Vector3.new(0, 1, 0), data.Owner, throwableData)
+			self:SpawnFragments(hitPos + Vector3.new(0, 1, 0), data.Class.Owner, throwableData)
+			if data.Class.CurrentAmmo <= 0 then
+				data.Class:Destroy()
+			end
 		end)
 	end
 end
+
+function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastResult?)
+	-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
+	if not result then
+		return
+	end
+	print(`OnHit fired by player {result.Instance.Name}`)
+
+	-- GUN PROJECTILES
+	if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
+		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
+		local currentGunName = human.CurrentGun and human.CurrentGun.GunName
+		if not currentGunName then
+			return
+		end
+		self:PlayerReduceAmmo(context.UserData.Owner)
+		local gunData = GunData[currentGunName]
+		if not gunData then
+			warn("Gundata missing from OnProjectileHitReceivePlayer")
+			return
+		end
+
+		local hitPlayer = ProjectileEvents:GunHitPlayer(gunData, result, context.UserData.Owner)
+		if hitPlayer then
+			return
+		end
+
+		local hitDestroyable = ProjectileEvents:GunHitDestroyable(gunData, result, context.UserData.Owner)
+		if hitDestroyable then
+			return
+		end
+
+		-- THROWABLE PROJECTILES
+	elseif CollectionService:HasTag(context.CosmeticBulletObject, "Throwable") then
+		local data = context.UserData
+		local human = PlayerManager:GetHumanClassFromPlayer(data.Owner)
+		local throwable = human.CurrentThrowable
+		local throwableName = throwable and human.CurrentThrowable.Name
+		if not throwableName then
+			return
+		end
+		local throwableData = ThrowableData[throwableName]
+
+		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
+		task.delay(throwableData.DetonationTime, function()
+			if context.CosmeticBulletObject then
+				context.CosmeticBulletObject:Destroy()
+			end
+			local hitPos = result.Position
+			ServerSoundHandler:Play3DOneShotToOthers(
+				nil,
+				throwableData.DetonationSound,
+				result.Instance.CFrame,
+				{ MaxDistance = 150 }
+			)
+
+			self:OnThrowImpact(hitPos, throwableData.ImpactParticle)
+			self:SpawnFragments(hitPos + Vector3.new(0, 1, 0), data.Owner, throwableData)
+
+			if throwable.CurrentAmmo <= 0 then
+				throwable:Destroy()
+			end
+		end)
+	end
+end
+
 function ProjectileEvents:PlayerReduceAmmo(player: Player)
 	-- deduct ammo
 	local human = PlayerManager:GetHumanClassFromPlayer(player)
@@ -222,21 +292,21 @@ function ProjectileEvents:Initialize()
 	end)
 
 	ProjectileContext.Net.OnFireRejected:Connect(function(player, reason)
-		-- deduct ammo
-		self:PlayerReduceAmmo(player)
-		warn(`{player.Name} fire rejected: {reason}`)
+		warn(`Rejected projectile hit because of {reason}`)
 	end)
 
-	-- for NPCS
+	-- for NPCS/Server
 	ProjectileContext.VetraSignals.OnHit:Connect(function(context, result, velocity)
-		self:OnProjectileHitReceive(context, result)
+		if context.UserData.Owner and context.UserData.Owner:IsA("Player") then
+			return
+		end
+		self:OnProjectileHitReceiveServer(context, result)
 	end)
 
 	-- players firing from client
 	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
-		self:PlayerReduceAmmo(player)
 		context.UserData["Owner"] = player
-		self:OnProjectileHitReceive(context, result)
+		self:OnProjectileHitReceivePlayer(context, result)
 	end)
 end
 

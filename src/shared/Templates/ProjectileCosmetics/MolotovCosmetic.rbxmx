@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBX30F9AC3CACAE4A7FA11B5A0AD23E02BE">
+	<Item class="MeshPart" referent="RBX4F2744F6E9104A0BB96F1BA4331F9C93">
 		<Properties>
 			<bool name="DoubleSided">false</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -134,7 +134,7 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">MolotovCosmetic</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags"></BinaryString>
+			<BinaryString name="Tags">VGhyb3dhYmxl</BinaryString>
 		</Properties>
 	</Item>
 	<SharedStrings>

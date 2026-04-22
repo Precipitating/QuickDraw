@@ -6,9 +6,8 @@ export type Gun = {
 	ShootPoint: Attachment?,
 	PlayerRef: Player?,
 	CanShoot: boolean,
-	CurrentCooldown: number,
 	AddGunToInventory: (self: Gun) -> (),
-	ShootGun: (self: Gun, adsPos: Vector3, adsDir: Vector3) -> (),
+	ShootGun: () -> (),
 	Reload: (self: Gun) -> (),
 	MuzzleFlash: Attachment?,
 	HumanClassRef: Human?,
@@ -23,6 +22,7 @@ export type Throwable = {
 	ThrowVelocity: number,
 
 	Throw: (self: Throwable, cameraLookVector: Vector3) -> (),
+	UpdateAmmo: (self: Throwable, amount: number) -> boolean,
 }
 
 export type AI = {

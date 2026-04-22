@@ -1,13 +1,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
+local isClient = not game:GetService("RunService"):IsServer()
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
+
 local ThrowableData = {
 	Dynamite = {
 		MaxAmmo = 1,
 		ThrowDelay = 5,
 		Damage = 20,
 		Cost = 100,
-		Velocity = 100,
+		Velocity = 70,
 		DetonationTime = 3,
 		FragmentRange = 40,
 		FragmentCount = 350,
@@ -16,22 +17,17 @@ local ThrowableData = {
 		DetonationSound = "DynamiteExplosion",
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
-		ProjectileData = {
-			Vetra.BehaviorBuilder
-				.Grenade()
-				:Bounce()
-				:Max(1)
-				:Done()
-				:Cosmetic()
-				:AutoDelete(false)
-				:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.DynamiteCosmetic)
-				:Container(workspace.ProjectilesFolder)
-				:Done()
-				:Debug()
-				:Visualize(true)
-				:Done()
-				:Build(),
-		},
+		ProjectileData = Vetra.BehaviorBuilder
+			.Grenade()
+			:Bounce()
+			:Max(1)
+			:Done()
+			:Cosmetic()
+			:AutoDelete(false)
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.DynamiteCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
+			:Build(),
 	},
 
 	KetchumGrenade = {
@@ -48,9 +44,19 @@ local ThrowableData = {
 		DetonationSound = "DynamiteExplosion",
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
-		ProjectileData = {
-			Vetra.BehaviorBuilder.Grenade():Bounce():Max(0):Done():Physics():MinSpeed(10):Done():Build(),
-		},
+		ProjectileData = Vetra.BehaviorBuilder
+			.Grenade()
+			:Bounce()
+			:Max(0)
+			:Done()
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.KetchumGrenadeCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
+			:Physics()
+			:MinSpeed(10)
+			:Done()
+			:Build(),
 	},
 
 	Molotov = {
@@ -70,9 +76,19 @@ local ThrowableData = {
 		ImpactParticle = "FireExplosion",
 		SpreadParticle = "Burning",
 		SpreadDuration = 7,
-		ProjectileData = {
-			Vetra.BehaviorBuilder.Grenade():Bounce():Max(0):Done():Physics():MinSpeed(8):Done():Build(),
-		},
+		ProjectileData = Vetra.BehaviorBuilder
+			.Grenade()
+			:Bounce()
+			:Max(0)
+			:Done()
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.MolotovCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
+			:Physics()
+			:MinSpeed(8)
+			:Done()
+			:Build(),
 	},
 }
 

@@ -9,32 +9,31 @@ type Throwable = ClassTypes.Throwable
 
 local ThrowableHandler = {}
 
-function ThrowableHandler:ThrowProjectile(player: Player, cameraLookVector: Vector3)
-	local character = player.Character
-	local humanoid = character:WaitForChild("Humanoid", 10)
-	if not humanoid then
-		error("Missing humanoid to throw projectile")
-		return false
-	end
-
-	local humanClass: Human = PlayerManager:GetHumanClass(humanoid)
+function ThrowableHandler:GetAmmo(player: Player)
+	local humanClass: Human = PlayerManager:GetHumanClassFromPlayer(player)
 	local throwable: Throwable? = humanClass.CurrentThrowable
 
 	if not throwable then
-		error("Throwable is nil!")
-		return false
+		warn("Throwable is nil!")
+		return nil
 	end
 
-	local success = throwable:Throw(cameraLookVector)
-
-	if not success then
-		print("Cooldown")
-		return false
-	end
-
-	print("Thrown!")
-
-	return true
+	return throwable.CurrentAmmo
 end
-ThrowableHandler.networker = Networker.new("ThrowableNetwork", ThrowableHandler, { ThrowableHandler.ThrowProjectile })
+
+function ThrowableHandler:OnClientThrow(player: Player)
+	local humanClass: Human = PlayerManager:GetHumanClassFromPlayer(player)
+	local throwable: Throwable? = humanClass.CurrentThrowable
+
+	if not throwable then
+		warn("Throwable is nil!")
+		return
+	end
+
+	-- removes from inventory if none left
+	throwable:UpdateAmmo(-1)
+end
+
+ThrowableHandler.networker =
+	Networker.new("ThrowableNetwork", ThrowableHandler, { ThrowableHandler.GetAmmo, ThrowableHandler.OnClientThrow })
 return ThrowableHandler

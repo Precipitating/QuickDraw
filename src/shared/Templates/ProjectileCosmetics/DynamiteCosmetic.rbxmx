@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBX7944E8D9536E457DA95D0D295115D4B5">
+	<Item class="Part" referent="RBX561180247EC341C088B52E39335CADE9">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
@@ -98,9 +98,9 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">DynamiteCosmetic</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags"></BinaryString>
+			<BinaryString name="Tags">VGhyb3dhYmxl</BinaryString>
 		</Properties>
-		<Item class="SpecialMesh" referent="RBX8910EABBF815448E8F2F48B20EEBADE8">
+		<Item class="SpecialMesh" referent="RBXDD9D4C14B8D84E308C5C44816AE6F655">
 			<Properties>
 				<token name="MeshType">5</token>
 				<Content name="MeshId"><url>http://www.roblox.com/asset/?id=12551202</url></Content>

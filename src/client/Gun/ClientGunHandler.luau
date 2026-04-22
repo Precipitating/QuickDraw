@@ -1,8 +1,11 @@
 local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local ClientVetraContext =
+	require(StarterPlayer.StarterPlayerScripts.Client.ClientProjectilesHandler.ClientVetraContext)
 local CrosshairHandler = require(script.Parent.Parent.GUI.CrosshairHandler)
 local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local GunConfig = require(script.Parent.GunConfig)
@@ -16,12 +19,6 @@ local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local GunDataTypes = require(ReplicatedStorage.Shared.GunData.GunDataTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
---  ────── Vetra Variables ──────
-local Vetra = require(ReplicatedStorage.Shared.Vetra)
-local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
-local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
-local ClientSolver = Vetra.newParallel({ ShardCount = 4 })
-local Net = VetraNet.new(ClientSolver, VetraRegistry)
 
 type Networker = NetworkClient
 type GunData = GunDataTypes.GunData
@@ -37,6 +34,7 @@ local HoldingRMB = false
 local GunEquipConn = nil
 local GunDisconnectConn = nil
 local LastCrosshairHit = 0
+local LastShot = 0
 local Crosshair3DPosition = nil
 local Crosshair3DSize = nil
 
@@ -62,16 +60,6 @@ local crosshairRaycastParams = RaycastParams.new()
 crosshairRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 local gunRaycastParams = RaycastParams.new()
 gunRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-
---params.FilterType = Enum.RaycastFilterType.Exclude
---params.FilterDescendantsInstances = { PlayerContext.Character }
--- local ProjectileData = FastCast.newBehavior()
--- ProjectileData.RaycastParams = RaycastParams.new()
--- ProjectileData.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
--- ProjectileData.RaycastParams.FilterDescendantsInstances = {}
--- ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
--- ProjectileData.MaxDistance = 250
--- ProjectileData.AutoIgnoreContainer = true
 
 function ClientGunHandler:StopReloading()
 	PlayerContext.Reloading = false
@@ -434,23 +422,23 @@ function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
 	-- holding RMB means the bullet will fire via camera's lookvector
 	-- else gun barrel
 	if HoldingRMB then
-		context = Vetra.BulletContext.new({
+		context = ClientVetraContext.Vetra.BulletContext.new({
 			Origin = CurrentCamera.CFrame.Position,
 			Direction = CurrentCamera.CFrame.LookVector,
 			Speed = gunData.Velocity,
 			RaycastParams = gunRaycastParams,
 		})
 
-		Net:Fire(context, gunTool.Name)
+		ClientVetraContext.Net:Fire(context, gunTool.Name)
 	else
-		context = Vetra.BulletContext.new({
+		context = ClientVetraContext.Vetra.BulletContext.new({
 			Origin = shootAttachment.WorldPosition,
 			Direction = shootAttachment.WorldAxis,
 			Speed = gunData.Velocity,
 			RaycastParams = gunRaycastParams,
 		})
 
-		Net:Fire(context, gunTool.Name)
+		ClientVetraContext.Net:Fire(context, gunTool.Name)
 	end
 
 	self:DisplayGunEffects(gunTool)
@@ -508,9 +496,10 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 
 			local gunData = GunData[gunTool.Name]
 			local now = os.clock()
-			if PlayerContext.LastAttacked and now - PlayerContext.LastAttacked < gunData.ShotDelay then
+			if now - LastShot < gunData.ShotDelay then
 				return
 			end
+			LastShot = now
 			local currAmmo, _ = GunNetwork:fetch("GetAmmoCount")
 
 			-- no ammo, return early
@@ -521,7 +510,6 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 				return
 			end
 			self:ShootGun(gunTool, gunData)
-			PlayerContext.LastAttacked = now
 		end))
 	end)
 

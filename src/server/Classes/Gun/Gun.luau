@@ -105,7 +105,7 @@ function Gun:GetSpreadDirection(baseDirection: Vector3, maxDegrees: number)
 	return spreadCFrame.LookVector
 end
 
-function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
+function Gun:SpreadShot()
 	local pelletCount = GunData[self.GunName].PelletsPerShot
 	local maxSpreadAngle = GunData[self.GunName].MaxSpreadAngle
 	local projectileData = GunData[self.GunName].ProjectileData
@@ -119,40 +119,21 @@ function Gun:SpreadShot(adsDir: Vector3?, adsPosition: Vector3?)
 		return
 	end
 
-	-- If ADS...
-	if adsDir and adsPosition then
-		for _ = 1, pelletCount do
-			local spreadDir = self:GetSpreadDirection(adsDir, maxSpreadAngle)
-			local context = ProjectileContext.BulletContext.new({
-				Origin = adsPosition,
-				Direction = spreadDir,
-				Speed = self.Speed,
-				RaycastParams = self.RaycastParams,
-			})
+	for _ = 1, pelletCount do
+		local spreadDir = self:GetSpreadDirection(self.ShootPoint.WorldAxis, maxSpreadAngle)
+		local context = ProjectileContext.BulletContext.new({
+			Origin = self.ShootPoint.WorldPosition,
+			Direction = spreadDir,
+			Speed = self.Speed,
+			RaycastParams = self.RaycastParams,
+		})
 
-			context.UserData.Owner = self.PlayerRef
-			context.UserData.Damage = self.Damage
-			context.UserData.ProjectileType = "Bullet"
-			context.UserData.GunType = self.GunType
-			ProjectileContext.Solver:Fire(context, projectileData)
-		end
-	else
-		for _ = 1, pelletCount do
-			local spreadDir = self:GetSpreadDirection(self.ShootPoint.WorldCFrame.LookVector, maxSpreadAngle)
-			local context = ProjectileContext.BulletContext.new({
-				Origin = self.ShootPoint.WorldPosition,
-				Direction = spreadDir,
-				Speed = self.Speed,
-				RaycastParams = self.RaycastParams,
-			})
+		context.UserData.Owner = self.PlayerRef
+		context.UserData.Damage = self.Damage
+		context.UserData.ProjectileType = "Bullet"
+		context.UserData.GunType = self.GunType
 
-			context.UserData.Owner = self.PlayerRef
-			context.UserData.Damage = self.Damage
-			context.UserData.ProjectileType = "Bullet"
-			context.UserData.GunType = self.GunType
-
-			ProjectileContext.Solver:Fire(context, projectileData)
-		end
+		ProjectileContext.Solver:Fire(context, projectileData)
 	end
 end
 
@@ -162,8 +143,8 @@ function Gun:UpdateAmmo(amount: number)
 	self.CurrentAmmo = math.clamp(self.CurrentAmmo, 0, self.MaxAmmo)
 end
 
--- if adsPosition and adsDir is specified, we shoot from middle of screen
-function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
+-- This is for NPCS, player shooting is handled on client via VetraNet
+function Gun:ShootGun()
 	local now = os.clock()
 	if now - self.LastShot < self.ShotDelay then
 		return false
@@ -178,9 +159,9 @@ function Gun:ShootGun(adsPosition: Vector3?, adsDir: Vector3?)
 	end
 
 	if self.GunType == "Shotgun" then
-		self:SpreadShot(adsDir, adsPosition)
+		self:SpreadShot()
 	else
-		self:SingleShot(adsDir, adsPosition)
+		self:SingleShot()
 	end
 
 	self:UpdateAmmo(-1)

@@ -10,8 +10,8 @@ local Net = VetraNet.new(Solver, VetraRegistry, {
 	Mode = Enums.NetworkMode.SharedAuthority,
 	MaxOriginTolerance = 20,
 	MaxConcurrentPerPlayer = 30,
-	TokensPerSecond = 10,
-	BurstLimit = 20,
+	TokensPerSecond = 3,
+	BurstLimit = 6,
 	ReplicateState = true,
 })
 local VetraSignals = Solver:GetSignals()

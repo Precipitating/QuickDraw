@@ -1,9 +1,13 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
+local ClientVetraContext =
+	require(StarterPlayer.StarterPlayerScripts.Client.ClientProjectilesHandler.ClientVetraContext)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local BehaviorBuilder = require(ReplicatedStorage.Shared.Vetra.Builders.BehaviorBuilder)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 local ClientThrowableHandler = {}
@@ -12,16 +16,39 @@ ClientThrowableHandler.janitor = Janitor.new()
 
 local ThrowableEquipConn = nil
 local ThrowableDisconnectConn = nil
+local ThrowableRaycastParams = RaycastParams.new()
+ThrowableRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
+local LastThrown = 0
 
 function ClientThrowableHandler:Throw(throwable: Tool)
+	warn("throw called")
 	local cameraLookVector = workspace.CurrentCamera.CFrame.LookVector
-	local thrown = self.networker:fetch("ThrowProjectile", cameraLookVector)
+	ThrowableRaycastParams.FilterDescendantsInstances = { throwable, PlayerContext.Character }
+	local head = PlayerContext.BodyParts["Head"]
+	local launchPos = head.Position + Vector3.new(0, 2, 0)
+	local throwableData = ThrowableData[throwable.Name]
+	local context = ClientVetraContext.Vetra.BulletContext.new({
+		Origin = launchPos,
+		Direction = cameraLookVector,
+		Speed = throwableData.Velocity,
+		RaycastParams = ThrowableRaycastParams,
+	})
 
-	if thrown then
-		SoundManager.Play(ThrowableData[throwable.Name].ThrowSound)
+	local handle: Instance? = throwable:FindFirstChild("Handle")
+	if handle and handle:IsA("BasePart") then
+		handle.Transparency = 1
 	end
 
-	return thrown
+	ClientVetraContext.Net:Fire(context, throwable.Name)
+
+	SoundManager.Play(ThrowableData[throwable.Name].ThrowSound)
+	self.networker:fire("OnClientThrow")
+
+	if throwable and handle and handle:IsA("BasePart") then
+		task.delay(ThrowableData[throwable.Name].ThrowDelay, function()
+			handle.Transparency = 0
+		end)
+	end
 end
 
 function ClientThrowableHandler:ConnectThrowable(throwable: Tool?)
@@ -47,6 +74,19 @@ function ClientThrowableHandler:ConnectThrowable(throwable: Tool?)
 			if PlayerContext.Humanoid.Health <= 0 then
 				return
 			end
+
+			-- ammo check on server
+			local ammo = self.networker:fetch("GetAmmo")
+			if not ammo or ammo <= 0 then
+				return
+			end
+
+			-- cooldown check
+			local now = os.clock()
+			if now - LastThrown < ThrowableData[throwable.Name].ThrowDelay then
+				return
+			end
+			LastThrown = now
 
 			self:Throw(throwable)
 		end))

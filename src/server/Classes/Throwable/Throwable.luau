@@ -48,6 +48,16 @@ function Throwable.new(throwableName: string, humanRef: Human?)
 
 	return self
 end
+function Throwable:UpdateAmmo(amount: number)
+	self.CurrentAmmo = math.max(0, self.CurrentAmmo + amount)
+
+	if self.CurrentAmmo <= 0 then
+		self:Remove()
+		return false
+	end
+
+	return true
+end
 
 function Throwable:Throw(cameraLookVector: Vector3)
 	if not self.CanThrow then
@@ -70,20 +80,14 @@ function Throwable:Throw(cameraLookVector: Vector3)
 		RaycastParams = self.RaycastParams,
 	})
 
-	context.UserData.Owner = self.Owner
-	context.UserData.Name = self.Name
+	context.UserData.Class = self
 	context.UserData.ProjectileType = "Throwable"
 	context.UserData.Data = ThrowableData[self.Name]
 
-	-- local cosmetic =
-	-- 	BehaviorBuilder.Inherit(self.ProjectileData):Cosmetic():Provider(self.CosmeticBulletTemplate):Done():Build()
-
 	ProjectileContext.Solver:Fire(context, ThrowableData[self.Name].ProjectileData)
 
-	self.CurrentAmmo = math.max(0, self.CurrentAmmo - 1)
-
-	if self.CurrentAmmo <= 0 then
-		self:Remove()
+	local updated = self:UpdateAmmo(-1)
+	if not updated then
 		return false
 	end
 
@@ -122,8 +126,6 @@ function Throwable:Remove()
 			toolInHands:Destroy()
 		end
 	end
-
-	self:Destroy()
 end
 
 function Throwable:AddThrowableToInventory()
