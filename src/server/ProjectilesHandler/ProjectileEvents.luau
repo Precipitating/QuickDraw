@@ -172,7 +172,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	if not result then
 		return
 	end
-	print(`OnHit fired by server {result.Instance.Name}`)
+	warn(`OnHit fired by server {result.Instance.Name}`)
 
 	-- GUN PROJECTILES
 	if context.UserData.ProjectileType == "Bullet" then
@@ -219,7 +219,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 	if not result then
 		return
 	end
-	print(`OnHit fired by player {result.Instance.Name}`)
+	warn(`OnHit fired by player. Hit object: {result.Instance.Name}`)
 
 	-- GUN PROJECTILES
 	if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
@@ -231,7 +231,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 		self:PlayerReduceAmmo(context.UserData.Owner)
 		local gunData = GunData[currentGunName]
 		if not gunData then
-			warn("Gundata missing from OnProjectileHitReceivePlayer")
+			warn("GunData missing from OnProjectileHitReceivePlayer")
 			return
 		end
 

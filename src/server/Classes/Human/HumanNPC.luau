@@ -42,7 +42,7 @@ function HumanNPC.new(humanoid: Humanoid, classType: string)
 
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 
-	print(`New human class initiated for NPC {self.Character.Name}`)
+	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
 end
 

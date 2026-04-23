@@ -1,6 +1,7 @@
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local DestroyableNetwork = require(script.Parent.DestroyableNetwork)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -147,10 +148,8 @@ function Destroyable:Destroy()
 		self:ApplyRadiusDamage()
 	end
 
-	local destroyEffect = if self.DestroyParticle then Effects[self.DestroyParticle]:Clone() else nil
-
-	if destroyEffect then
-		self:SpawnDestroyVFX(destroyEffect)
+	if self.DestroyParticle then
+		DestroyableNetwork:DisplayDestroyParticle(self.DestroyParticle, self.ModelRef:GetPivot().Position)
 	end
 
 	self.ModelRef:Destroy()

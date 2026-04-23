@@ -44,7 +44,6 @@ function Fallback:Enter(previous, fallbackData)
 
 	-- 1. Find a suitable position around player to go to
 	local randomDistWithinRange = RandomModule.GetRandomIntBetween(self.AI.MinAttackDistance, self.AI.MaxAttackDistance)
-	print(randomDistWithinRange)
 	local safePos = self.AI:FindAnglePosition(human.HRP.Position, target, nil, randomDistWithinRange, false)
 
 	-- 1.1 (TERMINATION) If we can't find a fallback position, got to attack state (shoots at current position)

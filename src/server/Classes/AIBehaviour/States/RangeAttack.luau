@@ -22,7 +22,7 @@ function RangeAttack.new(machine, ai)
 end
 
 function RangeAttack:Enter(previous, targetData: any)
-	warn("Entered RangeAttack from", previous)
+	warn(`[SERVER] {self.Human.Character.Name} Entered RangeAttack from {previous}`)
 	while self.Human.IsRagdolled do
 		task.wait(1)
 	end

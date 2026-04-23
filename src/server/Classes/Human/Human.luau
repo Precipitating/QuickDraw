@@ -403,13 +403,13 @@ function Human:DisableLimb(limbName: string)
 	limb.CanCollide = false
 	if animationConstraint then
 		animationConstraint.Enabled = false
-		print(`${animationConstraint.Name} animation constraint disabled!`)
+		print(`{animationConstraint.Name} animation constraint disabled!`)
 	end
 
 	if ballSocket then
 		ballSocket.LimitsEnabled = false
 		ballSocket.MaxFrictionTorque = 0
-		print(`${limbName} ball socket disabled!`)
+		print(`{limbName} ball socket disabled!`)
 	end
 
 	if self.DisabledBodyParts[limbName] == false then

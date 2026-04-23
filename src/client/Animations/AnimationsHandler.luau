@@ -20,7 +20,7 @@ function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)
 		local loadedAnim: Animation = Instance.new("Animation")
 		loadedAnim.AnimationId = `rbxassetid://{AnimationIds[key]}`
 		LoadedAnimations[key] = animator:LoadAnimation(loadedAnim)
-		print(`Loaded {key} animation`)
+		print(`[CLIENT] Loaded {key} animation`)
 	end
 end
 

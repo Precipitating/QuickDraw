@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local ClientVetraContext =
 	require(StarterPlayer.StarterPlayerScripts.Client.ClientProjectilesHandler.ClientVetraContext)
+local EffectsDisplayer = require(StarterPlayer.StarterPlayerScripts.Client.VisualEffectsHandler.EffectsDisplayer)
 local CrosshairHandler = require(script.Parent.Parent.GUI.CrosshairHandler)
 local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local GunConfig = require(script.Parent.GunConfig)
@@ -95,12 +96,7 @@ function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
 end
 
 function ClientGunHandler:DisplayBulletHole(cframeTarget: CFrame?)
-	if not cframeTarget then
-		warn("Client received an invalid cframeTarget when showing a bullet hole!")
-		return
-	end
-	local availableBulletHole: Part = PoolHandler.BulletPool:Acquire()
-	availableBulletHole:PivotTo(cframeTarget)
+	EffectsDisplayer:DisplayBulletHole(cframeTarget)
 end
 
 function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
@@ -445,10 +441,10 @@ function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
 end
 
 function ClientGunHandler:ConnectGun(gunTool: Tool?)
-	print("connecting gun")
 	if not gunTool then
 		error("Can't connect guns, tool reference not valid!")
 	end
+	warn(`[CLIENT] Connecting {gunTool.Name}`)
 
 	if GunEquipConn and GunDisconnectConn then
 		GunEquipConn:Disconnect()
@@ -514,7 +510,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 	end)
 
 	GunDisconnectConn = gunTool.Unequipped:Connect(function()
-		print("Disconnecting gun connections!")
+		warn(`[CLIENT] Disconnecting {gunTool.Name} connection`)
 		HoldingRMB = false
 		self.janitor:Cleanup()
 		ContextActionService:UnbindAction("ADSAction")
@@ -538,20 +534,7 @@ function ClientGunHandler:DisconnectGun()
 end
 
 function ClientGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
-	assert(position, "Can't apply blood to position, POSITION is nil on DisplayBloodHit")
-	assert(normal, "Can't apply blood to position, normal is nil on DisplayBloodHit")
-
-	local hitPos = CFrame.lookAt(position, position + normal)
-
-	local availableBlood: Part = PoolHandler.BloodPool:Acquire()
-	assert(availableBlood, "Can't find available blood from its pool, does it exist?")
-
-	availableBlood:PivotTo(hitPos)
-
-	-- enable blood and disable after a short time
-	for _, particle in availableBlood:GetChildren() do
-		particle:Emit(1)
-	end
+	EffectsDisplayer:DisplayBloodHit(position, normal)
 end
 
 return ClientGunHandler

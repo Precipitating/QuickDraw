@@ -4,6 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local DestroyableNetwork = require(ServerScriptService.Server.Classes.Environment.DestroyableNetwork)
 local ServerGunHandler = require(ServerScriptService.Server.Classes.Gun.ServerGunHandler)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
@@ -90,19 +91,7 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 	local spreadDuration = inflictingDamageData.SpreadDuration
 
 	if spreadParticleName then
-		local spreadParticle = if Effects[spreadParticleName] then Effects[spreadParticleName]:Clone() else nil
-
-		if not spreadParticle then
-			warn("[SpawnFragments] Missing spread particle reference")
-			return
-		end
-
-		-- visualize the effect
-		if spreadParticle then
-			spreadParticle.Parent = damagedLimb
-			spreadParticle:Emit(1)
-			Debris:AddItem(spreadParticle, spreadDuration)
-		end
+		DestroyableNetwork:DisplaySpreadParticle(spreadParticleName, spreadDuration, damagedLimb)
 	end
 
 	task.spawn(function()

@@ -7,10 +7,10 @@ function ClientUtility.ToggleControls(manualSet: boolean)
 	if manualSet ~= nil then
 		if manualSet == true then
 			Controls:Enable()
-			print("Controls enabled")
+			warn(`[CLIENT] Controls enabled`)
 		else
 			Controls:Disable()
-			print("Controls disabled")
+			warn(`[CLIENT] Controls disabled`)
 		end
 	end
 end

@@ -25,7 +25,7 @@ local function AddNPCClass(taggedNPC: Model, classType: string)
 
 	NPCEvents.CurrentSpawnedNPCS += 1
 
-	print(NPCEvents.CurrentSpawnedNPCS)
+	print(`[SERVER] NPCs spawned: {NPCEvents.CurrentSpawnedNPCS}`)
 
 	return humanNPC
 end

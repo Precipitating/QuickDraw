@@ -7,7 +7,6 @@ local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
-local BehaviorBuilder = require(ReplicatedStorage.Shared.Vetra.Builders.BehaviorBuilder)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 local ClientThrowableHandler = {}
@@ -52,11 +51,10 @@ function ClientThrowableHandler:Throw(throwable: Tool)
 end
 
 function ClientThrowableHandler:ConnectThrowable(throwable: Tool?)
-	print("Connecting Throwable")
-
 	if not throwable then
 		error("Can't connect throwable, tool reference not valid!")
 	end
+	warn(`[CLIENT] Connecting {throwable.Name}`)
 
 	if ThrowableEquipConn and ThrowableDisconnectConn then
 		ThrowableEquipConn:Disconnect()
@@ -93,7 +91,7 @@ function ClientThrowableHandler:ConnectThrowable(throwable: Tool?)
 	end)
 
 	ThrowableDisconnectConn = throwable.Unequipped:Connect(function()
-		print("Disconnecting throwable connections!")
+		warn(`[CLIENT] Disconnecting {throwable.Name} connection`)
 		self.janitor:Cleanup()
 	end)
 end

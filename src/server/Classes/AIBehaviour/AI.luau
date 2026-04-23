@@ -70,7 +70,7 @@ function AI:Initialize()
 	end)
 
 	self.NoobPath.Error:Connect(function()
-		print("NPC errored on pathfinding, defaulting to default state")
+		warn("[SERVER] NPC errored on pathfinding, defaulting to default state")
 		self.StateMachine:Transition(self.DefaultState.Name, self.DefaultState.Data)
 	end)
 end

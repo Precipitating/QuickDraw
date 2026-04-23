@@ -37,7 +37,7 @@ function Seek:PredictTarget(target: Model | BasePart): Vector3
 end
 
 function Seek:Enter(previous, seekData)
-	warn("Entered Seek from", previous)
+	warn(`[SERVER] {self.Human.Character.Name} Entered Seek from {previous}`)
 	self.AI:StateChangeReset()
 	if not seekData then
 		warn("No last seen target, back to patrol")

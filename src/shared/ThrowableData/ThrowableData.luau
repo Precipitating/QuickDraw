@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local isClient = not game:GetService("RunService"):IsServer()
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
-
+local isServer = game:GetService("RunService"):IsServer()
 local ThrowableData = {
 	Dynamite = {
 		MaxAmmo = 1,
@@ -22,11 +21,13 @@ local ThrowableData = {
 			:Bounce()
 			:Max(1)
 			:Done()
-			:Cosmetic()
-			:AutoDelete(false)
-			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.DynamiteCosmetic)
-			:Container(workspace.ProjectilesFolder)
-			:Done()
+			:When(isServer, function(b)
+				b:Cosmetic()
+					:AutoDelete(false)
+					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.DynamiteCosmetic)
+					:Container(workspace.ProjectilesFolder)
+					:Done()
+			end)
 			:Build(),
 	},
 
@@ -49,10 +50,13 @@ local ThrowableData = {
 			:Bounce()
 			:Max(0)
 			:Done()
-			:Cosmetic()
-			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.KetchumGrenadeCosmetic)
-			:Container(workspace.ProjectilesFolder)
-			:Done()
+			:When(isServer, function(b)
+				b:Cosmetic()
+					:AutoDelete(false)
+					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.KetchumGrenadeCosmetic)
+					:Container(workspace.ProjectilesFolder)
+					:Done()
+			end)
 			:Physics()
 			:MinSpeed(10)
 			:Done()
@@ -81,10 +85,13 @@ local ThrowableData = {
 			:Bounce()
 			:Max(0)
 			:Done()
-			:Cosmetic()
-			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.MolotovCosmetic)
-			:Container(workspace.ProjectilesFolder)
-			:Done()
+			:When(isServer, function(b)
+				b:Cosmetic()
+					:AutoDelete(false)
+					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.MolotovCosmetic)
+					:Container(workspace.ProjectilesFolder)
+					:Done()
+			end)
 			:Physics()
 			:MinSpeed(8)
 			:Done()
@@ -92,10 +99,10 @@ local ThrowableData = {
 	},
 }
 
-for _, throwable in ThrowableData do
-	table.freeze(throwable)
-end
+-- for _, throwable in ThrowableData do
+-- 	table.freeze(throwable)
+-- end
 
-table.freeze(ThrowableData)
+-- table.freeze(ThrowableData)
 
 return ThrowableData
