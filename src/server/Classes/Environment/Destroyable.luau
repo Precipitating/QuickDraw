@@ -1,13 +1,12 @@
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local DestroyableNetwork = require(script.Parent.DestroyableNetwork)
+local ServerEffectsDisplayer = require(script.Parent.ServerEffectsDisplayer)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local DestroyableData = require(ReplicatedStorage.Shared.DestroyableData)
-local Effects = ReplicatedStorage.Shared.Effects
 -- Destroyable environmental objects that may produce a unique effect
 local Destroyable = {}
 Destroyable.__index = Destroyable
@@ -121,23 +120,6 @@ function Destroyable:ApplyRadiusDamage()
 	end
 end
 
-function Destroyable:SpawnDestroyVFX(destroyEffect: ParticleEmitter)
-	local cframe: CFrame = self.ModelRef:GetPivot()
-	local pos: Vector3 = cframe.Position
-
-	local explosion: Part = Instance.new("Part")
-	explosion.Parent = workspace
-	explosion.CanCollide = false
-	explosion.CanQuery = false
-	explosion.Transparency = 1
-	explosion.Anchored = true
-	explosion.Position = pos
-	destroyEffect.Parent = explosion
-	destroyEffect:Emit(25)
-
-	Debris:AddItem(explosion, 0.2)
-end
-
 function Destroyable:Destroy()
 	if not self.ModelRef then
 		return
@@ -149,7 +131,7 @@ function Destroyable:Destroy()
 	end
 
 	if self.DestroyParticle then
-		DestroyableNetwork:DisplayDestroyParticle(self.DestroyParticle, self.ModelRef:GetPivot().Position)
+		ServerEffectsDisplayer:DisplayDestroyParticle(self.DestroyParticle, self.ModelRef:GetPivot().Position)
 	end
 
 	self.ModelRef:Destroy()

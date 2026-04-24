@@ -1,22 +1,54 @@
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
-local DestroyableData = require(ReplicatedStorage.Shared.DestroyableData)
+local Networker = require(ReplicatedStorage.Packages.Networker).client
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PoolHandler = require(StarterPlayer.StarterPlayerScripts.Client.Pools.PoolHandler)
 local Particles = ReplicatedStorage.Shared.Effects
 local EffectsDisplayer = {}
 
-function EffectsDisplayer:DisplayBulletHole(position: CFrame?)
-	if not position then
+EffectsDisplayer.networker = Networker.new("EffectsDisplayerNetwork", EffectsDisplayer)
+
+function EffectsDisplayer:DisplayBulletHole(cframeTarget: CFrame?)
+	if not cframeTarget then
 		warn("Client received an invalid cframeTarget when showing a bullet hole!")
 		return
 	end
 
 	local availableBulletHole: Part = PoolHandler.BulletPool:Acquire()
-	availableBulletHole:PivotTo(position)
+	availableBulletHole:PivotTo(cframeTarget)
 end
 
-function EffectsDisplayer:DisplayDestroyableExplosion(destroyableParticleName: string, position: Vector3)
+function EffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
+	if not gunTool then
+		warn("Client gunTool invalid")
+		return
+	end
+	local muzzleFolder = Utility.GetInstance(gunTool, true, "MuzzleFlash", "Attachment")
+
+	if not muzzleFolder then
+		return
+	end
+
+	for _, effect in muzzleFolder:GetChildren() do
+		if effect:IsA("SpotLight") then
+			effect.Enabled = true
+			task.delay(0.1, function()
+				if effect then
+					effect.Enabled = false
+				end
+			end)
+			continue
+		end
+		if not effect:IsA("ParticleEmitter") then
+			continue
+		end
+
+		effect:Emit(1)
+	end
+end
+
+function EffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string, position: Vector3)
 	local explosion: Part = Instance.new("Part")
 	if not destroyableParticleName then
 		warn(`[CLIENT] Can't show explosion particle, missing explosion name data`)

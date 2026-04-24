@@ -11,7 +11,6 @@ local CrosshairHandler = require(script.Parent.Parent.GUI.CrosshairHandler)
 local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local GunConfig = require(script.Parent.GunConfig)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local PoolHandler = require(script.Parent.Parent.Pools.PoolHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local Ripple = require(ReplicatedStorage.Packages.Ripple)
@@ -64,39 +63,6 @@ gunRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 function ClientGunHandler:StopReloading()
 	PlayerContext.Reloading = false
-end
-
-function ClientGunHandler:ActivateMuzzleFlash(gunTool: Tool?)
-	if not gunTool then
-		warn("Client gunTool invalid")
-		return
-	end
-	local muzzleFolder = Utility.GetInstance(gunTool, true, "MuzzleFlash", "Attachment")
-
-	if not muzzleFolder then
-		return
-	end
-
-	for _, effect in muzzleFolder:GetChildren() do
-		if effect:IsA("SpotLight") then
-			effect.Enabled = true
-			task.delay(0.1, function()
-				if effect then
-					effect.Enabled = false
-				end
-			end)
-			continue
-		end
-		if not effect:IsA("ParticleEmitter") then
-			continue
-		end
-
-		effect:Emit(1)
-	end
-end
-
-function ClientGunHandler:DisplayBulletHole(cframeTarget: CFrame?)
-	EffectsDisplayer:DisplayBulletHole(cframeTarget)
 end
 
 function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
@@ -356,7 +322,9 @@ end
 function ClientGunHandler:DisplayGunEffects(gunTool: Tool)
 	local gunData = GunData[gunTool.Name]
 
-	self:ActivateMuzzleFlash(gunTool)
+	EffectsDisplayer:DisplayMuzzleFlash(gunTool)
+	EffectsDisplayer.networker:fire("DisplayMuzzleFlashToOthers", gunTool)
+
 	self:ApplyGunRecoil(gunTool)
 	SoundManager.Play(gunData.ShootSoundName, {
 		Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,

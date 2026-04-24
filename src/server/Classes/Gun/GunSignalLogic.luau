@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local GunSignals = require(script.Parent.GunSignals)
@@ -13,14 +14,6 @@ return {
 	GunSignals.ConnectGunSignal:Connect(function(player: Player, gun: Tool)
 		print("Gun connect signal fired!")
 		ServerGunHandler.networker:fire(player, "ConnectGun", gun)
-	end),
-
-	GunSignals.FireMuzzleFlash:Connect(function(player: Player?, gunTool: Tool?)
-		if not gunTool then
-			warn("[GunSignals.FireMuzzleFlash] gun tool ref invalid")
-			return
-		end
-		ServerGunHandler:ActivateMuzzleFlash(player, gunTool)
 	end),
 
 	GunSignals.PlayerHit:Connect(
@@ -99,12 +92,6 @@ return {
 			DamageModule:ApplyInflictingDamage(shotData)
 		end
 	),
-
-	GunSignals.DisplayBulletHole:Connect(function(cframeTarget: CFrame?)
-		assert(cframeTarget, "[GunSignals.DisplayBulletHole] cframeTarget is nil!")
-
-		ServerGunHandler:DisplayBulletHole(cframeTarget)
-	end),
 
 	GunSignals.StoppedReloading:Connect(function(player: Player)
 		ServerGunHandler:StopReloading(player)

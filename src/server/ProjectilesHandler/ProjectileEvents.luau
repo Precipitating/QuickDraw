@@ -6,6 +6,7 @@ local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ProjectileContext = require(script.Parent.ProjectileContext)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
@@ -13,7 +14,11 @@ local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerM
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Effects = ReplicatedStorage.Shared.Effects
 local ProjectileEvents = {}
-
+local math_rad = math.rad
+local math_sqrt = math.sqrt
+local math_cos = math.cos
+local math_abs = math.abs
+local math_sin = math.sin
 type Destroyable = ClassTypes.Destroyable
 
 local function GetHumanoidFromHit(instance: Instance): Humanoid?
@@ -62,7 +67,6 @@ function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResul
 end
 
 function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwableData)
-	-- damage bodyparts if hits player
 	local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
 	if isModel then
 		local humanoid = isModel:FindFirstChild("Humanoid")
@@ -80,10 +84,27 @@ function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwable
 					isPlayer
 				)
 			end
+			return true
 		end
 	end
+	return false
 end
+local function RandomConeDirection(BaseDirection: Vector3, HalfAngleDeg: number): Vector3
+	local HalfAngleRad = math_rad(HalfAngleDeg)
+	local Phi = RandomModule.GetRandomDecimalBetween(0, math.pi * 2)
+	local CosTheta = RandomModule.GetRandomDecimalBetween(math_cos(HalfAngleRad), 1)
+	local SinTheta = math_sqrt(1 - CosTheta * CosTheta)
 
+	local PerpendicularA =
+		BaseDirection:Cross(math_abs(BaseDirection.X) < 0.9 and Vector3.new(1, 0, 0) or Vector3.new(0, 1, 0)).Unit
+	local PerpendicularB = BaseDirection:Cross(PerpendicularA).Unit
+
+	return (
+		BaseDirection * CosTheta
+		+ PerpendicularA * (SinTheta * math_cos(Phi))
+		+ PerpendicularB * (SinTheta * math_sin(Phi))
+	).Unit
+end
 function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableData)
 	-- damage bodyparts if hits player
 	local instance = hit.Instance
@@ -98,38 +119,40 @@ function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableDa
 		if throwableData.Type == "Explosive" then
 			destroyableClass:Damage(throwableData.Damage)
 		end
+
+		return true
 	end
+
+	return false
 end
 
-function ProjectileEvents:SpawnFragments(spawnPos: Vector3, owner, throwableData)
+function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, throwableData)
+	if not raycastResult then
+		warn(`[SERVER] Can't spawn fragments, raycast result is nil`)
+		return
+	end
+
 	for _ = 1, throwableData.FragmentCount do
-		local dir = RandomModule.GetNextUnitVector()
+		local pos = raycastResult.Position
+		local normal = raycastResult.Normal
+		local randomDir = RandomConeDirection(normal, 90)
 
-		local hit = workspace:Raycast(spawnPos, dir * throwableData.FragmentRange)
-
-		-- if fragment hits something damagable, it should apply damage and cease to exist
-		if hit then
-			local hitInstance = hit.Instance
-			if hitInstance:FindFirstAncestorOfClass("Accessory") then
-				continue
-			end
-			-- handle hitting player
-			if self:FragmentHitPlayer(hit, owner, throwableData) then
-				continue
-			end
-
-			-- handle hitting destroyables
-			if self:FragmentHitDestroyable(hit, throwableData) then
-				continue
-			end
-		end
+		local context = ProjectileContext.BulletContext.new({
+			Origin = pos,
+			Direction = randomDir,
+			Speed = 200, -- fast initial burst, drag bleeds it off quickly
+		})
+		context.UserData.ProjectileType = "Shrapnel"
+		context.UserData.Data = throwableData
+		context.UserData.Owner = owner
+		ProjectileContext.Solver:Fire(context, "Shrapnel")
 
 		--debug rays
 		-- local debugPart = Instance.new("Part")
 		-- debugPart.CanCollide = false
 		-- debugPart.CanTouch = false
 		-- debugPart.CanQuery = false
-		-- debugPart.CFrame = CFrame.lookAt(spawnPos, spawnPos + dir) * CFrame.new(0, 0, -throwableData.FragmentRange / 2)
+		-- debugPart.CFrame = CFrame.lookAt(pos, pos + randomDir) * CFrame.new(0, 0, -throwableData.FragmentRange / 2)
 		-- debugPart.Size = Vector3.new(0.1, 0.1, throwableData.FragmentRange)
 		-- debugPart.Parent = workspace
 	end
@@ -164,7 +187,7 @@ end
 function ProjectileEvents:GunHitEnvironment(raycastResult: RaycastResult)
 	-- hit environment
 	local hitPos = CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
-	GunSignals.DisplayBulletHole:Fire(hitPos)
+	ServerEffectsDisplayer:DisplayBulletHole(hitPos)
 end
 
 function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastResult?)
@@ -172,10 +195,11 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	if not result then
 		return
 	end
-	warn(`OnHit fired by server {result.Instance.Name}`)
+	--warn(`OnHit fired by server {result.Instance.Name}`)
+	local data = context.UserData
 
 	-- GUN PROJECTILES
-	if context.UserData.ProjectileType == "Bullet" then
+	if data.ProjectileType == "Bullet" then
 		local hitPlayer = ProjectileEvents:GunHitPlayer(context.UserData, result)
 		if hitPlayer then
 			return
@@ -189,8 +213,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 		ProjectileEvents:GunHitEnvironment(result)
 
 		-- THROWABLE PROJECTILES
-	elseif context.UserData.ProjectileType == "Throwable" then
-		local data = context.UserData
+	elseif data.ProjectileType == "Throwable" then
 		local throwableData = data.Data
 		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
 		task.delay(throwableData.DetonationTime, function()
@@ -205,12 +228,34 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 				{ MaxDistance = 150 }
 			)
 
-			self:OnThrowImpact(hitPos, throwableData.ImpactParticle)
-			self:SpawnFragments(hitPos + Vector3.new(0, 1, 0), data.Class.Owner, throwableData)
+			ServerEffectsDisplayer:DisplayDestroyParticle(throwableData.ImpactParticle, hitPos)
+			self:SpawnFragments(result, data.Class.Owner, throwableData)
 			if data.Class.CurrentAmmo <= 0 then
 				data.Class:Destroy()
 			end
 		end)
+		-- SHRAPNEL PROJECTILES
+	elseif data.ProjectileType == "Shrapnel" then
+		self:OnFragmentHit(context, result)
+	end
+end
+
+function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
+	-- if fragment hits something damagable, it should apply damage and cease to exist
+	if not result then
+		return
+	end
+
+	local throwableData = context.UserData.Data
+	local owner = context.UserData.Owner
+	-- handle hitting player
+	if self:FragmentHitPlayer(result, owner, throwableData) then
+		return
+	end
+
+	-- handle hitting destroyables
+	if self:FragmentHitDestroyable(result, throwableData) then
+		return
 	end
 end
 
@@ -270,7 +315,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			)
 
 			self:OnThrowImpact(hitPos, throwableData.ImpactParticle)
-			self:SpawnFragments(hitPos + Vector3.new(0, 1, 0), data.Owner, throwableData)
+			self:SpawnFragments(result, data.Owner, throwableData)
 
 			if throwable.CurrentAmmo <= 0 then
 				throwable:Destroy()
@@ -298,7 +343,9 @@ function ProjectileEvents:Initialize()
 	-- for NPCS/Server
 	ProjectileContext.VetraSignals.OnHit:Connect(function(context, result, velocity)
 		if context.UserData.Owner and context.UserData.Owner:IsA("Player") then
-			return
+			if context.UserData.ProjectileType ~= "Shrapnel" then
+				return
+			end
 		end
 		self:OnProjectileHitReceiveServer(context, result)
 	end)

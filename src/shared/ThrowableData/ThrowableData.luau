@@ -3,6 +3,7 @@ local Vetra = require(ReplicatedStorage.Shared.Vetra)
 local isServer = game:GetService("RunService"):IsServer()
 local ThrowableData = {
 	Dynamite = {
+		Name = "Dynamite",
 		MaxAmmo = 1,
 		ThrowDelay = 5,
 		Damage = 20,
@@ -16,6 +17,7 @@ local ThrowableData = {
 		DetonationSound = "DynamiteExplosion",
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
+		ShrapnelSpeed = 200,
 		ProjectileData = Vetra.BehaviorBuilder
 			.Grenade()
 			:Bounce()
@@ -32,6 +34,7 @@ local ThrowableData = {
 	},
 
 	KetchumGrenade = {
+		Name = "KetchumGrenade",
 		MaxAmmo = 1,
 		ThrowDelay = 5,
 		Damage = 30,
@@ -64,11 +67,12 @@ local ThrowableData = {
 	},
 
 	Molotov = {
+		Name = "Molotov",
 		MaxAmmo = 1,
 		ThrowDelay = 5,
 		Damage = 2,
 		Cost = 250,
-		Velocity = 150,
+		Velocity = 80,
 		DetonationTime = 0,
 		EffectDuration = 5,
 		FragmentRange = 20,

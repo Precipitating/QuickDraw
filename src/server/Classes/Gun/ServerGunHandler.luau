@@ -45,53 +45,7 @@ function ServerGunHandler:StopReloading(player: Player)
 	self.networker:fire(player, "StopReloading")
 end
 
-function ServerGunHandler:ActivateMuzzleFlash(player: Player?, gunTool: Tool?)
-	if not gunTool then
-		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
-		return
-	end
-	local shotPos = gunTool:FindFirstChild("Frame", true)
-	if not shotPos then
-		warn("ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
-		return
-	end
-
-	if player and player:IsA("Player") then
-		self.networker:fireAllExcept(player, "ActivateMuzzleFlash", gunTool)
-
-		ServerSoundHandler:Play3DOneShotToOthers(
-			player,
-			GunData[gunTool.Name].ShootSoundName,
-			shotPos:GetPivot(),
-			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
-		)
-	else
-		-- its an NPC, so fire all
-		self.networker:fireAll("ActivateMuzzleFlash", gunTool)
-		ServerSoundHandler:Play3DOneShotToOthers(
-			nil,
-			GunData[gunTool.Name].ShootSoundName,
-			shotPos:GetPivot(),
-			{ Pitch = 1 + (math.random() - 0.5) * 0.1, MaxDistance = 300 }
-		)
-	end
-
-	print(`Server -> Client Muzzle Flash`)
-end
-
-function ServerGunHandler:DisplayBulletHole(cframeTarget: CFrame?)
-	assert(cframeTarget, "[ServerGunHandler.DisplayBulletHole] cframeTarget is nil")
-	self.networker:fireAll("DisplayBulletHole", cframeTarget)
-end
-
-function ServerGunHandler:DisplayBloodHit(position: Vector3?, normal: Vector3?)
-	assert(position, "[ServerGunHandler.DisplayBulletHole] position is nil")
-	assert(normal, "[ServerGunHandler.DisplayBulletHole] normal is nil")
-	self.networker:fireAll("DisplayBloodHit", position, normal)
-end
-
 ServerGunHandler.networker = Networker.new("GunNetwork", ServerGunHandler, {
-	ServerGunHandler.ActivateMuzzleFlash,
 	ServerGunHandler.GetAmmoCount,
 	ServerGunHandler.Reload,
 })

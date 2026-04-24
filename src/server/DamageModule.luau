@@ -4,10 +4,8 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local DestroyableNetwork = require(ServerScriptService.Server.Classes.Environment.DestroyableNetwork)
-local ServerGunHandler = require(ServerScriptService.Server.Classes.Gun.ServerGunHandler)
+local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
-
 type Human = ClassTypes.Human
 type HumanPlayer = ClassTypes.HumanPlayer
 type HumanNPC = ClassTypes.HumanNPC
@@ -29,7 +27,6 @@ local LimbDamageMultiplier = {
 }
 
 local DamageModule = {}
-local Effects = ReplicatedStorage.Shared.Effects
 
 local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 	local highlight = Instance.new("Highlight")
@@ -91,7 +88,7 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 	local spreadDuration = inflictingDamageData.SpreadDuration
 
 	if spreadParticleName then
-		DestroyableNetwork:DisplaySpreadParticle(spreadParticleName, spreadDuration, damagedLimb)
+		ServerEffectsDisplayer:DisplaySpreadParticle(spreadParticleName, spreadDuration, damagedLimb)
 	end
 
 	task.spawn(function()
@@ -184,7 +181,7 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 	end
 
 	if typeof(hitObj) == "RaycastResult" then
-		ServerGunHandler:DisplayBloodHit(hitObj.Position, hitObj.Normal)
+		ServerEffectsDisplayer:DisplayBloodHit(hitObj.Position, hitObj.Normal)
 	end
 end
 

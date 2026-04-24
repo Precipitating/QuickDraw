@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunSignals = require(script.Parent.GunSignals)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -179,8 +180,8 @@ function Gun:ActivateMuzzleFlash()
 		return
 	end
 
-	-- if playerRef is nil, it'll be an NPC
-	GunSignals.FireMuzzleFlash:Fire(self.PlayerRef, self.Tool)
+	-- NPC should only call this, as its from server to client
+	ServerEffectsDisplayer:DisplayMuzzleFlash(self.Tool)
 end
 
 function Gun:Destroy()
