@@ -38,7 +38,6 @@ function ServerEffectsDisplayer:DisplayMuzzleFlashToOthers(player: Player?, gunT
 	if player and player:IsA("Player") then
 		self.networker:fireAllExcept(player, "DisplayMuzzleFlash", gunTool)
 
-		warn("OI")
 		ServerSoundHandler:Play3DOneShotToOthers(
 			player,
 			GunData[gunTool.Name].ShootSoundName,

@@ -44,10 +44,30 @@ end
 function ServerGunHandler:StopReloading(player: Player)
 	self.networker:fire(player, "StopReloading")
 end
+function ServerGunHandler:ReduceGunAmmo(player: Player)
+	if not player then
+		return
+	end
+	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 
+	if not humanClass then
+		warn("Can't deduce ammo, human class missing")
+		return
+	end
+
+	local gun = humanClass.CurrentGun
+
+	if not gun then
+		warn(`Can't reduce gun ammo,{player.Name} has no gun assigned`)
+		return
+	end
+
+	gun:UpdateAmmo(-1)
+end
 ServerGunHandler.networker = Networker.new("GunNetwork", ServerGunHandler, {
 	ServerGunHandler.GetAmmoCount,
 	ServerGunHandler.Reload,
+	ServerGunHandler.ReduceGunAmmo,
 })
 
 return ServerGunHandler

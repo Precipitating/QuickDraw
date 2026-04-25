@@ -19,6 +19,7 @@ local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local GunDataTypes = require(ReplicatedStorage.Shared.GunData.GunDataTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local Vetra = require(ReplicatedStorage.Shared.Vetra)
 
 type Networker = NetworkClient
 type GunData = GunDataTypes.GunData
@@ -167,61 +168,57 @@ local function CrosshairSpringMovement(crosshairPart: Part, crosshairImg: ImageL
 		crosshairImg.Size = smoothed
 	end
 end
-
 local function PredictBulletLanding(
 	shootOrigin: Vector3,
 	direction: Vector3,
 	initialVelocity: number,
 	dragCoefficient: number,
-	maxTravelDistance: number,
-	minSpeed: number
+	maxTravelDistance: number
 ): Vector3?
 	local GRAVITY = workspace.Gravity
 	local dt = 0.05
-	local STEPS = math.ceil(maxTravelDistance / (initialVelocity * dt)) + 10 -- scale steps to gun
+	local STEPS = math.ceil(maxTravelDistance / (initialVelocity * dt)) + 10
 	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character }
 	local prevPos = shootOrigin
 	local vel = direction * initialVelocity
 
 	for i = 1, STEPS do
 		local speed = vel.Magnitude
-		if speed < minSpeed then
-			break
-		end
 
 		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
 		local gravAccel = Vector3.new(0, -GRAVITY, 0)
-
 		vel = vel + (dragAccel + gravAccel) * dt
 		local nextPos = prevPos + vel * dt
 
 		if (nextPos - shootOrigin).Magnitude >= maxTravelDistance then
-			return nil -- bullet expired, hide crosshair
+			return nil
 		end
 
 		local result = workspace:Raycast(prevPos, nextPos - prevPos, crosshairRaycastParams)
 		if result then
 			return result.Position
 		end
-
 		prevPos = nextPos
 	end
-
 	return prevPos
 end
-local function CastBarrelRay(crosshairBB: BillboardGui, gunName: string, shootPoint: Attachment)
+
+local function CastBarrelRay(crosshairBB: BillboardGui, gunTool: Tool, shootPoint: Attachment)
 	if not shootPoint then
 		warn("Casting ray failed, shootpoint nil")
 		return
 	end
-
-	local bulletVelocity = GunData[gunName].Velocity
-	local dragCoefficient = GunData[gunName].DragCoefficient or 0
-	local maxCrosshairDistance = GunData[gunName].MaxSimulationDistance or 500
+	local gunName = gunTool.Name
+	local gunData = GunData[gunName]
+	local minBulletSpeed = gunData.MinBulletSpeed or 0
+	local bulletVelocity = gunData.Velocity or minBulletSpeed
+	local dragCoefficient = gunData.DragCoefficient or 0
+	local maxCrosshairDistance = GunData[gunName].MaxSimulationDistance or 1000
 	local origin: Vector3 = shootPoint.WorldPosition
 	local direction: Vector3 = shootPoint.WorldAxis
-	local landLocation =
-		PredictBulletLanding(origin, direction, bulletVelocity, dragCoefficient, maxCrosshairDistance, 36)
+
+	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character, gunTool }
+	local landLocation = PredictBulletLanding(origin, direction, bulletVelocity, dragCoefficient, maxCrosshairDistance)
 
 	if not landLocation then
 		DisableCrosshairIfOOB(crosshairBB)
@@ -290,7 +287,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 
 		PlayerContext.RightArmYaw.CFrame = targetCF * CFrame.Angles(math.rad(-5), 0, 0)
 		if not HoldingRMB then
-			CastBarrelRay(crosshairBB, gunTool.Name, shootPoint)
+			CastBarrelRay(crosshairBB, gunTool, shootPoint)
 
 			if crosshairBB.Enabled then
 				CrosshairSpringMovement(crosshairPart, crosshairImg, dt)
@@ -345,7 +342,6 @@ function ClientGunHandler:AttemptReload()
 	end
 	PlayerContext.Reloading = true
 	local newAmmoCount = GunNetwork:fetch("Reload")
-
 	if not currAmmo or maxAmmo then
 		return
 	end
@@ -373,18 +369,8 @@ function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
 	end
 end
 
-function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
-	gunRaycastParams.FilterDescendantsInstances = { gunTool, PlayerContext.Character }
-	-- get shooting point (for non ADS)
-	local shootAttachment: Attachment? = Utility.GetInstance(gunTool, true, "ShootPoint")
-	if not shootAttachment then
-		warn("[CLIENT] Missing gun shoot attachment of current tool")
-		return
-	end
-
+function ClientGunHandler:SingleShot(shootAttachment: Attachment, gunTool: Tool, gunData)
 	local context = nil
-	-- holding RMB means the bullet will fire via camera's lookvector
-	-- else gun barrel
 	if HoldingRMB then
 		context = ClientVetraContext.Vetra.BulletContext.new({
 			Origin = CurrentCamera.CFrame.Position,
@@ -403,6 +389,59 @@ function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
 		})
 
 		ClientVetraContext.Net:Fire(context, gunTool.Name)
+	end
+	GunNetwork:fire("ReduceGunAmmo")
+end
+function ClientGunHandler:SpreadShot(shootAttachment: Attachment, gunTool: Tool, gunData)
+	local context = nil
+
+	local pelletCount = gunData.PelletsPerShot
+	local maxSpreadAngle = gunData.MaxSpreadAngle
+
+	if HoldingRMB then
+		for _ = 1, pelletCount do
+			local spreadDir = Utility.GetShotgunSpreadDirection(CurrentCamera.CFrame.LookVector, maxSpreadAngle)
+			context = Vetra.BulletContext.new({
+				Origin = CurrentCamera.CFrame.Position,
+				Direction = spreadDir,
+				Speed = gunData.Velocity,
+				RaycastParams = gunRaycastParams,
+			})
+
+			ClientVetraContext.Net:Fire(context, gunTool.Name)
+		end
+	else
+		for _ = 1, pelletCount do
+			local spreadDir = Utility.GetShotgunSpreadDirection(shootAttachment.WorldAxis, maxSpreadAngle)
+			context = Vetra.BulletContext.new({
+				Origin = shootAttachment.WorldPosition,
+				Direction = spreadDir,
+				Speed = gunData.Velocity,
+				RaycastParams = gunRaycastParams,
+			})
+
+			ClientVetraContext.Net:Fire(context, gunTool.Name)
+		end
+	end
+	GunNetwork:fire("ReduceGunAmmo")
+end
+
+function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
+	gunRaycastParams.FilterDescendantsInstances = { gunTool, PlayerContext.Character }
+	-- get shooting point (for non ADS)
+	local shootAttachment: Attachment? = Utility.GetInstance(gunTool, true, "ShootPoint")
+	if not shootAttachment then
+		warn("[CLIENT] Missing gun shoot attachment of current tool")
+		return
+	end
+
+	-- holding RMB means the bullet will fire via camera's lookvector
+	-- else gun barrel
+
+	if gunData.GunType == "Shotgun" then
+		self:SpreadShot(shootAttachment, gunTool, gunData)
+	else
+		self:SingleShot(shootAttachment, gunTool, gunData)
 	end
 
 	self:DisplayGunEffects(gunTool)

@@ -1,10 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Vetra = require(script.Parent.Vetra)
+local GeneralProjectilesData = require(script.Parent.GeneralProjectilesData)
 local BehaviorRegistry = require(ReplicatedStorage.Shared.Vetra.VetraNet.Transport.BehaviorRegistry)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
-local isServer = game:GetService("RunService"):IsServer()
+
 local Registry = BehaviorRegistry.new()
 
 Registry:Register("Winchester", GunData["Winchester"].ProjectileData)
@@ -14,32 +14,7 @@ Registry:Register("Coach", GunData["Coach"].ProjectileData)
 Registry:Register("Dynamite", ThrowableData["Dynamite"].ProjectileData)
 Registry:Register("KetchumGrenade", ThrowableData["KetchumGrenade"].ProjectileData)
 Registry:Register("Molotov", ThrowableData["Molotov"].ProjectileData)
-Registry:Register(
-	"Shrapnel",
-	Vetra.BehaviorBuilder
-		.new()
-		:Physics()
-		:MaxDistance(30)
-		:MinSpeed(15)
-		:MaxSpeed(200)
-		:Done()
-		:When(isServer, function(b)
-			b:Cosmetic()
-				:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.ShrapnelCosmetic)
-				:Container(workspace.ProjectilesFolder)
-				:Done()
-		end)
-		:Drag()
-		:Coefficient(0.02)
-		:Done()
-		:Hitscan(true)
-		:Bounce()
-		:Max(3)
-		:Done()
-		:Debug()
-		:Visualize(true)
-		:Done()
-		:Build()
-)
+
+Registry:Register("Shrapnel", GeneralProjectilesData.Shrapnel.ProjectileData)
 
 return Registry

@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local GeneralProjectilesData = require(ReplicatedStorage.Shared.GeneralProjectilesData)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -19,6 +20,7 @@ local math_sqrt = math.sqrt
 local math_cos = math.cos
 local math_abs = math.abs
 local math_sin = math.sin
+
 type Destroyable = ClassTypes.Destroyable
 
 local function GetHumanoidFromHit(instance: Instance): Humanoid?
@@ -134,8 +136,7 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 
 	for _ = 1, throwableData.FragmentCount do
 		local pos = raycastResult.Position
-		local normal = raycastResult.Normal
-		local randomDir = RandomConeDirection(normal, 90)
+		local randomDir = RandomConeDirection(Vector3.yAxis, 180)
 
 		local context = ProjectileContext.BulletContext.new({
 			Origin = pos,
@@ -145,16 +146,7 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 		context.UserData.ProjectileType = "Shrapnel"
 		context.UserData.Data = throwableData
 		context.UserData.Owner = owner
-		ProjectileContext.Solver:Fire(context, "Shrapnel")
-
-		--debug rays
-		-- local debugPart = Instance.new("Part")
-		-- debugPart.CanCollide = false
-		-- debugPart.CanTouch = false
-		-- debugPart.CanQuery = false
-		-- debugPart.CFrame = CFrame.lookAt(pos, pos + randomDir) * CFrame.new(0, 0, -throwableData.FragmentRange / 2)
-		-- debugPart.Size = Vector3.new(0.1, 0.1, throwableData.FragmentRange)
-		-- debugPart.Parent = workspace
+		ProjectileContext.Solver:Fire(context, GeneralProjectilesData.Shrapnel.ProjectileData)
 	end
 end
 
@@ -273,7 +265,6 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 		if not currentGunName then
 			return
 		end
-		self:PlayerReduceAmmo(context.UserData.Owner)
 		local gunData = GunData[currentGunName]
 		if not gunData then
 			warn("GunData missing from OnProjectileHitReceivePlayer")
@@ -324,13 +315,6 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 	end
 end
 
-function ProjectileEvents:PlayerReduceAmmo(player: Player)
-	-- deduct ammo
-	local human = PlayerManager:GetHumanClassFromPlayer(player)
-	local gunClass = human.CurrentGun
-	gunClass:UpdateAmmo(-1)
-end
-
 function ProjectileEvents:Initialize()
 	ProjectileContext.VetraSignals.OnPierce:Connect(function(context, result, velocity, pierceCount: number)
 		print("OnPierce fired")
@@ -341,7 +325,7 @@ function ProjectileEvents:Initialize()
 	end)
 
 	-- for NPCS/Server
-	ProjectileContext.VetraSignals.OnHit:Connect(function(context, result, velocity)
+	ProjectileContext.Solver:GetSignals().OnHit:Connect(function(context, result, velocity)
 		if context.UserData.Owner and context.UserData.Owner:IsA("Player") then
 			if context.UserData.ProjectileType ~= "Shrapnel" then
 				return
@@ -352,6 +336,9 @@ function ProjectileEvents:Initialize()
 
 	-- players firing from client
 	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
+		if not result then
+			return
+		end
 		context.UserData["Owner"] = player
 		self:OnProjectileHitReceivePlayer(context, result)
 	end)

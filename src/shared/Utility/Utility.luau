@@ -1,3 +1,4 @@
+local RandomModule = require(script.Parent.RandomModule)
 return {
 	SumNumberTable = function(tbl: {})
 		local sum = 0
@@ -43,5 +44,19 @@ return {
 		end
 
 		return current
+	end,
+
+	GetShotgunSpreadDirection = function(baseDirection: Vector3, maxDegrees: number)
+		-- Use a circular spread pattern
+		-- Pick a random angle and random radius within the cone
+		local angle = RandomModule.GetRandom() * 2 * math.pi
+		local radius = math.sqrt(RandomModule.GetRandom()) * math.rad(maxDegrees)
+
+		local randomX = math.cos(angle) * radius
+		local randomY = math.sin(angle) * radius
+
+		local spreadCFrame = CFrame.new(Vector3.zero, baseDirection) * CFrame.Angles(randomX, randomY, 0)
+
+		return spreadCFrame.LookVector
 	end,
 }

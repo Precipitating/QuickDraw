@@ -8,6 +8,7 @@ local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 type Human = ClassTypes.Human
 type Gun = ClassTypes.Gun
@@ -91,21 +92,6 @@ function Gun:SingleShot()
 	ProjectileContext.Solver:Fire(context, projectileData)
 end
 
--- For shotgun
-function Gun:GetSpreadDirection(baseDirection: Vector3, maxDegrees: number)
-	-- Use a circular spread pattern
-	-- Pick a random angle and random radius within the cone
-	local angle = RandomModule.GetRandom() * 2 * math.pi
-	local radius = math.sqrt(RandomModule.GetRandom()) * math.rad(maxDegrees)
-
-	local randomX = math.cos(angle) * radius
-	local randomY = math.sin(angle) * radius
-
-	local spreadCFrame = CFrame.new(Vector3.zero, baseDirection) * CFrame.Angles(randomX, randomY, 0)
-
-	return spreadCFrame.LookVector
-end
-
 function Gun:SpreadShot()
 	local pelletCount = GunData[self.GunName].PelletsPerShot
 	local maxSpreadAngle = GunData[self.GunName].MaxSpreadAngle
@@ -121,7 +107,7 @@ function Gun:SpreadShot()
 	end
 
 	for _ = 1, pelletCount do
-		local spreadDir = self:GetSpreadDirection(self.ShootPoint.WorldAxis, maxSpreadAngle)
+		local spreadDir = Utility.GetShotgunSpreadDirection(self.ShootPoint.WorldAxis, maxSpreadAngle)
 		local context = ProjectileContext.BulletContext.new({
 			Origin = self.ShootPoint.WorldPosition,
 			Direction = spreadDir,

@@ -6,6 +6,7 @@ local EffectsDisplayer = require(StarterPlayer.StarterPlayerScripts.Client.Visua
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
 local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
 local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
+
 local ClientSolver = Vetra.new()
 local Net = VetraNet.new(ClientSolver, VetraRegistry)
 
