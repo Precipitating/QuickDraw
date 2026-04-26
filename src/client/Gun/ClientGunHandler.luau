@@ -178,17 +178,18 @@ local function PredictBulletLanding(
 	local GRAVITY = workspace.Gravity
 	local dt = 0.05
 	local STEPS = math.ceil(maxTravelDistance / (initialVelocity * dt)) + 10
-	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character }
 	local prevPos = shootOrigin
 	local vel = direction * initialVelocity
 
 	for i = 1, STEPS do
 		local speed = vel.Magnitude
-
 		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
 		local gravAccel = Vector3.new(0, -GRAVITY, 0)
-		vel = vel + (dragAccel + gravAccel) * dt
-		local nextPos = prevPos + vel * dt
+		local totalAccel = dragAccel + gravAccel
+
+		local nextPos = prevPos + vel * dt + 0.5 * totalAccel * dt * dt
+
+		vel = vel + totalAccel * dt
 
 		if (nextPos - shootOrigin).Magnitude >= maxTravelDistance then
 			return nil
@@ -198,8 +199,10 @@ local function PredictBulletLanding(
 		if result then
 			return result.Position
 		end
+
 		prevPos = nextPos
 	end
+
 	return prevPos
 end
 
@@ -256,8 +259,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 
 	local crosshairPart: Part, crosshairBB: BillboardGui, crosshairImg: ImageLabel = Get3DCrosshair()
 	local shootPoint = gunTool:WaitForChild("ShootPoint", 10) :: Attachment
-	crosshairRaycastParams.FilterDescendantsInstances =
-		{ PlayerContext.Character, gunTool:FindFirstChild("Frame"), crosshairPart }
+	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character, gunTool, crosshairPart }
 
 	local parentPart = if HumanNetwork.networker:fetch("IsLegless")
 		then PlayerContext.HRP
@@ -373,7 +375,7 @@ function ClientGunHandler:SingleShot(shootAttachment: Attachment, gunTool: Tool,
 	local context = nil
 	if HoldingRMB then
 		context = ClientVetraContext.Vetra.BulletContext.new({
-			Origin = CurrentCamera.CFrame.Position,
+			Origin = CurrentCamera.CFrame.Position + (CurrentCamera.CFrame.LookVector * 7),
 			Direction = CurrentCamera.CFrame.LookVector,
 			Speed = gunData.Velocity,
 			RaycastParams = gunRaycastParams,
@@ -387,7 +389,6 @@ function ClientGunHandler:SingleShot(shootAttachment: Attachment, gunTool: Tool,
 			Speed = gunData.Velocity,
 			RaycastParams = gunRaycastParams,
 		})
-
 		ClientVetraContext.Net:Fire(context, gunTool.Name)
 	end
 	GunNetwork:fire("ReduceGunAmmo")
@@ -402,7 +403,7 @@ function ClientGunHandler:SpreadShot(shootAttachment: Attachment, gunTool: Tool,
 		for _ = 1, pelletCount do
 			local spreadDir = Utility.GetShotgunSpreadDirection(CurrentCamera.CFrame.LookVector, maxSpreadAngle)
 			context = Vetra.BulletContext.new({
-				Origin = CurrentCamera.CFrame.Position,
+				Origin = CurrentCamera.CFrame.Position + (CurrentCamera.CFrame.LookVector * 7),
 				Direction = spreadDir,
 				Speed = gunData.Velocity,
 				RaycastParams = gunRaycastParams,
