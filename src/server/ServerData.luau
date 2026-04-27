@@ -9,6 +9,7 @@ function ServerData.Initialize()
 		template = {
 			currency = 0,
 			bounty = 0,
+			bank = 0,
 			lastJoinedTime = nil,
 		},
 		profileStoreIndex = "Main",
@@ -63,7 +64,15 @@ end
 function ServerData.GetMoney(player: Player)
 	return DataService:get(player, { "currency" })
 end
+function ServerData.UpdateBank(player: Player, amount: number)
+	DataService:update(player, { "bank" }, function(currentAmt)
+		return currentAmt + amount
+	end)
+end
 
+function ServerData.GetBankBalance(player: Player)
+	return DataService:get(player, { "bank" })
+end
 function ServerData:GetBounty(player: Player)
 	return DataService:get(player, { "bounty" })
 end
