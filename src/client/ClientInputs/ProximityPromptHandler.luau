@@ -1,9 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
-local BankGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.BankGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ShopGUIHandler = require(script.Parent.Parent.GUI.ShopGUIHandler)
+local BankGUIHandler = require(script.Parent.Parent.GUI.BankGUIHandler)
 local GUI = ReplicatedStorage.Shared.GUI
 local PROMPT_HANDLERS = {
 	["ShopPrompt"] = function(player: Player, prompt: ProximityPrompt)
@@ -17,7 +16,7 @@ local PROMPT_HANDLERS = {
 		local bank = GUI.BankGUI:Clone()
 		bank.Parent = player.PlayerGui
 		bank.Enabled = true
-		--SoundManager.PlayKeyed("Voiceline", "BankGreeting")
+		SoundManager.PlayKeyed("Voiceline", "BankGreeting")
 		BankGUIHandler:ConnectBankGUI(bank, prompt)
 	end,
 }

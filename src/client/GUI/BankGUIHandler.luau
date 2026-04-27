@@ -12,16 +12,31 @@ local BankGUIHandler = {}
 BankGUIHandler.janitor = Janitor.new()
 BankGUIHandler.networker = Networker.new("BankNetwork", BankGUIHandler)
 
+function BankGUIHandler:DisplayBankBalance(currencyOwned: TextLabel?)
+	if not currencyOwned then
+		return
+	end
+	local bal = self.networker:fetch("GetBankBalance")
+
+	if bal then
+		currencyOwned.Text = `IN BANK: ${bal}`
+	end
+end
+
 function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt)
 	local depositButton: TextButton = Utility.GetInstance(gui, true, "BG", "Deposit")
 	local withdrawButton: TextButton = Utility.GetInstance(gui, true, "BG", "Withdraw")
 	local exitButton: TextButton = Utility.GetInstance(gui, true, "Exit")
 	local inputBox: TextButton = Utility.GetInstance(gui, true, "BG", "Input")
+	local currencyOwned: TextLabel = Utility.GetInstance(gui, true, "BG", "CurrencyOwned")
 
 	assert(exitButton, "Missing exit button from BankGUI")
 	assert(depositButton, "Missing depositButton from BankGUI")
 	assert(withdrawButton, "Missing withdrawButton from BankGUI")
 	assert(inputBox, "Missing input box from BankGUI")
+	assert(currencyOwned, "Missing currencyOwned from BankGUI")
+
+	self:DisplayBankBalance(currencyOwned)
 
 	linkedPrompt.Enabled = false
 	PlayerContext.Humanoid:UnequipTools()
@@ -37,7 +52,7 @@ function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
 		self:Disconnect()
 		gui:Destroy()
-		--SoundManager.PlayKeyed("Voiceline", "BankExit")
+		SoundManager.PlayKeyed("Voiceline", "BankExit")
 		PlayerContext.ApplyMouseLock(true)
 		ClientUtility.ToggleControls(true)
 		CrosshairHandler:ToggleCrosshairVisibility(false)
@@ -48,14 +63,24 @@ function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self.janitor:Add(depositButton.Activated:Connect(function(_, _)
 		local inputVal = tonumber(inputBox.Text)
 		if inputVal then
-			self.networker:fire("Deposit", inputVal)
+			local success = self.networker:fetch("Deposit", inputVal)
+
+			if success then
+				self:DisplayBankBalance(currencyOwned)
+				inputBox.Text = ""
+			end
 		end
 	end))
 
 	self.janitor:Add(withdrawButton.Activated:Connect(function(_, _)
 		local inputVal = tonumber(inputBox.Text)
 		if inputVal then
-			self.networker:fire("Withdraw", inputVal)
+			local success = self.networker:fetch("Withdraw", inputVal)
+
+			if success then
+				self:DisplayBankBalance(currencyOwned)
+				inputBox.Text = ""
+			end
 		end
 	end))
 end

@@ -141,7 +141,7 @@ SoundData.Sounds = {
 	},
 	AddMoney = {
 		SoundId = "rbxassetid://139922061047157",
-		Volume = 1,
+		Volume = 3,
 		PlaybackSpeed = 1,
 		Group = "UI",
 		PoolSize = 3,
@@ -176,6 +176,20 @@ SoundData.Sounds = {
 	},
 	ShopExit = {
 		SoundId = "rbxassetid://136198373467944",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
+	BankGreeting = {
+		SoundId = "rbxassetid://105250576858171",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
+	BankExit = {
+		SoundId = "rbxassetid://124774610485067",
 		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",

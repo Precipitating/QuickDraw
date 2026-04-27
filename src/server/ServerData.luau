@@ -27,6 +27,10 @@ function DataService:onPlayerInit(player: Player, data): ()
 	data.lastJoinedTime = os.time() -- We can directly modify data since no connections exist yet.
 end
 
+function ServerData.GetMoney(player: Player)
+	return DataService:get(player, { "currency" })
+end
+
 function ServerData.UpdateMoney(player: Player, amount: number)
 	DataService:update(player, "currency", function(currentAmt)
 		warn(`{player.Name} should have {currentAmt + amount}`)
@@ -61,9 +65,6 @@ function ServerData:SetupLeaderboard(player: Player)
 	end)
 end
 
-function ServerData.GetMoney(player: Player)
-	return DataService:get(player, { "currency" })
-end
 function ServerData.UpdateBank(player: Player, amount: number)
 	DataService:update(player, { "bank" }, function(currentAmt)
 		return currentAmt + amount
