@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ShopGUIHandler = require(script.Parent.Parent.GUI.ShopGUIHandler)
 local BankGUIHandler = require(script.Parent.Parent.GUI.BankGUIHandler)
+local MercenaryGUIHandler = require(script.Parent.Parent.GUI.MercenaryGUIHandler)
 local GUI = ReplicatedStorage.Shared.GUI
 local PROMPT_HANDLERS = {
 	["ShopPrompt"] = function(player: Player, prompt: ProximityPrompt)
@@ -18,6 +19,13 @@ local PROMPT_HANDLERS = {
 		bank.Enabled = true
 		SoundManager.PlayKeyed("Voiceline", "BankGreeting")
 		BankGUIHandler:ConnectBankGUI(bank, prompt)
+	end,
+	["MercenaryPrompt"] = function(player: Player, prompt: ProximityPrompt)
+		local mercGUI = GUI.MercenaryGUI:Clone()
+		mercGUI.Parent = player.PlayerGui
+		mercGUI.Enabled = true
+		SoundManager.PlayKeyed("Voiceline", "MercGreeting")
+		MercenaryGUIHandler:ConnectMercenaryGUI(mercGUI, prompt)
 	end,
 }
 

@@ -195,6 +195,27 @@ SoundData.Sounds = {
 		Group = "Voiceline",
 		PoolSize = 1,
 	},
+	MercGreeting = {
+		SoundId = "rbxassetid://138522653077230",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
+	MercBuy = {
+		SoundId = "rbxassetid://83486610413630",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
+	MercExit = {
+		SoundId = "rbxassetid://72247137958194",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
 
 	-- Ranged Sniper AI
 	RangedAIAttack1Sniper = {

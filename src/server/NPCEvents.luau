@@ -2,11 +2,13 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
+local Queue = require(ReplicatedStorage.Shared.Classes.Queue)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local NPCList = ServerStorage.NPCs:GetChildren()
+local TargetList = Queue.new()
 
 type HumanPlayer = ClassTypes.HumanPlayer
 
@@ -23,6 +25,11 @@ local function AddNPCClass(taggedNPC: Model, classType: string)
 	end
 	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
 
+	if not TargetList:isEmpty() then
+		local mercenaryTarget = TargetList:dequeue()
+		humanNPC.AI.EnemyList = mercenaryTarget
+	end
+
 	NPCEvents.CurrentSpawnedNPCS += 1
 
 	print(`[SERVER] NPCs spawned: {NPCEvents.CurrentSpawnedNPCS}`)
@@ -34,7 +41,7 @@ end
 local function InitializeNPCS()
 	local npcInstances = CollectionService:GetTagged("NPC")
 	for _, NPC: Model in npcInstances do
-		for _, NPCType: string in { "Sniper", "Basic" } do
+		for _, NPCType: string in { "Sniper", "Basic", "Shotgunner" } do
 			if CollectionService:HasTag(NPC, NPCType) then
 				AddNPCClass(NPC, NPCType)
 				break
@@ -93,6 +100,10 @@ local function InitializeNPCSpawners()
 	end
 end
 
+-- Next spawning NPC will only shoot the target
+function NPCEvents.AddTarget(name: string)
+	TargetList:enqueue(name)
+end
 function NPCEvents.Initialize()
 	-- for dynamically spawned npcs
 	CollectionService:GetInstanceAddedSignal("NPC"):Connect(function(taggedNPC: Model)

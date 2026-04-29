@@ -1,6 +1,6 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local AwardConstants = require(script.Parent.AwardConstants)
-local ServerData = require(ServerScriptService.Server.ServerData)
+local ServerData = require(script.Parent.Parent.ServerData)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local AwardHandler = {}
 
