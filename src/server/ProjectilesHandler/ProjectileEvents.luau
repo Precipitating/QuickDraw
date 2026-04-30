@@ -326,7 +326,8 @@ function ProjectileEvents:Initialize()
 
 	-- for NPCS/Server
 	ProjectileContext.Solver:GetSignals().OnHit:Connect(function(context, result, velocity)
-		if context.UserData.Owner and context.UserData.Owner:IsA("Player") then
+		local owner = context.UserData.Owner
+		if owner and typeof(owner) == "Instance" and owner:IsA("Player") then
 			if context.UserData.ProjectileType ~= "Shrapnel" then
 				return
 			end

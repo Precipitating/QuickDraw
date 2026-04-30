@@ -29,7 +29,7 @@ function AI.new(owner: Human, classType: string)
 	self.Type = nil
 	self.Owner = owner
 	self.StateMachine = StateMachine.new()
-	self.EnemyList = { Player = true }
+	self.EnemyList = {}
 	self.AttackStateName = ""
 	self.DefaultState = { Name = "", Data = nil }
 	self.WeaponName = nil
@@ -290,7 +290,7 @@ end
 function AI:ThrowThrowable(targetPos)
 	local throwable = self.Owner.CurrentThrowable
 	if not throwable then
-		return
+		return false
 	end
 	if throwable.CurrentAmmo <= 0 then
 		return false

@@ -38,7 +38,9 @@ function HumanNPC.new(humanoid: Humanoid, classType: string)
 	self.VoicelineSound = self:SetupVoicelineSound()
 
 	self:SetNPCNetworkOwnership()
-	self:SetWeaponCollisions()
+	if self.CurrentGun then
+		self:SetWeaponCollisions()
+	end
 
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 

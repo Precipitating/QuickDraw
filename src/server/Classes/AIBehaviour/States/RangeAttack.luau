@@ -105,6 +105,7 @@ function RangeAttack:Update(dt)
 	else
 		self.LOSLostTime = nil
 	end
+
 	if self.Human.CurrentThrowable and ai:ThrowThrowable(targetPos) then
 		return
 	end

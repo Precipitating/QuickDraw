@@ -35,4 +35,16 @@ return {
 		AttackStateName = "RangeAttack",
 		DefaultPatrolKey = "1",
 	},
+	Grenadier = {
+		WeaponName = nil,
+		ThrowableName = "KetchumGrenade",
+		MinAttackDistance = 20,
+		MaxAttackDistance = 150,
+		AttackCooldown = 3,
+		EyeRange = 120,
+		PatrolStayTime = 2,
+		DefaultStateName = "Patrol",
+		AttackStateName = "RangeAttack",
+		DefaultPatrolKey = "1",
+	},
 }

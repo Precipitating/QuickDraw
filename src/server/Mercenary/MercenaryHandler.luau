@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local NPCEvents = require(ServerScriptService.Server.NPCEvents)
 local ServerData = require(ServerScriptService.Server.ServerData)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local BASE_TARGET_COST = 1250
@@ -12,12 +13,14 @@ function MercenaryHandler:GetTargetCost(player: Player)
 end
 function MercenaryHandler:BuyTarget(player: Player, target: Player, cost: number)
 	local playerMoney = ServerData.GetMoney(player)
+	cost = 0
 	if playerMoney < cost then
 		return false
 	end
 
 	ServerData.UpdateMoney(player, -cost)
 	CollectionService:AddTag(target.Character, target.Name)
+	NPCEvents.AddTarget(target)
 	return true
 end
 

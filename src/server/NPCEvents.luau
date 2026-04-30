@@ -23,13 +23,17 @@ local function AddNPCClass(taggedNPC: Model, classType: string)
 	if not humanoid then
 		error("NPC has no humanoid to initialize its class!")
 	end
-	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
 
 	if not TargetList:isEmpty() then
+		local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, "Grenadier")
 		local mercenaryTarget = TargetList:dequeue()
-		humanNPC.AI.EnemyList = mercenaryTarget
+		humanNPC.AI.EnemyList = { [mercenaryTarget.Name] = true }
+		humanNPC.CurrentThrowable.CurrentAmmo = 99
+		NPCEvents.CurrentSpawnedNPCS += 1
+		return
 	end
 
+	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
 	NPCEvents.CurrentSpawnedNPCS += 1
 
 	print(`[SERVER] NPCs spawned: {NPCEvents.CurrentSpawnedNPCS}`)
@@ -101,8 +105,12 @@ local function InitializeNPCSpawners()
 end
 
 -- Next spawning NPC will only shoot the target
-function NPCEvents.AddTarget(name: string)
-	TargetList:enqueue(name)
+function NPCEvents.AddTarget(target: Player?)
+	if not target then
+		warn("Mercenary target invalid player instance")
+		return
+	end
+	TargetList:enqueue(target)
 end
 function NPCEvents.Initialize()
 	-- for dynamically spawned npcs

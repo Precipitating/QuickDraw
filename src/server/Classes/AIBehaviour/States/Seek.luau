@@ -74,8 +74,7 @@ function Seek:Enter(previous, seekData)
 		target,
 		predictedTargetLocation,
 		self.AI.MinAttackDistance,
-		false,
-		predictedTargetLocation
+		false
 	)
 	ai:PathFindTo(safeSeekPos)
 
