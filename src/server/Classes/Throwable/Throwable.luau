@@ -29,7 +29,6 @@ function Throwable.new(throwableName: string, humanRef: Human?)
 	self.CurrentAmmo = throwableData.MaxAmmo
 	self.DetonationTime = throwableData.DetonationTime
 	self.FragmentCount = throwableData.FragmentCount
-	self.FragmentRange = throwableData.FragmentRange
 	self.FragmentDamage = throwableData.Damage
 	self.FragmentType = throwableData.Type
 	self.ThrowDelay = throwableData.ThrowDelay
@@ -128,7 +127,10 @@ function Throwable:Remove()
 	end
 end
 
-function Throwable:AddThrowableToInventory()
+function Throwable:AddThrowableToInventory(maxAmmo: number)
+	if maxAmmo then
+		self.CurrentAmmo = maxAmmo
+	end
 	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.Name):Clone()
 	self.Tool = clone
 

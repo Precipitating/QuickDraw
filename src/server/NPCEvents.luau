@@ -24,11 +24,17 @@ local function AddNPCClass(taggedNPC: Model, classType: string)
 		error("NPC has no humanoid to initialize its class!")
 	end
 
+	-- Mercenary mode, will spawn at a random spawner
 	if not TargetList:isEmpty() then
-		local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, "Grenadier")
 		local mercenaryTarget = TargetList:dequeue()
+		taggedNPC.Name = `Mercenary{NPCCount}`
+		local humanNPC = PlayerManager:AddHumanClassNPC(
+			humanoid,
+			"Grenadier",
+			{ DefaultStateData = { Target = mercenaryTarget.Character } }
+		)
+
 		humanNPC.AI.EnemyList = { [mercenaryTarget.Name] = true }
-		humanNPC.CurrentThrowable.CurrentAmmo = 99
 		NPCEvents.CurrentSpawnedNPCS += 1
 		return
 	end
@@ -45,7 +51,7 @@ end
 local function InitializeNPCS()
 	local npcInstances = CollectionService:GetTagged("NPC")
 	for _, NPC: Model in npcInstances do
-		for _, NPCType: string in { "Sniper", "Basic", "Shotgunner" } do
+		for _, NPCType: string in { "Sniper", "Basic", "Shotgunner", "Grenadier" } do
 			if CollectionService:HasTag(NPC, NPCType) then
 				AddNPCClass(NPC, NPCType)
 				break

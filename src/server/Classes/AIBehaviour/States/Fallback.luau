@@ -34,7 +34,9 @@ function Fallback:Enter(previous, fallbackData)
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
 
 	-- Disable reload if we're reloading & play voiceline
-	human.CurrentGun:StopReloading()
+	if human.CurrentGun then
+		human.CurrentGun:StopReloading()
+	end
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
 		`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
@@ -49,7 +51,7 @@ function Fallback:Enter(previous, fallbackData)
 	-- 1.1 (TERMINATION) If we can't find a fallback position, got to attack state (shoots at current position)
 	if not safePos then
 		warn("Cornered, shoot from current position, ignoring distance requirements")
-		self.Machine:Transition(self.AI.AttackStateName, { Target = target, Cornered = true })
+		self.Machine:Transition(self.AI.AttackState.Name, { Target = target, Cornered = true })
 		return
 	end
 
@@ -88,7 +90,7 @@ function Fallback:Enter(previous, fallbackData)
 
 			-- 4. If so, transition to attack state, else seek
 			if isInLineOfSight and not CollectionService:HasTag(target, "Dead") then
-				self.Machine:Transition(self.AI.AttackStateName, { Target = target })
+				self.Machine:Transition(self.AI.AttackState.Name, { Target = target })
 			else
 				warn("Can't see target falling back, SEEKIN")
 				self.Machine:Transition("Seek", { Target = target })

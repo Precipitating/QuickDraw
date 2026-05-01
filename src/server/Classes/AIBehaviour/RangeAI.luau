@@ -5,6 +5,7 @@ local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
 local RangeAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.RangeAttack)
+local Stalk = require(ServerScriptService.Server.Classes.AIBehaviour.States.Stalk)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 
@@ -17,7 +18,7 @@ type Stack = Stack.Stack<Vector3>
 local RangeAI = setmetatable({}, AI)
 RangeAI.__index = RangeAI
 
-function RangeAI.new(human: Human, classType: string)
+function RangeAI.new(human: Human, classType: string, optionalData: any?)
 	local classData = NPCTypes[classType]
 	assert(classData, "NPC Class Type doesn't exist")
 	local self = setmetatable(AI.new(human, classType), RangeAI)
@@ -28,9 +29,18 @@ function RangeAI.new(human: Human, classType: string)
 	self.EyeRange = classData.EyeRange
 	self.WeaponName = classData.WeaponName
 	self.ThrowableName = classData.ThrowableName
-	self.DefaultPatrolKey = classData.DefaultPatrolKey
-	self.AttackStateName = classData.AttackStateName
-	self.DefaultState = { Name = classData.DefaultStateName, Data = self.DefaultPatrolKey }
+	self.AttackState = (classData and classData.AttackStateName)
+			and {
+				Name = classData.AttackStateName,
+				Data = (classData and classData.AttackStateData) or (optionalData and optionalData.AttackStateData),
+			}
+		or nil
+	self.DefaultState = (classData and classData.DefaultStateName)
+			and {
+				Name = classData.DefaultStateName,
+				Data = (classData and classData.DefaultStateData) or (optionalData and optionalData.DefaultStateData),
+			}
+		or nil
 	self.AttackCooldown = classData.AttackCooldown
 	self:RangeInitialize()
 
@@ -41,8 +51,11 @@ function RangeAI:RangeInitialize()
 	self.StateMachine:AddState("Patrol", Patrol.new(self.StateMachine, self))
 	self.StateMachine:AddState("RangeAttack", RangeAttack.new(self.StateMachine, self))
 	self.StateMachine:AddState("Fallback", Fallback.new(self.StateMachine, self))
+	self.StateMachine:AddState("Stalk", Stalk.new(self.StateMachine, self))
 
-	self.StateMachine:Transition("Patrol", self.DefaultPatrolKey)
+	task.defer(function()
+		self.StateMachine:Transition(self.DefaultState.Name, self.DefaultState.Data)
+	end)
 end
 
 -- Helper: raycast downward to snap candidate to ground level

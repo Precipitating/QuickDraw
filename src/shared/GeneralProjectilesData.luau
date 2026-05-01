@@ -4,7 +4,7 @@ return {
 		ProjectileData = Vetra.BehaviorBuilder
 			.new()
 			:Physics()
-			:MaxDistance(50)
+			:MaxDistance(70)
 			:MaxSpeed(200)
 			:Done()
 			:Bounce()

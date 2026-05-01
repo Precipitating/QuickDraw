@@ -48,11 +48,14 @@ local function ApplyDamage(
 		return
 	end
 	local gun = human.CurrentGun
-	local reloading = gun.Reloading
 
-	-- stop reloading if hurt
-	if reloading then
-		gun:StopReloading()
+	if gun then
+		local reloading = gun.Reloading
+
+		-- stop reloading if hurt
+		if reloading then
+			gun:StopReloading()
+		end
 	end
 
 	if human.HumanType == "NPC" then

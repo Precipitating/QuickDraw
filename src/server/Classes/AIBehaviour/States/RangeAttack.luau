@@ -3,7 +3,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
-local AISignals = require(ServerScriptService.Server.Classes.AIBehaviour.AISignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 

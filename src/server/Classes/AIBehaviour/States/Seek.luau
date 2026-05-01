@@ -14,7 +14,6 @@ function Seek.new(machine, ai)
 	setmetatable(self, Seek)
 	self.LastChecked = os.clock()
 	self.PredictionAheadTime = 1
-
 	return self
 end
 
@@ -41,7 +40,7 @@ function Seek:Enter(previous, seekData)
 	self.AI:StateChangeReset()
 	if not seekData then
 		warn("No last seen target, back to patrol")
-		self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
+		self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
 		return
 	end
 
@@ -54,7 +53,6 @@ function Seek:Enter(previous, seekData)
 	local predictedTargetLocation = self:PredictTarget(target)
 
 	local ai = self.AI
-
 	local legless = self.Human.Legless
 
 	if not legless then
@@ -85,8 +83,7 @@ function Seek:Enter(previous, seekData)
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		if not success then
 			warn("Seek pathfind failed, returning to patrol")
-
-			self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
+			self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
 			return
 		end
 		warn("Reached")
@@ -105,13 +102,13 @@ function Seek:Enter(previous, seekData)
 					return
 				elseif inRange == "Seek" then
 					-- Pathfinded but still too far, give up and patrol
-					self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
+					self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
 					return
 				end
 			end
 
 			-- inRange is true, distance is valid
-			self.Machine:Transition(self.AI.AttackStateName, { Target = foundEnemy })
+			self.Machine:Transition(self.AI.AttackState.Name, { Target = foundEnemy })
 		else
 			ServerSoundHandler:Play3DNPCVoiceline(
 				nil,
@@ -120,7 +117,7 @@ function Seek:Enter(previous, seekData)
 				{ MaxDistance = 200 }
 			)
 
-			self.Machine:Transition("Patrol", self.AI.DefaultPatrolKey)
+			self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
 		end
 	end))
 end
@@ -141,7 +138,7 @@ function Seek:Update(dt)
 	self.LastChecked = now
 	local foundEnemy = ai:CheckSurroundingsForEnemy()
 	if foundEnemy then
-		self.Machine:Transition(self.AI.AttackStateName, { Target = foundEnemy })
+		self.Machine:Transition(self.AI.AttackState.Name, { Target = foundEnemy })
 		return
 	end
 end

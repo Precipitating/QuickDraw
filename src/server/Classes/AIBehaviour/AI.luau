@@ -30,7 +30,7 @@ function AI.new(owner: Human, classType: string)
 	self.Owner = owner
 	self.StateMachine = StateMachine.new()
 	self.EnemyList = {}
-	self.AttackStateName = ""
+	self.AttackState = { Name = "", Data = nil }
 	self.DefaultState = { Name = "", Data = nil }
 	self.WeaponName = nil
 	self.ThrowableName = nil
@@ -295,16 +295,15 @@ function AI:ThrowThrowable(targetPos)
 	if throwable.CurrentAmmo <= 0 then
 		return false
 	end
-	local rightHand = self.Owner.BodyParts["RightHand"]
-	local toTargetDir = (targetPos - rightHand.Position).Unit
 
-	local hrpPos = self.Owner.HRP.Position
-	local lowArc, _ = self:GetThrowAngle(hrpPos, targetPos, throwable.Velocity)
+	local origin = self.Owner.BodyParts["RightHand"].Position
 
+	local lowArc, _ = self:GetThrowAngle(origin, targetPos, throwable.Velocity)
 	if not lowArc then
 		return false
 	end
 
+	local toTargetDir = (targetPos - origin).Unit
 	local throwDirection = (CFrame.new(Vector3.zero, toTargetDir) * CFrame.Angles(lowArc, 0, 0)).LookVector
 
 	throwable:Throw(throwDirection)

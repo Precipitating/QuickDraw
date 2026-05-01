@@ -3,6 +3,7 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
+local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 
@@ -16,21 +17,21 @@ local HumanConstants = require(script.Parent.HumanConstants)
 local HumanNPC = setmetatable({}, Human)
 HumanNPC.__index = HumanNPC
 
-function HumanNPC.new(humanoid: Humanoid, classType: string)
+function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
 
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()
-	self.AI = RangeAI.new(self, classType)
+	self.AI = RangeAI.new(self, classType, optionalData)
 	self.CurrentGun = if self.AI.WeaponName then Gun.new(self.AI.WeaponName, self, self.Character) else nil
 	self.CurrentThrowable = if self.AI.ThrowableName then Throwable.new(self.AI.ThrowableName, self) else nil
 	if self.CurrentGun then
 		self.CurrentGun:AddGunToInventory()
 	end
 	if self.CurrentThrowable then
-		self.CurrentThrowable:AddThrowableToInventory()
+		self.CurrentThrowable:AddThrowableToInventory(NPCTypes[classType].ThrowableAmmo)
 	end
 	self.CurrentTrack = nil
 

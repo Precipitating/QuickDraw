@@ -23,9 +23,9 @@ function PlayerManager:AddHumanClass(player: Player)
 	return self.HumanClasses[humanoid]
 end
 
-function PlayerManager:AddHumanClassNPC(humanoid: Humanoid?, classType: string)
+function PlayerManager:AddHumanClassNPC(humanoid: Humanoid?, classType: string, optionalData: any?)
 	assert(humanoid, "[PlayerManager:AddHumanClassNPC] should be humanoid argument!")
-	self.HumanClasses[humanoid] = HumanNPC.new(humanoid, classType)
+	self.HumanClasses[humanoid] = HumanNPC.new(humanoid, classType, optionalData)
 	return self.HumanClasses[humanoid]
 end
 
