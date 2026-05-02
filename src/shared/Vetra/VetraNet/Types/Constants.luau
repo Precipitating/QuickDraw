@@ -21,7 +21,7 @@ return table.freeze({
 	-- V0.1.2: three remotes collapsed into one. All outbound server messages
 	-- (fire replication, hit confirmation, state batch) are written into a
 	-- per-player OutboundBatcher cursor and flushed as a single FireClient
-	-- call per Heartbeat. The client reads a 1-byte channel prefix to
+	-- call per PreSimulation. The client reads a 1-byte channel prefix to
 	-- dispatch to the correct decoder. One remote, one send per player/frame.
 	REMOTE_NET = "VetraNet_Net",
 
@@ -100,15 +100,15 @@ return table.freeze({
 	STATE_ENTRY_BYTES = 28,
 
 	-- StateBatch header size. Layout: frameId(u32=4) + count(u32=4) + frameDelta(f32=4) = 12 bytes.
-	-- frameDelta is the server Heartbeat DeltaTime for this frame in seconds.
+	-- frameDelta is the server PreSimulation DeltaTime for this frame in seconds.
 	-- The client uses it as the correction alpha denominator instead of os.clock()
 	-- wall-time difference, which is wrong under burst packet delivery (two batches
 	-- arriving the same frame collapse DeltaTime to near-zero, making alpha ~0).
 	STATE_BATCH_HEADER_BYTES = 12,
 
-	-- Maximum bullet count per state batch. 128 × 28 = 3 584 bytes, well
+	-- Maximum bullet count per state batch. 128 x 28 = 3 584 bytes, well
 	-- within Roblox's ~64 KB remote payload limit. Chosen to cover the
-	-- realistic peak of a crowded server fight (8 players × ~16 bullets each)
+	-- realistic peak of a crowded server fight (8 players x ~16 bullets each)
 	-- with comfortable headroom for simultaneous explosions.
 	MAX_STATE_BATCH_SIZE = 128,
 
@@ -116,7 +116,7 @@ return table.freeze({
 	-- Named constants for every primitive byte width. BlinkSchema uses these
 	-- to pre-compute buffer sizes at module load rather than inline literals,
 	-- which would rot silently if the layout changed.
-	BYTES_VECTOR3   = 12,   -- 3 × f32 (x, y, z)
+	BYTES_VECTOR3   = 12,   -- 3 x f32 (x, y, z)
 	BYTES_F32       =  4,
 	BYTES_F64       =  8,
 	BYTES_TIMESTAMP =  8,   -- f64 — workspace:GetServerTimeNow() sub-millisecond

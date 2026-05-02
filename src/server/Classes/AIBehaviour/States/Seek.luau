@@ -39,8 +39,8 @@ function Seek:Enter(previous, seekData)
 	warn(`[SERVER] {self.Human.Character.Name} Entered Seek from {previous}`)
 	self.AI:StateChangeReset()
 	if not seekData then
-		warn("No last seen target, back to patrol")
-		self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
+		warn("No last seen target, back to default state")
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		return
 	end
 
@@ -82,8 +82,8 @@ function Seek:Enter(previous, seekData)
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		if not success then
-			warn("Seek pathfind failed, returning to patrol")
-			self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
+			warn("Seek pathfind failed, returning to default state")
+			self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 			return
 		end
 		warn("Reached")
@@ -101,8 +101,8 @@ function Seek:Enter(previous, seekData)
 					self.Machine:Transition("Fallback", { Target = foundEnemy })
 					return
 				elseif inRange == "Seek" then
-					-- Pathfinded but still too far, give up and patrol
-					self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
+					-- Pathfinded but still too far, give up and go back to default state
+					self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 					return
 				end
 			end
@@ -117,7 +117,7 @@ function Seek:Enter(previous, seekData)
 				{ MaxDistance = 200 }
 			)
 
-			self.Machine:Transition("Patrol", self.AI.DefaultState.Data)
+			self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		end
 	end))
 end

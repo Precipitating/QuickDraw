@@ -41,11 +41,11 @@ local function ValidateBuilt(Config: BuiltBehavior): { string }
     -- Drag
     Expect(Config.DragCoefficient >= 0, "DragCoefficient must be >= 0")
     Expect(IsValidDragModel(Config.DragModel),
-        "DragModel must be a BehaviorBuilder.DragModel enum value")
+        "DragModel must be a Vetra.Enums.DragModel enum value")
     Expect(Config.DragSegmentInterval > 0, "DragSegmentInterval must be > 0")
-    if Config.DragModel == "Custom" then
+    if Config.DragModel == Enums.DragModel.Custom then
         Expect(Config.CustomMachTable ~= nil,
-            "CustomMachTable is required when DragModel = BehaviorBuilder.DragModel.Custom")
+            "CustomMachTable is required when DragModel = Vetra.Enums.DragModel.Custom")
     end
 
     -- Wind
@@ -85,8 +85,8 @@ local function ValidateBuilt(Config: BuiltBehavior): { string }
     -- Pierce
     Expect(Config.MaxPierceCount            >= 0, "MaxPierceCount must be >= 0")
     Expect(Config.PierceSpeedThreshold      >= 0, "PierceSpeedThreshold must be >= 0")
-    Expect(Config.PenetrationSpeedRetention >= 0 and Config.PenetrationSpeedRetention <= 1,
-        "PenetrationSpeedRetention must be in [0, 1]")
+    Expect(Config.PierceSpeedRetention >= 0 and Config.PierceSpeedRetention <= 1,
+        "PierceSpeedRetention must be in [0, 1]")
     Expect(Config.PierceNormalBias >= 0 and Config.PierceNormalBias <= 1,
         "PierceNormalBias must be in [0, 1]")
 

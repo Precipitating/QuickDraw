@@ -400,6 +400,62 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
+
+	-- Grenadier
+	RangedAIAttack1Grenadier = {
+		SoundId = "rbxassetid://75975571335133",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack2Grenadier = {
+		SoundId = "rbxassetid://104640133337510",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack3Grenadier = {
+		SoundId = "rbxassetid://118375270857264",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff1Grenadier = {
+		SoundId = "rbxassetid://134213852287429",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff2Grenadier = {
+		SoundId = "rbxassetid://124614146560041",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff3Grenadier = {
+		SoundId = "rbxassetid://137447112370301",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar1Grenadier = {
+		SoundId = "rbxassetid://132421594283493",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar2Grenadierc = {
+		SoundId = "rbxassetid://72758385810042",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar3Grenadier = {
+		SoundId = "rbxassetid://117670246128566",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
 }
 
 -- Default group volumes

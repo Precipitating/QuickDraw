@@ -11,6 +11,10 @@ return {
 		if humanoid.Parent and CollectionService:HasTag(humanoid.Parent, "NPC") then
 			warn("NPC DESTROYED")
 			NPCEvents.CurrentSpawnedNPCS -= 1
+
+			if CollectionService:HasTag(humanoid.Parent, "Sheriff") then
+				NPCEvents.SheriffsSpawned -= 1
+			end
 		end
 		PlayerManager:RemoveHumanClass(humanoid)
 

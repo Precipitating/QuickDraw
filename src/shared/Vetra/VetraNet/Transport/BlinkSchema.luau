@@ -56,7 +56,7 @@ local FIRE_PAYLOAD_BYTES: number = Constants.FIRE_PAYLOAD_BYTES
 --           + timestamp(8) = 48 bytes.
 local HIT_PAYLOAD_BYTES: number = Constants.HIT_PAYLOAD_BYTES
 
--- StateBatch: frameId(u32=4) + count(u32=4) + N × stateEntry(28)
+-- StateBatch: frameId(u32=4) + count(u32=4) + N x stateEntry(28)
 -- We allocate for the maximum possible count and pad unused entries with zeros.
 -- This avoids reallocation entirely at the cost of a fixed upper-bound buffer.
 local STATE_ENTRY_BYTES: number     = Constants.STATE_ENTRY_BYTES
@@ -156,11 +156,11 @@ end
 -- ─── StateBatch ──────────────────────────────────────────────────────────────
 
 -- Encode a batch of state entries into a fixed-size buffer.
--- layout: frameId(4) | count(4) | frameDelta(4) | [castId(4) | px(4) | py(4) | pz(4) | vx(4) | vy(4) | vz(4)] × N
+-- layout: frameId(4) | count(4) | frameDelta(4) | [castId(4) | px(4) | py(4) | pz(4) | vx(4) | vy(4) | vz(4)] x N
 --
 -- The buffer is always STATE_BATCH_MAX_BYTES large regardless of N.
 -- The count field tells the decoder how many valid entries to read.
--- frameDelta is the server Heartbeat DeltaTime (seconds, f32). The client uses
+-- frameDelta is the server PreSimulation DeltaTime (seconds, f32). The client uses
 -- it directly as the correction alpha base instead of os.clock() wall-time
 -- diff, which collapses to near-zero when two batches arrive in the same frame.
 -- Unused trailing bytes are zero (Roblox buffer.create initialises to zero).

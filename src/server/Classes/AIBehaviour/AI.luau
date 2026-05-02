@@ -243,6 +243,9 @@ end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
 function AI:LookAround()
+	if not self.Owner then
+		return nil
+	end
 	local targetFound = nil
 
 	self:StateChangeReset()

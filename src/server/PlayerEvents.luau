@@ -42,6 +42,7 @@ return {
 	Players.PlayerAdded:Connect(function(player: Player)
 		ServerData.WaitForPlayerData(player)
 		ServerData:SetupLeaderboard(player)
+		ServerData:SetupDataServiceEvents(player)
 		player.CharacterAdded:Connect(function(character)
 			InitializePlayer(player, character)
 		end)

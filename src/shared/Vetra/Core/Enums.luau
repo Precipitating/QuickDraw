@@ -15,8 +15,8 @@
         consumer without any sync step.
 
     Only enums that a user writing weapon code might need to reference belong
-    here. Pure internal identifiers (PARALLEL_EVENT, VALIDATION_RESULT,
-    VISUALIZER_HIT_TYPE) stay in Constants.
+    here. Pure internal identifiers (PARALLEL_EVENT, VISUALIZER_HIT_TYPE)
+    stay in Constants.
 ]]
 
 -- ─── DragModel ───────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@
 
     Exposed publicly so users can write:
         :Drag():Model(Vetra.Enums.DragModel.G7):Done()
-    and BehaviorBuilder re-exports this table as BehaviorBuilder.DragModel.
+    Exposed on the solver as Vetra.Enums.DragModel.
 ]]
 local DragModel = table.freeze({
     Quadratic   = 1,   -- deceleration ∝ speed² (default; most accurate subsonic)
@@ -46,6 +46,8 @@ local DragModel = table.freeze({
     -- User-supplied Mach/Cd table
     Custom      = 13,  -- requires CustomMachTable = { {mach, cd}, ... } on behavior
 })
+
+export type DragModel = number
 
 -- ─── TerminateReason ─────────────────────────────────────────────────────────
 --[[
@@ -66,6 +68,8 @@ local TerminateReason = table.freeze({
     Manual     = "manual",
     CornerTrap = "corner_trap",
 })
+
+export type TerminateReason = "hit"|"distance"|"speed"|"manual"|"corner_trap"
 
 -- ─── Module Return ───────────────────────────────────────────────────────────
 

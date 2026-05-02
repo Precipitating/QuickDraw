@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataService = require(ReplicatedStorage.Packages.DataService).server
 
@@ -62,6 +63,18 @@ function ServerData:SetupLeaderboard(player: Player)
 	DataService:getChangedSignal(player, { "bounty" }):Connect(function(newBounty)
 		warn(`[SERVER] NEW BOUNTY SHOULD BE {newBounty}`)
 		bounty.Value = newBounty
+	end)
+end
+
+function ServerData:SetupDataServiceEvents(player: Player)
+	DataService:getChangedSignal(player, { "bounty" }):Connect(function(newValue)
+		if newValue > 0 then
+			if player.Character then
+				CollectionService:AddTag(player.Character, "Wanted")
+			else
+				CollectionService:RemoveTag(player.Character, "Wanted")
+			end
+		end
 	end)
 end
 

@@ -1,9 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
-local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
 local Stalk = setmetatable({}, BaseState)
@@ -44,6 +41,10 @@ function Stalk:Enter(previous, StalkData)
 	local target: Model | BasePart = StalkData.Target
 	assert(target, "NPC Stalk state cannot proceed, target is nil")
 
+	if not target or CollectionService:HasTag(target, "Dead") then
+		self.Human:Die()
+	end
+
 	self.Machine:Start()
 
 	local ai = self.AI
@@ -52,13 +53,6 @@ function Stalk:Enter(previous, StalkData)
 	if not legless then
 		ai:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
 	end
-
-	ServerSoundHandler:Play3DNPCVoiceline(
-		nil,
-		`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
-		self.Human.VoicelineSound,
-		{ MaxDistance = 200 }
-	)
 
 	-- 1.
 	self:MoveToTarget(target)

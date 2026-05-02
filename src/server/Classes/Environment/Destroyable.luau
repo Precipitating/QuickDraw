@@ -58,6 +58,10 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	end
 
 	local root = humanClass.HRP
+	if not root then
+		warn(`Destroyable:ApplyHumanExplosionImpulse missing HRP reference!`)
+		return
+	end
 	local dir = (root.Position - self.ModelRef:GetPivot().Position)
 	local dirUpBias = (dir + Vector3.new(0, 3, 0)).Unit
 

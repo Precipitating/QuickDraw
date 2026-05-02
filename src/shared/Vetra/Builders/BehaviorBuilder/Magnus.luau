@@ -3,7 +3,7 @@
 --!strict
 
 local t     = require(script.Parent.Parent.Parent.Core.TypeCheck)
-local Types = require(script.Parent.Types)
+local Types  = require(script.Parent.Types)
 
 type BuiltBehavior = Types.BuiltBehavior
 
@@ -11,11 +11,11 @@ local MagnusBuilder = {}
 MagnusBuilder.__index = MagnusBuilder
 
 export type MagnusBuilder = typeof(setmetatable({} :: {
-    _Root   : any,
+    _Root   : Types.BehaviorBuilder,
     _Config : BuiltBehavior,
 }, MagnusBuilder))
 
--- Spin axis × angular velocity in rad/s. Vector3.zero disables Magnus effect.
+-- Spin axis x angular velocity in rad/s. Vector3.zero disables Magnus effect.
 function MagnusBuilder.SpinVector(self: MagnusBuilder, Value: Vector3): MagnusBuilder
     assert(t.Vector3(Value), "MagnusBuilder:SpinVector — expected Vector3")
     self._Config.SpinVector = Value
@@ -36,7 +36,7 @@ function MagnusBuilder.SpinDecayRate(self: MagnusBuilder, Value: number): Magnus
     return self
 end
 
-function MagnusBuilder.Done(self: MagnusBuilder): any
+function MagnusBuilder.Done(self: MagnusBuilder): Types.BehaviorBuilder
     return self._Root
 end
 

@@ -7,13 +7,16 @@ local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-local NPCList = ServerStorage.NPCs:GetChildren()
+local NPCList = ServerStorage.NPCs
 local TargetList = Queue.new()
-
+local BanditModels = { "CowboyNPC" }
+local SheriffModels = { "SheriffNPC" }
+local MaxSheriffsAllowed = 5
 type HumanPlayer = ClassTypes.HumanPlayer
 
 local NPCEvents = {}
-NPCEvents.MaxNPCSAllowed = 10
+NPCEvents.MaxNPCSAllowed = 15
+NPCEvents.SheriffsSpawned = 0
 NPCEvents.SecondsToSpawnNPC = 10
 NPCEvents.CurrentSpawnedNPCS = 0
 local NPCCount = 1
@@ -23,25 +26,33 @@ local function AddNPCClass(taggedNPC: Model, classType: string)
 	if not humanoid then
 		error("NPC has no humanoid to initialize its class!")
 	end
-
+	NPCEvents.CurrentSpawnedNPCS += 1
 	-- Mercenary mode, will spawn at a random spawner
 	if not TargetList:isEmpty() then
 		local mercenaryTarget = TargetList:dequeue()
 		taggedNPC.Name = `Mercenary{NPCCount}`
+		CollectionService:AddTag(taggedNPC, "Mercenary")
 		local humanNPC = PlayerManager:AddHumanClassNPC(
 			humanoid,
 			"Grenadier",
 			{ DefaultStateData = { Target = mercenaryTarget.Character } }
 		)
-
 		humanNPC.AI.EnemyList = { [mercenaryTarget.Name] = true }
-		NPCEvents.CurrentSpawnedNPCS += 1
+		return
+	elseif CollectionService:HasTag(taggedNPC, "Sheriff") then
+		if NPCEvents.SheriffsSpawned >= MaxSheriffsAllowed then
+			return
+		end
+		local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
+		taggedNPC.Name = `Sheriff{NPCCount}`
+		humanNPC.AI.EnemyList = { Bandit = true, Wanted = true }
+		NPCEvents.SheriffsSpawned += 1
 		return
 	end
 
+	-- else Bandit
 	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
-	NPCEvents.CurrentSpawnedNPCS += 1
-
+	humanNPC.AI.EnemyList = { Player = true, Sheriff = true }
 	print(`[SERVER] NPCs spawned: {NPCEvents.CurrentSpawnedNPCS}`)
 
 	return humanNPC
@@ -60,6 +71,22 @@ local function InitializeNPCS()
 	end
 end
 
+local function GetNPCModel(spawnerModel)
+	local spawnerType = spawnerModel:GetAttribute("SpawnerType")
+	if not spawnerType then
+		warn("Spawner missing attribute SpawnerType")
+		return nil
+	end
+
+	if spawnerType == "Bandit" then
+		return BanditModels[RandomModule.GetRandomIntBetween(1, #BanditModels)], spawnerType
+	elseif spawnerType == "Sheriff" then
+		return SheriffModels[RandomModule.GetRandomIntBetween(1, #SheriffModels)], spawnerType
+	else
+		return nil, nil
+	end
+end
+
 local function SpawnLoop(spawnerModel, spawnLocation)
 	if not spawnerModel or not spawnerModel.Parent then
 		return
@@ -73,10 +100,17 @@ local function SpawnLoop(spawnerModel, spawnLocation)
 	end
 
 	if NPCEvents.CurrentSpawnedNPCS < NPCEvents.MaxNPCSAllowed then
-		local npcModel = NPCList[RandomModule.GetRandomIntBetween(1, #NPCList)]:Clone()
+		local npcModel, spawnerType = GetNPCModel(spawnerModel)
+		if not npcModel then
+			warn("Spawner has no valid npc model to choose from")
+			return
+		end
+		npcModel = NPCList[npcModel]:Clone()
 		npcModel.Name = `{npcType}NPC{NPCCount}`
 		CollectionService:AddTag(npcModel, npcType)
+		CollectionService:AddTag(npcModel, spawnerType)
 		CollectionService:AddTag(npcModel, "NPC")
+
 		npcModel:PivotTo(spawnLocation.WorldCFrame)
 		npcModel.Parent = workspace.NPCs
 		NPCCount += 1
@@ -101,7 +135,7 @@ end
 
 local function InitializeNPCSpawners()
 	local spawnerInstances = CollectionService:GetTagged("Spawner")
-	if #NPCList <= 0 then
+	if #NPCList:GetChildren() <= 0 then
 		error("NPC list has no children!")
 	end
 
