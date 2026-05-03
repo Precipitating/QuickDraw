@@ -11,50 +11,72 @@ local NPCList = ServerStorage.NPCs
 local TargetList = Queue.new()
 local BanditModels = { "CowboyNPC" }
 local SheriffModels = { "SheriffNPC" }
-local MaxSheriffsAllowed = 5
+
 type HumanPlayer = ClassTypes.HumanPlayer
 
 local NPCEvents = {}
 NPCEvents.MaxNPCSAllowed = 15
-NPCEvents.SheriffsSpawned = 0
-NPCEvents.SecondsToSpawnNPC = 10
+NPCEvents.MaxNPCTypesAllowed = {
+	Sheriff = 3,
+	Bandit = 12,
+}
+NPCEvents.NPCTypesSpawned = {
+	Sheriff = 0,
+	Bandit = 0,
+}
+NPCEvents.SecondsToSpawnNPC = 30
 NPCEvents.CurrentSpawnedNPCS = 0
-local NPCCount = 1
+
+local function CanSpawn(spawnerType: string)
+	if not spawnerType then
+		return false
+	end
+
+	if NPCEvents.NPCTypesSpawned[spawnerType] then
+		local spawnedType = NPCEvents.NPCTypesSpawned[spawnerType]
+		local maxAllowed = NPCEvents.MaxNPCTypesAllowed[spawnerType]
+		if spawnedType == nil or maxAllowed == nil then
+			return false
+		end
+
+		if spawnedType < maxAllowed then
+			return true
+		end
+	end
+
+	return false
+end
 
 local function AddNPCClass(taggedNPC: Model, classType: string)
 	local humanoid = taggedNPC:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
 		error("NPC has no humanoid to initialize its class!")
 	end
-	NPCEvents.CurrentSpawnedNPCS += 1
+
+	local humanNPC = nil
+
 	-- Mercenary mode, will spawn at a random spawner
 	if not TargetList:isEmpty() then
 		local mercenaryTarget = TargetList:dequeue()
-		taggedNPC.Name = `Mercenary{NPCCount}`
+		taggedNPC.Name = `Mercenary{NPCEvents.CurrentSpawnedNPCS}`
 		CollectionService:AddTag(taggedNPC, "Mercenary")
-		local humanNPC = PlayerManager:AddHumanClassNPC(
+		humanNPC = PlayerManager:AddHumanClassNPC(
 			humanoid,
 			"Grenadier",
 			{ DefaultStateData = { Target = mercenaryTarget.Character } }
 		)
 		humanNPC.AI.EnemyList = { [mercenaryTarget.Name] = true }
-		return
 	elseif CollectionService:HasTag(taggedNPC, "Sheriff") then
-		if NPCEvents.SheriffsSpawned >= MaxSheriffsAllowed then
-			return
-		end
-		local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
-		taggedNPC.Name = `Sheriff{NPCCount}`
+		humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
+		taggedNPC.Name = `Sheriff{NPCEvents.CurrentSpawnedNPCS}`
 		humanNPC.AI.EnemyList = { Bandit = true, Wanted = true }
-		NPCEvents.SheriffsSpawned += 1
-		return
+	else
+		-- else Bandit
+		humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
+		humanNPC.AI.EnemyList = { Player = true, Sheriff = true }
 	end
 
-	-- else Bandit
-	local humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
-	humanNPC.AI.EnemyList = { Player = true, Sheriff = true }
 	print(`[SERVER] NPCs spawned: {NPCEvents.CurrentSpawnedNPCS}`)
-
 	return humanNPC
 end
 
@@ -71,8 +93,7 @@ local function InitializeNPCS()
 	end
 end
 
-local function GetNPCModel(spawnerModel)
-	local spawnerType = spawnerModel:GetAttribute("SpawnerType")
+local function GetNPCModel(spawnerType: string)
 	if not spawnerType then
 		warn("Spawner missing attribute SpawnerType")
 		return nil
@@ -99,21 +120,44 @@ local function SpawnLoop(spawnerModel, spawnLocation)
 		end
 	end
 
+	if not npcType then
+		warn("Spawner has no matching NPC type tag:", spawnerModel.Name)
+		task.delay(
+			RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
+			SpawnLoop,
+			spawnerModel,
+			spawnLocation
+		)
+		return
+	end
+
 	if NPCEvents.CurrentSpawnedNPCS < NPCEvents.MaxNPCSAllowed then
-		local npcModel, spawnerType = GetNPCModel(spawnerModel)
+		local spawnerType = spawnerModel:GetAttribute("SpawnerType")
+		if not CanSpawn(spawnerType) then
+			return
+		end
+
+		local npcModel = GetNPCModel(spawnerType)
 		if not npcModel then
 			warn("Spawner has no valid npc model to choose from")
 			return
 		end
+
 		npcModel = NPCList[npcModel]:Clone()
-		npcModel.Name = `{npcType}NPC{NPCCount}`
+		npcModel.Name = `{npcType}NPC{NPCEvents.CurrentSpawnedNPCS}`
 		CollectionService:AddTag(npcModel, npcType)
 		CollectionService:AddTag(npcModel, spawnerType)
 		CollectionService:AddTag(npcModel, "NPC")
 
 		npcModel:PivotTo(spawnLocation.WorldCFrame)
 		npcModel.Parent = workspace.NPCs
-		NPCCount += 1
+		NPCEvents.CurrentSpawnedNPCS = math.max(0, math.min(NPCEvents.CurrentSpawnedNPCS + 1, NPCEvents.MaxNPCSAllowed))
+		if NPCEvents.NPCTypesSpawned[spawnerType] then
+			NPCEvents.NPCTypesSpawned[spawnerType] = math.max(
+				0,
+				math.min(NPCEvents.NPCTypesSpawned[spawnerType] + 1, NPCEvents.MaxNPCTypesAllowed[spawnerType])
+			)
+		end
 	end
 	task.delay(
 		RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,

@@ -8,7 +8,7 @@ local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundH
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-
+local BloodFlowEmitter = ReplicatedStorage.Shared.Templates.BloodFlow
 type Gun = ClassTypes.Gun
 type Human = ClassTypes.Human
 
@@ -27,6 +27,21 @@ local SimulatingLimbs = {
 	["RightUpperArm"] = true,
 	["LeftWrist"] = true,
 	["RightWrist"] = true,
+}
+
+-- Applied on UpperTorso and LowerTorso
+local DismemberAttachments = {
+	LeftUpperArm = "LeftShoulderRigAttachment",
+	LeftUpperLeg = "LeftHipRigAttachment",
+	RightUpperLeg = "RightHipRigAttachment",
+	Head = "NeckRigAttachment",
+}
+
+local DismemberLimbBloodRequirement = {
+	LeftUpperArm = true,
+	LeftUpperLeg = true,
+	RightUpperLeg = true,
+	Head = true,
 }
 
 local LimbHealth = {
@@ -423,6 +438,43 @@ function Human:DisableLimb(limbName: string)
 	self:SetCrawlState()
 end
 
+function Human:ApplyBloodFlowVisual(limbName: string)
+	local upperTorso = self.BodyParts["UpperTorso"]
+	local lowerTorso = self.BodyParts["LowerTorso"]
+
+	local bloodEmitter: ParticleEmitter = BloodFlowEmitter:Clone()
+
+	local isLeg = string.find(limbName:lower(), "leg")
+	local isArm = string.find(limbName:lower(), "arm")
+	local isHead = string.find(limbName:lower(), "head")
+
+	if isLeg then
+		local attachment = lowerTorso:FindFirstChild(DismemberAttachments[limbName])
+
+		if not attachment then
+			warn("[Human:ApplyBloodFlowVisual] Can't find lower torso attachment")
+			return
+		end
+		bloodEmitter.EmissionDirection = Enum.NormalId.Bottom
+		bloodEmitter.Parent = attachment
+	elseif isArm or isHead then
+		local attachment = upperTorso:FindFirstChild(DismemberAttachments[limbName])
+
+		if not attachment then
+			warn("[Human:ApplyBloodFlowVisual] Can't find upper torso attachment")
+			return
+		end
+
+		if not isHead then
+			bloodEmitter.EmissionDirection = if string.find(limbName:lower(), "left")
+				then Enum.NormalId.Left
+				else Enum.NormalId.Right
+		end
+
+		bloodEmitter.Parent = attachment
+	end
+end
+
 function Human:DestroyLimb(limbName: string)
 	if not self.BodyParts or not self.BodyParts[limbName] then
 		return
@@ -434,6 +486,11 @@ function Human:DestroyLimb(limbName: string)
 	if self.DisabledBodyParts[limbName] == false then
 		self.DisabledBodyParts[limbName] = true
 	end
+
+	if DismemberLimbBloodRequirement[limbName] then
+		self:ApplyBloodFlowVisual(limbName)
+	end
+
 	self:SetCrawlState()
 end
 
