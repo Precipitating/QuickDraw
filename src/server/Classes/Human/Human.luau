@@ -119,6 +119,8 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Animator = humanoid:FindFirstChildOfClass("Animator")
 	self.Stamina = 100
 	self.Sprinting = false
+	self.LastInvincible = nil
+	self.ActiveInvincibleDelayHandle = nil
 	self.JumpSignalled = false
 	self.RollSignalled = false
 	self.KickSignalled = false
@@ -141,6 +143,8 @@ function Human.new(humanoid: Humanoid?): Human
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
 
+	self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
+
 	return self :: any
 end
 
@@ -149,6 +153,59 @@ function Human:GetHealthPercentage()
 		return -1
 	end
 	return self.Health / HumanConstants.MAX_HP
+end
+
+function Human:ToggleInvincibleHighlight(state: boolean)
+	local highlight = self.Character and self.Character:FindFirstChildOfClass("Highlight")
+	if not highlight then
+		highlight = Instance.new("Highlight")
+		highlight.Name = "InvincibilityHighlight"
+		highlight.OutlineTransparency = 1
+		highlight.FillColor = Color3.fromRGB(1, 170, 255)
+		highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+		highlight.Parent = self.Character
+	end
+
+	if state then
+		highlight.Enabled = true
+	else
+		highlight.Enabled = false
+	end
+end
+
+function Human:SetInvincible(isInvincible: boolean, excludeFromCooldown: boolean?)
+	if self.Invincible == isInvincible then
+		return
+	end
+
+	if
+		isInvincible
+		and self.LastInvincible
+		and (os.time() - self.LastInvincible) < HumanConstants.GUI_INTERACTION_INVINCIBILITY_COOLDOWN
+	then
+		warn("Cooldown, not setting invincible")
+		return
+	end
+
+	self.Invincible = isInvincible
+
+	if self.Invincible then
+		self:ToggleInvincibleHighlight(true)
+		if not excludeFromCooldown then
+			self.LastInvincible = os.time()
+		end
+	else
+		self:ToggleInvincibleHighlight(false)
+	end
+end
+
+function Human:SetInvincibleFor(duration: number, excludeFromCooldown: boolean?)
+	self:SetInvincible(true, excludeFromCooldown)
+	self.ActiveInvincibleDelayHandle = task.delay(duration, function()
+		if self and not CollectionService:HasTag(self.Character, "Dead") then
+			self:SetInvincible(false)
+		end
+	end)
 end
 
 function Human:SetupPhysicsSettings()

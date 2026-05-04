@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local CommonGUIFunctions = require(script.Parent.CommonGUIFunctions)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -7,6 +8,13 @@ local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerM
 local ServerData = require(ServerScriptService.Server.ServerData)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ShopGUI = {}
+
+function ShopGUI:OnGUIOpen(player: Player, npcModel: Model)
+	CommonGUIFunctions:OnGUIOpen(player, npcModel)
+end
+function ShopGUI:OnGUIClose(player: Player)
+	CommonGUIFunctions:OnGUIClose(player)
+end
 
 function ShopGUI:BuyItem(player: Player, productName: string, productCost: number)
 	local human = PlayerManager:GetHumanClassFromPlayer(player)
@@ -44,5 +52,5 @@ function ShopGUI:BuyItem(player: Player, productName: string, productCost: numbe
 	ServerData.UpdateMoney(player, -productCost)
 	return true
 end
-ShopGUI.networker = Networker.new("ShopNetwork", ShopGUI, { ShopGUI.BuyItem })
+ShopGUI.networker = Networker.new("ShopNetwork", ShopGUI, { ShopGUI.BuyItem, ShopGUI.OnGUIClose, ShopGUI.OnGUIOpen })
 return ShopGUI

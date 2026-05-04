@@ -1,6 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Server = require(ReplicatedStorage.Shared.Vetra.VetraNet.Server)
 local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -18,11 +20,15 @@ end
 local function InitializePlayer(player: Player, character: Model)
 	local humanClass: HumanPlayer = PlayerManager:AddHumanClass(player)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid") :: Humanoid
+	local bounty = ServerData:GetBounty(player)
 	if not humanoid then
 		error(`Missing humanoid for {player.DisplayName}`)
 	end
 
 	CollectionService:AddTag(character, "Player")
+	if bounty > 0 then
+		CollectionService:AddTag(character, "Wanted")
+	end
 	humanoid.WalkSpeed = 6
 
 	-- ragdoll

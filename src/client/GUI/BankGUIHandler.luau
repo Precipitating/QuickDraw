@@ -48,6 +48,7 @@ function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	ClientUtility.ToggleControls(false)
 	PlayerContext.ApplyMouseLock(false)
 	CrosshairHandler:ToggleCrosshairVisibility(true)
+	self.networker:fire("OnGUIOpen", linkedPrompt:FindFirstAncestorOfClass("Model"))
 
 	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
 		self:Disconnect()
@@ -57,6 +58,7 @@ function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 		ClientUtility.ToggleControls(true)
 		CrosshairHandler:ToggleCrosshairVisibility(false)
 		CoreGUIHandler.ToggleBackpackVisibility(true)
+		self.networker:fire("OnGUIClose")
 		linkedPrompt.Enabled = true
 	end))
 

@@ -34,6 +34,7 @@ function MercenaryGUIHandler:ConnectMercenaryGUI(gui: ScreenGui, linkedPrompt: P
 	ClientUtility.ToggleControls(false)
 	PlayerContext.ApplyMouseLock(false)
 	CrosshairHandler:ToggleCrosshairVisibility(true)
+	self.networker:fire("OnGUIOpen", linkedPrompt:FindFirstAncestorOfClass("Model"))
 
 	local playerList = Players:GetPlayers()
 	for _, target in playerList do
@@ -64,6 +65,7 @@ function MercenaryGUIHandler:ConnectMercenaryGUI(gui: ScreenGui, linkedPrompt: P
 		ClientUtility.ToggleControls(true)
 		CrosshairHandler:ToggleCrosshairVisibility(false)
 		CoreGUIHandler.ToggleBackpackVisibility(true)
+		self.networker:fire("OnGUIClose")
 		linkedPrompt.Enabled = true
 	end))
 end

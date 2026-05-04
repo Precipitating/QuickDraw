@@ -108,6 +108,7 @@ export type Human = {
 	DisableLimb: (self: Human, limbName: string) -> (),
 	DestroyLimb: (self: Human, limbName: string) -> (),
 	OnDeath: (self: Human) -> (),
+	OnSetInvincibleFor: (self: Human, duration: number, excludeFromCooldown: boolean) -> (),
 	Ragdoll: (self: Human, ragdollTime: number) -> (),
 	ApplyImpulse: (self: Human, force: Vector3, position: Vector3?) -> (),
 	Destroy: (self: Human) -> (),
