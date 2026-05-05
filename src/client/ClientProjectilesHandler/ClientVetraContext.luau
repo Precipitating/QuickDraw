@@ -10,17 +10,7 @@ local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
 local ClientSolver = Vetra.new()
 local Net = VetraNet.new(ClientSolver, VetraRegistry)
 
-local function GetHoleCFrame(position: Vector3, normal: Vector3): CFrame
-	local up = Vector3.new(0, 1, 0)
-	-- if normal is nearly parallel to world up, use a different up vector
-	if math.abs(normal:Dot(up)) > 0.99 then
-		up = Vector3.new(0, 0, 1)
-	end
-	local right = normal:Cross(up).Unit
-	local adjustedUp = right:Cross(normal).Unit
-	return CFrame.fromMatrix(position + normal * 0.01, right, adjustedUp, -normal)
-end
-local function TryDisplayBulletHoleOnSurface(context, result: RaycastResult?)
+local function TryDisplayProjectileMark(context, result: RaycastResult?)
 	if not result then
 		return
 	end
@@ -31,8 +21,7 @@ local function TryDisplayBulletHoleOnSurface(context, result: RaycastResult?)
 			and not CollectionService:HasTag(result.Instance, "Player")
 			and not CollectionService:HasTag(result.Instance.Parent, "NPC")
 		if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") and canDisplayBulletHole then
-			local hitPos = GetHoleCFrame(result.Position, result.Normal)
-			EffectsDisplayer:DisplayBulletHole(hitPos)
+			EffectsDisplayer:DisplayProjectileMark("Bullet", result)
 		end
 	end
 end
@@ -43,7 +32,7 @@ local function Initialize()
 		if not result then
 			return
 		end
-		TryDisplayBulletHoleOnSurface(context, result)
+		TryDisplayProjectileMark(context, result)
 	end)
 
 	ClientSolver:GetSignals().OnPierce:Connect(function(context, result: RaycastResult?, _velocity, pierceCount)
@@ -51,7 +40,7 @@ local function Initialize()
 			return
 		end
 		warn("[CLIENT] onPierce called")
-		TryDisplayBulletHoleOnSurface(context, result)
+		TryDisplayProjectileMark(context, result)
 	end)
 end
 

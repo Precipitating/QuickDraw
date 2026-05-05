@@ -128,20 +128,92 @@ function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableDa
 	return false
 end
 
+function ProjectileEvents:FragmentHitEnvironment(hit: RaycastResult, throwableData)
+	local explosiveType = throwableData.Type
+
+	if not explosiveType then
+		warn("Can't spawn fragment environment hit effect, missing ExplosiveType")
+		return
+	end
+
+	if not hit then
+		warn(`[ProjectileEvents:FragmentHitEnvironment] Missing raycastResult`)
+		return
+	end
+
+	if explosiveType == "Explosive" then
+		ServerEffectsDisplayer:DisplayProjectileMark("Bullet", hit)
+	elseif explosiveType == "Spread" then
+		ServerEffectsDisplayer:DisplayProjectileMark("Burn", hit)
+	end
+end
+
+-- Used for throwable and destroyable radius limb damage
+function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData, initiator: Player | nil)
+	if not damagedObject then
+		return false
+	end
+
+	local parent = damagedObject.Parent
+	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
+	local isBodyPart = damagedObject:IsA("MeshPart") and humanoid
+
+	local dmg = explosiveData.BaseDamage or explosiveData.Damage
+	local effectDuration = explosiveData.SpreadDuration or 0
+	local damageType = explosiveData.HumanEffect or explosiveData.Type
+	if isBodyPart then
+		if damageType == "Spread" then
+			GunSignals.InflictLimbDamage:Fire(
+				explosiveData.SpreadParticle,
+				effectDuration,
+				dmg,
+				damagedObject,
+				humanoid,
+				initiator
+			)
+		else
+			if damageType == "Damage" then
+				GunSignals.InflictLimbDamage:Fire(nil, 1, dmg, damagedObject, humanoid, initiator)
+			end
+		end
+		return true
+	end
+	return false
+end
+
+function ProjectileEvents:ApplyThrowableRadiusDamage(origin: Vector3, radius: number, explosiveData, owner)
+	local partsInRadius = workspace:GetPartBoundsInRadius(origin, radius)
+
+	for _, obj in partsInRadius do
+		-- affect humans only
+		self:BodyPartDamage(obj, explosiveData, owner)
+	end
+end
+
+-- For throwables
 function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, throwableData)
 	if not raycastResult then
 		warn(`[SERVER] Can't spawn fragments, raycast result is nil`)
 		return
 	end
 
+	local center = raycastResult.Position
+	local blastRadius = throwableData.BlastRadius
+
+	-- apply radius damage first, for guaranteed damage within it
+	self:ApplyThrowableRadiusDamage(center, blastRadius, throwableData, owner)
+
+	-- spawn fragments on surface outwards from the radius
 	for _ = 1, throwableData.FragmentCount do
-		local pos = raycastResult.Position
 		local randomDir = RandomConeDirection(Vector3.yAxis, 180)
 
+		local surfaceResult = workspace:Raycast(center, randomDir * blastRadius)
+		local origin = if surfaceResult then surfaceResult.Position else center + randomDir * blastRadius
+
 		local context = ProjectileContext.BulletContext.new({
-			Origin = pos,
+			Origin = origin,
 			Direction = randomDir,
-			Speed = 200, -- fast initial burst, drag bleeds it off quickly
+			Speed = 200,
 		})
 		context.UserData.ProjectileType = "Shrapnel"
 		context.UserData.Data = throwableData
@@ -150,36 +222,20 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 	end
 end
 
-function ProjectileEvents:OnThrowImpact(landPos: Vector3, impactParticleName: string)
-	-- get particle name
-	local throwEffect = impactParticleName
-	-- clone particle if valid
-	local effect = if Effects[throwEffect] then Effects[throwEffect]:Clone() else nil
-
-	if not effect then
+function ProjectileEvents:OnThrowImpact(impactParticleName: string, landPos: Vector3)
+	if not Effects[impactParticleName] then
 		warn("[Throwable:OnThrowImpact] Effect not valid to spawn")
 		return
 	end
 
-	local explosion: Part = Instance.new("Part")
-	explosion.Parent = workspace
-	explosion.CanCollide = false
-	explosion.CanQuery = false
-	explosion.Transparency = 1
-	explosion.Anchored = true
-	explosion.Position = landPos + Vector3.new(0, 1, 0)
-	effect.Parent = explosion
-	effect.Enabled = true
-
-	Debris:AddItem(explosion, 1)
+	ServerEffectsDisplayer:DisplayDestroyParticle(impactParticleName, landPos)
 end
 
 -- This should be executed last, as every other option should be exhausted before deciding we've hit
 -- the environment.
 function ProjectileEvents:GunHitEnvironment(raycastResult: RaycastResult)
 	-- hit environment
-	local hitPos = CFrame.lookAt(raycastResult.Position, raycastResult.Position + raycastResult.Normal)
-	ServerEffectsDisplayer:DisplayBulletHole(hitPos)
+	ServerEffectsDisplayer:DisplayProjectileMark("Bullet", raycastResult)
 end
 
 function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastResult?)
@@ -190,7 +246,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	--warn(`OnHit fired by server {result.Instance.Name}`)
 	local data = context.UserData
 
-	-- GUN PROJECTILES
+	-- ON BULLET HIT
 	if data.ProjectileType == "Bullet" then
 		local hitPlayer = ProjectileEvents:GunHitPlayer(context.UserData, result)
 		if hitPlayer then
@@ -204,7 +260,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 
 		ProjectileEvents:GunHitEnvironment(result)
 
-		-- THROWABLE PROJECTILES
+		-- ON THROWABLE IMPACT LAND
 	elseif data.ProjectileType == "Throwable" then
 		local throwableData = data.Data
 		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
@@ -226,7 +282,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 				data.Class:Destroy()
 			end
 		end)
-		-- SHRAPNEL PROJECTILES
+		-- ON SHRAPNEL HIT
 	elseif data.ProjectileType == "Shrapnel" then
 		self:OnFragmentHit(context, result)
 	end
@@ -249,6 +305,9 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 	if self:FragmentHitDestroyable(result, throwableData) then
 		return
 	end
+
+	-- else hit environment
+	self:FragmentHitEnvironment(result, throwableData)
 end
 
 function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastResult?)
@@ -293,10 +352,12 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 		local throwableData = ThrowableData[throwableName]
 
 		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
+
+		if context.CosmeticBulletObject then
+			Debris:AddItem(context.CosmeticBulletObject, throwableData.DetonationTime)
+		end
+
 		task.delay(throwableData.DetonationTime, function()
-			if context.CosmeticBulletObject then
-				context.CosmeticBulletObject:Destroy()
-			end
 			local hitPos = result.Position
 			ServerSoundHandler:Play3DOneShotToOthers(
 				nil,
@@ -305,7 +366,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 				{ MaxDistance = 150 }
 			)
 
-			self:OnThrowImpact(hitPos, throwableData.ImpactParticle)
+			self:OnThrowImpact(throwableData.ImpactParticle, hitPos)
 			self:SpawnFragments(result, data.Owner, throwableData)
 
 			if throwable.CurrentAmmo <= 0 then

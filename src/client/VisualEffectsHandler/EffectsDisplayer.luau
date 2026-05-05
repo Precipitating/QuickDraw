@@ -9,14 +9,35 @@ local EffectsDisplayer = {}
 
 EffectsDisplayer.networker = Networker.new("EffectsDisplayerNetwork", EffectsDisplayer)
 
-function EffectsDisplayer:DisplayBulletHole(cframeTarget: CFrame?)
-	if not cframeTarget then
-		warn("Client received an invalid cframeTarget when showing a bullet hole!")
+function EffectsDisplayer:GetHoleCFrame(position: Vector3, normal: Vector3): CFrame
+	local up = Vector3.new(0, 1, 0)
+	if math.abs(normal:Dot(up)) > 0.99 then
+		up = Vector3.new(1, 0, 0)
+	end
+	local right = normal:Cross(up).Unit
+	local adjustedUp = right:Cross(normal).Unit
+	return CFrame.fromMatrix(position + normal * 0.05, right, adjustedUp, -normal)
+end
+
+function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastResult)
+	if not result then
+		warn("Client received an invalid RaycastResult when showing a projectile mark!")
 		return
 	end
 
-	local availableBulletHole: Part = PoolHandler.BulletPool:Acquire()
-	availableBulletHole:PivotTo(cframeTarget)
+	local hitPos = self:GetHoleCFrame(result.Position, result.Normal)
+
+	if name == "Bullet" then
+		local availableBulletHole: Part = PoolHandler.BulletPool:Acquire(hitPos.Position)
+		if availableBulletHole then
+			availableBulletHole.CFrame = hitPos
+		end
+	elseif name == "Burn" then
+		local availableBurnMark: Part = PoolHandler.BurnMarksPool:Acquire(hitPos.Position)
+		if availableBurnMark then
+			availableBurnMark.CFrame = hitPos
+		end
+	end
 end
 
 function EffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
@@ -48,6 +69,7 @@ function EffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
 	end
 end
 
+-- for destroyables
 function EffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string, position: Vector3)
 	local explosion: Part = Instance.new("Part")
 	if not destroyableParticleName then
@@ -65,6 +87,7 @@ function EffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string
 	explosion.Anchored = true
 	explosion.Position = position
 	particleEffect.Parent = explosion
+	task.wait()
 	particleEffect:Emit(25)
 	Debris:AddItem(explosion, 0.2)
 end
@@ -95,7 +118,10 @@ function EffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 	local hitPos = CFrame.lookAt(position, position + normal)
 
 	local availableBlood: Part = PoolHandler.BloodPool:Acquire()
-	assert(availableBlood, "Can't find available blood from its pool, does it exist?")
+
+	if not availableBlood then
+		return
+	end
 
 	availableBlood:PivotTo(hitPos)
 

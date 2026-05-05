@@ -1,27 +1,51 @@
 local RingBufferPool = {}
 RingBufferPool.__index = RingBufferPool
-
-function RingBufferPool.new(template: Instance, capacity: number, parent: Instance)
+local MIN_DISTANCE = 2
+function RingBufferPool.new(template: Instance | {}, capacity: number, parent: Instance)
 	local self = setmetatable({}, RingBufferPool)
 
 	self._capacity = capacity
 	self._head = 0
 	self._objects = table.create(capacity)
 	self._active = table.create(capacity)
-	for i = 1, capacity do
-		local clone = template:Clone()
-		clone.Parent = parent
-		self._objects[i] = clone
-		self._active[i] = false
+	if type(template) == "table" then
+		local effectCount = #template
+		for i = 1, capacity do
+			-- pick a random effect from the template table per slot
+			local effect = template[math.random(effectCount)]
+			local clone = effect:Clone()
+			clone.Parent = parent
+			self._objects[i] = clone
+			self._active[i] = false
+		end
+	else
+		for i = 1, capacity do
+			local clone = template:Clone()
+			clone.Parent = parent
+			self._objects[i] = clone
+			self._active[i] = false
+		end
 	end
 
 	return self
 end
-
-function RingBufferPool:Acquire(): (Instance, number)
+function RingBufferPool:IsPositionOccupied(position: Vector3): boolean
+	for i = 1, self._capacity do
+		if self._active[i] then
+			local obj = self._objects[i]
+			if obj and (obj.Position - position).Magnitude < MIN_DISTANCE then
+				return true
+			end
+		end
+	end
+	return false
+end
+function RingBufferPool:Acquire(position: Vector3?): (Instance?, number?)
+	if position and self:IsPositionOccupied(position) then
+		return nil, nil
+	end
 	self._head = (self._head % self._capacity) + 1
 	self._active[self._head] = true
-
 	return self._objects[self._head], self._head
 end
 

@@ -7,6 +7,10 @@ local ServerEffectsDisplayer = {}
 
 -- Send these effects down to client to emit
 function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string, position: Vector3)
+	if not destroyableParticleName or not position then
+		warn(`[ServerEffectsDisplayer:DisplayDestroyParticle] one argument is nil!`)
+		return
+	end
 	self.networker:fireAll("DisplayDestroyParticle", destroyableParticleName, position)
 end
 function ServerEffectsDisplayer:DisplaySpreadParticle(
@@ -17,14 +21,22 @@ function ServerEffectsDisplayer:DisplaySpreadParticle(
 	self.networker:fireAll("DisplaySpreadParticle", destroyableParticleName, duration, parent)
 end
 
-function ServerEffectsDisplayer:DisplayBulletHole(cframeTarget: CFrame?)
-	assert(cframeTarget, "[ServerGunHandler.DisplayBulletHole] cframeTarget is nil")
-	self.networker:fireAll("DisplayBulletHole", cframeTarget)
+function ServerEffectsDisplayer:DisplayProjectileMark(name: string, raycastResult: RaycastResult?)
+	assert(raycastResult, "[ServerGunHandler.DisplayProjectileMark] raycastResult is nil")
+
+	-- RaycastResult does not serialize to client, so do it manually via table
+	self.networker:fireAll("DisplayProjectileMark", name, {
+		Position = raycastResult.Position,
+		Normal = raycastResult.Normal,
+		Instance = raycastResult.Instance,
+		Material = raycastResult.Material,
+		Distance = raycastResult.Distance,
+	})
 end
 
 function ServerEffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vector3?)
-	assert(position, "[ServerGunHandler.DisplayBulletHole] position is nil")
-	assert(normal, "[ServerGunHandler.DisplayBulletHole] normal is nil")
+	assert(position, "[ServerGunHandler.DisplayBloodHit] position is nil")
+	assert(normal, "[ServerGunHandler.DisplayBloodHit] normal is nil")
 	self.networker:fireAll("DisplayBloodHit", position, normal)
 end
 
@@ -68,6 +80,14 @@ function ServerEffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
 	)
 
 	print(`Server -> Client Muzzle Flash`)
+end
+
+function ServerEffectsDisplayer:DisplayImpactParticle(particle: ParticleEmitter?, position: Vector3?)
+	if not particle or not position then
+		return
+	end
+
+	self.networker:fireAll("DisplayImpactParticle", particle, position)
 end
 ServerEffectsDisplayer.networker = Networker.new(
 	"EffectsDisplayerNetwork",

@@ -234,8 +234,8 @@ function Human:SetupPhysicsSettings()
 
 	rightArmSocket.UpperAngle = 90
 
-	rightLowerArmSocket.UpperAngle = 5
-	rightLowerArmSocket.TwistUpperAngle = 0
+	rightLowerArmSocket.UpperAngle = 0
+	rightLowerArmSocket.TwistUpperAngle = 5
 	rightLowerArmSocket.TwistLowerAngle = 0
 end
 

@@ -30,7 +30,6 @@ return {
 
 			-- if model, NPC shot
 			-- if player, player shot
-			-- if nil, its a throwable
 			local shooterCharacter = if shooter and shooter:IsA("Player") then shooter.Character else shooter
 
 			local hrp = if shooterCharacter
@@ -75,6 +74,11 @@ return {
 
 			if not humanClass then
 				warn("[InflictLimbDamage] humanClass invalid")
+				return
+			end
+
+			if humanClass.Invincible then
+				warn(`Invincible, not inflicting limb damage`)
 				return
 			end
 

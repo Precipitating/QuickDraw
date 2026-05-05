@@ -63,7 +63,7 @@ local GunData = {
 			:Build(),
 	},
 	Winchester = {
-		MaxAmmo = 13,
+		MaxAmmo = 8,
 		ShotDelay = 0.8,
 		Damage = 35,
 		Cost = 2500,

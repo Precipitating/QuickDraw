@@ -11,6 +11,7 @@ local ThrowableData = {
 		Velocity = 70,
 		DetonationTime = 3,
 		FragmentCount = 450,
+		BlastRadius = 10,
 		ThrowSound = "ThrowProjectile",
 		LandSound = "DynamiteFuse",
 		DetonationSound = "DynamiteExplosion",
@@ -40,6 +41,7 @@ local ThrowableData = {
 		Cost = 500,
 		Velocity = 150,
 		DetonationTime = 0,
+		BlastRadius = 3,
 		FragmentCount = 300,
 		ThrowSound = "ThrowProjectile",
 		LandSound = "DynamiteFuse",
@@ -70,9 +72,9 @@ local ThrowableData = {
 		ThrowDelay = 5,
 		Damage = 2,
 		Cost = 250,
-		Velocity = 80,
+		Velocity = 100,
 		DetonationTime = 0,
-		EffectDuration = 5,
+		BlastRadius = 6,
 		FragmentCount = 300,
 		ThrowSound = "ThrowProjectile",
 		LandSound = "MolotovLand",
@@ -80,7 +82,7 @@ local ThrowableData = {
 		Type = "Spread",
 		ImpactParticle = "FireExplosion",
 		SpreadParticle = "Burning",
-		SpreadDuration = 7,
+		SpreadDuration = 5,
 		ProjectileData = Vetra.BehaviorBuilder
 			.Grenade()
 			:Bounce()
@@ -100,10 +102,10 @@ local ThrowableData = {
 	},
 }
 
--- for _, throwable in ThrowableData do
--- 	table.freeze(throwable)
--- end
+for _, throwable in ThrowableData do
+	table.freeze(throwable)
+end
 
--- table.freeze(ThrowableData)
+table.freeze(ThrowableData)
 
 return ThrowableData

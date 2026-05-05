@@ -5,6 +5,7 @@ local ServerEffectsDisplayer = require(script.Parent.ServerEffectsDisplayer)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local ProjectileEvents = require(ServerScriptService.Server.ProjectilesHandler.ProjectileEvents)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local DestroyableData = require(ReplicatedStorage.Shared.DestroyableData)
 -- Destroyable environmental objects that may produce a unique effect
@@ -16,6 +17,7 @@ function Destroyable.new(object: Instance)
 	assert(DestroyableData[object.Name], "Destroyable name doesn't exist to initialize")
 	local self = setmetatable({}, Destroyable)
 	local data = DestroyableData[object.Name]
+	self.DestroyableData = data
 	self.ModelRef = object
 	self.Name = object.Name
 	self.Health = data.Health
@@ -72,41 +74,41 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	humanClass:ApplyImpulse(impulse)
 end
 
-function Destroyable:BodyPartDamage(damagedObject: BasePart?)
-	if not damagedObject then
-		return false
-	end
+-- function Destroyable:BodyPartDamage(damagedObject: BasePart?)
+-- 	if not damagedObject then
+-- 		return false
+-- 	end
 
-	local parent = damagedObject.Parent
-	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
-	local isBodyPart = damagedObject:IsA("MeshPart") and humanoid
+-- 	local parent = damagedObject.Parent
+-- 	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
+-- 	local isBodyPart = damagedObject:IsA("MeshPart") and humanoid
 
-	if isBodyPart then
-		if self.HumanEffect == "Spread" then
-			GunSignals.InflictLimbDamage:Fire(
-				self.SpreadParticle,
-				self.SpreadDuration or 1,
-				self.BaseDamage,
-				damagedObject,
-				humanoid,
-				self.PlayerWhoDestroyed
-			)
-		else
-			if self.HumanEffect == "Damage" then
-				GunSignals.InflictLimbDamage:Fire(
-					nil,
-					1,
-					self.BaseDamage,
-					damagedObject,
-					humanoid,
-					self.PlayerWhoDestroyed
-				)
-			end
-		end
-		return true
-	end
-	return false
-end
+-- 	if isBodyPart then
+-- 		if self.HumanEffect == "Spread" then
+-- 			GunSignals.InflictLimbDamage:Fire(
+-- 				self.SpreadParticle,
+-- 				self.SpreadDuration or 1,
+-- 				self.BaseDamage,
+-- 				damagedObject,
+-- 				humanoid,
+-- 				self.PlayerWhoDestroyed
+-- 			)
+-- 		else
+-- 			if self.HumanEffect == "Damage" then
+-- 				GunSignals.InflictLimbDamage:Fire(
+-- 					nil,
+-- 					1,
+-- 					self.BaseDamage,
+-- 					damagedObject,
+-- 					humanoid,
+-- 					self.PlayerWhoDestroyed
+-- 				)
+-- 			end
+-- 		end
+-- 		return true
+-- 	end
+-- 	return false
+-- end
 
 function Destroyable:ApplyRadiusDamage()
 	local modelPos = self.ModelRef:GetPivot().Position
@@ -114,7 +116,8 @@ function Destroyable:ApplyRadiusDamage()
 	local humansHitAlready = {}
 
 	for _, obj in partsInRadius do
-		if self:BodyPartDamage(obj) then
+		local hitHumanLimb = ProjectileEvents:BodyPartDamage(obj, self.DestroyableData, self.PlayerWhoDestroyed)
+		if hitHumanLimb then
 			local humanoid = if obj.Parent then obj.Parent:FindFirstChild("Humanoid") else nil
 			if humanoid and not humansHitAlready[humanoid] then
 				self:ApplyHumanExplosionImpulse(obj)

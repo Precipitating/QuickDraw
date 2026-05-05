@@ -2,9 +2,9 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Tool" referent="RBX099150B242464B4E8C6EA9D7E418C27A">
+	<Item class="Tool" referent="RBXC22F33284738482C9D77C1AF5094E360">
 		<Properties>
-			<bool name="CanBeDropped">true</bool>
+			<bool name="CanBeDropped">false</bool>
 			<bool name="Enabled">true</bool>
 			<CoordinateFrame name="Grip">
 				<X>0</X>
@@ -73,7 +73,7 @@
 			<int64 name="SourceAssetId">104866780217391</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="MeshPart" referent="RBXD67DAE306A17462A8DC5DEFEBC73AEB6">
+		<Item class="MeshPart" referent="RBX30F0B1346AE547D38F48BF553C518CC4">
 			<Properties>
 				<bool name="DoubleSided">false</bool>
 				<bool name="HasJointOffset">false</bool>
@@ -207,7 +207,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="WeldConstraint" referent="RBX0BD99DCCBEEE4D9680BB7054B197F75E">
+			<Item class="WeldConstraint" referent="RBX315171B48ABC48089EB18D824A1F7A71">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>0.0103225708</X>
@@ -224,7 +224,7 @@
 						<R22>-1.51914255e-05</R22>
 					</CoordinateFrame>
 					<Ref name="Part0Internal">null</Ref>
-					<Ref name="Part1Internal">RBXD67DAE306A17462A8DC5DEFEBC73AEB6</Ref>
+					<Ref name="Part1Internal">RBX30F0B1346AE547D38F48BF553C518CC4</Ref>
 					<int name="State">1</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -234,7 +234,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="SurfaceAppearance" referent="RBXCBAB8F39B4AE46CB9C796A5501F82C69">
+			<Item class="SurfaceAppearance" referent="RBX9891E344C6174D5E8EA62F399E9D57FC">
 				<Properties>
 					<token name="AlphaMode">0</token>
 					<Color3 name="Color">
@@ -254,6 +254,7 @@
 					</Color3>
 					<Content name="MetalnessMap"><url>rbxassetid://86389014684626</url></Content>
 					<Content name="NormalMap"><url>rbxassetid://129954493828736</url></Content>
+					<token name="ResampleMode">0</token>
 					<Content name="RoughnessMap"><url>rbxassetid://102960661199346</url></Content>
 					<Content name="TexturePack"><url>rbxassetid://103772927616152</url></Content>
 					<BinaryString name="AttributesSerialize"></BinaryString>
