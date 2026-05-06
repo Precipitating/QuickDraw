@@ -5,8 +5,8 @@
 
 local Identity = "Server"
 
-local Server   = {}
-Server.__type  = Identity
+local Server = {}
+Server.__type = Identity
 
 local ServerMetatable = table.freeze({
 	__index = Server,
@@ -14,36 +14,37 @@ local ServerMetatable = table.freeze({
 
 -- ─── References ──────────────────────────────────────────────────────────────
 
-local VetraNet          = script.Parent
-local Core              = VetraNet.Core
-local Transport         = VetraNet.Transport
-local AuthorityFolder   = VetraNet.Authority
-local Reconciliation    = VetraNet.Reconciliation
-local Vetra             = VetraNet.Parent
+local VetraNet = script.Parent
+local Core = VetraNet.Core
+local Transport = VetraNet.Transport
+local AuthorityFolder = VetraNet.Authority
+local Reconciliation = VetraNet.Reconciliation
+local Vetra = VetraNet.Parent
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService        = game:GetService("RunService")
-local Players           = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 -- ─── Module References ───────────────────────────────────────────────────────
 
-local AuthorityModule   = require(Core.Authority)
-local Config            = require(Core.Config)
-local LogService        = require(Core.Logger)
-local Session           = require(Core.Session)
-local VeSignal          = require(Vetra.Core.VeSignal)
-local StateBatcher      = require(Transport.StateBatcher)
-local OutboundBatcher   = require(Transport.OutboundBatcher)
-local FireChannel       = require(Transport.FireChannel)
-local BlinkSchema       = require(Transport.BlinkSchema)
-local RateLimiter       = require(AuthorityFolder.RateLimiter)
+local AuthorityModule = require(Core.Authority)
+local Config = require(Core.Config)
+local LogService = require(Core.Logger)
+local Session = require(Core.Session)
+local VeSignal = require(Vetra.Core.VeSignal)
+local StateBatcher = require(Transport.StateBatcher)
+local OutboundBatcher = require(Transport.OutboundBatcher)
+local FireChannel = require(Transport.FireChannel)
+local BlinkSchema = require(Transport.BlinkSchema)
+local RateLimiter = require(AuthorityFolder.RateLimiter)
 local OwnershipRegistry = require(AuthorityFolder.OwnershipRegistry)
-local FireValidator     = require(AuthorityFolder.FireValidator)
-local LateJoinHandler   = require(Reconciliation.LateJoinHandler)
-local BulletContext     = require(Vetra.Core.BulletContext)
-local Constants         = require(VetraNet.Types.Constants)
-local Enums             = require(VetraNet.Types.Enums)
-
+local FireValidator = require(AuthorityFolder.FireValidator)
+local LateJoinHandler = require(Reconciliation.LateJoinHandler)
+local BulletContext = require(Vetra.Core.BulletContext)
+local Constants = require(VetraNet.Types.Constants)
+local Enums = require(VetraNet.Types.Enums)
+local GlobalRaycastParams = RaycastParams.new()
+GlobalRaycastParams.CollisionGroup = "Gun"
 AuthorityModule.AssertServer("VetraNet.Server")
 
 -- ─── Logger ──────────────────────────────────────────────────────────────────
@@ -57,7 +58,7 @@ local string_format = string.format
 -- ─── Constants ───────────────────────────────────────────────────────────────
 
 local FOLDER_NAME = Constants.NETWORK_FOLDER_NAME
-local REMOTE_NET  = Constants.REMOTE_NET
+local REMOTE_NET = Constants.REMOTE_NET
 
 -- ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ local function GetOrCreateRemotes(): any
 	local Folder = ReplicatedStorage:FindFirstChild(FOLDER_NAME) :: any
 	if not Folder then
 		Folder = Instance.new("Folder")
-		Folder.Name   = FOLDER_NAME
+		Folder.Name = FOLDER_NAME
 		Folder.Parent = ReplicatedStorage
 	end
 
@@ -73,7 +74,7 @@ local function GetOrCreateRemotes(): any
 		local Remote = Folder:FindFirstChild(Name) :: RemoteEvent?
 		if not Remote then
 			Remote = Instance.new("RemoteEvent")
-			Remote.Name   = Name
+			Remote.Name = Name
 			Remote.Parent = Folder
 		end
 		return Remote
@@ -101,14 +102,14 @@ end
       :Destroy()          — Cleans up all connections, remotes, and frame loops.
 ]]
 function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): any
-	local Mode           = (NetworkConfig_ and NetworkConfig_.Mode) or Enums.NetworkMode.ClientAuthoritative
+	local Mode = (NetworkConfig_ and NetworkConfig_.Mode) or Enums.NetworkMode.ClientAuthoritative
 	local ResolvedConfig = Config.Resolve(NetworkConfig_)
-	local SessionInstance     = Session.new(ResolvedConfig)
+	local SessionInstance = Session.new(ResolvedConfig)
 	local RateLimiterInstance = RateLimiter.new(ResolvedConfig.TokensPerSecond, ResolvedConfig.BurstLimit)
-	local OwnershipInstance   = OwnershipRegistry.new()
-	local StateBatcherInstance    = StateBatcher.new()
+	local OwnershipInstance = OwnershipRegistry.new()
+	local StateBatcherInstance = StateBatcher.new()
 	local OutboundBatcherInstance = OutboundBatcher.new()
-	local Remotes             = GetOrCreateRemotes()
+	local Remotes = GetOrCreateRemotes()
 
 	local OnValidatedHit = VeSignal.new()
 	local OnFireRejected = VeSignal.new()
@@ -123,19 +124,19 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 	-- time. _FireFromServer, _Connections, and _FrameConnection are not ready yet
 	-- and are assigned after the wiring is complete.
 	local self_ = setmetatable({
-		OnValidatedHit       = OnValidatedHit,
-		OnFireRejected       = OnFireRejected,
-		_Session             = SessionInstance,
-		_RateLimiter         = RateLimiterInstance,
-		_Ownership           = OwnershipInstance,
-		_StateBatcher        = StateBatcherInstance,
-		_OutboundBatcher     = OutboundBatcherInstance,
-		_FireFromServer      = nil,
-		_Connections         = nil,
-		_FrameConnection     = nil,
-		_Mode                = Mode,
-		_PlayerFilter        = nil,
-		_Destroyed           = false,
+		OnValidatedHit = OnValidatedHit,
+		OnFireRejected = OnFireRejected,
+		_Session = SessionInstance,
+		_RateLimiter = RateLimiterInstance,
+		_Ownership = OwnershipInstance,
+		_StateBatcher = StateBatcherInstance,
+		_OutboundBatcher = OutboundBatcherInstance,
+		_FireFromServer = nil,
+		_Connections = nil,
+		_FrameConnection = nil,
+		_Mode = Mode,
+		_PlayerFilter = nil,
+		_Destroyed = false,
 	}, ServerMetatable)
 
 	-- Returns the current player list with the optional predicate applied.
@@ -143,10 +144,14 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 	local function GetFiltered(): { Player }
 		local All = Players:GetPlayers()
 		local F = self_._PlayerFilter
-		if not F then return All end
+		if not F then
+			return All
+		end
 		local Out = {}
 		for _, P in All do
-			if F(P) then Out[#Out + 1] = P end
+			if F(P) then
+				Out[#Out + 1] = P
+			end
 		end
 		return Out
 	end
@@ -215,7 +220,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 	Solver._Terminate = function(solver: any, cast: any, reason: string?)
 		-- Read _CastToBulletContext BEFORE _baseTerm destroys the mapping.
 		local ContextMap = solver._CastToBulletContext
-		local BulletCtx  = ContextMap and ContextMap[cast]
+		local BulletCtx = ContextMap and ContextMap[cast]
 		if BulletCtx then
 			local CtxId = BulletCtx.Id
 			local CastId = ContextToCastId[CtxId]
@@ -243,10 +248,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 
 		local Behavior = BehaviorRegistry_:Get(BehaviorHash)
 		if not Behavior then
-			Logger:Warn(string_format(
-				"Server: FireFromServer — unknown behavior hash %d",
-				BehaviorHash
-			))
+			Logger:Warn(string_format("Server: FireFromServer — unknown behavior hash %d", BehaviorHash))
 			return 0
 		end
 
@@ -258,10 +260,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 		local Result = Solver:Fire(Context, Behavior)
 
 		if not Result then
-			Logger:Warn(string_format(
-				"Server: FireFromServer — Solver:Fire returned nil for castId %d",
-				CastId
-			))
+			Logger:Warn(string_format("Server: FireFromServer — Solver:Fire returned nil for castId %d", CastId))
 			return 0
 		end
 
@@ -269,7 +268,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 
 		-- Replicate to all clients. No shooter echo (server has no local cosmetic).
 		local AllPlayers = GetFiltered()
-		local Timestamp  = workspace:GetServerTimeNow()
+		local Timestamp = workspace:GetServerTimeNow()
 
 		local EncodedFire = BlinkSchema.EncodeFire(
 			Context.Origin,
@@ -292,12 +291,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 		-- we snapshot them. Spawning the sync on the same tick as PlayerAdded
 		-- would capture zero bullets because the frame loop hasn't run yet.
 		task.defer(function()
-			LateJoinHandler.SyncPlayer(
-				Player,
-				Solver,
-				Remotes.Net,
-				StateBatcherInstance:GetNextFrameId()
-			)
+			LateJoinHandler.SyncPlayer(Player, Solver, Remotes.Net, StateBatcherInstance:GetNextFrameId())
 		end)
 	end)
 
@@ -323,7 +317,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 			for _, Cast in ActiveCasts do
 				if Cast and Cast.Alive then
 					-- __solverData lives on BulletContext, not on the raw Cast.
-					local BulletCtx    = Solver._CastToBulletContext[Cast]
+					local BulletCtx = Solver._CastToBulletContext[Cast]
 					local ServerCastId = BulletCtx and BulletCtx.__solverData and BulletCtx.__solverData.ServerCastId
 					if ServerCastId and OwnedIds[ServerCastId] then
 						Cast:Terminate()
@@ -351,7 +345,12 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 		FireChannel.OnFireReceived(Remotes.Net, function(Player: Player, Payload: any)
 			-- Validate the payload through the full authority chain.
 			local Result = FireValidator.Validate(
-				Player, Payload, SessionInstance, RateLimiterInstance, BehaviorRegistry_, ResolvedConfig
+				Player,
+				Payload,
+				SessionInstance,
+				RateLimiterInstance,
+				BehaviorRegistry_,
+				ResolvedConfig
 			)
 
 			if not Result.Passed then
@@ -374,18 +373,22 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 
 			-- Fire the authoritative server bullet.
 			local FireContext = BulletContext.new({
-				Origin    = Payload.Origin,
+				Origin = Payload.Origin,
 				Direction = Payload.Direction,
-				Speed     = Payload.Speed,
+				Speed = Payload.Speed,
+				RaycastParams = GlobalRaycastParams,
 				SolverData = { OwnerId = Player.UserId, ServerCastId = CastId },
 			})
 			local Context = Solver:Fire(FireContext, Behavior)
 
 			if not Context then
-				Logger:Warn(string_format(
-					"Server: Solver:Fire returned nil for player '%s' (UserId: %d)",
-					Player.Name, Player.UserId
-				))
+				Logger:Warn(
+					string_format(
+						"Server: Solver:Fire returned nil for player '%s' (UserId: %d)",
+						Player.Name,
+						Player.UserId
+					)
+				)
 				return
 			end
 
@@ -411,8 +414,8 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 			--      cosmetic to migrate; they spawn a fresh cosmetic on receipt.
 			--
 			-- Both are queued via OutboundBatcher and flushed at the next PreSimulation.
-			local AllPlayers  = GetFiltered()
-			local LocalCastId = Payload.CastId  -- client's local cosmetic ID
+			local AllPlayers = GetFiltered()
+			local LocalCastId = Payload.CastId -- client's local cosmetic ID
 
 			local EncodedFireEcho = BlinkSchema.EncodeFire(
 				Payload.Origin,
@@ -439,37 +442,41 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 	end
 
 	-- ── Solver.OnHit: validated hit → broadcast ─────────────────────────────
-	Connections[#Connections + 1] = Solver.Signals.OnHit:Connect(function(Context: any, Result: RaycastResult?, Velocity: Vector3, ImpactForce: Vector3)
-		local CastId = ContextToCastId[Context.Id]
-		if not CastId then return end
+	Connections[#Connections + 1] = Solver.Signals.OnHit:Connect(
+		function(Context: any, Result: RaycastResult?, Velocity: Vector3, ImpactForce: Vector3)
+			local CastId = ContextToCastId[Context.Id]
+			if not CastId then
+				return
+			end
 
-		local Owner = OwnershipInstance:GetOwner(CastId)
-		if not Owner and not ServerCanFire then
-			-- Hit fired by an unregistered cast (e.g. server-spawned non-network bullet).
-			-- In ServerAuthority mode we allow nil Owner — the server fired the bullet.
-			return
+			local Owner = OwnershipInstance:GetOwner(CastId)
+			if not Owner and not ServerCanFire then
+				-- Hit fired by an unregistered cast (e.g. server-spawned non-network bullet).
+				-- In ServerAuthority mode we allow nil Owner — the server fired the bullet.
+				return
+			end
+
+			local HitPosition = Result and Result.Position or Context.Position
+			local HitNormal = Result and Result.Normal or Vector3.yAxis
+			local Timestamp = workspace:GetServerTimeNow()
+
+			-- Signal game code (damage, effects, etc.).
+			-- Owner is nil for server-authority bullets — game code should handle that.
+			OnValidatedHit:Fire(Owner, Context, Result, Velocity, ImpactForce)
+
+			-- Queue hit for all clients via OutboundBatcher — flushed at frame end.
+			local AllPlayers = GetFiltered()
+			local EncodedHit = BlinkSchema.EncodeHit(CastId, HitPosition, HitNormal, Velocity, Timestamp)
+			OutboundBatcherInstance:WriteHitForAll(AllPlayers, EncodedHit)
 		end
-
-		local HitPosition = Result and Result.Position or Context.Position
-		local HitNormal   = Result and Result.Normal   or Vector3.yAxis
-		local Timestamp   = workspace:GetServerTimeNow()
-
-		-- Signal game code (damage, effects, etc.).
-		-- Owner is nil for server-authority bullets — game code should handle that.
-		OnValidatedHit:Fire(Owner, Context, Result, Velocity, ImpactForce)
-
-		-- Queue hit for all clients via OutboundBatcher — flushed at frame end.
-		local AllPlayers = GetFiltered()
-		local EncodedHit = BlinkSchema.EncodeHit(
-			CastId, HitPosition, HitNormal, Velocity, Timestamp
-		)
-		OutboundBatcherInstance:WriteHitForAll(AllPlayers, EncodedHit)
-	end)
+	)
 
 	-- ── Solver.OnTerminated: release cast ───────────────────────────────────
 	Connections[#Connections + 1] = Solver.Signals.OnTerminated:Connect(function(Context: any)
 		local CastId = ContextToCastId[Context.Id]
-		if not CastId then return end -- already cleaned up by _Terminate wrapper
+		if not CastId then
+			return
+		end -- already cleaned up by _Terminate wrapper
 		ContextToCastId[Context.Id] = nil
 
 		CleanupCast(CastId)
@@ -489,8 +496,8 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 		OutboundBatcherInstance:Flush(Remotes.Net)
 	end)
 
-	self_._FireFromServer  = FireFromServer
-	self_._Connections    = Connections
+	self_._FireFromServer = FireFromServer
+	self_._Connections = Connections
 	self_._FrameConnection = FrameConnection
 
 	Logger:Info("VetraNet Server initialised")
@@ -536,7 +543,9 @@ function Server:SetPlayerFilter(Fn: ((Player: Player) -> boolean)?)
 end
 
 function Server:Destroy()
-	if self._Destroyed then return end
+	if self._Destroyed then
+		return
+	end
 	self._Destroyed = true
 
 	self._FrameConnection:Disconnect()

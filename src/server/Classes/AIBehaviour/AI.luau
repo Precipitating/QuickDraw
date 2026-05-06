@@ -147,7 +147,7 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV:
 	-- When originPos is a candidate position (not on a character), we don't need
 	-- extra filtering beyond the AI's own character. But if the origin is inside
 	-- the AI's character, we already exclude it above.
-	raycastParams.FilterDescendantsInstances = filterList
+	raycastParams.ExcludeInstances = filterList
 
 	-- Build check points — start with targetPos, add body parts if available
 	local checkPoints = { targetPos }
@@ -362,8 +362,7 @@ function AI:CheckLineOfSight()
 
 	local hrp = self.Owner.HRP.Position
 	local LineOfSightParams = OverlapParams.new()
-	LineOfSightParams.FilterType = Enum.RaycastFilterType.Exclude
-	LineOfSightParams.FilterDescendantsInstances = { self.Owner.Character }
+	LineOfSightParams.ExcludeInstances = { self.Owner.Character }
 
 	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.EyeRange)
 	return foundParts

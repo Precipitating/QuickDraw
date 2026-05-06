@@ -24,7 +24,7 @@ NPCEvents.NPCTypesSpawned = {
 	Sheriff = 0,
 	Bandit = 0,
 }
-NPCEvents.SecondsToSpawnNPC = 30
+NPCEvents.SecondsToSpawnNPC = 120
 NPCEvents.CurrentSpawnedNPCS = 0
 
 local function CanSpawn(spawnerType: string)

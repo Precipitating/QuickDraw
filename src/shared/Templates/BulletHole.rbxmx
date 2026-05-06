@@ -2,12 +2,12 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBX1AD0E39707034C43ADC91386C28E3B02">
+	<Item class="Part" referent="RBXE4FAD35BDD584589B05A33458E0A165D">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
 			<bool name="Anchored">true</bool>
-			<bool name="AudioCanCollide">true</bool>
+			<bool name="AudioCanCollide">false</bool>
 			<float name="BackParamA">-0.5</float>
 			<float name="BackParamB">0.5</float>
 			<token name="BackSurface">0</token>
@@ -30,10 +30,10 @@
 				<R21>0</R21>
 				<R22>1</R22>
 			</CoordinateFrame>
-			<bool name="CanCollide">true</bool>
-			<bool name="CanQuery">true</bool>
-			<bool name="CanTouch">true</bool>
-			<bool name="CastShadow">true</bool>
+			<bool name="CanCollide">false</bool>
+			<bool name="CanQuery">false</bool>
+			<bool name="CanTouch">false</bool>
+			<bool name="CastShadow">false</bool>
 			<string name="CollisionGroup">Default</string>
 			<int name="CollisionGroupId">0</int>
 			<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
@@ -100,7 +100,7 @@
 			<int64 name="SourceAssetId">8416208584</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Decal" referent="RBX2DB31EFAD69A474CA68D43481A669D6E">
+		<Item class="Decal" referent="RBXB4C61AAF15AD4085BF4CCD1F799C9D11">
 			<Properties>
 				<Color3 name="Color3">
 					<R>1</R>
@@ -109,6 +109,7 @@
 				</Color3>
 				<Content name="MetalnessMap"><null></null></Content>
 				<Content name="NormalMap"><null></null></Content>
+				<float name="Rotation">0</float>
 				<Content name="RoughnessMap"><null></null></Content>
 				<Content name="Texture"><url>http://www.roblox.com/asset/?id=8135535081</url></Content>
 				<Content name="TexturePack"><null></null></Content>

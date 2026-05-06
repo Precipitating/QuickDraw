@@ -240,7 +240,7 @@ function Gun:AddGunToInventory()
 	end))
 	-- if its NPC, playerRef should be a model instead of a player instance.
 	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or self.PlayerRef
-	self.RaycastParams.FilterDescendantsInstances = { excludeModel, self.Tool }
+	self.RaycastParams.ExcludeInstances = { excludeModel, self.Tool }
 
 	self.MuzzleFlash = muzzle:FindFirstChildOfClass("Attachment")
 	if not self.MuzzleFlash then

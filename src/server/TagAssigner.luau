@@ -13,8 +13,8 @@ function TagAssigner.Initialize()
 	end
 	CollectionService:GetInstanceAddedSignal("Destroyable"):Connect(function(obj: Instance)
 		warn(`Initialize destroyable class on {obj.Name}`)
-		Destroyable.new(obj)
-		DestroyableManager:AddDestroyable(obj)
+		local destroyableClass = Destroyable.new(obj)
+		DestroyableManager:AddDestroyable(obj, destroyableClass)
 	end)
 
 	CollectionService:GetInstanceRemovedSignal("Destroyable"):Connect(function(obj: Instance)

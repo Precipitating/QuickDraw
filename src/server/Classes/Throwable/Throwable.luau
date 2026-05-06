@@ -136,7 +136,7 @@ function Throwable:AddThrowableToInventory(maxAmmo: number)
 
 	clone.Parent = if self.Owner.HumanType == "Player" then self.Owner.Player.Backpack else self.Character
 	self.Janitor:Add(self.Tool)
-	self.RaycastParams.FilterDescendantsInstances = { self.Tool }
+	self.RaycastParams.ExcludeInstances = { self.Tool }
 
 	if self.Owner.HumanType == "Player" then
 		ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, clone)

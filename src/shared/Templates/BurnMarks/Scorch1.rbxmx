@@ -2,12 +2,12 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBXC1187E8DB9C5476598CFCC44F69FDBD1">
+	<Item class="Part" referent="RBXA33AF58F37904EF1B3669772F927FE4C">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
 			<bool name="Anchored">true</bool>
-			<bool name="AudioCanCollide">true</bool>
+			<bool name="AudioCanCollide">false</bool>
 			<float name="BackParamA">-0.5</float>
 			<float name="BackParamB">0.5</float>
 			<token name="BackSurface">0</token>
@@ -30,9 +30,9 @@
 				<R21>0</R21>
 				<R22>1</R22>
 			</CoordinateFrame>
-			<bool name="CanCollide">true</bool>
-			<bool name="CanQuery">true</bool>
-			<bool name="CanTouch">true</bool>
+			<bool name="CanCollide">false</bool>
+			<bool name="CanQuery">false</bool>
+			<bool name="CanTouch">false</bool>
 			<bool name="CastShadow">true</bool>
 			<string name="CollisionGroup">Default</string>
 			<int name="CollisionGroupId">0</int>
@@ -100,7 +100,7 @@
 			<int64 name="SourceAssetId">8416208584</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Decal" referent="RBXE117710AE87C4B769D7A5E48A400508F">
+		<Item class="Decal" referent="RBX79F7059BF07E438AB43C878D9F743C85">
 			<Properties>
 				<Color3 name="Color3">
 					<R>1</R>

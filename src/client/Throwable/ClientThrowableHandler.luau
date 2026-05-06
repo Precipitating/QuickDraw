@@ -22,7 +22,7 @@ local LastThrown = 0
 function ClientThrowableHandler:Throw(throwable: Tool)
 	warn("throw called")
 	local cameraLookVector = workspace.CurrentCamera.CFrame.LookVector
-	ThrowableRaycastParams.FilterDescendantsInstances = { throwable, PlayerContext.Character }
+	ThrowableRaycastParams.ExcludeInstances = { throwable, PlayerContext.Character }
 	local head = PlayerContext.BodyParts["Head"]
 	local launchPos = head.Position + Vector3.new(0, 2, 0)
 	local throwableData = ThrowableData[throwable.Name]

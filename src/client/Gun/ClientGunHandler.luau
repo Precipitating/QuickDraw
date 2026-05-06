@@ -220,7 +220,7 @@ local function CastBarrelRay(crosshairBB: BillboardGui, gunTool: Tool, shootPoin
 	local origin: Vector3 = shootPoint.WorldPosition
 	local direction: Vector3 = shootPoint.WorldAxis
 
-	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character, gunTool }
+	crosshairRaycastParams.ExcludeInstances = { PlayerContext.Character, gunTool }
 	local landLocation = PredictBulletLanding(origin, direction, bulletVelocity, dragCoefficient, maxCrosshairDistance)
 
 	if not landLocation then
@@ -259,7 +259,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 
 	local crosshairPart: Part, crosshairBB: BillboardGui, crosshairImg: ImageLabel = Get3DCrosshair()
 	local shootPoint = gunTool:WaitForChild("ShootPoint", 10) :: Attachment
-	crosshairRaycastParams.FilterDescendantsInstances = { PlayerContext.Character, gunTool, crosshairPart }
+	crosshairRaycastParams.ExcludeInstances = { PlayerContext.Character, gunTool, crosshairPart }
 
 	local parentPart = if HumanNetwork.networker:fetch("IsLegless")
 		then PlayerContext.HRP
@@ -428,7 +428,7 @@ function ClientGunHandler:SpreadShot(shootAttachment: Attachment, gunTool: Tool,
 end
 
 function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
-	gunRaycastParams.FilterDescendantsInstances = { gunTool, PlayerContext.Character }
+	gunRaycastParams.ExcludeInstances = { gunTool, PlayerContext.Character }
 	-- get shooting point (for non ADS)
 	local shootAttachment: Attachment? = Utility.GetInstance(gunTool, true, "ShootPoint")
 	if not shootAttachment then

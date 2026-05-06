@@ -15,6 +15,11 @@ local function TryDisplayProjectileMark(context, result: RaycastResult?)
 		return
 	end
 
+	if result.Instance.Parent and result.Instance.Parent:IsA("Tool") then
+		warn("hit frame")
+		return
+	end
+
 	if context.CosmeticBulletObject then
 		local canDisplayBulletHole = result.Instance
 			and not CollectionService:HasTag(result.Instance, "Destroyable")

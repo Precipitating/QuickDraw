@@ -87,7 +87,7 @@ function EffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string
 	explosion.Anchored = true
 	explosion.Position = position
 	particleEffect.Parent = explosion
-	task.wait()
+	task.wait(0.1)
 	particleEffect:Emit(25)
 	Debris:AddItem(explosion, 0.2)
 end

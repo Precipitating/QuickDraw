@@ -5,8 +5,8 @@
 
 local Identity = "Client"
 
-local Client   = {}
-Client.__type  = Identity
+local Client = {}
+Client.__type = Identity
 
 local ClientMetatable = table.freeze({
 	__index = Client,
@@ -14,25 +14,25 @@ local ClientMetatable = table.freeze({
 
 -- ─── References ──────────────────────────────────────────────────────────────
 
-local Core           = script.Parent.Core
-local Transport      = script.Parent.Transport
+local Core = script.Parent.Core
+local Transport = script.Parent.Transport
 local Reconciliation = script.Parent.Reconciliation
-local Vetra          = script.Parent.Parent
+local Vetra = script.Parent.Parent
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- ─── Module References ───────────────────────────────────────────────────────
 
-local AuthorityModule  = require(Core.Authority)
-local Config           = require(Core.Config)
-local LogService       = require(Core.Logger)
-local FireChannel      = require(Transport.FireChannel)
-local BlinkSchema      = require(Transport.BlinkSchema)
-local CosmeticTracker  = require(Reconciliation.CosmeticTracker)
-local DriftCorrector   = require(Reconciliation.DriftCorrector)
-local LatencyBuffer    = require(Reconciliation.LatencyBuffer)
-local BulletContext    = require(Vetra.Core.BulletContext)
-local Constants        = require(script.Parent.Types.Constants)
+local AuthorityModule = require(Core.Authority)
+local Config = require(Core.Config)
+local LogService = require(Core.Logger)
+local FireChannel = require(Transport.FireChannel)
+local BlinkSchema = require(Transport.BlinkSchema)
+local CosmeticTracker = require(Reconciliation.CosmeticTracker)
+local DriftCorrector = require(Reconciliation.DriftCorrector)
+local LatencyBuffer = require(Reconciliation.LatencyBuffer)
+local BulletContext = require(Vetra.Core.BulletContext)
+local Constants = require(script.Parent.Types.Constants)
 
 AuthorityModule.AssertClient("VetraNet.Client")
 
@@ -42,15 +42,15 @@ local Logger = LogService.new(Identity, true)
 
 -- ─── Cached Globals ──────────────────────────────────────────────────────────
 
-local math_clamp    = math.clamp
+local math_clamp = math.clamp
 local string_format = string.format
 
 -- ─── Constants ───────────────────────────────────────────────────────────────
 
-local FOLDER_NAME   = Constants.NETWORK_FOLDER_NAME
-local REMOTE_NET    = Constants.REMOTE_NET
-local CHANNEL_FIRE  = Constants.CHANNEL_FIRE
-local CHANNEL_HIT   = Constants.CHANNEL_HIT
+local FOLDER_NAME = Constants.NETWORK_FOLDER_NAME
+local REMOTE_NET = Constants.REMOTE_NET
+local CHANNEL_FIRE = Constants.CHANNEL_FIRE
+local CHANNEL_HIT = Constants.CHANNEL_HIT
 local CHANNEL_STATE = Constants.CHANNEL_STATE
 
 -- ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -58,7 +58,12 @@ local CHANNEL_STATE = Constants.CHANNEL_STATE
 local function GetOrCreateRemotes(): any
 	local Folder = ReplicatedStorage:WaitForChild(FOLDER_NAME, 10)
 	if not Folder then
-		error("[VetraNet] ReplicatedStorage." .. FOLDER_NAME .. " not found within 10 seconds — ensure the server requires VetraNet before the client.", 2)
+		error(
+			"[VetraNet] ReplicatedStorage."
+				.. FOLDER_NAME
+				.. " not found within 10 seconds — ensure the server requires VetraNet before the client.",
+			2
+		)
 	end
 	return { Net = Folder:WaitForChild(REMOTE_NET, 5) :: RemoteEvent }
 end
@@ -81,18 +86,18 @@ end
       :Destroy()                                    — Clean up all connections.
 ]]
 function Client.new(
-	Solver            : any,
-	BehaviorRegistry_ : any,
-	NetworkConfig_    : any?,
-	OnCosmeticFire    : any?,
-	OnCosmeticHit     : any?
+	Solver: any,
+	BehaviorRegistry_: any,
+	NetworkConfig_: any?,
+	OnCosmeticFire: any?,
+	OnCosmeticHit: any?
 ): any
 	local ResolvedConfig = Config.Resolve(NetworkConfig_)
-	local Remotes        = GetOrCreateRemotes()
+	local Remotes = GetOrCreateRemotes()
 
 	local Connections: { RBXScriptConnection } = {}
 
-	local Tracker   = CosmeticTracker.new()
+	local Tracker = CosmeticTracker.new()
 	local Corrector = DriftCorrector.new(ResolvedConfig)
 
 	local LastFrameId = 0
@@ -101,10 +106,9 @@ function Client.new(
 	local function HandleFire(Payload: any)
 		local Behavior = BehaviorRegistry_:Get(Payload.BehaviorHash)
 		if not Behavior then
-			Logger:Warn(string_format(
-				"Client: cannot spawn cosmetic — unknown behavior hash %d",
-				Payload.BehaviorHash
-			))
+			Logger:Warn(
+				string_format("Client: cannot spawn cosmetic — unknown behavior hash %d", Payload.BehaviorHash)
+			)
 			return
 		end
 
@@ -118,7 +122,7 @@ function Client.new(
 		-- When LocalCastId is 0 or absent, this is a replication for another player's
 		-- bullet: spawn a new cosmetic and register it normally.
 		local ServerCastId = Payload.CastId
-		local LocalCastId  = Payload.LocalCastId or 0
+		local LocalCastId = Payload.LocalCastId or 0
 
 		if LocalCastId > 0 then
 			-- This is the echo of the shooter's own fire. The cosmetic may or may not
@@ -144,19 +148,18 @@ function Client.new(
 		end
 
 		local function SpawnCosmetic()
-			if not Solver or not Solver.Fire then return end
+			if not Solver or not Solver.Fire then
+				return
+			end
 			local FireContext = BulletContext.new({
-				Origin    = Payload.Origin,
+				Origin = Payload.Origin,
 				Direction = Payload.Direction,
-				Speed     = Payload.Speed,
+				Speed = Payload.Speed,
 				SolverData = { ServerCastId = ServerCastId },
 			})
 			local Context = Solver:Fire(FireContext, Behavior)
 			if not Context then
-				Logger:Warn(string_format(
-					"Client: client solver Fire() returned nil for castId %d",
-					ServerCastId
-				))
+				Logger:Warn(string_format("Client: client solver Fire() returned nil for castId %d", ServerCastId))
 				return
 			end
 			Tracker:Register(ServerCastId, Context)
@@ -198,7 +201,9 @@ function Client.new(
 
 	-- ── State handler (called from decoder loop) ──────────────────────────────
 	local function HandleState(Batch: any)
-		if Batch.FrameId <= LastFrameId then return end
+		if Batch.FrameId <= LastFrameId then
+			return
+		end
 		LastFrameId = Batch.FrameId
 
 		-- Use the server's actual PreSimulation DeltaTime embedded in the batch header.
@@ -208,12 +213,14 @@ function Client.new(
 		-- barely closing the gap. The server DeltaTime reflects the real simulation
 		-- step regardless of when the packet is received on the client.
 		-- Clamp to [1/120, 1/10] to guard against stale/malformed values.
-		local DeltaTime = math_clamp(Batch.FrameDelta, 1/120, 1/10)
+		local DeltaTime = math_clamp(Batch.FrameDelta, 1 / 120, 1 / 10)
 
 		for _, Entry in Batch.States do
 			local LocalCast = Tracker:GetLocal(Entry.CastId)
 			-- Cast.Alive is a field, not a method.
-			if not LocalCast or not LocalCast.Alive then continue end
+			if not LocalCast or not LocalCast.Alive then
+				continue
+			end
 			if Corrector:Evaluate(LocalCast, Entry.Position) then
 				Corrector:Correct(LocalCast, Entry.Position, Entry.Velocity, DeltaTime)
 			end
@@ -226,23 +233,32 @@ function Client.new(
 	-- length, then dispatch the slice to the correct decoder. This mirrors
 	-- Packet's "while not Ended()" model and eliminates two extra remotes.
 	Connections[#Connections + 1] = Remotes.Net.OnClientEvent:Connect(function(RawBuf: any)
-		if typeof(RawBuf) ~= "buffer" then return end
+		if typeof(RawBuf) ~= "buffer" then
+			return
+		end
 
 		local BufLen = buffer.len(RawBuf)
 		local Offset = 0
 
 		while Offset < BufLen do
 			-- Need at least 3 bytes: channel(1) + length(2)
-			if Offset + 3 > BufLen then break end
+			if Offset + 3 > BufLen then
+				break
+			end
 
-			local Channel = buffer.readu8(RawBuf, Offset)   Offset += 1
-			local MsgLen  = buffer.readu16(RawBuf, Offset)  Offset += 2
+			local Channel = buffer.readu8(RawBuf, Offset)
+			Offset += 1
+			local MsgLen = buffer.readu16(RawBuf, Offset)
+			Offset += 2
 
 			if Offset + MsgLen > BufLen then
-				Logger:Warn(string_format(
-					"Client: message length %d overflows buffer at offset %d — aborting decode",
-					MsgLen, Offset
-				))
+				Logger:Warn(
+					string_format(
+						"Client: message length %d overflows buffer at offset %d — aborting decode",
+						MsgLen,
+						Offset
+					)
+				)
 				break
 			end
 
@@ -270,7 +286,9 @@ function Client.new(
 				if Success then
 					HandleState(Result)
 				else
-					Logger:Warn(string_format("Client: DecodeStateBatch failed at offset %d: %s", Offset, tostring(Result)))
+					Logger:Warn(
+						string_format("Client: DecodeStateBatch failed at offset %d: %s", Offset, tostring(Result))
+					)
 				end
 			else
 				Logger:Warn(string_format("Client: unknown channel id %d — skipping message", Channel))
@@ -287,14 +305,14 @@ function Client.new(
 	end)
 
 	local self = setmetatable({
-		_Solver           = Solver,
+		_Solver = Solver,
 		_BehaviorRegistry = BehaviorRegistry_,
-		_ResolvedConfig   = ResolvedConfig,
-		_Net              = Remotes.Net,
-		_Connections      = Connections,
-		_Tracker          = Tracker,
-		_Corrector        = Corrector,
-		_Destroyed        = false,
+		_ResolvedConfig = ResolvedConfig,
+		_Net = Remotes.Net,
+		_Connections = Connections,
+		_Tracker = Tracker,
+		_Corrector = Corrector,
+		_Destroyed = false,
 		-- Monotonic local cast ID counter. Used to tag the shooter's own
 		-- cosmetic bullet so it can be registered in CosmeticTracker and
 		-- correctly unregistered when the server hit confirmation arrives.
@@ -303,7 +321,7 @@ function Client.new(
 		-- authoritative ServerCastId. We send this value in the fire payload so
 		-- the server can echo it back in the fire replication, letting the client
 		-- correlate its own cosmetic with the server-confirmed bullet.
-		_NextLocalCastId  = 1,
+		_NextLocalCastId = 1,
 	}, ClientMetatable)
 
 	Logger:Info("VetraNet Client initialised")
@@ -329,10 +347,7 @@ function Client:Fire(Context: BulletContext, BehaviorName: string)
 
 	local BehaviorHash = self._BehaviorRegistry:GetHash(BehaviorName)
 	if BehaviorHash == 0 then
-		Logger:Warn(string_format(
-			"Client.Fire: behavior '%s' is not registered — request not sent",
-			BehaviorName
-		))
+		Logger:Warn(string_format("Client.Fire: behavior '%s' is not registered — request not sent", BehaviorName))
 		return
 	end
 
@@ -343,18 +358,20 @@ function Client:Fire(Context: BulletContext, BehaviorName: string)
 	-- the server bullet: hit confirmations arrive with a ServerCastId the
 	-- tracker doesn't know about, so OnCosmeticHit never fires for the shooter,
 	-- and drift correction never applies to their own bullets.
-	local LocalCastId       = self._NextLocalCastId
-	self._NextLocalCastId   = LocalCastId + 1
+	local LocalCastId = self._NextLocalCastId
+	self._NextLocalCastId = LocalCastId + 1
 
 	local Behavior = self._BehaviorRegistry:Get(BehaviorHash)
 	if Behavior and self._Solver and self._Solver.Fire then
-
-		local TimeDelay = self._ResolvedConfig.LatencyBuffer ~= 0 and self._ResolvedConfig.LatencyBuffer or LatencyBuffer.GetDelay()
+		local TimeDelay = self._ResolvedConfig.LatencyBuffer ~= 0 and self._ResolvedConfig.LatencyBuffer
+			or LatencyBuffer.GetDelay()
 
 		local Tracker = self._Tracker
 
 		local function SpawnLocal()
-			if self._Destroyed then return end
+			if self._Destroyed then
+				return
+			end
 			-- Stamp networking metadata onto the caller's context before firing.
 			-- Embed LocalCastId so the server can echo it back in the replicated
 			-- fire event. The client decoder uses ServerCastId to re-register this
@@ -391,7 +408,9 @@ function Client:Fire(Context: BulletContext, BehaviorName: string)
 end
 
 function Client:Destroy()
-	if self._Destroyed then return end
+	if self._Destroyed then
+		return
+	end
 	self._Destroyed = true
 
 	for _, Connection in self._Connections do
