@@ -121,10 +121,13 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Sprinting = false
 	self.LastInvincible = nil
 	self.ActiveInvincibleDelayHandle = nil
+	self.CombatLogTimerHandle = nil
 	self.JumpSignalled = false
 	self.RollSignalled = false
 	self.KickSignalled = false
 	self.Invincible = false
+	self.InCombat = false
+	self.CombatTimer = 0
 
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
@@ -153,6 +156,26 @@ function Human:GetHealthPercentage()
 		return -1
 	end
 	return self.Health / HumanConstants.MAX_HP
+end
+
+function Human:SetInCombat(InCombat: boolean)
+	self.InCombat = InCombat
+
+	if InCombat then
+		self.CombatTimer = 120
+		self:StartCombatLogTimer()
+	end
+end
+
+function Human:StartCombatLogTimer()
+	if self.CombatLogTimerHandle then
+		task.cancel(self.CombatLogTimerHandle)
+	end
+
+	-- if delay finishes, not been hit for a while, so not combat logged anymore
+	self.CombatLogTimerHandle = task.delay(self.CombatTimer, function()
+		self.InCombat = false
+	end)
 end
 
 function Human:ToggleInvincibleHighlight(state: boolean)
@@ -397,6 +420,7 @@ function Human:OnHit(damage: number, damageMultiplier: number, limbName: string,
 	self.LimbHealth[limbName] -= damage
 	self.Health -= damage * damageMultiplier
 
+	self:SetInCombat(true)
 	-- damage dealer's client plays headshot sound
 	if shooter and shooter:IsA("Player") then
 		if limbName == "Head" then

@@ -6,6 +6,7 @@ local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandle
 local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
 
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
+local ServerData = require(ServerScriptService.Server.ServerData)
 
 local Human = require(script.Parent.Human)
 local HumanConstants = require(script.Parent.HumanConstants)
@@ -16,13 +17,14 @@ HumanPlayer.__index = HumanPlayer
 function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	assert(player, "HumanPlayer constructor needs a valid player instance!")
 	local self = setmetatable(Human.new(humanoid), HumanPlayer)
+	local savedGunName = ServerData.GetWeaponName(player)
+	local savedThrowableData = ServerData.GetThrowableData(player)
 	Human.AssignBodyParts(self, "Player")
 	self.Player = player
 	self.HumanType = "Player"
-	self.CurrentGun = Gun.new("Winchester", self, player)
+	self.CurrentGun = Gun.new(savedGunName or "Revolver", self, player)
 	self.CurrentGun:AddGunToInventory()
-	self.CurrentThrowable = Throwable.new("Dynamite", self)
-
+	self.CurrentThrowable = Throwable.new(savedThrowableData.Name or "Dynamite", self, savedThrowableData.Ammo or 1)
 	self.CurrentThrowable:AddThrowableToInventory()
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 

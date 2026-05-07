@@ -44,7 +44,7 @@ local BulletContext = require(Vetra.Core.BulletContext)
 local Constants = require(VetraNet.Types.Constants)
 local Enums = require(VetraNet.Types.Enums)
 local GlobalRaycastParams = RaycastParams.new()
-GlobalRaycastParams.CollisionGroup = "Gun"
+GlobalRaycastParams.CollisionGroup = "Projectile"
 AuthorityModule.AssertServer("VetraNet.Server")
 
 -- ─── Logger ──────────────────────────────────────────────────────────────────

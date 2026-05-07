@@ -12,6 +12,9 @@ function ServerData.Initialize()
 			bounty = 0,
 			bank = 0,
 			lastJoinedTime = nil,
+			equippedWeapon = "Revolver",
+			equippedThrowable = { Name = "Dynamite", Ammo = 1 },
+			combatLogged = false,
 		},
 		profileStoreIndex = "Main",
 		useMock = true,
@@ -84,6 +87,25 @@ function ServerData.UpdateBank(player: Player, amount: number)
 	end)
 end
 
+function ServerData.SaveWeaponEquipped(player: Player, gunName: string)
+	DataService:set(player, { "equippedWeapon" }, gunName)
+end
+function ServerData.GetThrowableData(player: Player)
+	return DataService:get(player, { "equippedThrowable" })
+end
+function ServerData.GetWeaponName(player: Player)
+	return DataService:get(player, { "equippedWeapon" })
+end
+
+function ServerData.SaveThrowableEquipped(player: Player, throwableName: string, throwableAmmo: number)
+	DataService:set(player, { "equippedThrowable" }, { Name = throwableName, Ammo = throwableAmmo })
+end
+function ServerData.UpdateCombatLogged(player: Player, value: boolean)
+	DataService:set(player, { "combatLogged" }, value)
+end
+function ServerData.HasCombatLogged(player: Player)
+	return DataService:get(player, { "combatLogged" })
+end
 function ServerData.GetBankBalance(player: Player)
 	return DataService:get(player, { "bank" })
 end

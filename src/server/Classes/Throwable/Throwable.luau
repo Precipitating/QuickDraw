@@ -16,7 +16,7 @@ Throwable.__index = Throwable
 local fragmentParam = RaycastParams.new()
 fragmentParam.FilterType = Enum.RaycastFilterType.Exclude
 
-function Throwable.new(throwableName: string, humanRef: Human?)
+function Throwable.new(throwableName: string, humanRef: Human?, ammo: number?)
 	assert(ThrowableData[throwableName], "Throwable name missing, cannot initialize")
 	--assert(humanRef, "Human reference missing from throwable class")
 	local self = setmetatable({}, Throwable)
@@ -26,7 +26,7 @@ function Throwable.new(throwableName: string, humanRef: Human?)
 
 	self.Name = throwableName
 	self.Type = throwableData.Type
-	self.CurrentAmmo = throwableData.MaxAmmo
+	self.CurrentAmmo = if ammo then ammo else throwableData.MaxAmmo
 	self.DetonationTime = throwableData.DetonationTime
 	self.FragmentCount = throwableData.FragmentCount
 	self.FragmentDamage = throwableData.Damage

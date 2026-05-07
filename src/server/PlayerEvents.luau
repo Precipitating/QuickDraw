@@ -54,5 +54,44 @@ return {
 		end)
 
 		SpawnPlayerIn(player)
+
+		player.CharacterRemoving:Connect(function(character: Model)
+			local humanoid = character:FindFirstChild("Humanoid")
+
+			if not humanoid then
+				warn("[CharacterRemoving] Can't save weapon data, humanoid missing")
+				return
+			end
+
+			-- MOST LIKELY LEFT THE GAME
+			if humanoid.Health > 0 then
+				local humanClass: HumanPlayer = PlayerManager:GetHumanClass(humanoid)
+				if not humanClass then
+					return
+				end
+
+				if humanClass.InCombat then
+					ServerData.UpdateCombatLogged(player, true)
+					ServerData.SaveWeaponEquipped(player, "Revolver")
+					ServerData.SaveThrowableEquipped(player, "Dynamite", 1)
+					ServerData.SetBounty(player, 0)
+					return
+				end
+
+				if humanClass.CurrentGun then
+					ServerData.SaveWeaponEquipped(player, humanClass.CurrentGun.GunName)
+				end
+
+				if humanClass.CurrentThrowable then
+					ServerData.SaveThrowableEquipped(
+						player,
+						humanClass.CurrentThrowable.Name,
+						humanClass.CurrentThrowable.CurrentAmmo
+					)
+				end
+
+				return
+			end
+		end)
 	end),
 }

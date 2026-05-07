@@ -1,6 +1,7 @@
 export type Gun = {
 	Tool: Tool?,
 	MaxAmmo: number,
+	GunName: string,
 	CurrentAmmo: number,
 	ShotDelay: number,
 	ShootPoint: Attachment?,
@@ -91,6 +92,8 @@ export type Human = {
 
 	-- Janitor
 	Janitor: any,
+
+	InCombat: boolean,
 
 	-- Methods
 	new: (humanoid: Humanoid?) -> Human,
