@@ -1,6 +1,7 @@
-local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
@@ -24,8 +25,12 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new(savedGunName or "Revolver", self, player)
 	self.CurrentGun:AddGunToInventory()
-	self.CurrentThrowable = Throwable.new(savedThrowableData.Name or "Dynamite", self, savedThrowableData.Ammo or 1)
-	self.CurrentThrowable:AddThrowableToInventory()
+	self.CurrentThrowable = if savedThrowableData
+		then Throwable.new(savedThrowableData.Name, self, savedThrowableData.Ammo)
+		else nil
+	if self.CurrentThrowable then
+		self.CurrentThrowable:AddThrowableToInventory()
+	end
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 
 	print(`New Human class initialized for {self.Player.DisplayName}`)
@@ -49,6 +54,21 @@ end
 
 function HumanPlayer:ConnectGUIs()
 	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
+end
+
+function HumanPlayer:SetInCombat(InCombat: boolean)
+	Human.SetInCombat(self, InCombat)
+	local InCombatGUI = Utility.GetInstance(self.Player, false, "PlayerGui", "InCombatGUI")
+	if not InCombatGUI then
+		warn("Cannot enable In Combat GUI, missing playerGUI reference")
+		return
+	end
+
+	if InCombat then
+		InCombatGUI.Enabled = true
+	else
+		InCombatGUI.Enabled = false
+	end
 end
 
 function HumanPlayer:Die(killer: Player?)

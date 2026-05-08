@@ -12,8 +12,8 @@ function ServerData.Initialize()
 			bounty = 0,
 			bank = 0,
 			lastJoinedTime = nil,
-			equippedWeapon = "Revolver",
-			equippedThrowable = { Name = "Dynamite", Ammo = 1 },
+			equippedWeapon = "Winchester",
+			equippedThrowable = nil,
 			combatLogged = false,
 		},
 		profileStoreIndex = "Main",
@@ -41,7 +41,9 @@ function ServerData.UpdateMoney(player: Player, amount: number)
 		return currentAmt + amount
 	end)
 end
-
+function ServerData.SetMoney(player: Player, amount: number)
+	DataService:set(player, { "currency" }, amount)
+end
 function ServerData.UpdateBounty(player: Player, amount: number)
 	DataService:update(player, { "bounty" }, function(currentAmt)
 		return currentAmt + amount
@@ -59,7 +61,7 @@ function ServerData:SetupLeaderboard(player: Player)
 
 	local bounty: IntValue = Instance.new("IntValue")
 	bounty.Name = "Bounty"
-	bounty.Value = self:GetBounty(player)
+	bounty.Value = self.GetBounty(player)
 	bounty.Parent = leaderstats
 	ServerData.Leaderstats = leaderstats
 
@@ -97,7 +99,7 @@ function ServerData.GetWeaponName(player: Player)
 	return DataService:get(player, { "equippedWeapon" })
 end
 
-function ServerData.SaveThrowableEquipped(player: Player, throwableName: string, throwableAmmo: number)
+function ServerData.SaveThrowableEquipped(player: Player, throwableName: string?, throwableAmmo: number?)
 	DataService:set(player, { "equippedThrowable" }, { Name = throwableName, Ammo = throwableAmmo })
 end
 function ServerData.UpdateCombatLogged(player: Player, value: boolean)
@@ -109,7 +111,7 @@ end
 function ServerData.GetBankBalance(player: Player)
 	return DataService:get(player, { "bank" })
 end
-function ServerData:GetBounty(player: Player)
+function ServerData.GetBounty(player: Player)
 	return DataService:get(player, { "bounty" })
 end
 

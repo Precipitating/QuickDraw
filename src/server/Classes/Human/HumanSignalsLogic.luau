@@ -1,6 +1,7 @@
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanNetwork = require(script.Parent.HumanNetwork)
 local StaminaBarGUI = require(ServerScriptService.Server.GUI.StaminaBarGUI)
+local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local HumanSignals = require(script.Parent.HumanSignals)
 
 return {
@@ -25,5 +26,17 @@ return {
 		else
 			HumanNetwork.networker:fire(player, "ApplyImpulse", target, force, position)
 		end
+	end),
+
+	HumanSignals.SetShooterInCombat:Connect(function(player: Player)
+		if not player then
+			return
+		end
+		local human = PlayerManager:GetHumanClassFromPlayer(player)
+
+		if not human then
+			return
+		end
+		human:SetInCombat(true)
 	end),
 }

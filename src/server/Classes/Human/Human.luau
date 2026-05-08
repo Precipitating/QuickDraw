@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(script.Parent.HumanConstants)
+local HumanSignals = require(script.Parent.HumanSignals)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -159,22 +160,31 @@ function Human:GetHealthPercentage()
 end
 
 function Human:SetInCombat(InCombat: boolean)
+	if not self then
+		return
+	end
 	self.InCombat = InCombat
 
 	if InCombat then
-		self.CombatTimer = 120
+		self.CombatTimer = 10
 		self:StartCombatLogTimer()
+	else
+		if self.CombatLogTimerHandle then
+			pcall(task.cancel, self.CombatLogTimerHandle)
+			self.CombatLogTimerHandle = nil
+		end
 	end
 end
 
 function Human:StartCombatLogTimer()
 	if self.CombatLogTimerHandle then
-		task.cancel(self.CombatLogTimerHandle)
+		pcall(task.cancel, self.CombatLogTimerHandle)
+		self.CombatLogTimerHandle = nil
 	end
 
 	-- if delay finishes, not been hit for a while, so not combat logged anymore
 	self.CombatLogTimerHandle = task.delay(self.CombatTimer, function()
-		self.InCombat = false
+		self:SetInCombat(false)
 	end)
 end
 
@@ -225,6 +235,9 @@ end
 function Human:SetInvincibleFor(duration: number, excludeFromCooldown: boolean?)
 	self:SetInvincible(true, excludeFromCooldown)
 	self.ActiveInvincibleDelayHandle = task.delay(duration, function()
+		if type(self.SetInvincible) ~= "function" then
+			return
+		end
 		if self and not CollectionService:HasTag(self.Character, "Dead") then
 			self:SetInvincible(false)
 		end
@@ -430,6 +443,8 @@ function Human:OnHit(damage: number, damageMultiplier: number, limbName: string,
 				{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 			)
 		end
+
+		HumanSignals.SetShooterInCombat:Fire(shooter)
 	end
 end
 
@@ -623,6 +638,15 @@ function Human:Destroy()
 	if self.CurrentGun then
 		self.CurrentGun:Destroy()
 		self.CurrentGun = nil
+	end
+	if self.CombatLogTimerHandle then
+		pcall(task.cancel, self.CombatLogTimerHandle)
+		self.CombatLogTimerHandle = nil
+	end
+
+	if self.CurrentThrowable then
+		self.CurrentThrowable:Destroy()
+		self.CurrentThrowable = nil
 	end
 
 	self.Janitor:Destroy()

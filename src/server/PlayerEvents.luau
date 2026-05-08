@@ -2,11 +2,11 @@ local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Server = require(ReplicatedStorage.Shared.Vetra.VetraNet.Server)
+local DataService = require(ReplicatedStorage.Packages.DataService).server
 local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-
+local PlayerCharacters = {}
 type HumanPlayer = ClassTypes.HumanPlayer
 Players.CharacterAutoLoads = false
 
@@ -15,12 +15,12 @@ local function SpawnPlayerIn(player: Player)
 		local success, _ = pcall(function()
 			player:LoadCharacterAsync()
 		end)
-	until success
+	until success or (not player or not player.Parent)
 end
 local function InitializePlayer(player: Player, character: Model)
 	local humanClass: HumanPlayer = PlayerManager:AddHumanClass(player)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid") :: Humanoid
-	local bounty = ServerData:GetBounty(player)
+	local bounty = ServerData.GetBounty(player)
 	if not humanoid then
 		error(`Missing humanoid for {player.DisplayName}`)
 	end
@@ -31,10 +31,17 @@ local function InitializePlayer(player: Player, character: Model)
 	end
 	humanoid.WalkSpeed = 6
 
+	PlayerCharacters[player] = humanClass
+
 	-- ragdoll
 	humanoid.Died:Connect(function()
+		ServerData.SaveWeaponEquipped(player, "Revolver")
 		humanClass:OnDeath()
+		PlayerCharacters[player] = nil
 		task.wait(3)
+		if not player or not player.Parent then
+			return
+		end
 		SpawnPlayerIn(player)
 	end)
 	-- remove class if they leave
@@ -54,44 +61,41 @@ return {
 		end)
 
 		SpawnPlayerIn(player)
+	end),
 
-		player.CharacterRemoving:Connect(function(character: Model)
-			local humanoid = character:FindFirstChild("Humanoid")
+	DataService:addPlayerRemovingCallback(function(player: Player, data: any): ()
+		-- Perform any cleanup or save operations here
+		local humanClass = PlayerCharacters[player]
+		if not player or not player.Parent then
+			return
+		end
 
-			if not humanoid then
-				warn("[CharacterRemoving] Can't save weapon data, humanoid missing")
-				return
-			end
+		if humanClass.InCombat then
+			ServerData.UpdateCombatLogged(player, true)
+			ServerData.SaveWeaponEquipped(player, "Revolver")
+			ServerData.SetBounty(player, 0)
+			ServerData.SetMoney(player, 0)
+			print(`{player.Name} combat logged`)
+			return
+		end
 
-			-- MOST LIKELY LEFT THE GAME
-			if humanoid.Health > 0 then
-				local humanClass: HumanPlayer = PlayerManager:GetHumanClass(humanoid)
-				if not humanClass then
-					return
-				end
+		if humanClass.CurrentGun then
+			ServerData.SaveWeaponEquipped(player, humanClass.CurrentGun.GunName)
+		end
 
-				if humanClass.InCombat then
-					ServerData.UpdateCombatLogged(player, true)
-					ServerData.SaveWeaponEquipped(player, "Revolver")
-					ServerData.SaveThrowableEquipped(player, "Dynamite", 1)
-					ServerData.SetBounty(player, 0)
-					return
-				end
+		if humanClass.CurrentThrowable then
+			ServerData.SaveThrowableEquipped(
+				player,
+				humanClass.CurrentThrowable.Name,
+				humanClass.CurrentThrowable.CurrentAmmo
+			)
+		else
+			data.equippedThrowable = nil
+		end
 
-				if humanClass.CurrentGun then
-					ServerData.SaveWeaponEquipped(player, humanClass.CurrentGun.GunName)
-				end
+		ServerData.SetMoney(player, ServerData.GetMoney(player))
 
-				if humanClass.CurrentThrowable then
-					ServerData.SaveThrowableEquipped(
-						player,
-						humanClass.CurrentThrowable.Name,
-						humanClass.CurrentThrowable.CurrentAmmo
-					)
-				end
-
-				return
-			end
-		end)
+		PlayerCharacters[player] = nil
+		print(player.Name .. " is leaving with data:", data)
 	end),
 }

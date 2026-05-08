@@ -254,6 +254,9 @@ function AI:LookAround()
 
 	targetFound = self:AlignOrientLookAround()
 
+	if type(self.Owner.ToggleTorsoAimer) ~= "function" then
+		return nil
+	end
 	self.Owner:ToggleTorsoAimer(false)
 	return targetFound
 end

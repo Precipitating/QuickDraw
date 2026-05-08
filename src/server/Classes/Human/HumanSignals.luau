@@ -5,4 +5,5 @@ return {
 	RagdollClient = Signal.new(),
 	AdjustGrayscale = Signal.new(),
 	ApplyImpulseToClient = Signal.new(),
+	SetShooterInCombat = Signal.new(),
 }
