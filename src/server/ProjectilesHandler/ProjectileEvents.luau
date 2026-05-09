@@ -264,10 +264,10 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	elseif data.ProjectileType == "Throwable" then
 		local throwableData = data.Data
 		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
+		if context.CosmeticBulletObject then
+			Debris:AddItem(context.CosmeticBulletObject, throwableData.DetonationTime)
+		end
 		task.delay(throwableData.DetonationTime, function()
-			if context.CosmeticBulletObject then
-				context.CosmeticBulletObject:Destroy()
-			end
 			local hitPos = result.Position
 			ServerSoundHandler:Play3DOneShotToOthers(
 				nil,

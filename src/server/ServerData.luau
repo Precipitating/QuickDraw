@@ -12,7 +12,7 @@ function ServerData.Initialize()
 			bounty = 0,
 			bank = 0,
 			lastJoinedTime = nil,
-			equippedWeapon = "Winchester",
+			equippedWeapon = "Revolver",
 			equippedThrowable = nil,
 			combatLogged = false,
 		},
@@ -27,7 +27,7 @@ function ServerData.WaitForPlayerData(player: Player)
 end
 
 function DataService:onPlayerInit(player: Player, data): ()
-	warn(`{player.Name}  has initialized with data: {data}`)
+	warn(player.Name .. " has initialized with data:", data)
 	data.lastJoinedTime = os.time() -- We can directly modify data since no connections exist yet.
 end
 

@@ -24,6 +24,9 @@ return {
 	SPRINT_SPEED = 25,
 	CRAWL_SPEED = 5,
 
+	MAX_MONEY_LOSS_ON_DEATH = 500,
+	ON_DEATH_MONEY_LOSS_MULTIPLIER = 0.5,
+
 	SWAY_SPEED = 1.5,
 	SWAY_AMOUNT = math.rad(7), -- 7 degrees max
 }

@@ -36,10 +36,11 @@ local function InitializePlayer(player: Player, character: Model)
 	-- ragdoll
 	humanoid.Died:Connect(function()
 		ServerData.SaveWeaponEquipped(player, "Revolver")
+		humanClass:DropMoney()
 		humanClass:OnDeath()
 		PlayerCharacters[player] = nil
 		task.wait(3)
-		if not player or not player.Parent then
+		if not player then
 			return
 		end
 		SpawnPlayerIn(player)
@@ -66,7 +67,7 @@ return {
 	DataService:addPlayerRemovingCallback(function(player: Player, data: any): ()
 		-- Perform any cleanup or save operations here
 		local humanClass = PlayerCharacters[player]
-		if not player or not player.Parent then
+		if not player then
 			return
 		end
 

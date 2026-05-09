@@ -9,7 +9,7 @@ local BASE_TARGET_COST = 1250
 local MercenaryGUI = {}
 
 function MercenaryGUI:GetTargetCost(player: Player)
-	local playerBounty = ServerData:GetBounty(player)
+	local playerBounty = ServerData.GetBounty(player)
 	return BASE_TARGET_COST + (playerBounty * 2)
 end
 function MercenaryGUI:BuyTarget(player: Player, target: Player, cost: number)

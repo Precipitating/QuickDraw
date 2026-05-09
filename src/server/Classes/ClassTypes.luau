@@ -115,6 +115,7 @@ export type Human = {
 	Ragdoll: (self: Human, ragdollTime: number) -> (),
 	ApplyImpulse: (self: Human, force: Vector3, position: Vector3?) -> (),
 	Destroy: (self: Human) -> (),
+	DropMoney: (self: Human) -> (),
 }
 
 export type HumanPlayer = Human & {

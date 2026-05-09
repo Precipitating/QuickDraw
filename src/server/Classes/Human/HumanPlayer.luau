@@ -7,6 +7,7 @@ local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandle
 local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
 
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
+local MoneyDropHandler = require(ServerScriptService.Server.MoneyDropHandler)
 local ServerData = require(ServerScriptService.Server.ServerData)
 
 local Human = require(script.Parent.Human)
@@ -71,6 +72,18 @@ function HumanPlayer:SetInCombat(InCombat: boolean)
 	end
 end
 
+function HumanPlayer:DropMoney()
+	local currentMoney = ServerData.GetMoney(self.Player)
+	if currentMoney and currentMoney > 0 then
+		local loss = math.min(
+			math.floor(currentMoney * HumanConstants.ON_DEATH_MONEY_LOSS_MULTIPLIER),
+			HumanConstants.MAX_MONEY_LOSS_ON_DEATH
+		)
+		ServerData.SetMoney(self.Player, loss)
+		MoneyDropHandler.DropMoney(self.Character:GetPivot().Position, loss)
+	end
+end
+
 function HumanPlayer:Die(killer: Player?)
 	local dead = Human.Die(self)
 
@@ -81,7 +94,6 @@ function HumanPlayer:Die(killer: Player?)
 	if self.Player == killer then
 		return
 	end
-
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
 	if killer and killer:IsA("Player") then
 		warn("PLAYER KILLED PLAYAH")

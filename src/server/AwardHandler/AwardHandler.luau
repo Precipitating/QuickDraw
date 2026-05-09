@@ -11,13 +11,13 @@ end
 
 function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
 	-- award killer victim's bounty if exists
-	local victimBounty = ServerData:GetBounty(victim)
+	local victimBounty = ServerData.GetBounty(victim)
 
 	local finalMoneyAward = if victimBounty and victimBounty > 0
 		then AwardConstants.PLAYER_KILL_AWARD + victimBounty
 		else AwardConstants.PLAYER_KILL_AWARD
 
-	ServerData.UpdateMoney(killer, finalMoneyAward)
+	ServerData.UpdateBank(killer, finalMoneyAward)
 	ServerData.UpdateBounty(killer, AwardConstants.PLAYER_KILL_BOUNTY)
 
 	if victimBounty and victimBounty > 0 then

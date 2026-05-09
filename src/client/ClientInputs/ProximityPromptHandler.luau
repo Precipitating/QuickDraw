@@ -1,10 +1,15 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Networker = require(ReplicatedStorage.Packages.Networker).client
+local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ShopGUIHandler = require(script.Parent.Parent.GUI.ShopGUIHandler)
 local BankGUIHandler = require(script.Parent.Parent.GUI.BankGUIHandler)
 local MercenaryGUIHandler = require(script.Parent.Parent.GUI.MercenaryGUIHandler)
 local GUI = ReplicatedStorage.Shared.GUI
+local ProximityPromptHandler = {}
+ProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", ProximityPromptHandler)
+
 local PROMPT_HANDLERS = {
 	["ShopPrompt"] = function(player: Player, prompt: ProximityPrompt)
 		local shop = GUI.ShopGUI:Clone()
@@ -27,9 +32,10 @@ local PROMPT_HANDLERS = {
 		SoundManager.PlayKeyed("Voiceline", "MercGreeting")
 		MercenaryGUIHandler:ConnectMercenaryGUI(mercGUI, prompt)
 	end,
+	["CashPickupPrompt"] = function(_: Player, prompt: ProximityPrompt)
+		ProximityPromptHandler.networker:fire("CashPickedUp", prompt)
+	end,
 }
-
-local ProximityPromptHandler = {}
 
 function ProximityPromptHandler.Initialize()
 	for tag, handler in PROMPT_HANDLERS do
@@ -38,6 +44,9 @@ function ProximityPromptHandler.Initialize()
 				return
 			end
 			prompt.Triggered:Connect(function(player)
+				if not PlayerContext.Humanoid or PlayerContext.Humanoid.Health <= 0 then
+					return
+				end
 				handler(player, prompt)
 			end)
 		end)
