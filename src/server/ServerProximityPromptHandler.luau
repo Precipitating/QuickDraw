@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ServerData = require(script.Parent.ServerData)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
@@ -27,6 +28,19 @@ function ServerProximityPromptHandler:CashPickedUp(player: Player, prompt: Proxi
 	end
 end
 
-ServerProximityPromptHandler.networker =
-	Networker.new("ProximityPromptNetwork", ServerProximityPromptHandler, { ServerProximityPromptHandler.CashPickedUp })
+function ServerProximityPromptHandler:HealPlayer(player: Player, prompt: ProximityPrompt)
+	local human = PlayerManager:GetHumanClassFromPlayer(player)
+	if not human then
+		warn("Can't heal, human class missing")
+		return
+	end
+
+	human:HealAll()
+end
+
+ServerProximityPromptHandler.networker = Networker.new(
+	"ProximityPromptNetwork",
+	ServerProximityPromptHandler,
+	{ ServerProximityPromptHandler.CashPickedUp, ServerProximityPromptHandler.HealPlayer }
+)
 return ServerProximityPromptHandler

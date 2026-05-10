@@ -214,13 +214,15 @@ function Gun:StopReloading()
 	end
 end
 
-function Gun:DisableCollision(tool: Tool)
-	for _, object in tool:GetChildren() do
-		if object:IsA("BasePart") then
-			object.CanCollide = false
+function Gun:ToggleCollision(state: boolean, tool: Tool?)
+	local children = if tool then tool:GetChildren() else self.Tool:GetChildren()
+	for _, object in children do
+		if object:IsA("MeshPart") then
+			object.CanCollide = state
 		end
 	end
 end
+
 function Gun:AddGunToInventory()
 	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.GunName):Clone()
 	self.Tool = clone
@@ -254,7 +256,7 @@ function Gun:AddGunToInventory()
 	else
 		-- should be HumanNPC class
 		-- NPC auto equips gun for now
-		self:DisableCollision(clone)
+		self:ToggleCollision(false, clone)
 		self.HumanClassRef:EquipGun(clone)
 	end
 end

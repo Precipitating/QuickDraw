@@ -35,6 +35,9 @@ local PROMPT_HANDLERS = {
 	["CashPickupPrompt"] = function(_: Player, prompt: ProximityPrompt)
 		ProximityPromptHandler.networker:fire("CashPickedUp", prompt)
 	end,
+	["MedicPrompt"] = function(_: Player, prompt: ProximityPrompt)
+		ProximityPromptHandler.networker:fire("HealPlayer", prompt)
+	end,
 }
 
 function ProximityPromptHandler.Initialize()

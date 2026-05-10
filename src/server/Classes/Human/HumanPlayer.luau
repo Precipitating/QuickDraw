@@ -22,6 +22,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	local savedGunName = ServerData.GetWeaponName(player)
 	local savedThrowableData = ServerData.GetThrowableData(player)
 	Human.AssignBodyParts(self, "Player")
+	self:SetupBloodEmitters()
 	self.Player = player
 	self.HumanType = "Player"
 	self.CurrentGun = Gun.new(savedGunName or "Revolver", self, player)
@@ -35,6 +36,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 
 	print(`New Human class initialized for {self.Player.DisplayName}`)
+
 	return self :: any
 end
 
@@ -101,17 +103,48 @@ function HumanPlayer:Die(killer: Player?)
 	end
 end
 
-function Human:SetCrawlState()
+function HumanPlayer:RevertCrawlState()
+	if not self.Legless then
+		return
+	end
+
+	-- Revert animation folder back to default on client
+	AnimationHandler:SetAnimationFolder(self.Player, "DefaultAnimations", nil)
+
+	-- Re-enable HRP collision
+	local hrp = self.Character:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		hrp.CanCollide = true
+	end
+
+	-- Restore jump, walk speed, and hip height
+	self.Humanoid.UseJumpPower = false
+	self.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+	self.Humanoid.HipHeight = 2.142
+
+	if self.CurrentGun then
+		self.CurrentGun:ToggleCollision(true)
+	end
+
+	self.Legless = false
+end
+function HumanPlayer:SetCrawlState()
 	if self.Dead then
 		return
 	end
+
+	if self.Legless then
+		return
+	end
+
 	local parts = self.DisabledBodyParts
+
+	if self.CurrentGun then
+		self.CurrentGun:ToggleCollision(false)
+	end
 
 	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
 		warn("Should be crawling")
-		if self.Legless then
-			return
-		end
 
 		HumanSignals.RagdollClient:Fire(self.Player, 3)
 		print("Both legs disabled")
@@ -124,7 +157,7 @@ function Human:SetCrawlState()
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
 		self.Humanoid.WalkSpeed = HumanConstants.CRAWL_SPEED
-		self.Humanoid.HipHeight = 0.5
+		self.Humanoid.HipHeight = 1
 
 		self:FixCrawlADS()
 

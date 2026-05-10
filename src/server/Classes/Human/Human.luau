@@ -44,6 +44,16 @@ local DismemberLimbBloodRequirement = {
 	RightUpperLeg = true,
 	Head = true,
 }
+local LIMB_CHAIN = {
+	LeftUpperLeg = { "LeftLowerLeg", "LeftFoot" },
+	LeftLowerLeg = { "LeftFoot" },
+	RightUpperLeg = { "RightLowerLeg", "RightFoot" },
+	RightLowerLeg = { "RightFoot" },
+	LeftUpperArm = { "LeftLowerArm", "LeftHand" },
+	LeftLowerArm = { "LeftHand" },
+	RightUpperArm = { "RightLowerArm", "RightHand" },
+	RightLowerArm = { "RightHand" },
+}
 
 local LimbHealth = {
 	Head = 35,
@@ -57,6 +67,28 @@ local LimbHealth = {
 	LeftLowerLeg = 40,
 	RightUpperLeg = 40,
 	RightLowerLeg = 40,
+}
+
+local BallSocketMaxFrictionTorques = {
+	LeftHand = 16.976,
+
+	LeftFoot = 26.867,
+
+	LeftLowerLeg = 71.363,
+	LeftUpperLeg = 25.812,
+
+	LeftLowerArm = 58.609,
+	LeftUpperArm = 50.275,
+
+	RightHand = 16.976,
+
+	RightFoot = 26.867,
+
+	RightLowerLeg = 71.363,
+	RightUpperLeg = 25.812,
+
+	RightLowerArm = 58.609,
+	RightUpperArm = 50.275,
 }
 
 local BodyParts = {
@@ -96,6 +128,13 @@ local DisabledBodyParts = {
 	RightLowerLeg = false,
 }
 
+local BloodEmitterRefs = {
+	LeftUpperArm = true,
+	LeftUpperLeg = true,
+	RightUpperLeg = true,
+	Head = true,
+}
+
 -- Module
 local Human = {}
 Human.__index = Human
@@ -133,6 +172,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.LimbHealth = table.clone(LimbHealth)
 	self.BodyParts = table.clone(BodyParts)
 	self.DisabledBodyParts = table.clone(DisabledBodyParts)
+	self.BloodEmitterRefs = table.clone(BloodEmitterRefs)
 
 	self.IsRagdolled = false
 
@@ -277,7 +317,7 @@ end
 
 function Human:ApplyKickForce()
 	local rightFoot = self.BodyParts["RightFoot"]
-	if not rightFoot then
+	if self.DisabledBodyParts["RightFoot"] == true then
 		return
 	end
 	local overlapParams = OverlapParams.new()
@@ -351,6 +391,48 @@ function Human:ApplyRollForce()
 		end
 		self.RollSignalled = false
 	end)
+end
+
+function Human:HealAll()
+	-- reset limb constraints and hp
+	for key, bodyPart in self.BodyParts do
+		if not bodyPart then
+			continue
+		end
+
+		if key == "Head" or key == "UpperTorso" or key == "LowerTorso" then
+			self.LimbHealth[key] = LimbHealth[key]
+			continue
+		end
+
+		self.DisabledBodyParts[key] = false
+		bodyPart.Transparency = 0
+		bodyPart.CanQuery = true
+		bodyPart.CanTouch = true
+
+		local animationConstraint: AnimationConstraint? = bodyPart:FindFirstChildWhichIsA("AnimationConstraint", true)
+		local ballSocket: BallSocketConstraint? = bodyPart:FindFirstChildOfClass("BallSocketConstraint")
+
+		if animationConstraint then
+			animationConstraint.Enabled = true
+		end
+
+		if ballSocket then
+			ballSocket.LimitsEnabled = true
+			ballSocket.MaxFrictionTorque = BallSocketMaxFrictionTorques[key]
+		end
+
+		self.LimbHealth[key] = LimbHealth[key]
+		self.Health = HumanConstants.MAX_HP
+
+		if self.BloodEmitterRefs[key] then
+			self.BloodEmitterRefs[key].Enabled = false
+		end
+	end
+
+	if self.Legless then
+		self:RevertCrawlState()
+	end
 end
 
 function Human:AssignBodyParts(tagName: string)
@@ -467,6 +549,7 @@ end
 -- works whilst legless
 function Human:FixCrawlADS()
 	local rightHand: MeshPart = self.BodyParts["RightHand"]
+
 	local rightWristBallSocket: BallSocketConstraint = Utility.GetInstance(rightHand, false, "RightWristBallSocket")
 
 	local rightUpperArm: MeshPart = self.BodyParts["RightUpperArm"]
@@ -490,11 +573,8 @@ function Human:FixCrawlADS()
 	rightShoulderBallSocket.UpperAngle = 100
 
 	-- disable gun's collision
-	for _, part: MeshPart in gun:GetChildren() do
-		if not part:IsA("MeshPart") then
-			continue
-		end
-		part.CanCollide = false
+	if self.CurrentGun then
+		self.CurrentGun:ToggleCollision(false)
 	end
 end
 
@@ -534,57 +614,88 @@ function Human:DisableLimb(limbName: string)
 	self:SetCrawlState()
 end
 
-function Human:ApplyBloodFlowVisual(limbName: string)
+function Human:SetupBloodEmitters()
 	local upperTorso = self.BodyParts["UpperTorso"]
 	local lowerTorso = self.BodyParts["LowerTorso"]
 
-	local bloodEmitter: ParticleEmitter = BloodFlowEmitter:Clone()
+	if not upperTorso or not lowerTorso then
+		error("[SetupBloodEmitters] Failed to get torso references")
+	end
 
-	local isLeg = string.find(limbName:lower(), "leg")
-	local isArm = string.find(limbName:lower(), "arm")
-	local isHead = string.find(limbName:lower(), "head")
-
-	if isLeg then
-		local attachment = lowerTorso:FindFirstChild(DismemberAttachments[limbName])
-
+	-- legs
+	for limbName, attachmentName in DismemberAttachments do
+		local attachment = if lowerTorso:FindFirstChild(attachmentName)
+			then lowerTorso:FindFirstChild(attachmentName)
+			else upperTorso:FindFirstChild(attachmentName)
 		if not attachment then
-			warn("[Human:ApplyBloodFlowVisual] Can't find lower torso attachment")
-			return
-		end
-		bloodEmitter.EmissionDirection = Enum.NormalId.Bottom
-		bloodEmitter.Parent = attachment
-	elseif isArm or isHead then
-		local attachment = upperTorso:FindFirstChild(DismemberAttachments[limbName])
-
-		if not attachment then
-			warn("[Human:ApplyBloodFlowVisual] Can't find upper torso attachment")
-			return
+			warn("Attachment not found")
+			continue
 		end
 
-		if not isHead then
+		local bloodEmitter: ParticleEmitter = BloodFlowEmitter:Clone()
+		local isLeg = string.find(limbName:lower(), "leg")
+		local isHead = string.find(limbName:lower(), "head")
+		local isArm = string.find(limbName:lower(), "arm")
+
+		if isLeg then
+			bloodEmitter.EmissionDirection = Enum.NormalId.Bottom
+		-- arm
+		elseif isArm then
 			bloodEmitter.EmissionDirection = if string.find(limbName:lower(), "left")
 				then Enum.NormalId.Left
 				else Enum.NormalId.Right
+		elseif isHead then
+			bloodEmitter.EmissionDirection = Enum.NormalId.Top
 		end
 
+		self.BloodEmitterRefs[limbName] = bloodEmitter
+		bloodEmitter.Enabled = false
 		bloodEmitter.Parent = attachment
 	end
+end
+
+function Human:ToggleBloodEmitter(limbName: string, state: boolean)
+	local bloodRef = self.BloodEmitterRefs[limbName]
+	if not bloodRef then
+		return
+	end
+	bloodRef.Enabled = state
 end
 
 function Human:DestroyLimb(limbName: string)
 	if not self.BodyParts or not self.BodyParts[limbName] then
 		return
 	end
-	self.BodyParts[limbName]:Destroy()
-	self.BodyParts[limbName] = nil
+	local dependents = LIMB_CHAIN[limbName]
+	local limb = self.BodyParts[limbName]
+	limb.Transparency = 1
+	limb.CanQuery = false
+	limb.CanTouch = false
 	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
 
 	if self.DisabledBodyParts[limbName] == false then
 		self.DisabledBodyParts[limbName] = true
 	end
 
+	-- hide connected parts as well
+	if dependents then
+		for _, dependentName in ipairs(dependents) do
+			local childLimb = self.BodyParts[dependentName]
+			childLimb.Transparency = 1
+			childLimb.CanQuery = false
+			childLimb.CanTouch = false
+			if self.DisabledBodyParts[dependentName] == false then
+				self.DisabledBodyParts[dependentName] = true
+			end
+		end
+	end
+
 	if DismemberLimbBloodRequirement[limbName] then
-		self:ApplyBloodFlowVisual(limbName)
+		self:ToggleBloodEmitter(limbName, true)
+	end
+
+	if limbName == "Head" then
+		self.Health = 0
 	end
 
 	self:SetCrawlState()

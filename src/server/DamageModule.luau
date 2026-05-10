@@ -37,14 +37,14 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 	TweenService:Create(highlight, TweenInfo.new(0.5), { FillTransparency = 1 }):Play()
 end
 
-local function ApplyDamage(
+function DamageModule:ApplyDamage(
 	human: HumanPlayer | HumanNPC,
 	limbName: string,
 	damage: number,
 	shotPos: Vector3,
 	shooter: Player | Model
 )
-	if not human or not human.LimbHealth or not human.LimbHealth[limbName] or human.Dead then
+	if not human or not human.LimbHealth or not human.LimbHealth[limbName] or human.Dead or human.Invincible then
 		return
 	end
 	local gun = human.CurrentGun
@@ -170,7 +170,7 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 		human.HRP,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
-	ApplyDamage(human, limbName, damage, shotPos, shooter)
+	DamageModule:ApplyDamage(human, limbName, damage, shotPos, shooter)
 
 	if limbHealth[limbName] <= 0 then
 		HandleLimbDestroyed(human, limbName, damage)

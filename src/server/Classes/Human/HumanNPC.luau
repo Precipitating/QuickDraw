@@ -20,7 +20,7 @@ HumanNPC.__index = HumanNPC
 function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
-
+	self:SetupBloodEmitters()
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()
@@ -108,17 +108,52 @@ function HumanNPC:ToggleRightArmAimer(enable: boolean)
 	rightArmOrientator.CFrame = CFrame.identity
 end
 
+function HumanNPC:RevertCrawlState()
+	if not self.Legless then
+		return
+	end
+
+	-- Stop any server-side crawl animations
+	for _, track in ipairs(self.Animator:GetPlayingAnimationTracks()) do
+		track:Stop()
+	end
+
+	-- Revert animation folder back to default on client
+	AnimationHandler:SetAnimationFolder(nil, "DefaultAnimations", self.Character)
+
+	-- Re-enable HRP collision
+	local hrp = self.Character:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		hrp.CanCollide = true
+	end
+
+	-- Restore jump and walk speed
+	self.Humanoid.UseJumpPower = false
+	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
+
+	if self.CurrentGun then
+		self.CurrentGun:ToggleCollision(true)
+	end
+
+	self.Legless = false
+end
+
 function HumanNPC:SetCrawlState()
 	if self.Dead then
 		return
 	end
 	local parts = self.DisabledBodyParts
 
+	if self.Legless then
+		return
+	end
+
+	if self.CurrentGun then
+		self.CurrentGun:ToggleCollision(false)
+	end
+
 	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
 		warn("Should be crawling")
-		if self.Legless then
-			return
-		end
 
 		self:Ragdoll(3)
 
@@ -168,6 +203,9 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 end
 
 function HumanNPC:AimRightArmTowards(target)
+	if self.DisabledBodyParts["RightUpperArm"] == true then
+		return
+	end
 	self:ToggleRightArmAimer(true)
 	self:ToggleTorsoAimer(true)
 	local rightArm = self.BodyParts["RightUpperArm"]

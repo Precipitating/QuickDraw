@@ -65,6 +65,7 @@ export type Human = {
 	Legless: boolean,
 	IsRagdolled: boolean,
 	AnimationControllerState: boolean,
+	Invincible: boolean,
 
 	-- References
 	Character: Model,
