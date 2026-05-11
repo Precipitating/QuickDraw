@@ -103,6 +103,10 @@ local function ADSTransparency(on: boolean)
 		if not part:IsA("MeshPart") then
 			continue
 		end
+		local limbDestroyed = part:GetAttribute("Destroyed")
+		if limbDestroyed then
+			continue
+		end
 
 		if part.Parent:IsA("Tool") then
 			continue

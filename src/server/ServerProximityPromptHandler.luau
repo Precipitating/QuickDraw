@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local PurchasePrices = require(ReplicatedStorage.Shared.PurchasePrices)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ServerData = require(script.Parent.ServerData)
@@ -35,7 +36,15 @@ function ServerProximityPromptHandler:HealPlayer(player: Player, prompt: Proximi
 		return
 	end
 
-	human:HealAll()
+	local money = ServerData.GetMoney(player)
+
+	if money >= PurchasePrices.MEDIC_COST then
+		ServerData.UpdateMoney(player, -PurchasePrices.MEDIC_COST)
+		human:HealAll()
+		ServerSoundHandler:PlaySoundTo(player, "MedicBuy")
+	else
+		ServerSoundHandler:PlaySoundTo(player, "Error")
+	end
 end
 
 ServerProximityPromptHandler.networker = Networker.new(

@@ -50,6 +50,11 @@ local function InitializePlayer(player: Player, character: Model)
 	humanoid.Destroying:Connect(function()
 		humanClass:Destroy()
 	end)
+
+	-- task.wait(2)
+	-- humanClass:DestroyLimb("LeftUpperArm")
+	-- humanClass:DestroyLimb("LeftUpperLeg")
+	-- humanClass:DestroyLimb("RightUpperLeg")
 end
 
 return {

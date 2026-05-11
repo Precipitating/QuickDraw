@@ -12,6 +12,14 @@ function AnimationHandler:SetAnimationFolder(player: Player?, folderName: string
 		self.networker:fireAll("SetAnimationFolder", folderName, characterModel)
 	end
 end
+function AnimationHandler:ResetToDefaultAnimations(player: Player?, characterModel: Model?)
+	if player and not characterModel then
+		self.networker:fire(player, "ResetToDefaultAnimations", nil)
+	else
+		-- character model as NPCAnimationsHandler stores NPC animations using the model as key
+		self.networker:fireAll("ResetToDefaultAnimations", characterModel)
+	end
+end
 
 function AnimationHandler.StopAllAnimationTracks(humanoid: Humanoid?)
 	assert(humanoid, "[AnimationHandler.StopAllAnimationTracks] Missing humanoid")

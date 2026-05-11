@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Folder" referent="RBX749E852BBC5A4FE6BA838635C11B30B5">
+	<Item class="Folder" referent="RBX66531DED2156402AB8116C46484DD439">
 		<Properties>
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -11,9 +11,9 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Animation" referent="RBX4C1930E028874E5486F54C8CD5E118F1">
+		<Item class="Animation" referent="RBX57147A44529F416680BA40B682421871">
 			<Properties>
-				<Content name="AnimationId"><url>rbxassetid://73185922629286</url></Content>
+				<Content name="AnimationId"><url>rbxassetid://109814683228688</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
@@ -22,9 +22,9 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXF19A4FD4BAA347CEB87A6D93C6F9A7BD">
+		<Item class="Animation" referent="RBX90A98E40BD9C4F7BB227683135B21B2F">
 			<Properties>
-				<Content name="AnimationId"><url>rbxassetid://134091578086884</url></Content>
+				<Content name="AnimationId"><url>rbxassetid://134862389817956</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
@@ -33,20 +33,9 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXEB9F085A18994ECFA65C7BAA006C1A04">
+		<Item class="Animation" referent="RBXC7EBBBE5C85F4D1092F1F302419CCE1C">
 			<Properties>
-				<Content name="AnimationId"><url>rbxassetid://134091578086884</url></Content>
-				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
-				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">ToolHolding</string>
-				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
-			</Properties>
-		</Item>
-		<Item class="Animation" referent="RBXF8DB750F399D424DBDC955A280FAF67B">
-			<Properties>
-				<Content name="AnimationId"><url>rbxassetid://73185922629286</url></Content>
+				<Content name="AnimationId"><url>rbxassetid://109814683228688</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
@@ -55,9 +44,9 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX0C4A61C44AB2447BABFE3E71C3198576">
+		<Item class="Animation" referent="RBX3FB68574776E4190A977BAEE31388005">
 			<Properties>
-				<Content name="AnimationId"><url>rbxassetid://134091578086884</url></Content>
+				<Content name="AnimationId"><url>rbxassetid://134862389817956</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAA==</BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
@@ -66,9 +55,9 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBXF609D21CE0594A33B19CDF56D8A46E73">
+		<Item class="Animation" referent="RBX75108A25974D4F6C83C8A4BE037C428B">
 			<Properties>
-				<Content name="AnimationId"><url>rbxassetid://134091578086884</url></Content>
+				<Content name="AnimationId"><url>rbxassetid://134862389817956</url></Content>
 				<BinaryString name="AttributesSerialize">AgAAAAYAAABMb29wZWQDAQYAAABXZWlnaHQGAAAAAADAWEA=</BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>

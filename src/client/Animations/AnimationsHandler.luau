@@ -39,6 +39,9 @@ end
 function AnimationsHandler:SetAnimationFolder(folderName: string, characterModel: Model?)
 	AnimationSignals.ChangeAnimationFolder:Fire(folderName, characterModel)
 end
+function AnimationsHandler:ResetToDefaultAnimations(characterModel: Model?)
+	AnimationSignals.ResetToDefaultAnimations:Fire(characterModel)
+end
 
 function AnimationsHandler.StopCustomAnimation(name: string)
 	local animationInstance = LoadedAnimations[name]

@@ -407,6 +407,7 @@ function Human:HealAll()
 
 		self.DisabledBodyParts[key] = false
 		bodyPart.Transparency = 0
+		bodyPart:SetAttribute("Destroyed", false)
 		bodyPart.CanQuery = true
 		bodyPart.CanTouch = true
 
@@ -582,16 +583,11 @@ function Human:SetCrawlState()
 	warn("Ran SetCrawlState base class, you shouldn't be able to see this")
 end
 
-function Human:DisableLimb(limbName: string)
-	local limb = self.Character[limbName]
-	if not limb then
-		return
-	end
-
-	local animationConstraint: AnimationConstraint? = limb:FindFirstChildWhichIsA("AnimationConstraint", true)
-	local ballSocket: BallSocketConstraint? = limb:FindFirstChildOfClass("BallSocketConstraint")
-
-	limb.CanCollide = false
+function Human:MakeLimbFloppy(limbPart)
+	local animationConstraint: AnimationConstraint? = limbPart:FindFirstChildWhichIsA("AnimationConstraint", true)
+	local ballSocket: BallSocketConstraint? = limbPart:FindFirstChildOfClass("BallSocketConstraint")
+	local limbName = limbPart.Name
+	limbPart.CanCollide = false
 	if animationConstraint then
 		animationConstraint.Enabled = false
 		print(`{animationConstraint.Name} animation constraint disabled!`)
@@ -605,6 +601,21 @@ function Human:DisableLimb(limbName: string)
 
 	if self.DisabledBodyParts[limbName] == false then
 		self.DisabledBodyParts[limbName] = true
+	end
+end
+
+function Human:DisableLimb(limbName: string)
+	local limb = self.Character[limbName]
+	if not limb then
+		return
+	end
+	self:MakeLimbFloppy(limb)
+
+	local chainDisable = LIMB_CHAIN[limbName]
+	if chainDisable then
+		for _, chainLimb in chainDisable do
+			self:MakeLimbFloppy(self.Character[chainLimb])
+		end
 	end
 
 	if limbName ~= "Head" then
@@ -662,31 +673,33 @@ function Human:ToggleBloodEmitter(limbName: string, state: boolean)
 	bloodRef.Enabled = state
 end
 
+function Human:HideLimb(limb)
+	local limbName = limb.Name
+	limb.Transparency = 1
+	limb:SetAttribute("Destroyed", true)
+	limb.CanQuery = false
+	limb.CanTouch = false
+
+	if self.DisabledBodyParts[limbName] == false then
+		self.DisabledBodyParts[limbName] = true
+	end
+end
+
 function Human:DestroyLimb(limbName: string)
 	if not self.BodyParts or not self.BodyParts[limbName] then
 		return
 	end
 	local dependents = LIMB_CHAIN[limbName]
 	local limb = self.BodyParts[limbName]
-	limb.Transparency = 1
-	limb.CanQuery = false
-	limb.CanTouch = false
-	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
 
-	if self.DisabledBodyParts[limbName] == false then
-		self.DisabledBodyParts[limbName] = true
-	end
+	self:HideLimb(limb)
+	ServerSoundHandler:PlaySoundTo(nil, "LimbDismember", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
 
 	-- hide connected parts as well
 	if dependents then
-		for _, dependentName in ipairs(dependents) do
+		for _, dependentName in dependents do
 			local childLimb = self.BodyParts[dependentName]
-			childLimb.Transparency = 1
-			childLimb.CanQuery = false
-			childLimb.CanTouch = false
-			if self.DisabledBodyParts[dependentName] == false then
-				self.DisabledBodyParts[dependentName] = true
-			end
+			self:HideLimb(childLimb)
 		end
 	end
 

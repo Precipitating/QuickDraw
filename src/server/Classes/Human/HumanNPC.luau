@@ -119,7 +119,8 @@ function HumanNPC:RevertCrawlState()
 	end
 
 	-- Revert animation folder back to default on client
-	AnimationHandler:SetAnimationFolder(nil, "DefaultAnimations", self.Character)
+	AnimationHandler:ResetToDefaultAnimations(self.Character)
+	--AnimationHandler:SetAnimationFolder(nil, "DefaultAnimations", self.Character)
 
 	-- Re-enable HRP collision
 	local hrp = self.Character:FindFirstChild("HumanoidRootPart")
@@ -214,7 +215,12 @@ function HumanNPC:AimRightArmTowards(target)
 	local targetPos
 	if typeof(target) == "Instance" then
 		if target:IsA("Model") then
-			targetPos = target:GetPivot().Position
+			local upperTorso = target:FindFirstChild("UpperBody")
+			if upperTorso then
+				targetPos = upperTorso.Position
+			else
+				targetPos = target:GetPivot().Position
+			end
 		elseif target:IsA("BasePart") then
 			targetPos = target.Position
 		end

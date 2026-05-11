@@ -109,7 +109,8 @@ function HumanPlayer:RevertCrawlState()
 	end
 
 	-- Revert animation folder back to default on client
-	AnimationHandler:SetAnimationFolder(self.Player, "DefaultAnimations", nil)
+	AnimationHandler:ResetToDefaultAnimations(self.Player)
+	--AnimationHandler:SetAnimationFolder(self.Player, "DefaultAnimations", nil)
 
 	-- Re-enable HRP collision
 	local hrp = self.Character:FindFirstChild("HumanoidRootPart")
@@ -166,7 +167,10 @@ function HumanPlayer:SetCrawlState()
 		warn(`Player should be legless now`)
 	end
 end
-
+function HumanPlayer:HealAll()
+	Human.HealAll(self)
+	self:AdjustGrayscale()
+end
 -- scale gray screen tint on client via current health
 function HumanPlayer:AdjustGrayscale()
 	local hpPercent = self:GetHealthPercentage()

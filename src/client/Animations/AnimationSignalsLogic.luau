@@ -17,4 +17,13 @@ return {
 			PlayerContext.AnimationController:ChangeAllAnimations(folder)
 		end
 	end),
+	AnimationSignals.ResetToDefaultAnimations:Connect(function(characterModel: Model?)
+		-- means this is for NPC
+		if characterModel then
+			local npcAnimationController = NPCAnimationsHandler:GetNPCAnimations(characterModel)
+			npcAnimationController:ResetToDefaultAnimations()
+		else
+			PlayerContext.AnimationController:ResetToDefaultAnimations()
+		end
+	end),
 }

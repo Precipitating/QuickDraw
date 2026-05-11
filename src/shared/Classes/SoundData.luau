@@ -456,6 +456,14 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
+
+	-- Medic
+	MedicBuy = {
+		SoundId = "rbxassetid://103766849742433",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
 }
 
 -- Default group volumes

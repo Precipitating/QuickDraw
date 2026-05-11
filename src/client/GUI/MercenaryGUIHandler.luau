@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local DataService = require(ReplicatedStorage.Packages.DataService).client
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
@@ -10,7 +9,6 @@ local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local MercenaryTemplate = ReplicatedStorage.Shared.GUI.MercenaryTarget
-local BASE_COST = 1250
 
 local MercenaryGUIHandler = {}
 MercenaryGUIHandler.janitor = Janitor.new()
@@ -37,6 +35,8 @@ function MercenaryGUIHandler:ConnectMercenaryGUI(gui: ScreenGui, linkedPrompt: P
 	self.networker:fire("OnGUIOpen", linkedPrompt:FindFirstAncestorOfClass("Model"))
 
 	local playerList = Players:GetPlayers()
+
+	-- Connect each product to allow buy event to occur every click
 	for _, target in playerList do
 		local mercenaryTarget = MercenaryTemplate:Clone()
 		local targetTextBox = Utility.GetInstance(mercenaryTarget, true, "TextLabel")
@@ -57,6 +57,7 @@ function MercenaryGUIHandler:ConnectMercenaryGUI(gui: ScreenGui, linkedPrompt: P
 		end))
 	end
 
+	-- Exit GUI
 	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
 		self:Disconnect()
 		gui:Destroy()
