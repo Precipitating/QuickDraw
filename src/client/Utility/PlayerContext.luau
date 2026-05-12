@@ -13,6 +13,9 @@ local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHand
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local WindConstants = require(ReplicatedStorage.Shared.Wind.WindConstants)
+local WindLines = require(ReplicatedStorage.Shared.Wind.WindLines)
+local WindShake = require(ReplicatedStorage.Shared.Wind.WindShake)
 local HumanGUIHandler = require(script.Parent.Parent.GUI.HumanGUIHandler)
 local CurrentCamera = workspace.CurrentCamera
 local DefaultAnimations = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
@@ -204,6 +207,25 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 	warn("Local character references updated!")
 end
 
+local function SetupWind()
+	-- Wind shake
+	WindShake:Init({
+		MatchWorkspaceWind = false,
+	})
+
+	WindShake:SetDefaultSettings({
+		WindSpeed = WindConstants.WindSpeed,
+		WindDirection = WindConstants.WindDirection,
+		WindPower = WindConstants.WindPower,
+	})
+	WindLines:Init({
+		Direction = WindConstants.WindDirection,
+		Speed = WindConstants.WindSpeed,
+		Lifetime = 1.5,
+		SpawnRate = 11,
+	})
+end
+
 function PlayerContext:Initialize()
 	ClientData.WaitForData()
 	-- Needs reinitializing on respawn
@@ -221,6 +243,8 @@ function PlayerContext:Initialize()
 	ContextActionService:BindActionAtPriority("RightMouseDisable", function()
 		return Enum.ContextActionResult.Sink
 	end, false, Enum.ContextActionPriority.Low.Value, Enum.UserInputType.MouseButton2)
+
+	SetupWind()
 end
 
 return PlayerContext
