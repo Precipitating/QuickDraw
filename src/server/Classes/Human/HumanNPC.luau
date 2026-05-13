@@ -45,6 +45,7 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 
+	self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
 	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
 end

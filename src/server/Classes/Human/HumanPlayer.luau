@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
@@ -34,6 +35,13 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 		self.CurrentThrowable:AddThrowableToInventory()
 	end
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
+
+	if CollectionService:HasTag(player, "FirstLoad") then
+		warn("Player first loaded, setting invincible forever until game loaded")
+		self:SetInvincible(true, true)
+	else
+		self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
+	end
 
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 
@@ -158,7 +166,7 @@ function HumanPlayer:SetCrawlState()
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
 		self.Humanoid.WalkSpeed = HumanConstants.CRAWL_SPEED
-		self.Humanoid.HipHeight = 1
+		self.Humanoid.HipHeight = 2
 
 		self:FixCrawlADS()
 

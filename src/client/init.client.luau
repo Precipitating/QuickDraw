@@ -1,6 +1,11 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-require(script.ClientData).Initialize()
+local HumanNetwork = require(script.HumanNetwork)
+local ClientUtility = require(script.Utility.ClientUtility)
+local CoreGUIHandler = require(script.Utility.CoreGUIHandler)
+local PlayerContext = require(script.Utility.PlayerContext)
 
+require(script.ClientData).Initialize()
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 SoundManager.Init()
 SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
@@ -13,3 +18,17 @@ require(script.Gun.ClientGunHandler)
 require(script.Throwable.ClientThrowableHandler)
 require(script.ClientInputs.Inputs):Initialize()
 require(script.NPCs.NPCHandler):Initialize()
+
+local function WaitForPlayerLoad()
+	ClientUtility.ToggleControls(false)
+	CoreGUIHandler.ToggleBackpackVisibility(false)
+	-- ensure loading screen finished loading
+	repeat
+		task.wait()
+	until CollectionService:HasTag(PlayerContext.Player, "ClientLoaded")
+	CollectionService:RemoveTag(PlayerContext.Player, "ClientLoaded")
+	HumanNetwork:FinishedLoadingGame()
+	ClientUtility.ToggleControls(true)
+	CoreGUIHandler.ToggleBackpackVisibility(true)
+end
+WaitForPlayerLoad()

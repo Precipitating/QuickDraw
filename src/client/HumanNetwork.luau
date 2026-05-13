@@ -37,6 +37,10 @@ function HumanNetwork:ApplyImpulse(target, force: Vector3, position: Vector3?)
 	end
 end
 
+function HumanNetwork:FinishedLoadingGame()
+	self.networker:fire("FinishedLoadingGame")
+end
+
 function HumanNetwork:AdjustGrayscale(saturationTarget: number)
 	ColorCorrection.Saturation = saturationTarget
 end

@@ -3,7 +3,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local DataService = require(ReplicatedStorage.Packages.DataService).server
-local DamageModule = require(script.Parent.DamageModule)
 local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -58,15 +57,15 @@ local function InitializePlayer(player: Player, character: Model)
 end
 
 return {
-
 	Players.PlayerAdded:Connect(function(player: Player)
 		ServerData.WaitForPlayerData(player)
 		ServerData:SetupLeaderboard(player)
 		ServerData:SetupDataServiceEvents(player)
+		CollectionService:AddTag(player, "FirstLoad")
+
 		player.CharacterAdded:Connect(function(character)
 			InitializePlayer(player, character)
 		end)
-
 		SpawnPlayerIn(player)
 	end),
 

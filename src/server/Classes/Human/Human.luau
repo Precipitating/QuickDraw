@@ -187,8 +187,6 @@ function Human.new(humanoid: Humanoid?): Human
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
 
-	self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
-
 	return self :: any
 end
 

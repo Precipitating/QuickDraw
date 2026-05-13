@@ -25,8 +25,10 @@ function NPCHandler:ConnectEvents()
 end
 
 function NPCHandler:Initialize()
-	self:ConnectEvents()
-	NPCAnimationsHandler:Initialize()
+	task.spawn(function()
+		self:ConnectEvents()
+		NPCAnimationsHandler:Initialize()
+	end)
 end
 
 return NPCHandler

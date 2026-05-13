@@ -22,6 +22,10 @@
       "$path": "src/serverstorage" 
     },
 
+    "ReplicatedFirst":{
+      "$path": "src/replicatedfirst"
+    },
+
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Client": {
