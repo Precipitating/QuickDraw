@@ -6,6 +6,7 @@ local DataService = require(ReplicatedStorage.Packages.DataService).server
 local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local SpawnHandler = require(ServerScriptService.Server.SpawnHandler.SpawnHandler)
 local PlayerCharacters = {}
 type HumanPlayer = ClassTypes.HumanPlayer
 Players.CharacterAutoLoads = false
@@ -16,6 +17,8 @@ local function SpawnPlayerIn(player: Player)
 			player:LoadCharacterAsync()
 		end)
 	until success or (not player or not player.Parent)
+
+	SpawnHandler:SpawnPlayer(player.Character)
 end
 local function InitializePlayer(player: Player, character: Model)
 	local humanClass: HumanPlayer = PlayerManager:AddHumanClass(player)

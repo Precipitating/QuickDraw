@@ -9,7 +9,7 @@ ReplicatedFirst:RemoveDefaultLoadingScreen()
 
 -- physics state
 local velocity = Vector2.new(0, 0)
-local gravity = 1.5
+local gravity = 1
 local bounce = 0.8
 local recoilStrength = 0.5
 
@@ -30,7 +30,7 @@ local loadCountLabel = bg:WaitForChild("LoadCount")
 
 local pos = Vector2.new(revolver.Position.X.Scale, revolver.Position.Y.Scale)
 local fireTimer = 0
-local fireRate = 2
+local fireRate = 1
 
 -- helpers
 local function GetImageHalfSizeScale()
@@ -50,7 +50,7 @@ local function Shoot()
 
 	local angle = math.rad(revolver.Rotation)
 	local dir = Vector2.new(math.cos(angle), math.sin(angle))
-
+	print("dir:", dir, "magnitude:", dir.Magnitude)
 	velocity -= dir.Unit * recoilStrength
 
 	revolverShot:Play()
