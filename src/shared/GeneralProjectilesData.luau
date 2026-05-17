@@ -11,7 +11,7 @@ return {
 			:Max(3)
 			:Done()
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:Hitscan(true)
 			:Build(),

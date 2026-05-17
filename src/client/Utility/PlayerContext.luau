@@ -56,26 +56,21 @@ function PlayerContext.ApplyMouseLock(on: boolean)
 end
 
 function PlayerContext:PlayerFollowCamera()
-	-- body moves with cam
 	local align = Instance.new("AlignOrientation")
 	align.Mode = Enum.OrientationAlignmentMode.OneAttachment
-	align.Responsiveness = 1000
 	align.RigidityEnabled = true
-
-	local attachment = Instance.new("Attachment")
-	attachment.Parent = self.HRP
-
-	align.Attachment0 = attachment
+	align.Attachment0 = self.HRP.RootAttachment
 	align.Parent = self.HRP
 	self.HRPOrientation = align
 
 	self.janitor:Add(
 		RunService.RenderStepped:Connect(function()
-			local camLook = CurrentCamera.CFrame.LookVector
-			local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
-
-			if flatLook.Magnitude > 0.001 then
-				align.CFrame = CFrame.lookAt(Vector3.zero, flatLook.Unit)
+			if not self.CanRoll then
+				return
+			end
+			local flat = CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
+			if flat.Magnitude > 0.001 then
+				align.CFrame = CFrame.lookAt(Vector3.zero, flat.Unit)
 			end
 		end),
 		"Disconnect",

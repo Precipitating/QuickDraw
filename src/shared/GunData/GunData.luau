@@ -54,7 +54,7 @@ local GunData = {
 			:FrameBudget(1)
 			:Done()
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:Cosmetic()
 			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)
@@ -118,7 +118,7 @@ local GunData = {
 			:Container(workspace.ProjectilesFolder)
 			:Done()
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:Build(),
 	},
@@ -172,7 +172,7 @@ local GunData = {
 			:Deviation(25)
 			:Done()
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:Cosmetic()
 			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)

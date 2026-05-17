@@ -1,7 +1,9 @@
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local SpawnHandler = require(ServerScriptService.Server.SpawnHandler.SpawnHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local HumanNetwork = {}
 
@@ -19,18 +21,13 @@ function HumanNetwork:IsLegless(player: Player, humanoid: Humanoid?)
 end
 
 function HumanNetwork:FinishedLoadingGame(player: Player)
-	local humanClass = nil
-	humanClass = PlayerManager:GetHumanClassFromPlayer(player)
+	local ok, err = pcall(function()
+		player:LoadCharacterAsync()
+	end)
 
-	if not humanClass then
-		warn(`Missing human class for {player.Name} `)
-		return
+	if not ok then
+		error(err)
 	end
-
-	humanClass:SetInvincible(false, false)
-	CollectionService:RemoveTag(player, "FirstLoad")
-
-	warn("Invincibility on first spawn should be off")
 end
 
 HumanNetwork.networker =

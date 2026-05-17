@@ -11,6 +11,18 @@ local Networker = require(ReplicatedStorage.Packages.Networker).client
 local Inputs = {}
 Inputs.networker = Networker.new("InputNetwork", Inputs)
 
+local function FaceTowardsMovementDirection()
+	if not PlayerContext.Humanoid then
+		warn("Can't rotate character towards movement dir, missing player Humanoid")
+		return
+	end
+
+	local flat = PlayerContext.Humanoid.MoveDirection * Vector3.new(1, 0, 1)
+	if flat.Magnitude > 0.001 then
+		PlayerContext.HRPOrientation.CFrame = CFrame.lookAt(Vector3.zero, flat.Unit)
+	end
+end
+
 function Inputs:Initialize()
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		if processed then
@@ -37,6 +49,7 @@ function Inputs:Initialize()
 				local rollAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Roll")
 				PlayerContext.Humanoid:UnequipTools()
 				ClientSoundHandler:PlayOneShot("Roll")
+				FaceTowardsMovementDirection()
 				rollAnim.Stopped:Once(function()
 					PlayerContext.CanRoll = true
 				end)

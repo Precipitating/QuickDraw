@@ -15,4 +15,20 @@ return {
 	GetRandom = function()
 		return rng:NextNumber()
 	end,
+
+	WeightedRandom = function(choices: { { value: any, weight: number } })
+		local total = 0
+		for _, entry in choices do
+			total += entry.weight
+		end
+		local roll = rng:NextInteger(1, total)
+		local cumulative = 0
+		for _, entry in choices do
+			cumulative += entry.weight
+			if roll <= cumulative then
+				return entry.value
+			end
+		end
+		return
+	end,
 }

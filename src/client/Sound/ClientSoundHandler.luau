@@ -16,6 +16,10 @@ function ClientSoundHandler:PlayOneShot(name: string, options: PlayOptions?)
 end
 
 function ClientSoundHandler:Play3DOneShotToOthers(soundName: string, emitterCFrame: CFrame, config: PlayOptions?)
+	-- client probably doesn't have the object loaded in
+	if not emitterCFrame then
+		return
+	end
 	SoundManager.PlayAtPosition(soundName, emitterCFrame.Position, config)
 end
 

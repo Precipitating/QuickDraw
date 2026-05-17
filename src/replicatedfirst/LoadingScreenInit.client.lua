@@ -2,16 +2,16 @@ local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local ContentProvider = game:GetService("ContentProvider")
+
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 ReplicatedFirst:RemoveDefaultLoadingScreen()
 
 -- physics state
 local velocity = Vector2.new(0, 0)
-local gravity = 1
+local gravity = 0.7
 local bounce = 0.8
-local recoilStrength = 0.5
+local recoilStrength = 0.7
 
 -- player/ui
 local player = Players.LocalPlayer
@@ -22,7 +22,6 @@ loadingScreen.Parent = playerGUI
 
 local bg = loadingScreen:WaitForChild("BG")
 local loadingLabel = bg:WaitForChild("LoadingLabel")
-
 local revolver = bg:WaitForChild("Gun")
 local revolverShot = revolver:WaitForChild("Shoot")
 local muzzleFlash: ImageLabel = revolver:WaitForChild("MuzzleFlash")
@@ -31,7 +30,8 @@ local loadCountLabel = bg:WaitForChild("LoadCount")
 local pos = Vector2.new(revolver.Position.X.Scale, revolver.Position.Y.Scale)
 local fireTimer = 0
 local fireRate = 1
-
+local targetRotation = 0
+local rotationSpeed = 30
 -- helpers
 local function GetImageHalfSizeScale()
 	local size = revolver.AbsoluteSize
@@ -44,22 +44,19 @@ end
 ----------------------------------------------------
 local function Shoot()
 	muzzleFlash.Visible = true
+	targetRotation -= 20
 
-	-- rotate first so direction matches visual state
-	revolver.Rotation -= 20
-
-	local angle = math.rad(revolver.Rotation)
+	-- normalize to 0-360 so cos/sin are predictable
+	local normalizedRotation = targetRotation % 360
+	local angle = math.rad(normalizedRotation)
 	local dir = Vector2.new(math.cos(angle), math.sin(angle))
-	print("dir:", dir, "magnitude:", dir.Magnitude)
-	velocity -= dir.Unit * recoilStrength
 
+	velocity = -dir * recoilStrength -- set, don't accumulate
 	revolverShot:Play()
-
 	task.delay(0.1, function()
 		muzzleFlash.Visible = false
 	end)
 end
-
 -------------------------------------
 -- PHYSICS LOOP (RenderStepped ONLY)
 ----------------------------------------------------
@@ -95,6 +92,7 @@ local gunConn = RunService.RenderStepped:Connect(function(dt)
 	-- integrate motion
 	pos = pos + velocity * dt
 	revolver.Position = UDim2.fromScale(pos.X, pos.Y)
+	revolver.Rotation = revolver.Rotation + (targetRotation - revolver.Rotation) * rotationSpeed * dt
 end)
 
 ----------------------------------------------------

@@ -5,7 +5,18 @@ local SpawnLocations = ReplicatedStorage.Shared.Templates.SpawnLocations
 local SpawnHandler = {}
 local CHECK_RADIUS = 30
 
-function SpawnHandler:SpawnPlayer(characterModel: Model?)
+function SpawnHandler:SpawnPlayer(player: Player, loadCharacter: boolean?)
+	if loadCharacter then
+		local ok, err = pcall(function()
+			player:LoadCharacterAsync()
+		end)
+
+		if not ok then
+			error(err)
+		end
+	end
+
+	local characterModel = player.Character
 	if not characterModel then
 		warn("Can't teleport player to spawn, missing model")
 		return

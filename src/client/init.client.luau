@@ -1,34 +1,34 @@
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local HumanNetwork = require(script.HumanNetwork)
+local MainMenuScreen = require(script.MainMenu.MainMenuScreen)
 local ClientUtility = require(script.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Utility.CoreGUIHandler)
-local PlayerContext = require(script.Utility.PlayerContext)
-
-require(script.ClientData).Initialize()
+local ClientData = require(script.ClientData)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
-SoundManager.Init()
-SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
-require(script.Utility.PlayerContext):Initialize()
+local PlayerContext = require(script.Utility.PlayerContext)
+local ClientInputs = require(script.ClientInputs.ProximityPromptHandler)
+local NPCHandler = require(script.NPCs.NPCHandler)
+
 require(script.VisualEffectsHandler.EffectsDisplayer)
-require(script.ClientInputs.ProximityPromptHandler).Initialize()
 require(script.Animations.AnimationSignalsLogic)
 require(script.Sound.ClientSoundHandler)
 require(script.Gun.ClientGunHandler)
 require(script.Throwable.ClientThrowableHandler)
-require(script.ClientInputs.Inputs):Initialize()
-require(script.NPCs.NPCHandler):Initialize()
 
 local function WaitForPlayerLoad()
 	ClientUtility.ToggleControls(false)
 	CoreGUIHandler.ToggleBackpackVisibility(false)
+	SoundManager.Init()
+	SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
 	-- ensure loading screen finished loading
 	repeat
 		task.wait()
-	until CollectionService:HasTag(PlayerContext.Player, "ClientLoaded")
-	CollectionService:RemoveTag(PlayerContext.Player, "ClientLoaded")
-	HumanNetwork:FinishedLoadingGame()
-	ClientUtility.ToggleControls(true)
-	CoreGUIHandler.ToggleBackpackVisibility(true)
+	until CollectionService:HasTag(Players.LocalPlayer, "ClientLoaded")
+	CollectionService:RemoveTag(Players.LocalPlayer, "ClientLoaded")
+
+	MainMenuScreen:OpenMainMenu()
 end
 WaitForPlayerLoad()

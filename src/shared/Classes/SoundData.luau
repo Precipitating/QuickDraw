@@ -464,6 +464,14 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
+
+	--
+	LetsGo = {
+		SoundId = "rbxassetid://128947678356340",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
 }
 
 -- Default group volumes

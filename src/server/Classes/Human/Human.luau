@@ -343,22 +343,13 @@ function Human:ApplyRollForce()
 	if not hrp then
 		return
 	end
-
 	local humanoid = hrp.Parent and hrp.Parent:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
 		return
 	end
 
-	-- Get current movement direction from Humanoid
 	local moveDir = humanoid.MoveDirection
-
-	-- If not moving, fall back to facing direction
-	if moveDir.Magnitude < 0.1 then
-		moveDir = hrp.CFrame.LookVector
-	end
-
-	-- Flatten to XZ plane
-	local forward = Vector3.new(moveDir.X, 0, moveDir.Z)
+	local forward = (moveDir.Magnitude >= 0.1 and moveDir or hrp.CFrame.LookVector) * Vector3.new(1, 0, 1)
 	if forward.Magnitude < 0.01 then
 		forward = hrp.CFrame.LookVector
 	end
@@ -371,22 +362,15 @@ function Human:ApplyRollForce()
 	lv.Attachment0 = attachment
 	lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
 	lv.RelativeTo = Enum.ActuatorRelativeTo.World
-
 	lv.PrimaryTangentAxis = Vector3.new(1, 0, 0)
 	lv.SecondaryTangentAxis = Vector3.new(0, 0, 1)
-
-	lv.PlaneVelocity = Vector2.new(forward.X * HumanConstants.ROLL_FORCE, forward.Z * HumanConstants.ROLL_FORCE)
-
+	lv.PlaneVelocity = Vector2.new(forward.X, forward.Z) * HumanConstants.ROLL_FORCE
 	lv.MaxForce = hrp.AssemblyMass * 7000
 	lv.Parent = hrp
 
 	task.delay(HumanConstants.ROLL_DURATION, function()
-		if lv and lv.Parent then
-			lv:Destroy()
-		end
-		if attachment and attachment.Parent then
-			attachment:Destroy()
-		end
+		lv:Destroy()
+		attachment:Destroy()
 		self.RollSignalled = false
 	end)
 end
@@ -617,7 +601,12 @@ function Human:DisableLimb(limbName: string)
 	end
 
 	if limbName ~= "Head" then
-		ServerSoundHandler:PlaySoundTo(nil, "BoneSnap", { Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) })
+		ServerSoundHandler:Play3DOneShotToOthers(
+			nil,
+			"BoneSnap",
+			limb.CFrame,
+			{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+		)
 	end
 
 	self:SetCrawlState()

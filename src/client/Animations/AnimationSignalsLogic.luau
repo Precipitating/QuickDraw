@@ -4,6 +4,9 @@ local AnimationSignals = require(script.Parent.AnimationSignals)
 local NPCAnimationsHandler = require(script.Parent.NPCAnimationsHandler)
 return {
 	AnimationSignals.ChangeAnimationFolder:Connect(function(folderName: string, characterModel: Model?)
+		if not PlayerContext or not PlayerContext.AnimationController then
+			return
+		end
 		local folder = ReplicatedStorage.Shared.AnimationData:WaitForChild(folderName, 10)
 		if not folder then
 			warn("Animation folder name not found")

@@ -11,15 +11,6 @@ local PlayerCharacters = {}
 type HumanPlayer = ClassTypes.HumanPlayer
 Players.CharacterAutoLoads = false
 
-local function SpawnPlayerIn(player: Player)
-	repeat
-		local success, _ = pcall(function()
-			player:LoadCharacterAsync()
-		end)
-	until success or (not player or not player.Parent)
-
-	SpawnHandler:SpawnPlayer(player.Character)
-end
 local function InitializePlayer(player: Player, character: Model)
 	local humanClass: HumanPlayer = PlayerManager:AddHumanClass(player)
 	local humanoid: Humanoid = character:WaitForChild("Humanoid") :: Humanoid
@@ -36,7 +27,7 @@ local function InitializePlayer(player: Player, character: Model)
 
 	PlayerCharacters[player] = humanClass
 
-	-- ragdoll
+	-- should ragdoll
 	humanoid.Died:Connect(function()
 		ServerData.SaveWeaponEquipped(player, "Revolver")
 		humanClass:DropMoney()
@@ -46,12 +37,19 @@ local function InitializePlayer(player: Player, character: Model)
 		if not player then
 			return
 		end
-		SpawnPlayerIn(player)
+		SpawnHandler:SpawnPlayer(player, true)
 	end)
 	-- remove class if they leave
 	humanoid.Destroying:Connect(function()
 		humanClass:Destroy()
 	end)
+
+	if CollectionService:HasTag(player, "FirstLoad") then
+		CollectionService:RemoveTag(player, "FirstLoad")
+		humanClass:SetInvincible(false, false)
+	end
+
+	SpawnHandler:SpawnPlayer(player, false)
 
 	-- task.wait(2)
 	-- humanClass:DestroyLimb("LeftUpperArm")
@@ -65,17 +63,15 @@ return {
 		ServerData:SetupLeaderboard(player)
 		ServerData:SetupDataServiceEvents(player)
 		CollectionService:AddTag(player, "FirstLoad")
-
 		player.CharacterAdded:Connect(function(character)
 			InitializePlayer(player, character)
 		end)
-		SpawnPlayerIn(player)
 	end),
 
 	DataService:addPlayerRemovingCallback(function(player: Player, data: any): ()
 		-- Perform any cleanup or save operations here
 		local humanClass = PlayerCharacters[player]
-		if not player then
+		if not player or not humanClass then
 			return
 		end
 

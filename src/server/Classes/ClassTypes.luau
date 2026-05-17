@@ -117,12 +117,12 @@ export type Human = {
 	ApplyImpulse: (self: Human, force: Vector3, position: Vector3?) -> (),
 	Destroy: (self: Human) -> (),
 	DropMoney: (self: Human) -> (),
+	SetInvincible: (self: Human, isInvincible: boolean, excludeFromCooldown: boolean?) -> (),
 }
 
 export type HumanPlayer = Human & {
 	HumanType: "Player",
 	Player: Player,
-
 	AdjustGrayscale: (self: HumanPlayer) -> (),
 }
 
