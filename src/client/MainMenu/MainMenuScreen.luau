@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TS = game:GetService("TweenService")
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Inputs = require(script.Parent.Parent.Parent.Client.ClientInputs.Inputs)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -48,10 +49,14 @@ local function LoadStartGUIS()
 	currencyGUI.Parent = Player:WaitForChild("PlayerGui")
 end
 
+local function Tween(btn, size)
+	TS:Create(btn, TweenInfo.new(0.2), { Size = size }):Play()
+end
+
 local function LoadMenuGUI()
 	local gui = GUIs.MainMenuGUI:Clone()
 	local startButton: TextButton = Utility.GetInstance(gui, true, "StartButton")
-
+	local originalSize = startButton.Size
 	if not startButton then
 		return
 	end
@@ -69,6 +74,14 @@ local function LoadMenuGUI()
 		ClientUtility.ToggleControls(true)
 		CoreGUIHandler.ToggleBackpackVisibility(true)
 		gui:Destroy()
+	end)
+
+	startButton.MouseEnter:Connect(function()
+		Tween(startButton, UDim2.fromScale(originalSize.X.Scale * 1.1, originalSize.Y.Scale * 1.1))
+	end)
+
+	startButton.MouseLeave:Connect(function()
+		Tween(startButton, originalSize)
 	end)
 
 	gui.Parent = Player:WaitForChild("PlayerGui")

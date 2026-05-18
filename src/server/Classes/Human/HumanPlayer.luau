@@ -85,10 +85,7 @@ end
 function HumanPlayer:DropMoney()
 	local currentMoney = ServerData.GetMoney(self.Player)
 	if currentMoney and currentMoney > 0 then
-		local loss = math.min(
-			math.floor(currentMoney * HumanConstants.ON_DEATH_MONEY_LOSS_MULTIPLIER),
-			HumanConstants.MAX_MONEY_LOSS_ON_DEATH
-		)
+		local loss = currentMoney * HumanConstants.ON_DEATH_MONEY_LOSS_MULTIPLIER
 		ServerData.SetMoney(self.Player, loss)
 		MoneyDropHandler.DropMoney(self.Character:GetPivot().Position, loss)
 	end

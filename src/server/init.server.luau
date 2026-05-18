@@ -1,5 +1,6 @@
 require(script.ServerData).Initialize()
 require(script.PlayerEvents)
+require(script.PurchaseHandler)
 require(script.Managers.Player.PlayerSignalsLogic)
 require(script.Classes.Human.HumanSignalsLogic)
 require(script.Sound.ServerSoundHandler)

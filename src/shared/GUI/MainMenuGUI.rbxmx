@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="ScreenGui" referent="RBXC2E26ECF584448DB8A088DBB1994ADCE">
+	<Item class="ScreenGui" referent="RBXC0CD36A987F54752B5F6BFAB266E1663">
 		<Properties>
 			<bool name="ClipToDeviceSafeArea">true</bool>
 			<int name="DisplayOrder">0</int>
@@ -26,7 +26,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="TextButton" referent="RBX96EA70C8719442A3A4DADB8124915AC9">
+		<Item class="TextButton" referent="RBX4D778F83371F4C49A92156750FA567B8">
 			<Properties>
 				<Font name="FontFace">
 					<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -67,8 +67,8 @@
 				<token name="Style">0</token>
 				<bool name="Active">true</bool>
 				<Vector2 name="AnchorPoint">
-					<X>0</X>
-					<Y>0</Y>
+					<X>0.5</X>
+					<Y>0.5</Y>
 				</Vector2>
 				<token name="AutomaticSize">0</token>
 				<Color3 name="BackgroundColor3">
@@ -94,9 +94,9 @@
 				<Ref name="NextSelectionRight">null</Ref>
 				<Ref name="NextSelectionUp">null</Ref>
 				<UDim2 name="Position">
-					<XS>0.683825731</XS>
+					<XS>0.732475996</XS>
 					<XO>0</XO>
-					<YS>0.245329559</YS>
+					<YS>0.209251687</YS>
 					<YO>0</YO>
 				</UDim2>
 				<float name="Rotation">0</float>
@@ -104,9 +104,9 @@
 				<Ref name="SelectionImageObject">null</Ref>
 				<int name="SelectionOrder">0</int>
 				<UDim2 name="Size">
-					<XS>0.0978696942</XS>
+					<XS>0.0699723288</XS>
 					<XO>0</XO>
-					<YS>0.144993693</YS>
+					<YS>0.104586467</YS>
 					<YO>0</YO>
 				</UDim2>
 				<token name="SizeConstraint">0</token>
@@ -126,7 +126,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="UIStroke" referent="RBX1E1932960F754F3BBE9DBA118B772BED">
+			<Item class="UIStroke" referent="RBX557F1A9FB7CE46C8BD8B1F217B3B2A9B">
 				<Properties>
 					<token name="ApplyStrokeMode">0</token>
 					<UDim name="BorderOffset">
@@ -154,7 +154,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="TextLabel" referent="RBX19B9D2C2760149E6BDFCE087BD52EC1F">
+		<Item class="TextLabel" referent="RBX3BA72E330F594FE88F1E33D89384BAB3">
 			<Properties>
 				<Font name="FontFace">
 					<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -248,7 +248,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="UIStroke" referent="RBX9F84DBD731E2445D93198B888BFCF27D">
+			<Item class="UIStroke" referent="RBXA41E11C7EBF3414E86368329D1B03015">
 				<Properties>
 					<token name="ApplyStrokeMode">0</token>
 					<UDim name="BorderOffset">

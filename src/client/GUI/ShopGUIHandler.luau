@@ -1,3 +1,4 @@
+local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
@@ -5,6 +6,7 @@ local CrosshairHandler = require(script.Parent.CrosshairHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local GamepassIds = require(ReplicatedStorage.Shared.GamepassIds)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -66,13 +68,28 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame)
 	end
 end
 
+function ShopGUIHandler:ConnectRobuxList(robuxList: ScrollingFrame)
+	local children = robuxList:GetChildren()
+
+	for _, btn: TextButton in children do
+		if not btn:IsA("TextButton") then
+			continue
+		end
+		btn.Activated:Connect(function()
+			MarketplaceService:PromptProductPurchase(PlayerContext.Player, GamepassIds[btn.Name])
+		end)
+	end
+end
+
 function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt)
 	local exitButton: TextButton = Utility.GetInstance(gui, true, "Exit")
 	local throwablesButton: TextButton = Utility.GetInstance(gui, true, "BG", "ThrowablesButton")
 	local weaponsButton: TextButton = Utility.GetInstance(gui, true, "BG", "WeaponsButton")
+	local robuxButton: TextButton = Utility.GetInstance(gui, true, "BG", "RobuxButton")
 
 	local weaponsList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "WeaponsList")
 	local throwablesList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "ThrowablesList")
+	local robuxList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "RobuxList")
 	assert(exitButton, "Missing exit button from ShopGUI")
 	assert(throwablesButton, "Missing throwables button from ShopGUI")
 	assert(weaponsButton, "Missing weapons button from ShopGUI")
@@ -106,15 +123,23 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self.janitor:Add(throwablesButton.Activated:Connect(function(_, _)
 		throwablesList.Visible = true
 		weaponsList.Visible = false
+		robuxList.Visible = false
 	end))
 
 	self.janitor:Add(weaponsButton.Activated:Connect(function(_, _)
 		weaponsList.Visible = true
 		throwablesList.Visible = false
+		robuxList.Visible = false
+	end))
+	self.janitor:Add(robuxButton.Activated:Connect(function(_, _)
+		robuxList.Visible = true
+		throwablesList.Visible = false
+		weaponsList.Visible = false
 	end))
 
 	self:ConnectProductList(weaponsList)
 	self:ConnectProductList(throwablesList)
+	self:ConnectRobuxList(robuxList)
 end
 
 function ShopGUIHandler:Disconnect()
