@@ -10,6 +10,7 @@ local pierceableMaterials = {
 local GunData = {
 	Revolver = {
 		MaxAmmo = 6,
+		MaxAmmoStack = 3,
 		ShotDelay = 0.35,
 		Damage = 25,
 		Velocity = 1250,
@@ -64,6 +65,7 @@ local GunData = {
 	},
 	Winchester = {
 		MaxAmmo = 8,
+		MaxAmmoStack = 3,
 		ShotDelay = 0.8,
 		Damage = 35,
 		Cost = 2500,
@@ -124,6 +126,7 @@ local GunData = {
 	},
 	Coach = {
 		MaxAmmo = 2,
+		MaxAmmoStack = 3,
 		ShotDelay = 1,
 		Damage = 20,
 		Velocity = 1196,

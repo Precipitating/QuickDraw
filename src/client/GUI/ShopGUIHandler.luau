@@ -86,11 +86,14 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	local throwablesButton: TextButton = Utility.GetInstance(gui, true, "BG", "ThrowablesButton")
 	local weaponsButton: TextButton = Utility.GetInstance(gui, true, "BG", "WeaponsButton")
 	local robuxButton: TextButton = Utility.GetInstance(gui, true, "BG", "RobuxButton")
+	local refillAmmoButton: TextButton = Utility.GetInstance(gui, true, "BG", "AmmoRefillButton")
 
 	local weaponsList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "WeaponsList")
 	local throwablesList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "ThrowablesList")
 	local robuxList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "RobuxList")
+
 	assert(exitButton, "Missing exit button from ShopGUI")
+	assert(refillAmmoButton, "Missing ammo refill button from ShopGUI")
 	assert(throwablesButton, "Missing throwables button from ShopGUI")
 	assert(weaponsButton, "Missing weapons button from ShopGUI")
 	assert(throwablesList, "Missing throwables list from ShopGUI")
@@ -131,6 +134,15 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 		throwablesList.Visible = false
 		robuxList.Visible = false
 	end))
+	self.janitor:Add(refillAmmoButton.Activated:Connect(function(_, _)
+		local bought = self.networker:fetch("BuyRefillAmmo")
+		if not bought then
+			SoundManager.PlayKeyed("UI", "Error")
+		else
+			SoundManager.PlayKeyed("UI", "Purchase")
+		end
+	end))
+
 	self.janitor:Add(robuxButton.Activated:Connect(function(_, _)
 		robuxList.Visible = true
 		throwablesList.Visible = false

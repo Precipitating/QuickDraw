@@ -1,6 +1,6 @@
 local RingBufferPool = {}
 RingBufferPool.__index = RingBufferPool
-local MIN_DISTANCE = 2
+local MIN_DISTANCE = 1
 function RingBufferPool.new(template: Instance | {}, capacity: number, parent: Instance)
 	local self = setmetatable({}, RingBufferPool)
 

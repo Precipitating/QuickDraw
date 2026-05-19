@@ -1,9 +1,6 @@
-local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-local SpawnHandler = require(ServerScriptService.Server.SpawnHandler.SpawnHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local HumanNetwork = {}
 

@@ -3,6 +3,7 @@ export type Gun = {
 	MaxAmmo: number,
 	GunName: string,
 	CurrentAmmo: number,
+	AmmoReserve: number,
 	ShotDelay: number,
 	ShootPoint: Attachment?,
 	PlayerRef: Player?,

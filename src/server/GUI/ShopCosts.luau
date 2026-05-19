@@ -1,0 +1,3 @@
+return {
+	AmmoRefill = 100,
+}

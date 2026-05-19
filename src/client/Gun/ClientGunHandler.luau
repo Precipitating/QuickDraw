@@ -55,8 +55,6 @@ local CrosshairScaleSpring = Ripple.createSpring(UDim2.fromScale(1, 1), {
 	frequency = 5,
 })
 
---local FastCast = FastCastRedux.new()
-
 local crosshairRaycastParams = RaycastParams.new()
 crosshairRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 local gunRaycastParams = RaycastParams.new()
@@ -341,11 +339,16 @@ function ClientGunHandler:AttemptReload()
 	if PlayerContext.Humanoid.Health <= 0 or PlayerContext.Reloading then
 		return
 	end
-	local currAmmo, maxAmmo = GunNetwork:fetch("GetAmmoCount")
+	local currAmmo, maxAmmo, ammoReserve = GunNetwork:fetch("GetAmmoCount")
 
 	if currAmmo == maxAmmo or PlayerContext.Humanoid.Health <= 0 then
 		return
 	end
+
+	if ammoReserve <= 0 then
+		return
+	end
+
 	PlayerContext.Reloading = true
 	local newAmmoCount = GunNetwork:fetch("Reload")
 	if not currAmmo or maxAmmo then
@@ -452,6 +455,50 @@ function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
 	self:DisplayGunEffects(gunTool)
 end
 
+function ClientGunHandler:ConnectAmmoGUI(gun: Tool)
+	local gui: ScreenGui = Utility.GetInstance(PlayerContext.PlayerGui, true, "Ammo")
+	local currentAmmo: IntValue = Utility.GetInstance(gun, true, "CurrentAmmo")
+	local ammoReserve: IntValue = Utility.GetInstance(gun, true, "AmmoReserve")
+	local currentAmmoLabel: TextLabel = Utility.GetInstance(gui, true, "BG", "CurrentAmmo")
+	local ammoReserveLabel: TextLabel = Utility.GetInstance(gui, true, "BG", "AmmoReserve")
+	if not currentAmmo or not ammoReserve then
+		warn("Client missing gun's Int Values")
+		return
+	end
+
+	if not currentAmmoLabel or not ammoReserveLabel then
+		warn("Client missing ammo gui labels")
+		return
+	end
+	local currAmmo, _, ammoReserves = GunNetwork:fetch("GetAmmoCount")
+	currentAmmoLabel.Text = tostring(currAmmo)
+	ammoReserveLabel.Text = tostring(ammoReserves)
+
+	self.janitor:Add(currentAmmo.Changed:Connect(function(newValue: number)
+		if not currentAmmoLabel then
+			warn("Missing current ammo label")
+			return
+		end
+		currentAmmoLabel.Text = tostring(newValue)
+	end))
+	self.janitor:Add(ammoReserve.Changed:Connect(function(newValue: number)
+		if not ammoReserveLabel then
+			warn("Missing current ammo reserve label")
+			return
+		end
+		ammoReserveLabel.Text = tostring(newValue)
+	end))
+end
+
+function ClientGunHandler:ToggleAmmoGUI(enabled: boolean)
+	local gui: ScreenGui = Utility.GetInstance(PlayerContext.PlayerGui, true, "Ammo")
+	if not gui then
+		warn("Missing Ammo GUI ref!")
+		return
+	end
+
+	gui.Enabled = enabled
+end
 function ClientGunHandler:ConnectGun(gunTool: Tool?)
 	if not gunTool then
 		error("Can't connect guns, tool reference not valid!")
@@ -468,6 +515,8 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 		local _: Part, crosshairBB: BillboardGui, _: ImageLabel = Get3DCrosshair()
 		AimAndDisplayCrosshair(gunTool)
 		ApplyCameraGunRecoil()
+		self:ToggleAmmoGUI(true)
+		self:ConnectAmmoGUI(gunTool)
 
 		self:AddCollisionConstraints(gunTool)
 
@@ -508,7 +557,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 				return
 			end
 			LastShot = now
-			local currAmmo, _ = GunNetwork:fetch("GetAmmoCount")
+			local currAmmo, _, _ = GunNetwork:fetch("GetAmmoCount")
 
 			-- no ammo, return early
 			if currAmmo and currAmmo <= 0 then
@@ -523,13 +572,14 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 
 	GunDisconnectConn = gunTool.Unequipped:Connect(function()
 		warn(`[CLIENT] Disconnecting {gunTool.Name} connection`)
+		self:ToggleAmmoGUI(false)
 		HoldingRMB = false
-		self.janitor:Cleanup()
 		ContextActionService:UnbindAction("ADSAction")
 		CurrentCamera.CameraSubject = PlayerContext.Humanoid
 		self:DisconnectGun()
 		ClientGunHandler.CancelADS()
 		PlayerContext.RightArmYaw.Enabled = false
+		self.janitor:Cleanup()
 	end)
 end
 

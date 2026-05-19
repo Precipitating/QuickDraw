@@ -7,7 +7,6 @@ local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 type Human = ClassTypes.Human
@@ -27,7 +26,9 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	self.Tool = nil
 	self.GunName = gunName
 	self.MaxAmmo = gunData.MaxAmmo
+	self.MaxAmmoStack = gunData.MaxAmmoStack
 	self.CurrentAmmo = gunData.MaxAmmo
+	self.AmmoReserve = gunData.MaxAmmo * self.MaxAmmoStack
 	self.Reloading = false
 	self.GunType = gunData.GunType
 	self.ShootPoint = nil
@@ -36,6 +37,8 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	self.ShotDelay = gunData.ShotDelay
 	self.LastShot = 0
 	self.Damage = gunData.Damage
+	self.CurrentAmmoIntValue = nil
+	self.AmmoReserveIntValue = nil
 
 	-- if its NPC, its their model, else player instance
 	self.PlayerRef = player
@@ -57,6 +60,20 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	-- self.ProjectileData.AutoIgnoreContainer = true
 
 	return self
+end
+
+function Gun:InitializeAmmoValues()
+	local currentAmmoVal: IntValue = Instance.new("IntValue")
+	currentAmmoVal.Name = "CurrentAmmo"
+	currentAmmoVal.Value = self.CurrentAmmo
+	currentAmmoVal.Parent = self.Tool
+	self.CurrentAmmoIntValue = currentAmmoVal
+
+	local ammoReserveVal: IntValue = Instance.new("IntValue")
+	ammoReserveVal.Name = "AmmoReserve"
+	ammoReserveVal.Value = self.AmmoReserve
+	ammoReserveVal.Parent = self.Tool
+	self.AmmoReserveIntValue = ammoReserveVal
 end
 
 function Gun:SingleShot()
@@ -125,9 +142,18 @@ function Gun:SpreadShot()
 end
 
 function Gun:UpdateAmmo(amount: number)
-	self.CurrentAmmo += amount
+	self.CurrentAmmo = math.clamp(self.CurrentAmmo + amount, 0, self.MaxAmmo)
 
-	self.CurrentAmmo = math.clamp(self.CurrentAmmo, 0, self.MaxAmmo)
+	if self.CurrentAmmoIntValue then
+		self.CurrentAmmoIntValue.Value = self.CurrentAmmo
+	end
+end
+
+function Gun:UpdateAmmoReserve(amount: number)
+	self.AmmoReserve = math.clamp(self.AmmoReserve + amount, 0, self.MaxAmmo * self.MaxAmmoStack)
+	if self.AmmoReserveIntValue then
+		self.AmmoReserveIntValue.Value = self.AmmoReserve
+	end
 end
 
 -- This is for NPCS, player shooting is handled on client via VetraNet
@@ -181,10 +207,14 @@ function Gun:Reload()
 	local reloadTimePerBullet = GunData[self.GunName].ReloadTimePerBullet
 	local reloadSound = GunData[self.GunName].ReloadSoundName
 	local bulletsToReload = self.MaxAmmo - self.CurrentAmmo
-
-	if not self.Reloading then
-		self.Reloading = true
+	if bulletsToReload <= 0 then
+		return
 	end
+
+	if self.Reloading then
+		return
+	end
+	self.Reloading = true
 
 	for _ = 1, bulletsToReload do
 		task.wait(reloadTimePerBullet)
@@ -193,7 +223,17 @@ function Gun:Reload()
 			return self.CurrentAmmo
 		end
 
-		self.CurrentAmmo = math.min(self.MaxAmmo, self.CurrentAmmo + 1)
+		if self.PlayerRef:IsA("Player") then
+			if self.AmmoReserve <= 0 then
+				self:StopReloading()
+				return self.CurrentAmmo
+			end
+		end
+
+		self:UpdateAmmo(1)
+		if self.PlayerRef:IsA("Player") then
+			self:UpdateAmmoReserve(-1)
+		end
 
 		if self.Handle then
 			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
@@ -253,6 +293,7 @@ function Gun:AddGunToInventory()
 		clone.Parent = self.PlayerRef.Backpack
 		GunSignals.ConnectGunSignal:Fire(self.PlayerRef, clone)
 		self.Janitor:Add(self.Tool)
+		self:InitializeAmmoValues()
 	else
 		-- should be HumanNPC class
 		-- NPC auto equips gun for now
