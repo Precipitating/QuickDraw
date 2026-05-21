@@ -12,6 +12,9 @@ ProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", Proxi
 
 local PROMPT_HANDLERS = {
 	["ShopPrompt"] = function(player: Player, prompt: ProximityPrompt)
+		if player.PlayerGui:FindFirstChild("ShopGUI") then
+			return
+		end
 		local shop = GUI.ShopGUI:Clone()
 		shop.Parent = player.PlayerGui
 		shop.Enabled = true
@@ -19,6 +22,9 @@ local PROMPT_HANDLERS = {
 		ShopGUIHandler:ConnectShopGUI(shop, prompt)
 	end,
 	["BankPrompt"] = function(player: Player, prompt: ProximityPrompt)
+		if player.PlayerGui:FindFirstChild("BankGUI") then
+			return
+		end
 		local bank = GUI.BankGUI:Clone()
 		bank.Parent = player.PlayerGui
 		bank.Enabled = true
@@ -26,6 +32,9 @@ local PROMPT_HANDLERS = {
 		BankGUIHandler:ConnectBankGUI(bank, prompt)
 	end,
 	["MercenaryPrompt"] = function(player: Player, prompt: ProximityPrompt)
+		if player.PlayerGui:FindFirstChild("MercenaryGUI") then
+			return
+		end
 		local mercGUI = GUI.MercenaryGUI:Clone()
 		mercGUI.Parent = player.PlayerGui
 		mercGUI.Enabled = true
@@ -38,29 +47,35 @@ local PROMPT_HANDLERS = {
 	["MedicPrompt"] = function(_: Player, prompt: ProximityPrompt)
 		ProximityPromptHandler.networker:fire("HealPlayer", prompt)
 	end,
+	["LootPrompt"] = function(_: Player, prompt: ProximityPrompt)
+		ProximityPromptHandler.networker:fire("LootPickup", prompt)
+	end,
 }
 
 function ProximityPromptHandler.Initialize()
-	for tag, handler in PROMPT_HANDLERS do
-		CollectionService:GetInstanceAddedSignal(tag):Connect(function(prompt)
-			if not prompt:IsA("ProximityPrompt") then
+	local function connectPrompt(tag, handler, prompt)
+		if not prompt:IsA("ProximityPrompt") then
+			return
+		end
+		prompt.Triggered:Connect(function(player)
+			if not PlayerContext.Humanoid or PlayerContext.Humanoid.Health <= 0 then
 				return
 			end
-			prompt.Triggered:Connect(function(player)
-				if not PlayerContext.Humanoid or PlayerContext.Humanoid.Health <= 0 then
-					return
-				end
-				handler(player, prompt)
-			end)
+
+			if PlayerContext.Character and CollectionService:HasTag(PlayerContext.Character, "Dead") then
+				return
+			end
+			handler(player, prompt)
+		end)
+	end
+
+	for tag, handler in PROMPT_HANDLERS do
+		CollectionService:GetInstanceAddedSignal(tag):Connect(function(prompt)
+			connectPrompt(tag, handler, prompt)
 		end)
 
 		for _, prompt in ipairs(CollectionService:GetTagged(tag)) do
-			if not prompt:IsA("ProximityPrompt") then
-				return
-			end
-			prompt.Triggered:Connect(function(player)
-				handler(player, prompt)
-			end)
+			connectPrompt(tag, handler, prompt)
 		end
 	end
 end

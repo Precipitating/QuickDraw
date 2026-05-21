@@ -1,11 +1,21 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ShopGUI = require(ServerScriptService.Server.GUI.ShopGUI)
 local PurchasePrices = require(ReplicatedStorage.Shared.PurchasePrices)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ServerData = require(script.Parent.ServerData)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ServerProximityPromptHandler = {}
+
+local LootPool = {
+	{ value = "Winchester", weight = 5 },
+	{ value = "Coach", weight = 10 },
+	{ value = "Dynamite", weight = 40 },
+	{ value = "KetchumGrenade", weight = 20 },
+	{ value = "Molotov", weight = 25 },
+}
 
 function ServerProximityPromptHandler:CashPickedUp(player: Player, prompt: ProximityPrompt)
 	if not prompt then
@@ -47,9 +57,22 @@ function ServerProximityPromptHandler:HealPlayer(player: Player, prompt: Proximi
 	end
 end
 
-ServerProximityPromptHandler.networker = Networker.new(
-	"ProximityPromptNetwork",
-	ServerProximityPromptHandler,
-	{ ServerProximityPromptHandler.CashPickedUp, ServerProximityPromptHandler.HealPlayer }
-)
+function ServerProximityPromptHandler:LootPickup(player: Player, prompt: ProximityPrompt)
+	local human = PlayerManager:GetHumanClassFromPlayer(player)
+	if not human then
+		return
+	end
+
+	if prompt.Parent then
+		prompt.Parent:Destroy()
+	end
+
+	ShopGUI:BuyItem(player, RandomModule.WeightedRandom(LootPool), 0, "TumbleWeedPickup")
+end
+
+ServerProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", ServerProximityPromptHandler, {
+	ServerProximityPromptHandler.CashPickedUp,
+	ServerProximityPromptHandler.HealPlayer,
+	ServerProximityPromptHandler.LootPickup,
+})
 return ServerProximityPromptHandler

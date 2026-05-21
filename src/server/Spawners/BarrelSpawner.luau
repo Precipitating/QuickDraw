@@ -66,8 +66,8 @@ function BarrelSpawner.StartSpawnLoop()
 	Active = true
 	task.spawn(function()
 		while Active do
-			BarrelSpawner.SpawnBarrel()
 			task.wait(SPAWN_RATE)
+			BarrelSpawner.SpawnBarrel()
 		end
 	end)
 end

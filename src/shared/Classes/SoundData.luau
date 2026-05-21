@@ -465,12 +465,20 @@ SoundData.Sounds = {
 		Group = "Voiceline",
 	},
 
-	--
+	-- Main Menu
 	LetsGo = {
 		SoundId = "rbxassetid://128947678356340",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
+	},
+
+	-- Looting
+	TumbleWeedPickup = {
+		SoundId = "rbxassetid://9114518070",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "SFX",
 	},
 }
 

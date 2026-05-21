@@ -570,8 +570,11 @@ function Human:MakeLimbFloppy(limbPart)
 	local ballSocket: BallSocketConstraint? = limbPart:FindFirstChildOfClass("BallSocketConstraint")
 	local limbName = limbPart.Name
 	limbPart.CanCollide = false
+	limbPart.Massless = true
 	if animationConstraint then
 		animationConstraint.Enabled = false
+		animationConstraint.MaxForce = 0
+		animationConstraint.MaxTorque = 0
 		print(`{animationConstraint.Name} animation constraint disabled!`)
 	end
 

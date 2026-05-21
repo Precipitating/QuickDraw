@@ -61,17 +61,25 @@ function Inputs:Initialize()
 			if not PlayerContext.CanKick then
 				return
 			end
-			local kickActivated = self.networker:fetch("ApplyKickDrain")
 
-			if kickActivated then
-				PlayerContext.CanKick = false
-				ClientUtility.ToggleControls(false)
-				local kickAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Kick")
-				kickAnim.Stopped:Once(function()
-					PlayerContext.CanKick = true
-					ClientUtility.ToggleControls(true)
-				end)
+			local kickActivated = self.networker:fetch("ApplyKickDrain")
+			if not kickActivated then
+				return
 			end
+
+			local kickAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Kick")
+			if not kickAnim then
+				warn("Kick animation missing, restoring state")
+				return
+			end
+
+			PlayerContext.CanKick = false
+			ClientUtility.ToggleControls(false)
+
+			kickAnim.Stopped:Once(function()
+				PlayerContext.CanKick = true
+				ClientUtility.ToggleControls(true)
+			end)
 		end
 	end)
 

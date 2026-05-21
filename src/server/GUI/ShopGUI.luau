@@ -7,6 +7,7 @@ local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerData = require(ServerScriptService.Server.ServerData)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ShopGUI = {}
 
@@ -48,7 +49,7 @@ function ShopGUI:BuyRefillAmmo(player: Player)
 	end
 	return true
 end
-function ShopGUI:BuyItem(player: Player, productName: string, productCost: number)
+function ShopGUI:BuyItem(player: Player, productName: string, productCost: number, soundName: string?)
 	local human = PlayerManager:GetHumanClassFromPlayer(player)
 	if not human then
 		warn("Human missing, can't buy")
@@ -81,7 +82,13 @@ function ShopGUI:BuyItem(player: Player, productName: string, productCost: numbe
 		end
 	end
 
-	ServerData.UpdateMoney(player, -productCost)
+	if soundName then
+		ServerSoundHandler:PlaySoundTo(player, soundName)
+	end
+
+	if productCost ~= 0 then
+		ServerData.UpdateMoney(player, -productCost)
+	end
 	return true
 end
 ShopGUI.networker = Networker.new(
