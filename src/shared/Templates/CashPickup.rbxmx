@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBXF44C804927A343C296E7787F30DB9A30">
+	<Item class="Part" referent="RBX7C9C28F7B8DF4C26B89DA4542E2768EC">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
@@ -21,12 +21,12 @@
 				<Y>0</Y>
 				<Z>0</Z>
 				<R00>1</R00>
-				<R01>-0</R01>
+				<R01>0</R01>
 				<R02>0</R02>
 				<R10>0</R10>
 				<R11>1</R11>
 				<R12>0</R12>
-				<R20>-0</R20>
+				<R20>0</R20>
 				<R21>0</R21>
 				<R22>1</R22>
 			</CoordinateFrame>
@@ -100,7 +100,7 @@
 			<int64 name="SourceAssetId">91028156142257</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Decal" referent="RBX8D96B37AD45C4061B4380564628FE44C">
+		<Item class="Decal" referent="RBX82F74CB5049B40AFA78DB03EB42F51E2">
 			<Properties>
 				<Color3 name="Color3">
 					<R>1</R>
@@ -133,7 +133,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="ProximityPrompt" referent="RBX655B0E730A144CEC8B6746FB185DB609">
+		<Item class="ProximityPrompt" referent="RBXC836D32B07974CBAAC572B19A6D77109">
 			<Properties>
 				<string name="ActionText">Grab</string>
 				<bool name="AutoLocalize">true</bool>
@@ -142,7 +142,7 @@
 				<token name="Exclusivity">0</token>
 				<token name="GamepadKeyCode">1000</token>
 				<float name="HoldDuration">2</float>
-				<token name="KeyboardKeyCode">102</token>
+				<token name="KeyboardKeyCode">113</token>
 				<float name="MaxActivationDistance">10</float>
 				<float name="MaxIndicatorDistance">0</float>
 				<string name="ObjectText"></string>
@@ -161,7 +161,7 @@
 				<BinaryString name="Tags">Q2FzaFBpY2t1cFByb21wdA==</BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Decal" referent="RBX4BD048DE1FC8406D9D2E33A1C6DDDA2A">
+		<Item class="Decal" referent="RBXD281C7C7E8CC4BA499208118EAFF0108">
 			<Properties>
 				<Color3 name="Color3">
 					<R>1</R>
@@ -194,7 +194,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="BillboardGui" referent="RBX0C0AC46C85F94865B8D1370D37E2EAE9">
+		<Item class="BillboardGui" referent="RBX776468DDC7874482ACE7C6A77BDAF720">
 			<Properties>
 				<bool name="Active">true</bool>
 				<Ref name="Adornee">null</Ref>
@@ -214,7 +214,7 @@
 					<Z>0</Z>
 				</Vector3>
 				<float name="LightInfluence">1</float>
-				<float name="MaxDistance">INF</float>
+				<float name="MaxDistance">0</float>
 				<Ref name="PlayerToHideFrom">null</Ref>
 				<UDim2 name="Size">
 					<XS>1</XS>
@@ -254,7 +254,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="TextLabel" referent="RBXFEFA7567B884477681728311DD6899C3">
+			<Item class="TextLabel" referent="RBX42EF51BC3EB844CEAA1B89D3045617DA">
 				<Properties>
 					<Font name="FontFace">
 						<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -348,7 +348,7 @@
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
-				<Item class="UIStroke" referent="RBX5317049125A1409289A65DF9F3F7500C">
+				<Item class="UIStroke" referent="RBX7C3A3DE64473463793EA739244079D33">
 					<Properties>
 						<token name="ApplyStrokeMode">0</token>
 						<UDim name="BorderOffset">
@@ -377,7 +377,7 @@
 				</Item>
 			</Item>
 		</Item>
-		<Item class="AngularVelocity" referent="RBX1F67958823044F15B3DCBFCC4A5E6509">
+		<Item class="AngularVelocity" referent="RBX0276D6729712438386F88FE44C1C57F3">
 			<Properties>
 				<Vector3 name="AngularVelocity">
 					<X>0</X>
@@ -387,7 +387,7 @@
 				<float name="MaxTorque">1000</float>
 				<bool name="ReactionTorqueEnabled">false</bool>
 				<token name="RelativeTo">2</token>
-				<Ref name="Attachment0">RBX14B474D4B46D48899D45F383C7B917D9</Ref>
+				<Ref name="Attachment0">RBX78C6342C16964D1DB91D076C7D85A33B</Ref>
 				<Ref name="Attachment1">null</Ref>
 				<int name="Color">23</int>
 				<bool name="Enabled">true</bool>
@@ -400,7 +400,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX14B474D4B46D48899D45F383C7B917D9">
+		<Item class="Attachment" referent="RBX78C6342C16964D1DB91D076C7D85A33B">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>0</X>
@@ -425,7 +425,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="AlignPosition" referent="RBX5107C364BEB8454E9DD661CE34D7257A">
+		<Item class="AlignPosition" referent="RBX4DD7A251E574458289F500DFAA1887BB">
 			<Properties>
 				<bool name="ApplyAtCenterOfMass">false</bool>
 				<token name="ForceLimitMode">0</token>
@@ -436,7 +436,7 @@
 					<Z>10000</Z>
 				</Vector3>
 				<float name="MaxForce">10000</float>
-				<float name="MaxVelocity">INF</float>
+				<float name="MaxVelocity">0</float>
 				<token name="Mode">0</token>
 				<Vector3 name="Position">
 					<X>0</X>
@@ -446,7 +446,7 @@
 				<bool name="ReactionForceEnabled">false</bool>
 				<float name="Responsiveness">10</float>
 				<bool name="RigidityEnabled">true</bool>
-				<Ref name="Attachment0">RBX14B474D4B46D48899D45F383C7B917D9</Ref>
+				<Ref name="Attachment0">RBX78C6342C16964D1DB91D076C7D85A33B</Ref>
 				<Ref name="Attachment1">null</Ref>
 				<int name="Color">194</int>
 				<bool name="Enabled">true</bool>

@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local DataService = require(ReplicatedStorage.Packages.DataService).server
 local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local SpawnHandler = require(ServerScriptService.Server.SpawnHandler.SpawnHandler)
 local PlayerCharacters = {}
@@ -46,7 +47,9 @@ local function InitializePlayer(player: Player, character: Model)
 
 	if CollectionService:HasTag(player, "FirstLoad") then
 		CollectionService:RemoveTag(player, "FirstLoad")
-		humanClass:SetInvincible(false, false)
+		task.delay(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, function()
+			humanClass:SetInvincible(false, false)
+		end)
 	end
 
 	SpawnHandler:SpawnPlayer(player, false)

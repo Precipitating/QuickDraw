@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBXF8AE1859EEF249BE8F9042B6E9459774">
+	<Item class="MeshPart" referent="RBXBA1BA07F268E405D8C39F91A43F4FA86">
 		<Properties>
 			<bool name="DoubleSided">true</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -104,7 +104,7 @@
 				<R02>0</R02>
 				<R10>0</R10>
 				<R11>1</R11>
-				<R12>-0</R12>
+				<R12>0</R12>
 				<R20>0</R20>
 				<R21>0</R21>
 				<R22>1</R22>
@@ -142,7 +142,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags">TG9vdA==</BinaryString>
 		</Properties>
-		<Item class="SurfaceAppearance" referent="RBX47C2E8CD7A634788865B8412126BEB59">
+		<Item class="SurfaceAppearance" referent="RBX3F72E9B7D5B4467E96DEE6A1F2390A34">
 			<Properties>
 				<token name="AlphaMode">1</token>
 				<Color3 name="Color">
@@ -173,7 +173,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="ProximityPrompt" referent="RBX7836F68A169145AAB709ACFEB75856BA">
+		<Item class="ProximityPrompt" referent="RBX6A93D39DB4EA45CB8ADC58C8F0EA4727">
 			<Properties>
 				<string name="ActionText">Loot</string>
 				<bool name="AutoLocalize">true</bool>
@@ -182,7 +182,7 @@
 				<token name="Exclusivity">0</token>
 				<token name="GamepadKeyCode">1000</token>
 				<float name="HoldDuration">5</float>
-				<token name="KeyboardKeyCode">102</token>
+				<token name="KeyboardKeyCode">113</token>
 				<float name="MaxActivationDistance">5</float>
 				<float name="MaxIndicatorDistance">0</float>
 				<string name="ObjectText"></string>

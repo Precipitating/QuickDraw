@@ -1,4 +1,5 @@
 -- inheriting Human and defining Player only data
+local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -109,6 +110,17 @@ function HumanNPC:ToggleRightArmAimer(enable: boolean)
 	rightArmOrientator.CFrame = CFrame.identity
 end
 
+function HumanNPC:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model)
+	Human.OnHit(self, damage, damageMultiplier, limbName, shooter)
+
+	-- If sheriff is hit by player, make them an enemy to the sheriff
+	if CollectionService:HasTag(self.Character, "Sheriff") and shooter:IsA("Player") then
+		local shooterCharacter = shooter.Character
+		if shooterCharacter then
+			CollectionService:AddTag(shooterCharacter, "Wanted")
+		end
+	end
+end
 function HumanNPC:RevertCrawlState()
 	if not self.Legless then
 		return

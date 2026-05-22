@@ -26,8 +26,37 @@ SoundData.Sounds = {
 		PoolSize = 6,
 	},
 
+	-- Music
 	MainTheme = {
 		SoundId = "rbxassetid://140307073043749",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
+	ArmoryTheme = {
+		SoundId = "rbxassetid://94622244823914",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
+	DoctorTheme = {
+		SoundId = "rbxassetid://133661921560682",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
+	MercenaryTheme = {
+		SoundId = "rbxassetid://123247253659161",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
+	BankTheme = {
+		SoundId = "rbxassetid://101633026754083",
 		Volume = 0.7,
 		PlaybackSpeed = 1,
 		Group = "Music",
