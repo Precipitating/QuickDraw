@@ -85,9 +85,11 @@ end
 function HumanPlayer:DropMoney()
 	local currentMoney = ServerData.GetMoney(self.Player)
 	if currentMoney and currentMoney > 0 then
-		local loss = currentMoney * HumanConstants.ON_DEATH_MONEY_LOSS_MULTIPLIER
+		local loss = math.floor(currentMoney * HumanConstants.ON_DEATH_MONEY_LOSS_MULTIPLIER)
 		ServerData.SetMoney(self.Player, loss)
-		MoneyDropHandler.DropMoney(self.Character:GetPivot().Position, loss)
+		if loss ~= 0 then
+			MoneyDropHandler.DropMoney(self.Character:GetPivot().Position, loss)
+		end
 	end
 end
 
@@ -102,9 +104,16 @@ function HumanPlayer:Die(killer: Player?)
 		return
 	end
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
-	if killer and killer:IsA("Player") then
-		warn("PLAYER KILLED PLAYAH")
-		AwardHandler.AwardPlayerKill(self.Player, killer)
+	if killer then
+		if killer:IsA("Player") then
+			warn("PLAYER KILLED PLAYAH")
+			AwardHandler.AwardPlayerKill(self.Player, killer)
+		else
+			if CollectionService:HasTag(killer, "Sheriff") then
+				warn("SHERIFF KILLED PLAYAH")
+				CollectionService:AddTag(self.Player, "Jailed")
+			end
+		end
 	end
 end
 

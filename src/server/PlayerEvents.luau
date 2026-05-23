@@ -7,7 +7,7 @@ local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-local SpawnHandler = require(ServerScriptService.Server.SpawnHandler.SpawnHandler)
+local SpawnHandler = require(script.Parent.SpawnHandler.SpawnHandler)
 local PlayerCharacters = {}
 type HumanPlayer = ClassTypes.HumanPlayer
 Players.CharacterAutoLoads = false
@@ -33,6 +33,7 @@ local function InitializePlayer(player: Player, character: Model)
 		ServerData.SaveWeaponEquipped(player, "Revolver")
 		humanClass:DropMoney()
 		humanClass:OnDeath()
+		SpawnHandler:ResetTimerIfJailed(player)
 		PlayerCharacters[player] = nil
 		task.wait(3)
 		if not player then

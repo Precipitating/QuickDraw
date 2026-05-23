@@ -3,6 +3,7 @@ local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
 local ClientUtility = require(StarterPlayer.StarterPlayerScripts.Client.Utility.ClientUtility)
+local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local ClientSoundHandler = require(script.Parent.Parent.Sound.ClientSoundHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -21,6 +22,10 @@ local function FaceTowardsMovementDirection()
 	if flat.Magnitude > 0.001 then
 		PlayerContext.HRPOrientation.CFrame = CFrame.lookAt(Vector3.zero, flat.Unit)
 	end
+end
+
+function Inputs:ToggleBackpackVisibility(active: boolean)
+	CoreGUIHandler.ToggleBackpackVisibility(active)
 end
 
 function Inputs:Initialize()
