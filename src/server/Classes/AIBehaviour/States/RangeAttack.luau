@@ -105,7 +105,7 @@ function RangeAttack:Update(dt)
 		self.LOSLostTime = nil
 	end
 
-	if self.Human.CurrentThrowable and ai:ThrowThrowable(targetPos) then
+	if self.Human.Inventory:GetThrowable() and ai:ThrowThrowable(targetPos) then
 		return
 	end
 	human:AimRightArmTowards(target)

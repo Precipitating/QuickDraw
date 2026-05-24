@@ -1,14 +1,13 @@
 export type Gun = {
 	Tool: Tool?,
 	MaxAmmo: number,
-	GunName: string,
+	Name: string,
 	CurrentAmmo: number,
 	AmmoReserve: number,
 	ShotDelay: number,
 	ShootPoint: Attachment?,
 	PlayerRef: Player?,
 	CanShoot: boolean,
-	AddGunToInventory: (self: Gun) -> (),
 	ShootGun: () -> (),
 	Reload: (self: Gun) -> (),
 	MuzzleFlash: Attachment?,
@@ -26,7 +25,39 @@ export type Throwable = {
 	Throw: (self: Throwable, cameraLookVector: Vector3) -> (),
 	UpdateAmmo: (self: Throwable, amount: number) -> boolean,
 }
+export type Inventory = {
+	-- Owner
+	Owner: Human,
 
+	-- Items
+	Items: { [string]: number },
+	MaxSlots: number,
+	OccupiedSlots: number,
+
+	-- Weapons
+	StoredWeapons: {
+		Gun: Gun?,
+		Throwable: Throwable?,
+	},
+	EquippedWeapons: {
+		Gun: boolean,
+		Throwable: boolean,
+	},
+
+	-- Methods
+	IsEquippingWeapon: (self: Inventory, weaponType: string) -> boolean,
+	RemoveWeapon: (self: Inventory, weaponType: string) -> boolean,
+	CanEquip: (self: Inventory) -> boolean,
+	SwapWeapon: (self: Inventory, newWeaponName: string, weaponType: string) -> boolean,
+	EquipWeapon: (self: Inventory, weaponType: string) -> boolean?,
+	AddWeaponToInventory: (self: Inventory, name: string, quantity: number?) -> boolean,
+	GetAvailableSlotCount: (self: Inventory) -> number,
+	GetMaxSlotCount: (self: Inventory) -> number,
+	GetOccupiedSlotCount: (self: Inventory) -> number,
+	GetGun: (self: Inventory) -> Gun?,
+	GetThrowable: (self: Inventory) -> Throwable?,
+	IsFull: (self: Inventory) -> boolean,
+}
 export type AI = {
 	-- Identity
 	Type: string?,
@@ -67,6 +98,7 @@ export type Human = {
 	IsRagdolled: boolean,
 	AnimationControllerState: boolean,
 	Invincible: boolean,
+	Inventory: Inventory,
 
 	-- References
 	Character: Model,
@@ -87,10 +119,6 @@ export type Human = {
 	LimbHealth: { [string]: number },
 	BodyParts: { [string]: BasePart | boolean },
 	DisabledBodyParts: { [string]: boolean },
-
-	-- Equipment
-	CurrentGun: Gun?,
-	CurrentThrowable: any?,
 
 	-- Janitor
 	Janitor: any,

@@ -16,13 +16,13 @@ Throwable.__index = Throwable
 local fragmentParam = RaycastParams.new()
 fragmentParam.FilterType = Enum.RaycastFilterType.Exclude
 
-function Throwable.new(throwableName: string, humanRef: Human?, ammo: number?)
+function Throwable.new(throwableName: string, humanRef: Human?, ammo: number?, tool: Tool?)
 	assert(ThrowableData[throwableName], "Throwable name missing, cannot initialize")
 	--assert(humanRef, "Human reference missing from throwable class")
 	local self = setmetatable({}, Throwable)
 	local throwableData = ThrowableData[throwableName]
 	self.Owner = humanRef
-	self.Tool = nil
+	self.Tool = tool or nil
 
 	self.Name = throwableName
 	self.Type = throwableData.Type
@@ -51,7 +51,7 @@ function Throwable:UpdateAmmo(amount: number)
 	self.CurrentAmmo = math.max(0, self.CurrentAmmo + amount)
 
 	if self.CurrentAmmo <= 0 then
-		self:Remove()
+		self.Owner.Inventory:RemoveWeapon(self.Name)
 		return false
 	end
 
@@ -63,7 +63,7 @@ function Throwable:Throw(cameraLookVector: Vector3)
 		return false
 	end
 	if self.CurrentAmmo <= 0 then
-		self:Remove()
+		self.Owner.Inventory:RemoveWeapon(self.Name)
 		return false
 	end
 
@@ -106,40 +106,25 @@ function Throwable:Throw(cameraLookVector: Vector3)
 end
 
 function Throwable:Destroy()
-	self.Owner.CurrentThrowable = nil
 	self.Janitor:Destroy()
+	self.Owner = nil
 	setmetatable(self, nil)
 	warn("Throwable class destroyed")
 end
 
-function Throwable:Remove()
-	if self.Owner.HumanType == "Player" then
-		local toolInInventory = self.Owner.Player.Backpack:FindFirstChild(self.Name)
-		local toolInHands = Utility.GetInstance(self.Owner.Player.Character, false, self.Name)
-		if toolInInventory then
-			toolInInventory:Destroy()
-			return
-		end
+-- function Throwable:AddThrowableToInventory(maxAmmo: number)
+-- 	if maxAmmo then
+-- 		self.CurrentAmmo = maxAmmo
+-- 	end
+-- 	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.Name):Clone()
+-- 	self.Tool = clone
 
-		if toolInHands then
-			toolInHands:Destroy()
-		end
-	end
-end
+-- 	clone.Parent = if self.Owner.HumanType == "Player" then self.Owner.Player.Backpack else self.Character
+-- 	self.Janitor:Add(self.Tool)
+-- 	self.RaycastParams.ExcludeInstances = { self.Tool }
 
-function Throwable:AddThrowableToInventory(maxAmmo: number)
-	if maxAmmo then
-		self.CurrentAmmo = maxAmmo
-	end
-	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.Name):Clone()
-	self.Tool = clone
-
-	clone.Parent = if self.Owner.HumanType == "Player" then self.Owner.Player.Backpack else self.Character
-	self.Janitor:Add(self.Tool)
-	self.RaycastParams.ExcludeInstances = { self.Tool }
-
-	if self.Owner.HumanType == "Player" then
-		ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, clone)
-	end
-end
+-- 	if self.Owner.HumanType == "Player" then
+-- 		ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, clone)
+-- 	end
+-- end
 return Throwable

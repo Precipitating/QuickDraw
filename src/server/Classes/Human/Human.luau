@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
+local Inventory = require(script.Parent.Inventory)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -126,6 +127,9 @@ local DisabledBodyParts = {
 
 	RightUpperLeg = false,
 	RightLowerLeg = false,
+
+	RightHand = false,
+	LeftHand = false,
 }
 
 local BloodEmitterRefs = {
@@ -158,6 +162,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Dead = false
 	self.Animator = humanoid:FindFirstChildOfClass("Animator")
 	self.Stamina = 100
+	self.Inventory = Inventory.new(self)
 	self.Sprinting = false
 	self.LastInvincible = nil
 	self.ActiveInvincibleDelayHandle = nil
@@ -177,9 +182,6 @@ function Human.new(humanoid: Humanoid?): Human
 	self.IsRagdolled = false
 
 	self.AnimationControllerState = false
-
-	self.CurrentGun = nil
-	self.CurrentThrowable = nil
 
 	self.Legless = false
 
@@ -540,7 +542,7 @@ function Human:FixCrawlADS()
 		Utility.GetInstance(rightUpperArm, false, "RightShoulderBallSocket")
 	local rightLowerArm: MeshPart = self.BodyParts["RightLowerArm"]
 
-	local gun = self.CurrentGun.Tool
+	local gun = self.Inventory:GetGun()
 
 	assert(gun, "[Human:FixCrawlADS] gun tool missing")
 	assert(rightUpperArm, "[Human:FixCrawlADS] RightUpperArm missing from BodyParts")
@@ -556,8 +558,8 @@ function Human:FixCrawlADS()
 	rightShoulderBallSocket.UpperAngle = 100
 
 	-- disable gun's collision
-	if self.CurrentGun then
-		self.CurrentGun:ToggleCollision(false)
+	if self.Inventory:GetGun() then
+		self.Inventory:GetGun():ToggleCollision(false)
 	end
 end
 
@@ -748,19 +750,15 @@ function Human:ApplyImpulse(force: Vector3, position: Vector3?)
 end
 
 function Human:Destroy()
-	PlayerSignals.RemovePlayerClass:Fire(self.Humanoid)
-	if self.CurrentGun then
-		self.CurrentGun:Destroy()
-		self.CurrentGun = nil
+	if self.Inventory then
+		self.Inventory:Destroy()
 	end
+
+	PlayerSignals.RemovePlayerClass:Fire(self.Humanoid)
+
 	if self.CombatLogTimerHandle then
 		pcall(task.cancel, self.CombatLogTimerHandle)
 		self.CombatLogTimerHandle = nil
-	end
-
-	if self.CurrentThrowable then
-		self.CurrentThrowable:Destroy()
-		self.CurrentThrowable = nil
 	end
 
 	self.Janitor:Destroy()

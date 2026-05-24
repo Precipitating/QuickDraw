@@ -16,7 +16,7 @@ function ServerGunHandler:Reload(player: Player?)
 
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 
-	local currentGun: Gun? = humanClass.CurrentGun
+	local currentGun: Gun? = humanClass.Inventory:GetGun()
 	if not currentGun then
 		warn("[Reload] human class gun missing ref")
 		return
@@ -31,7 +31,7 @@ function ServerGunHandler:GetAmmoCount(player: Player?)
 	end
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 
-	local currentGun: Gun? = humanClass.CurrentGun
+	local currentGun: Gun? = humanClass.Inventory:GetGun()
 
 	if not currentGun then
 		return nil, nil, nil
@@ -57,7 +57,7 @@ function ServerGunHandler:ReduceGunAmmo(player: Player)
 		return
 	end
 
-	local gun = humanClass.CurrentGun
+	local gun = humanClass.Inventory:GetGun()
 
 	if not gun then
 		warn(`Can't reduce gun ammo,{player.Name} has no gun assigned`)

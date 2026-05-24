@@ -32,10 +32,10 @@ function Fallback:Enter(previous, fallbackData)
 		error("Fallback state missing target!")
 	end
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-
+	local currentGun = human.Inventory:GetGun()
 	-- Disable reload if we're reloading & play voiceline
-	if human.CurrentGun then
-		human.CurrentGun:StopReloading()
+	if currentGun then
+		currentGun:StopReloading()
 	end
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,

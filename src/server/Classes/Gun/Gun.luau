@@ -15,7 +15,7 @@ type Gun = ClassTypes.Gun
 local Gun = {}
 Gun.__index = Gun
 
-function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gun
+function Gun.new(gunName: string, humanClass: Human, player: Player | Model, tool: Tool?): Gun
 	if not GunData[gunName] then
 		error("Gun doesn't exist")
 	end
@@ -23,31 +23,32 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model): Gu
 	local self = setmetatable({}, Gun)
 	self.Janitor = Janitor.new()
 
-	self.Tool = nil
-	self.GunName = gunName
+	self.Tool = tool or nil
+	self.Name = gunName
 	self.MaxAmmo = gunData.MaxAmmo
 	self.MaxAmmoStack = gunData.MaxAmmoStack
 	self.CurrentAmmo = gunData.MaxAmmo
 	self.AmmoReserve = gunData.MaxAmmo * self.MaxAmmoStack
 	self.Reloading = false
 	self.GunType = gunData.GunType
-	self.ShootPoint = nil
-	self.Handle = nil
+	self.ShootPoint = if tool then tool:WaitForChild("ShootPoint") else nil
+	self.Handle = if tool then tool:WaitForChild("Handle") else nil
 	self.Speed = gunData.Velocity
 	self.ShotDelay = gunData.ShotDelay
 	self.LastShot = 0
 	self.Damage = gunData.Damage
 	self.CurrentAmmoIntValue = nil
 	self.AmmoReserveIntValue = nil
-
 	-- if its NPC, its their model, else player instance
 	self.PlayerRef = player
 	if player:IsA("Player") then
 		self.PlayerRef = player
 	end
 	self.HumanClassRef = humanClass
-	self.MuzzleFlash = nil
-	self.Equipped = false
+
+	--
+	local muzzleFlash = tool and tool:FindFirstChild("MuzzleFlash", true)
+	self.MuzzleFlash = if muzzleFlash then muzzleFlash:FindFirstChildOfClass("Attachment") else nil
 
 	-- projectile data
 	-- self.FastCast = FastCast.new()
@@ -77,7 +78,7 @@ function Gun:InitializeAmmoValues()
 end
 
 function Gun:SingleShot()
-	local projectileData = GunData[self.GunName].ProjectileData
+	local projectileData = GunData[self.Name].ProjectileData
 	local context = nil
 	if not projectileData then
 		warn("Projectile data invalid, can't shoot")
@@ -110,16 +111,17 @@ function Gun:SingleShot()
 end
 
 function Gun:SpreadShot()
-	local pelletCount = GunData[self.GunName].PelletsPerShot
-	local maxSpreadAngle = GunData[self.GunName].MaxSpreadAngle
-	local projectileData = GunData[self.GunName].ProjectileData
+	local gunName = self.Name
+	local pelletCount = GunData[gunName].PelletsPerShot
+	local maxSpreadAngle = GunData[gunName].MaxSpreadAngle
+	local projectileData = GunData[gunName].ProjectileData
 
 	if not projectileData then
 		warn("Vetra projectile data is missing!")
 		return
 	end
 	if not pelletCount then
-		warn(`Pellet count not specified for {self.GunName}`)
+		warn(`Pellet count not specified for {gunName}`)
 		return
 	end
 
@@ -198,14 +200,19 @@ end
 
 function Gun:Destroy()
 	self.Janitor:Destroy()
-	self.Tool:Destroy()
 	setmetatable(self, nil)
 	table.clear(self)
 end
 
 function Gun:Reload()
-	local reloadTimePerBullet = GunData[self.GunName].ReloadTimePerBullet
-	local reloadSound = GunData[self.GunName].ReloadSoundName
+	local gunName = self.Name
+	local gunData = if gunName then GunData[gunName] else nil
+	if not gunData then
+		warn("[Gun:Reload] Missing gun data ")
+		return
+	end
+	local reloadTimePerBullet = gunData.ReloadTimePerBullet
+	local reloadSound = gunData.ReloadSoundName
 	local bulletsToReload = self.MaxAmmo - self.CurrentAmmo
 	if bulletsToReload <= 0 then
 		return
@@ -219,7 +226,7 @@ function Gun:Reload()
 	for _ = 1, bulletsToReload do
 		task.wait(reloadTimePerBullet)
 
-		if not self.Equipped or not self.Reloading or self.HumanClassRef.Dead then
+		if not self.Reloading or self.HumanClassRef.Dead then
 			return self.CurrentAmmo
 		end
 
@@ -263,42 +270,42 @@ function Gun:ToggleCollision(state: boolean, tool: Tool?)
 	end
 end
 
-function Gun:AddGunToInventory()
-	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.GunName):Clone()
-	self.Tool = clone
-	self.ShootPoint = clone:WaitForChild("ShootPoint", 10)
-	self.Handle = clone:WaitForChild("Handle", 10)
+-- function Gun:AddGunToInventory()
+-- 	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.Name):Clone()
+-- 	self.Tool = clone
+-- 	self.ShootPoint = clone:WaitForChild("ShootPoint", 10)
+-- 	self.Handle = clone:WaitForChild("Handle", 10)
 
-	local muzzle = clone:FindFirstChild("MuzzleFlash", true)
-	if not muzzle then
-		error("Missing muzzle flash reference")
-	end
+-- 	local muzzle = clone:FindFirstChild("MuzzleFlash", true)
+-- 	if not muzzle then
+-- 		error("Missing muzzle flash reference")
+-- 	end
 
-	self.Janitor:Add(clone.Equipped:Connect(function(_)
-		self.Equipped = true
-	end))
-	self.Janitor:Add(clone.Unequipped:Connect(function(_)
-		self.Equipped = false
-	end))
-	-- if its NPC, playerRef should be a model instead of a player instance.
-	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or self.PlayerRef
-	self.RaycastParams.ExcludeInstances = { excludeModel, self.Tool }
+-- 	self.Janitor:Add(clone.Equipped:Connect(function(_)
+-- 		self.Equipped = true
+-- 	end))
+-- 	self.Janitor:Add(clone.Unequipped:Connect(function(_)
+-- 		self.Equipped = false
+-- 	end))
+-- 	-- if its NPC, playerRef should be a model instead of a player instance.
+-- 	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or self.PlayerRef
+-- 	self.RaycastParams.ExcludeInstances = { excludeModel, self.Tool }
 
-	self.MuzzleFlash = muzzle:FindFirstChildOfClass("Attachment")
-	if not self.MuzzleFlash then
-		error("Missing muzzle flash attachment reference")
-	end
+-- 	self.MuzzleFlash = muzzle:FindFirstChildOfClass("Attachment")
+-- 	if not self.MuzzleFlash then
+-- 		error("Missing muzzle flash attachment reference")
+-- 	end
 
-	if self.PlayerRef:IsA("Player") then
-		clone.Parent = self.PlayerRef.Backpack
-		GunSignals.ConnectGunSignal:Fire(self.PlayerRef, clone)
-		self.Janitor:Add(self.Tool)
-		self:InitializeAmmoValues()
-	else
-		-- should be HumanNPC class
-		-- NPC auto equips gun for now
-		self:ToggleCollision(false, clone)
-		self.HumanClassRef:EquipGun(clone)
-	end
-end
+-- 	if self.PlayerRef:IsA("Player") then
+-- 		clone.Parent = self.PlayerRef.Backpack
+-- 		GunSignals.ConnectGunSignal:Fire(self.PlayerRef, clone)
+-- 		self.Janitor:Add(self.Tool)
+-- 		self:InitializeAmmoValues()
+-- 	else
+-- 		-- should be HumanNPC class
+-- 		-- NPC auto equips gun for now
+-- 		self:ToggleCollision(false)
+-- 		self.HumanClassRef:EquipGun(clone)
+-- 	end
+-- end
 return Gun

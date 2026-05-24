@@ -11,7 +11,7 @@ local ThrowableHandler = {}
 
 function ThrowableHandler:GetAmmo(player: Player)
 	local humanClass: Human = PlayerManager:GetHumanClassFromPlayer(player)
-	local throwable: Throwable? = humanClass.CurrentThrowable
+	local throwable: Throwable? = humanClass.Inventory:GetThrowable()
 
 	if not throwable then
 		warn("Throwable is nil!")
@@ -23,7 +23,7 @@ end
 
 function ThrowableHandler:OnClientThrow(player: Player)
 	local humanClass: Human = PlayerManager:GetHumanClassFromPlayer(player)
-	local throwable: Throwable? = humanClass.CurrentThrowable
+	local throwable: Throwable? = humanClass.Inventory:GetThrowable()
 
 	if not throwable then
 		warn("Throwable is nil!")

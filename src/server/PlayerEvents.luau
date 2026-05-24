@@ -88,16 +88,13 @@ return {
 			return
 		end
 
-		if humanClass.CurrentGun then
-			ServerData.SaveWeaponEquipped(player, humanClass.CurrentGun.GunName)
+		if humanClass.Inventory:GetGun() then
+			ServerData.SaveWeaponEquipped(player, humanClass:GetGun().Name)
 		end
 
-		if humanClass.CurrentThrowable then
-			ServerData.SaveThrowableEquipped(
-				player,
-				humanClass.CurrentThrowable.Name,
-				humanClass.CurrentThrowable.CurrentAmmo
-			)
+		local currentThrowable = humanClass.Inventory:GetThrowable()
+		if currentThrowable then
+			ServerData.SaveThrowableEquipped(player, currentThrowable.Name, currentThrowable.CurrentAmmo)
 		else
 			data.equippedThrowable = nil
 		end

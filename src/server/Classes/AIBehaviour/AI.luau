@@ -294,7 +294,7 @@ function AI:GetThrowAngle(origin, target, velocity)
 	return lowArc, highArc -- in radians
 end
 function AI:ThrowThrowable(targetPos)
-	local throwable = self.Owner.CurrentThrowable
+	local throwable = self.Owner.Inventory:GetThrowable()
 	if not throwable then
 		return false
 	end

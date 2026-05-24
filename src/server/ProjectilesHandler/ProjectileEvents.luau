@@ -320,7 +320,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 	-- GUN PROJECTILES
 	if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
 		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
-		local currentGunName = human.CurrentGun and human.CurrentGun.GunName
+		local currentGunName = human.Inventory:GetGun() and human.Inventory:GetGun().Name
 		if not currentGunName then
 			return
 		end
@@ -344,8 +344,8 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 	elseif CollectionService:HasTag(context.CosmeticBulletObject, "Throwable") then
 		local data = context.UserData
 		local human = PlayerManager:GetHumanClassFromPlayer(data.Owner)
-		local throwable = human.CurrentThrowable
-		local throwableName = throwable and human.CurrentThrowable.Name
+		local currentThrowable = human.Inventory:GetThrowable()
+		local throwableName = currentThrowable and currentThrowable.Name
 		if not throwableName then
 			return
 		end
@@ -369,8 +369,8 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			self:OnThrowImpact(throwableData.ImpactParticle, hitPos)
 			self:SpawnFragments(result, data.Owner, throwableData)
 
-			if throwable.CurrentAmmo <= 0 then
-				throwable:Destroy()
+			if currentThrowable.CurrentAmmo <= 0 then
+				currentThrowable:Destroy()
 			end
 		end)
 	end

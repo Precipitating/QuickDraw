@@ -23,13 +23,13 @@ function ShopGUI:BuyRefillAmmo(player: Player)
 		warn("Human missing, can't buy")
 		return false
 	end
-	local currentGun = human.CurrentGun
+	local currentGun = human.Inventory:GetGun()
 	if not currentGun then
 		warn("Can't refill ammo, human has no current gun")
 		return false
 	end
 
-	if currentGun.GunName ~= "Revolver" then
+	if currentGun.Name ~= "Revolver" then
 		local currentMoney = ServerData.GetMoney(player)
 		local moneyIfPurchased = currentMoney - ShopCosts.AmmoRefill
 		if currentMoney and moneyIfPurchased < 0 then
@@ -44,7 +44,7 @@ function ShopGUI:BuyRefillAmmo(player: Player)
 	end
 
 	currentGun:UpdateAmmoReserve(maxStack - currentGun.AmmoReserve)
-	if currentGun.GunName ~= "Revolver" then
+	if currentGun.Name ~= "Revolver" then
 		ServerData.UpdateMoney(player, -ShopCosts.AmmoRefill)
 	end
 	return true
@@ -63,23 +63,14 @@ function ShopGUI:BuyItem(player: Player, productName: string, productCost: numbe
 		return false
 	end
 
+	local currentGun = human.Inventory:GetGun()
 	if GunData[productName] then
-		if human.CurrentGun and human.CurrentGun.GunName == productName then
+		if currentGun and currentGun.Name == productName then
 			return false
 		end
-		human:ChangeGun(productName)
-		human.CurrentGun:AddGunToInventory()
+		human.Inventory:SwapWeapon(productName, "Gun")
 	elseif ThrowableData[productName] then
-		if human.CurrentThrowable and human.CurrentThrowable.Name == productName then
-			human.CurrentThrowable.CurrentAmmo += 1
-		else
-			if human.CurrentThrowable then
-				human.CurrentThrowable:Remove()
-				human.CurrentThrowable:Destroy()
-			end
-			human.CurrentThrowable = Throwable.new(productName, human)
-			human.CurrentThrowable:AddThrowableToInventory()
-		end
+		human.Inventory:SwapWeapon(productName, "Throwable")
 	end
 
 	if soundName then

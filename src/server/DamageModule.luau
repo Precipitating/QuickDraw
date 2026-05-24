@@ -47,7 +47,7 @@ function DamageModule:ApplyDamage(
 	if not human or not human.LimbHealth or not human.LimbHealth[limbName] or human.Dead or human.Invincible then
 		return
 	end
-	local gun = human.CurrentGun
+	local gun = human.Inventory:GetGun()
 
 	if gun then
 		local reloading = gun.Reloading

@@ -192,7 +192,7 @@ end
 
 function RangeAI:Attack()
 	local human = self.Owner
-	local currentGun = human and human.CurrentGun
+	local currentGun = human and human.Inventory:GetGun()
 	if not currentGun then
 		return
 	end
@@ -212,7 +212,7 @@ function RangeAI:Attack()
 
 	-- Reload if 0 ammo
 	if currentGun.CurrentAmmo <= 0 then
-		if self.Owner.CurrentGun.Reloading then
+		if currentGun.Reloading then
 			return
 		end
 		task.spawn(function()
@@ -221,7 +221,7 @@ function RangeAI:Attack()
 	else
 		-- Keep reloading if we still have ammo, unless interrupted by getting hit
 		-- OR player goes too close to enemy
-		if self.Owner.CurrentGun.Reloading then
+		if currentGun.Reloading then
 			return
 		end
 		currentGun:ShootGun()

@@ -10,8 +10,6 @@ local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandle
 
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
-local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
-local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local Human = require(script.Parent.Human)
 local HumanConstants = require(script.Parent.HumanConstants)
 
@@ -26,21 +24,13 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()
 	self.AI = RangeAI.new(self, classType, optionalData)
-	self.CurrentGun = if self.AI.WeaponName then Gun.new(self.AI.WeaponName, self, self.Character) else nil
-	self.CurrentThrowable = if self.AI.ThrowableName then Throwable.new(self.AI.ThrowableName, self) else nil
-	if self.CurrentGun then
-		self.CurrentGun:AddGunToInventory()
-	end
-	if self.CurrentThrowable then
-		self.CurrentThrowable:AddThrowableToInventory(NPCTypes[classType].ThrowableAmmo)
-	end
 	self.CurrentTrack = nil
-
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self.VoicelineSound = self:SetupVoicelineSound()
 
 	self:SetNPCNetworkOwnership()
-	if self.CurrentGun then
+	self:InitializeWeaponLoadout()
+	if self.Inventory:GetGun() then
 		self:SetWeaponCollisions()
 	end
 
@@ -49,6 +39,16 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
 	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
+end
+function HumanNPC:InitializeWeaponLoadout()
+	if self.AI.WeaponName then
+		self.Inventory:AddWeaponToInventory(self.AI.WeaponName)
+		self.Inventory:EquipWeapon("Gun")
+	end
+
+	if self.AI.ThrowableName then
+		self.Inventory:AddWeaponToInventory(self.AI.ThrowableName, self.AI.Type.ThrowableAmmo)
+	end
 end
 
 function HumanNPC:SetupVoicelineSound()
@@ -65,7 +65,7 @@ function HumanNPC:SetNPCNetworkOwnership()
 end
 
 function HumanNPC:SetWeaponCollisions()
-	for _, part in self.CurrentGun.Tool:GetDescendants() do
+	for _, part in self.Inventory:GetGun().Tool:GetDescendants() do
 		if part:IsA("BasePart") then
 			part.CollisionGroup = "NPC"
 		end
@@ -145,8 +145,10 @@ function HumanNPC:RevertCrawlState()
 	self.Humanoid.UseJumpPower = false
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 
-	if self.CurrentGun then
-		self.CurrentGun:ToggleCollision(true)
+	local currentGun = self.Inventory:GetGun()
+
+	if currentGun then
+		currentGun:ToggleCollision(true)
 	end
 
 	self.Legless = false
@@ -162,8 +164,9 @@ function HumanNPC:SetCrawlState()
 		return
 	end
 
-	if self.CurrentGun then
-		self.CurrentGun:ToggleCollision(false)
+	local currentGun = self.Inventory:GetGun()
+	if currentGun then
+		currentGun:ToggleCollision(false)
 	end
 
 	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then

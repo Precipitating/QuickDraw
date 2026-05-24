@@ -20,22 +20,14 @@ HumanPlayer.__index = HumanPlayer
 function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	assert(player, "HumanPlayer constructor needs a valid player instance!")
 	local self = setmetatable(Human.new(humanoid), HumanPlayer)
-	local savedGunName = ServerData.GetWeaponName(player)
-	local savedThrowableData = ServerData.GetThrowableData(player)
+
 	Human.AssignBodyParts(self, "Player")
 	self:SetupBloodEmitters()
 	self.Player = player
 	self.HumanType = "Player"
-	self.CurrentGun = Gun.new(savedGunName or "Revolver", self, player)
-	self.CurrentGun:AddGunToInventory()
-	self.CurrentThrowable = if savedThrowableData
-		then Throwable.new(savedThrowableData.Name, self, savedThrowableData.Ammo)
-		else nil
-	if self.CurrentThrowable then
-		self.CurrentThrowable:AddThrowableToInventory()
-	end
-	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
+	self:InitializeWeaponLoadout()
 
+	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 	if CollectionService:HasTag(player, "FirstLoad") then
 		warn("Player first loaded, setting invincible forever until game loaded")
 		self:SetInvincible(true, true)
@@ -48,19 +40,31 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	return self :: any
 end
 
+function HumanPlayer:InitializeWeaponLoadout()
+	local savedGunName = ServerData.GetWeaponName(self.Player)
+	local savedThrowableData = ServerData.GetThrowableData(self.Player)
+
+	-- Gun
+	if savedGunName then
+		self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
+		self.Inventory:EquipWeapon("Gun")
+	end
+
+	if savedThrowableData then
+		-- Throwable
+		local throwable = self.Inventory:AddWeaponToInventory(savedThrowableData.Name)
+		if throwable then
+			self.Inventory:AddWeaponToInventory("Throwable")
+		end
+	end
+end
+
 function HumanPlayer:Ragdoll(duration: number)
 	HumanSignals.RagdollClient:Fire(self.Player, duration)
 end
 
 function HumanPlayer:ApplyImpulse(force: Vector3, position: Vector3?)
 	HumanSignals.ApplyImpulseToClient:Fire(self.Player, self.RootPart, force, position)
-end
-
-function HumanPlayer:ChangeGun(newGun: string)
-	if self.CurrentGun then
-		self.CurrentGun:Destroy()
-	end
-	self.CurrentGun = Gun.new(newGun, self, self.Player)
 end
 
 function HumanPlayer:ConnectGUIs()
@@ -137,8 +141,9 @@ function HumanPlayer:RevertCrawlState()
 	self.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
 	self.Humanoid.HipHeight = 2.142
 
-	if self.CurrentGun then
-		self.CurrentGun:ToggleCollision(true)
+	local currentGun = self.Inventory:GetGun()
+	if currentGun then
+		currentGun:ToggleCollision(true)
 	end
 
 	self.Legless = false
@@ -154,8 +159,9 @@ function HumanPlayer:SetCrawlState()
 
 	local parts = self.DisabledBodyParts
 
-	if self.CurrentGun then
-		self.CurrentGun:ToggleCollision(false)
+	local currentGun = self.Inventory:GetGun()
+	if currentGun then
+		currentGun:ToggleCollision(false)
 	end
 
 	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
