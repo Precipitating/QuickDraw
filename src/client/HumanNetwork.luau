@@ -1,5 +1,6 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
 local Inputs = require(script.Parent.ClientInputs.Inputs)
 local PlayerContext = require(script.Parent.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
@@ -39,6 +40,9 @@ end
 
 function HumanNetwork:FinishedLoadingGame()
 	self.networker:fire("FinishedLoadingGame")
+end
+function HumanNetwork:ToggleBackpackVisibility(active: boolean)
+	CoreGUIHandler.ToggleBackpackVisibility(active)
 end
 
 function HumanNetwork:AdjustGrayscale(saturationTarget: number)

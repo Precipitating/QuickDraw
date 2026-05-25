@@ -37,6 +37,8 @@ return {
 		if not human then
 			return
 		end
-		human:SetInCombat(true)
+		if human.SetInCombat then
+			human:SetInCombat(true)
+		end
 	end),
 }

@@ -24,6 +24,9 @@ function ClientSoundHandler:Play3DOneShotToOthers(soundName: string, emitterCFra
 end
 
 function ClientSoundHandler:Play3DNPCVoiceline(soundName: string, soundInstance: Sound, config: PlayOptions?)
+	if not soundInstance then
+		return
+	end
 	SoundManager.Play3DNPCVoiceline(soundName, soundInstance, config)
 end
 

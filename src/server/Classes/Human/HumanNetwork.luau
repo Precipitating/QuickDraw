@@ -27,6 +27,10 @@ function HumanNetwork:FinishedLoadingGame(player: Player)
 	end
 end
 
+function HumanNetwork:ToggleBackpackVisibility(player: Player, active: boolean)
+	self.networker:fire(player, "ToggleBackpackVisibility", active)
+end
+
 HumanNetwork.networker =
 	Networker.new("HumanNetwork", HumanNetwork, { HumanNetwork.IsLegless, HumanNetwork.FinishedLoadingGame })
 return HumanNetwork

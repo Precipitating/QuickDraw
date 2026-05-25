@@ -50,10 +50,10 @@ end
 function Throwable:UpdateAmmo(amount: number)
 	self.CurrentAmmo = math.max(0, self.CurrentAmmo + amount)
 
-	if self.CurrentAmmo <= 0 then
-		self.Owner.Inventory:RemoveWeapon(self.Name)
-		return false
-	end
+	-- if self.CurrentAmmo <= 0 then
+	-- 	self.Owner.Inventory:RemoveWeapon("Throwable")
+	-- 	return false
+	-- end
 
 	return true
 end
@@ -63,7 +63,7 @@ function Throwable:Throw(cameraLookVector: Vector3)
 		return false
 	end
 	if self.CurrentAmmo <= 0 then
-		self.Owner.Inventory:RemoveWeapon(self.Name)
+		self.Owner.Inventory:RemoveWeapon("Throwable")
 		return false
 	end
 

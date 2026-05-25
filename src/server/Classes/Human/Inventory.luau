@@ -36,12 +36,11 @@ function Inventory.new(owner: Human): Inventory
 end
 
 function Inventory:Destroy()
-	for weaponType, _ in pairs(self.StoredWeapons) do
-		if self.StoredWeapons[weaponType] then
-			self:RemoveWeapon(weaponType)
+	for weaponType, weapon in pairs(self.StoredWeapons) do
+		if weapon and type(weapon.Destroy) == "function" then
+			weapon:Destroy()
 		end
 	end
-
 	table.clear(self.StoredWeapons)
 	table.clear(self.EquippedWeapons)
 	table.clear(self.Items)
@@ -117,9 +116,8 @@ end
 function Inventory:SwapWeapon(newWeaponName: string, weaponType: string)
 	local weaponRemoved = self:RemoveWeapon(weaponType)
 	local weaponAdded = self:AddWeaponToInventory(newWeaponName)
-	self.EquippedWeapons[weaponType] = false
-
-	return weaponRemoved and weaponAdded
+	local equipWeapon = self:EquipWeapon(weaponType)
+	return weaponRemoved and weaponAdded and equipWeapon
 end
 
 function Inventory:EquipWeapon(weaponType: string)
@@ -150,11 +148,11 @@ function Inventory:EquipWeapon(weaponType: string)
 			ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, weapon.Tool)
 		end
 	elseif ownerType == "NPC" then
-		local humanoid = self.Owner.Humanoid
+		local character = self.Owner.Character
 		local tool = weapon.Tool
 
 		weapon:ToggleCollision(false)
-		humanoid:EquipTool(tool)
+		tool.Parent = character
 	else
 		warn("Can't equip weapon, invalid human type")
 		return false
@@ -179,9 +177,15 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?)
 	weaponClone = weaponClone:Clone()
 
 	if GunData[name] then
+		if self.StoredWeapons["Gun"] then
+			self:RemoveWeapon("Gun")
+		end
 		self.StoredWeapons["Gun"] = Gun.new(name, self.Owner, self.Owner.Player or self.Owner.Character, weaponClone)
 		self.StoredWeapons["Gun"].Janitor:Add(weaponClone)
 	elseif ThrowableData[name] then
+		if self.StoredWeapons["Throwable"] then
+			self:RemoveWeapon("Throwable")
+		end
 		self.StoredWeapons["Throwable"] = Throwable.new(name, self.Owner, quantity, weaponClone)
 		self.StoredWeapons["Throwable"].Janitor:Add(weaponClone)
 	else

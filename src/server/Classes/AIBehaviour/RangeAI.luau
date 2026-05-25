@@ -192,44 +192,35 @@ end
 
 function RangeAI:Attack()
 	local human = self.Owner
-	local currentGun = human and human.Inventory:GetGun()
+	if not (human and human.Inventory) then
+		return
+	end
+
+	local currentGun = human.Inventory:GetGun()
 	if not currentGun then
 		return
 	end
 
 	local tool = currentGun.Tool
-	if not tool then
-		return
-	end
-
 	local handle = currentGun.Handle
 	local shootPoint = currentGun.ShootPoint
 	local rightArm = human.BodyParts.RightUpperArm
 
-	if not (handle and shootPoint and rightArm) then
+	if not (tool and handle and shootPoint and rightArm) then
+		return
+	end
+	if currentGun.Reloading then
 		return
 	end
 
-	-- Reload if 0 ammo
 	if currentGun.CurrentAmmo <= 0 then
-		if currentGun.Reloading then
-			return
-		end
 		task.spawn(function()
 			currentGun:Reload()
 		end)
 	else
-		-- Keep reloading if we still have ammo, unless interrupted by getting hit
-		-- OR player goes too close to enemy
-		if currentGun.Reloading then
-			return
-		end
 		currentGun:ShootGun()
+		handle:ApplyImpulseAtPosition(handle.AssemblyMass * UP * 100, shootPoint.WorldPosition)
 	end
-
-	--recoil impulse
-	local handleImpulse = handle.AssemblyMass * UP * 100
-	handle:ApplyImpulseAtPosition(handleImpulse, shootPoint.WorldPosition)
 end
 
 return RangeAI

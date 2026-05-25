@@ -43,8 +43,38 @@ function ServerGunHandler:GetAmmoCount(player: Player?)
 	return currentAmmo, maxAmmo, ammoReserve
 end
 
-function ServerGunHandler:StopReloading(player: Player)
+-- Server -> Client stop  gun reload
+function ServerGunHandler:StopReloadingClient(player: Player)
 	self.networker:fire(player, "StopReloading")
+end
+
+-- Client -> Server stop gun reload
+function ServerGunHandler:StopReloadingServer(player: Player)
+	if not player then
+		return
+	end
+	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
+	if not humanClass then
+		warn(`[ServerGunHandler:StopReloadingClient] Missing human class ref`)
+		return
+	end
+	local inventory = humanClass and humanClass.Inventory
+	if not inventory then
+		warn(`[ServerGunHandler:StopReloadingClient] Missing human inventory ref`)
+		return
+	end
+
+	local currentGun = inventory:GetGun()
+	if not currentGun then
+		warn(`[ServerGunHandler:StopReloadingClient] Missing currentGun ref`)
+		return
+	end
+
+	if not currentGun.StopReloading then
+		warn(`[ServerGunHandler:StopReloadingClient] Missing StopReloading function method`)
+		return
+	end
+	currentGun:StopReloading(false)
 end
 function ServerGunHandler:ReduceGunAmmo(player: Player)
 	if not player then
@@ -70,6 +100,7 @@ ServerGunHandler.networker = Networker.new("GunNetwork", ServerGunHandler, {
 	ServerGunHandler.GetAmmoCount,
 	ServerGunHandler.Reload,
 	ServerGunHandler.ReduceGunAmmo,
+	ServerGunHandler.StopReloadingServer,
 })
 
 return ServerGunHandler

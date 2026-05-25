@@ -62,6 +62,7 @@ gunRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 function ClientGunHandler:StopReloading()
 	PlayerContext.Reloading = false
+	GunNetwork:fire("StopReloadingServer")
 end
 
 function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
@@ -170,6 +171,7 @@ local function CrosshairSpringMovement(crosshairPart: Part, crosshairImg: ImageL
 		crosshairImg.Size = smoothed
 	end
 end
+
 local function PredictBulletLanding(
 	shootOrigin: Vector3,
 	direction: Vector3,
@@ -356,7 +358,7 @@ function ClientGunHandler:AttemptReload()
 	end
 
 	if newAmmoCount >= maxAmmo then
-		PlayerContext.Reloading = false
+		self:StopReloading()
 		return
 	end
 end
@@ -590,7 +592,7 @@ function ClientGunHandler:DisconnectGun()
 	end
 
 	if PlayerContext.Reloading then
-		PlayerContext.Reloading = false
+		self:StopReloading()
 	end
 	self.janitor:Cleanup()
 end

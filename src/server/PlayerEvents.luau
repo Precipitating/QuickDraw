@@ -88,8 +88,15 @@ return {
 			return
 		end
 
-		if humanClass.Inventory:GetGun() then
-			ServerData.SaveWeaponEquipped(player, humanClass:GetGun().Name)
+		local inventory = humanClass.Inventory
+		if not inventory then
+			return
+		end
+
+		local currentGun = if inventory.GetGun then inventory:GetGun() else nil
+
+		if currentGun then
+			ServerData.SaveWeaponEquipped(player, currentGun.Name)
 		end
 
 		local currentThrowable = humanClass.Inventory:GetThrowable()

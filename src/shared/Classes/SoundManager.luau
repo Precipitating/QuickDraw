@@ -463,7 +463,7 @@ end
 function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound, options: PlayOptions?)
 	local opts: PlayOptions = options or {}
 	if not soundInstance then
-		warn("[Play3DNPCVoiceline] missing soundInstance reference")
+		warn(`[Play3DNPCVoiceline] missing soundInstance reference of {soundName}`)
 		return
 	end
 

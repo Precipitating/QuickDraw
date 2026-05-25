@@ -89,7 +89,7 @@ return {
 				Damage = damageInflicted,
 				TargetHuman = humanClass,
 				LimbHit = limb,
-				shooter = shooter,
+				Shooter = shooter,
 			}
 
 			DamageModule:ApplyInflictingDamage(shotData)
@@ -97,6 +97,6 @@ return {
 	),
 
 	GunSignals.StoppedReloading:Connect(function(player: Player)
-		ServerGunHandler:StopReloading(player)
+		ServerGunHandler:StopReloadingClient(player)
 	end),
 }

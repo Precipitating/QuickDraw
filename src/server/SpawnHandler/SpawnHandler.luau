@@ -1,5 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local SpawnLocations = ReplicatedStorage.Shared.Templates.SpawnLocations
 local SpawnHandler = {}
@@ -59,6 +61,7 @@ local function ToggleJailedGUI(player: Player?, active: boolean)
 	-- Disable GUI
 	if not active then
 		jailedGUI.Enabled = active
+		HumanNetwork:ToggleBackpackVisibility(player, not active)
 		return
 	end
 
@@ -69,6 +72,7 @@ local function ToggleJailedGUI(player: Player?, active: boolean)
 	end
 
 	jailedGUI.Enabled = active
+	HumanNetwork:ToggleBackpackVisibility(player, not active)
 end
 
 function SpawnHandler:ResetTimerIfJailed(player: Player?)

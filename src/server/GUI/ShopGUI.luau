@@ -70,7 +70,17 @@ function ShopGUI:BuyItem(player: Player, productName: string, productCost: numbe
 		end
 		human.Inventory:SwapWeapon(productName, "Gun")
 	elseif ThrowableData[productName] then
-		human.Inventory:SwapWeapon(productName, "Throwable")
+		local currentThrowable = human.Inventory:GetThrowable()
+		if currentThrowable then
+			if currentThrowable.Name == productName then
+				currentThrowable.CurrentAmmo += 1
+			else
+				human.Inventory:SwapWeapon(productName, "Throwable")
+			end
+		else
+			human.Inventory:AddWeaponToInventory(productName, 1)
+			human.Inventory:EquipWeapon("Throwable")
+		end
 	end
 
 	if soundName then

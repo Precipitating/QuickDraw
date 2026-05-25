@@ -253,11 +253,13 @@ function Gun:Reload()
 	return self.CurrentAmmo
 end
 
-function Gun:StopReloading()
+function Gun:StopReloading(replicateToClient: boolean?)
 	self.Reloading = false
 
-	if self.PlayerRef and self.PlayerRef:IsA("Player") then
-		GunSignals.StoppedReloading:Fire(self.PlayerRef)
+	if replicateToClient == nil or replicateToClient == true then
+		if self.PlayerRef and self.PlayerRef:IsA("Player") then
+			GunSignals.StoppedReloading:Fire(self.PlayerRef)
+		end
 	end
 end
 

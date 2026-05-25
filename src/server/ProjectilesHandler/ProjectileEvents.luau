@@ -275,10 +275,9 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 				result.Instance.CFrame,
 				{ MaxDistance = 150 }
 			)
-
 			ServerEffectsDisplayer:DisplayDestroyParticle(throwableData.ImpactParticle, hitPos)
 			self:SpawnFragments(result, data.Class.Owner, throwableData)
-			if data.Class.CurrentAmmo <= 0 then
+			if data.Class.CurrentAmmo <= 0 and type(data.Class.Destroy) == "function" then
 				data.Class:Destroy()
 			end
 		end)
@@ -311,7 +310,6 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 end
 
 function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastResult?)
-	-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
 	if not result then
 		return
 	end
@@ -320,10 +318,15 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 	-- GUN PROJECTILES
 	if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
 		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
-		local currentGunName = human.Inventory:GetGun() and human.Inventory:GetGun().Name
+		if not human then
+			return
+		end -- player died/left
+
+		local currentGunName = human.Inventory and human.Inventory:GetGun() and human.Inventory:GetGun().Name
 		if not currentGunName then
 			return
 		end
+
 		local gunData = GunData[currentGunName]
 		if not gunData then
 			warn("GunData missing from OnProjectileHitReceivePlayer")
@@ -340,16 +343,30 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			return
 		end
 
-		-- THROWABLE PROJECTILES
+	-- THROWABLE PROJECTILES
 	elseif CollectionService:HasTag(context.CosmeticBulletObject, "Throwable") then
-		local data = context.UserData
-		local human = PlayerManager:GetHumanClassFromPlayer(data.Owner)
-		local currentThrowable = human.Inventory:GetThrowable()
-		local throwableName = currentThrowable and currentThrowable.Name
+		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
+
+		if not human then
+			return
+		end
+
+		local currentThrowable = human.Inventory and human.Inventory:GetThrowable()
+		if not currentThrowable then
+			warn("CurrentThrowable not valid")
+			return
+		end
+
+		local throwableName = currentThrowable.Name
 		if not throwableName then
 			return
 		end
+
 		local throwableData = ThrowableData[throwableName]
+		if not throwableData then
+			warn("ThrowableData missing for: " .. tostring(throwableName))
+			return
+		end
 
 		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
 
@@ -357,7 +374,15 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			Debris:AddItem(context.CosmeticBulletObject, throwableData.DetonationTime)
 		end
 
+		if currentThrowable.CurrentAmmo <= 0 then
+			human.Inventory:RemoveWeapon("Throwable")
+		end
+
 		task.delay(throwableData.DetonationTime, function()
+			-- Re-validate after delay, player may have left by now
+			if not result then
+				return
+			end
 			local hitPos = result.Position
 			ServerSoundHandler:Play3DOneShotToOthers(
 				nil,
@@ -365,13 +390,8 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 				result.Instance.CFrame,
 				{ MaxDistance = 150 }
 			)
-
 			self:OnThrowImpact(throwableData.ImpactParticle, hitPos)
-			self:SpawnFragments(result, data.Owner, throwableData)
-
-			if currentThrowable.CurrentAmmo <= 0 then
-				currentThrowable:Destroy()
-			end
+			self:SpawnFragments(result, context.UserData.Owner, throwableData)
 		end)
 	end
 end
