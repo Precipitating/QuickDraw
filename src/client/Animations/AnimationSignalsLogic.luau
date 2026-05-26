@@ -15,6 +15,10 @@ return {
 		-- means this is for NPC
 		if characterModel then
 			local npcAnimationController = NPCAnimationsHandler:GetNPCAnimations(characterModel)
+			if not npcAnimationController then
+				warn(`[ChangeAnimationFolder] No animation controller found for`, characterModel.Name)
+				return
+			end
 			npcAnimationController:ChangeAllAnimations(folder)
 		else
 			PlayerContext.AnimationController:ChangeAllAnimations(folder)
@@ -24,6 +28,10 @@ return {
 		-- means this is for NPC
 		if characterModel then
 			local npcAnimationController = NPCAnimationsHandler:GetNPCAnimations(characterModel)
+			if not npcAnimationController then
+				warn(`[ResetToDefaultAnimations] No animation controller found for`, characterModel.Name)
+				return
+			end
 			npcAnimationController:ResetToDefaultAnimations()
 		else
 			PlayerContext.AnimationController:ResetToDefaultAnimations()

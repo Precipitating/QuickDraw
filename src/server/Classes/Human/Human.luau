@@ -345,6 +345,7 @@ function Human:ApplyRollForce()
 	if not hrp then
 		return
 	end
+
 	local humanoid = hrp.Parent and hrp.Parent:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
 		return
@@ -352,27 +353,45 @@ function Human:ApplyRollForce()
 
 	local moveDir = humanoid.MoveDirection
 	local forward = (moveDir.Magnitude >= 0.1 and moveDir or hrp.CFrame.LookVector) * Vector3.new(1, 0, 1)
+
 	if forward.Magnitude < 0.01 then
 		forward = hrp.CFrame.LookVector
 	end
 	forward = forward.Unit
 
+	-- Zero out existing horizontal velocity first so forces don't stack
+	local currentVel = hrp.AssemblyLinearVelocity
+	hrp.AssemblyLinearVelocity = Vector3.new(0, currentVel.Y, 0)
+
 	local attachment = Instance.new("Attachment")
 	attachment.Parent = hrp
 
+	-- Use LinearVelocity in Line mode to set an exact target speed,
+	-- with a capped MaxForce to prevent spikes
 	local lv = Instance.new("LinearVelocity")
 	lv.Attachment0 = attachment
-	lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
+	lv.VelocityConstraintMode = Enum.VelocityConstraintMode.Line
 	lv.RelativeTo = Enum.ActuatorRelativeTo.World
-	lv.PrimaryTangentAxis = Vector3.new(1, 0, 0)
-	lv.SecondaryTangentAxis = Vector3.new(0, 0, 1)
-	lv.PlaneVelocity = Vector2.new(forward.X, forward.Z) * HumanConstants.ROLL_FORCE
-	lv.MaxForce = hrp.AssemblyMass * 7000
+	lv.LineDirection = forward
+	lv.LineVelocity = HumanConstants.ROLL_FORCE -- treat this as a speed (studs/s)
+	lv.MaxForce = math.huge
 	lv.Parent = hrp
 
+	-- Ease out: reduce force partway through so it doesn't suddenly stop
+	local halfDuration = HumanConstants.ROLL_DURATION * 0.55
+	task.delay(halfDuration, function()
+		if lv and lv.Parent then
+			lv.LineVelocity = lv.LineVelocity * 0.4
+		end
+	end)
+
 	task.delay(HumanConstants.ROLL_DURATION, function()
-		lv:Destroy()
-		attachment:Destroy()
+		if lv and lv.Parent then
+			lv:Destroy()
+		end
+		if attachment and attachment.Parent then
+			attachment:Destroy()
+		end
 		self.RollSignalled = false
 	end)
 end
@@ -495,22 +514,22 @@ function Human:OnHumanoidStateChange()
 	)
 end
 
--- apply damage to self
 function Human:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model)
 	self.LimbHealth[limbName] -= damage
 	self.Health -= damage * damageMultiplier
-
 	self:SetInCombat(true)
-	-- damage dealer's client plays headshot sound
-	if shooter and shooter:IsA("Player") then
+
+	local shooterIsPlayer = typeof(shooter) == "Instance" and shooter:IsA("Player")
+
+	if shooterIsPlayer then
+		local shooterPlayer = shooter :: Player
 		if limbName == "Head" then
 			ServerSoundHandler:PlaySoundTo(
-				shooter,
+				shooterPlayer,
 				"Headshot",
 				{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 			)
 		end
-
 		HumanSignals.SetShooterInCombat:Fire(shooter)
 	end
 end

@@ -45,13 +45,17 @@ function EffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
 		warn("Client gunTool invalid")
 		return
 	end
-	local muzzleFolder = Utility.GetInstance(gunTool, true, "MuzzleFlash", "Attachment")
 
-	if not muzzleFolder then
+	local muzzleFlash = gunTool:FindFirstChild("MuzzleFlash")
+	if not muzzleFlash then
+		return
+	end
+	local muzzleFlashAttachment = muzzleFlash:FindFirstChildOfClass("Attachment")
+	if not muzzleFlashAttachment then
 		return
 	end
 
-	for _, effect in muzzleFolder:GetChildren() do
+	for _, effect in muzzleFlashAttachment:GetChildren() do
 		if effect:IsA("SpotLight") then
 			effect.Enabled = true
 			task.delay(0.1, function()
