@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local SoundData = require(ReplicatedStorage.Shared.Classes.SoundData)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local QuickZone = require(ReplicatedStorage.Shared.QuickZone)
 local Zone, Group, Observer = QuickZone.Zone, QuickZone.Group, QuickZone.Observer
@@ -12,11 +11,11 @@ local function SetupZone(tagName: string, musicName: string)
 
 	observer:onEnter(function(entity, zone)
 		print(entity.Name .. " entered " .. zone:getId())
-		SoundManager.PlayKeyed("Music", musicName, { FadeIn = 0.5 })
+		SoundManager.PlayKeyed("Music", musicName, { FadeIn = 1, FadeOut = 1 })
 	end)
 
 	observer:onExit(function(entity, zone)
-		SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
+		SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 1, FadeOut = 1 })
 		print(entity.Name .. " exited " .. zone:getId())
 	end)
 end

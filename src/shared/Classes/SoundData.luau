@@ -131,7 +131,7 @@ SoundData.Sounds = {
 	},
 	WinchesterShot = {
 		SoundId = "rbxassetid://75965425749742",
-		Volume = 1,
+		Volume = 0.7,
 		PlaybackSpeed = 1,
 		Group = "SFX",
 		PoolSize = 6,
