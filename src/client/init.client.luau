@@ -5,7 +5,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MainMenuScreen = require(script.MainMenu.MainMenuScreen)
 local ClientUtility = require(script.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Utility.CoreGUIHandler)
-local ZoneHandler = require(script.ZoneHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 require(script.VisualEffectsHandler.EffectsDisplayer)
 require(script.Animations.AnimationSignalsLogic)
@@ -18,7 +17,7 @@ local function WaitForPlayerLoad()
 	CoreGUIHandler.ToggleBackpackVisibility(false)
 	SoundManager.Init()
 	SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
-	ZoneHandler:Initialize()
+
 	-- ensure loading screen finished loading
 	repeat
 		task.wait()

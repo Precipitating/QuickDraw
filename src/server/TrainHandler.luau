@@ -74,11 +74,11 @@ function TrainHandler:Run(active: boolean)
 		distance = distance + CurrentSpeed * dt
 
 		for _, trainModel in TrainModels do
-			trainModel:PivotTo(CreatedSpline:GetCFrame(distance % CreatedSpline.Length, true))
+			trainModel.PrimaryPart.CFrame = CreatedSpline:GetCFrame(distance % CreatedSpline.Length, true)
 		end
 		for i, carriageModel in CarriageModels do
 			local carriageDistance = (distance - (CARRIAGE_OFFSET * i)) % CreatedSpline.Length
-			carriageModel:PivotTo(CreatedSpline:GetCFrame(carriageDistance, true))
+			carriageModel.PrimaryPart.CFrame = CreatedSpline:GetCFrame(carriageDistance, true)
 		end
 	end)
 end

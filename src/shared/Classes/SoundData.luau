@@ -62,6 +62,13 @@ SoundData.Sounds = {
 		Group = "Music",
 		Looped = true,
 	},
+	TrainTheme = {
+		SoundId = "rbxassetid://108544978969359",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
 
 	--Human
 	LimbDismember = {

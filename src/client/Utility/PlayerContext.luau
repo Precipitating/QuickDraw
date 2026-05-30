@@ -99,6 +99,28 @@ function PlayerContext:AddRightArmOrientation()
 	rightArmBallSocket.TwistLowerAngle = 0
 	self.RightArmYaw = align
 end
+function PlayerContext.StayOnMovingPlatform(movingPart: BasePart | Model)
+	if not movingPart then
+		return
+	end
+	local character = Player.Character
+	if not character then
+		return
+	end
+
+	PlayerContext.LastMovingPlatformCFrame = movingPart:GetPivot()
+	PlayerContext.janitor:Add(
+		RunService.Heartbeat:Connect(function(dt: number)
+			local partCFrame = movingPart:GetPivot()
+			local delta = partCFrame * PlayerContext.LastMovingPlatformCFrame:Inverse()
+			character:PivotTo(delta * character:GetPivot())
+			PlayerContext.LastMovingPlatformCFrame = partCFrame
+		end),
+		"Disconnect",
+		"MovingPlatformConn"
+	)
+end
+
 local function RefreshPlayerContextRefs(player: Player, character: Model)
 	assert(player, "Missing player when refreshing PlayerContext")
 	assert(character, "Missing character when refreshing PlayerContext")
@@ -107,7 +129,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	local hrp = character:WaitForChild("HumanoidRootPart")
 
 	PlayerContext.Player = player
-	PlayerContext.Character = character
+	PlayerContext.Character = character or player.CharacterAdded:Wait()
 	PlayerContext.Humanoid = humanoid
 	PlayerContext.HRP = hrp
 	PlayerContext.CanJump = true
@@ -117,6 +139,8 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.AnimationController = AnimationController.new(character, DefaultAnimations, DefaultAnimateParams)
 	PlayerContext.IsMoving = false
 	PlayerContext.Reloading = false
+	PlayerContext.MovingPlatformConn = nil
+	PlayerContext.LastMovingPlatformCFrame = nil
 
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
@@ -216,8 +240,8 @@ local function SetupWind()
 	WindLines:Init({
 		Direction = WindConstants.WindDirection,
 		Speed = WindConstants.WindSpeed,
-		Lifetime = 1.5,
-		SpawnRate = 11,
+		Lifetime = WindConstants.WindLifetime,
+		SpawnRate = WindConstants.WindSpawnRate,
 	})
 end
 

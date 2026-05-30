@@ -1,6 +1,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 local TS = game:GetService("TweenService")
+local ZoneHandler = require(script.Parent.Parent.ZoneHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Inputs = require(script.Parent.Parent.Parent.Client.ClientInputs.Inputs)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -15,6 +17,7 @@ local ClientData = require(script.Parent.Parent.ClientData)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
+
 local Player = Players.LocalPlayer
 
 local MainMenuScreen = {}
@@ -74,6 +77,7 @@ local function LoadMenuGUI()
 		gui:Destroy()
 		ClientUtility.ToggleControls(true)
 		CoreGUIHandler.ToggleBackpackVisibility(true)
+		ZoneHandler:Initialize()
 	end)
 
 	startButton.MouseEnter:Connect(function()

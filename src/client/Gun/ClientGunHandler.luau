@@ -401,6 +401,10 @@ function ClientGunHandler:SingleShot(shootAttachment: Attachment, gunTool: Tool,
 		ClientVetraContext.Net:Fire(context, gunTool.Name)
 	end
 	GunNetwork:fire("ReduceGunAmmo")
+
+	if PlayerContext.Reloading then
+		self:StopReloading()
+	end
 end
 function ClientGunHandler:SpreadShot(shootAttachment: Attachment, gunTool: Tool, gunData)
 	local context = nil
@@ -434,6 +438,9 @@ function ClientGunHandler:SpreadShot(shootAttachment: Attachment, gunTool: Tool,
 		end
 	end
 	GunNetwork:fire("ReduceGunAmmo")
+	if PlayerContext.Reloading then
+		self:StopReloading()
+	end
 end
 
 function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
