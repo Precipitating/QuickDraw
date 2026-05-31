@@ -11,6 +11,7 @@ require(script.Animations.AnimationSignalsLogic)
 require(script.Sound.ClientSoundHandler)
 require(script.Gun.ClientGunHandler)
 require(script.Throwable.ClientThrowableHandler)
+require(script.Train.TrainHandler):Initialize()
 
 local function WaitForPlayerLoad()
 	ClientUtility.ToggleControls(false)

@@ -73,7 +73,7 @@ SoundData.Sounds = {
 	--Human
 	LimbDismember = {
 		SoundId = "rbxassetid://140443303137571",
-		Volume = 4,
+		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "SFX",
 		PoolSize = 6,
