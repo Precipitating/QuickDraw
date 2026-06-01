@@ -31,11 +31,24 @@ function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastRes
 		local availableBulletHole: Part = PoolHandler.BulletPool:Acquire(hitPos.Position)
 		if availableBulletHole then
 			availableBulletHole.CFrame = hitPos
+			local weld: WeldConstraint? = availableBulletHole:FindFirstChildOfClass("WeldConstraint")
+			if weld then
+				weld.Part1 = result.Instance
+			end
+
+			availableBulletHole.Anchored = false
 		end
 	elseif name == "Burn" then
 		local availableBurnMark: Part = PoolHandler.BurnMarksPool:Acquire(hitPos.Position)
 		if availableBurnMark then
 			availableBurnMark.CFrame = hitPos
+
+			local weld: WeldConstraint? = availableBurnMark:FindFirstChildOfClass("WeldConstraint")
+			if weld then
+				weld.Part1 = result.Instance
+			end
+
+			availableBurnMark.Anchored = false
 		end
 	end
 end

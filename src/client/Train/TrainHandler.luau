@@ -31,10 +31,15 @@ function TrainHandler:Initialize()
 
 	TrainTemplate.PrimaryPart = TrainTemplate:FindFirstChild("BASE", true)
 	CarriageTemplate.PrimaryPart = CarriageTemplate:FindFirstChild("BASE", true)
-
 	if not TrainTemplate.PrimaryPart or not CarriageTemplate.PrimaryPart then
 		warn("Client train models are missing BASE part")
 		return
+	end
+	local trainRope: RopeConstraint = TrainTemplate:FindFirstChildOfClass("RopeConstraint")
+	local carriageAttachPoint: Attachment = CarriageTemplate:FindFirstChild("AttachPoint", true)
+
+	if trainRope and carriageAttachPoint then
+		trainRope.Attachment1 = carriageAttachPoint
 	end
 
 	DisableCollisions(TrainTemplate)

@@ -10,6 +10,20 @@ local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
 local ClientSolver = Vetra.new()
 local Net = VetraNet.new(ClientSolver, VetraRegistry)
 
+local NoProjectileDecalList = { "Destroyable", "Player", "NPC", "Barrier" }
+
+local function CanDisplayBulletHole(instance: Instance)
+	for _, tag in NoProjectileDecalList do
+		if CollectionService:HasTag(instance.Parent, tag) then
+			return false
+		end
+		if CollectionService:HasTag(instance, tag) then
+			return false
+		end
+	end
+
+	return true
+end
 local function TryDisplayProjectileMark(context, result: RaycastResult?)
 	if not result then
 		return
@@ -21,10 +35,7 @@ local function TryDisplayProjectileMark(context, result: RaycastResult?)
 	end
 
 	if context.CosmeticBulletObject then
-		local canDisplayBulletHole = result.Instance
-			and not CollectionService:HasTag(result.Instance, "Destroyable")
-			and not CollectionService:HasTag(result.Instance, "Player")
-			and not CollectionService:HasTag(result.Instance.Parent, "NPC")
+		local canDisplayBulletHole = result.Instance and CanDisplayBulletHole(result.Instance)
 		if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") and canDisplayBulletHole then
 			EffectsDisplayer:DisplayProjectileMark("Bullet", result)
 		end

@@ -93,7 +93,7 @@ function TrainHandler:Run(active: boolean)
 		-- Move everything safely in a single engine operation
 		workspace:BulkMoveTo(partsToMove, targetCFrames, Enum.BulkMoveMode.FireCFrameChanged)
 
-		TrainPosRemote:FireAllClients(trainCFrame, carriageCFrame, workspace:GetServerTimeNow())
+		TrainPosRemote:FireAllClients(trainCFrame, carriageCFrame)
 	end)
 end
 
@@ -120,6 +120,7 @@ function TrainHandler:Initialize()
 		warn("No train found on server")
 		return
 	end
+
 	CarriageModel = workspace:FindFirstChild("ServerCarriage")
 	if not CarriageModel then
 		warn("No carriage found on server")
