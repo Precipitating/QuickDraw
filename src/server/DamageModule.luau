@@ -133,6 +133,7 @@ end
 function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage)
 	local hitObj = if damageData.Type == "Inflict" then damageData.LimbHit else damageData.RaycastResult
 	local human = damageData.TargetHuman
+
 	if not human then
 		return
 	end
@@ -140,6 +141,12 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 		warn("invicible, cant hit")
 		return
 	end
+
+	if damageData.Shooter == (human and human.Player) then
+		warn("Player attempted to shoot themself, denied")
+		return
+	end
+
 	local limbHealth = human.LimbHealth
 	local damage = damageData.Damage
 	local shooter = damageData.Shooter

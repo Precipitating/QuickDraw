@@ -7,6 +7,8 @@ local TrainPositions = {}
 local CreatedSpline = nil
 local TrainModel = nil
 local CarriageModel = nil
+local NetSendAccum = 0
+local NET_SEND_RATE = 1 / 20 -- 20 times per second is plenty
 local SPEED = 50
 local CARRIAGE_OFFSET = 78
 local SLOW_RADIUS = 50
@@ -53,10 +55,10 @@ function TrainHandler:Run(active: boolean)
 	local distance = CARRIAGE_OFFSET
 
 	LoopConn = RunService.Heartbeat:Connect(function(dt)
-		if not CarriageModel then
-			warn("No carriage found on server")
-			return
-		end
+		-- if not CarriageModel then
+		-- 	warn("No carriage found on server")
+		-- 	return
+		-- end
 
 		if not TrainModel then
 			warn("No train found on server")
@@ -84,16 +86,13 @@ function TrainHandler:Run(active: boolean)
 		distance = distance + CurrentSpeed * dt
 
 		local trainCFrame = CreatedSpline:GetCFrame(distance % CreatedSpline.Length, true)
-		local carriageDistance = (distance - CARRIAGE_OFFSET) % CreatedSpline.Length
-		local carriageCFrame = CreatedSpline:GetCFrame(carriageDistance, true)
+		TrainModel:PivotTo(trainCFrame)
 
-		local partsToMove = { CarriageModel.PrimaryPart, TrainModel }
-		local targetCFrames = { carriageCFrame, trainCFrame }
-
-		-- Move everything safely in a single engine operation
-		workspace:BulkMoveTo(partsToMove, targetCFrames, Enum.BulkMoveMode.FireCFrameChanged)
-
-		TrainPosRemote:FireAllClients(trainCFrame, carriageCFrame)
+		NetSendAccum = NetSendAccum + dt
+		if NetSendAccum >= NET_SEND_RATE then
+			NetSendAccum = 0
+			TrainPosRemote:FireAllClients(distance, CurrentSpeed)
+		end
 	end)
 end
 
@@ -114,16 +113,9 @@ function TrainHandler:Initialize()
 			})
 		end
 	end
-	TrainPaths:Destroy()
 	TrainModel = workspace:FindFirstChild("ServerTrain")
 	if not TrainModel then
 		warn("No train found on server")
-		return
-	end
-
-	CarriageModel = workspace:FindFirstChild("ServerCarriage")
-	if not CarriageModel then
-		warn("No carriage found on server")
 		return
 	end
 

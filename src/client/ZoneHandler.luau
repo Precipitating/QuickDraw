@@ -25,7 +25,7 @@ local function SetupZone(tagName: string, musicName: string, zoneType: {}?)
 		SoundManager.PlayKeyed("Music", musicName, { FadeIn = 1, FadeOut = 1 })
 
 		if zoneType and zoneType["MovingPlatform"] then
-			PlayerContext.StayOnMovingPlatform(zoneType["Object"])
+			PlayerContext.StayOnMovingPlatform(zone["reference"])
 		end
 
 		WindLines:Cleanup()
@@ -54,11 +54,7 @@ function ZoneHandler:InitializeMusicZones()
 	SetupZone("DoctorAudioZone", "DoctorTheme")
 	SetupZone("MercenaryAudioZone", "MercenaryTheme")
 	SetupZone("BankAudioZone", "BankTheme")
-	SetupZone(
-		"TrainAudioZone",
-		"BankTheme",
-		{ MovingPlatform = true, Object = workspace:FindFirstChild("ClientCarriage"):FindFirstChild("BASE") }
-	)
+	SetupZone("TrainAudioZone", "BankTheme", { MovingPlatform = true })
 end
 
 function ZoneHandler:Initialize()

@@ -2,7 +2,6 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PoolHandler = require(StarterPlayer.StarterPlayerScripts.Client.Pools.PoolHandler)
 local Particles = ReplicatedStorage.Shared.Effects
 local EffectsDisplayer = {}
@@ -19,6 +18,21 @@ function EffectsDisplayer:GetHoleCFrame(position: Vector3, normal: Vector3): CFr
 	return CFrame.fromMatrix(position + normal * 0.05, right, adjustedUp, -normal)
 end
 
+local function TeleportAndWeld(part: Part, targetCFrame: CFrame, weldTarget: BasePart)
+	part.Anchored = true
+	local weld: WeldConstraint? = part:FindFirstChildOfClass("WeldConstraint")
+	if not weld then
+		return
+	end
+	weld.Enabled = false
+	part.CFrame = targetCFrame
+
+	weld.Part0 = part
+	weld.Part1 = weldTarget
+	weld.Enabled = true
+	part.Anchored = false
+end
+
 function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastResult)
 	if not result then
 		warn("Client received an invalid RaycastResult when showing a projectile mark!")
@@ -30,25 +44,12 @@ function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastRes
 	if name == "Bullet" then
 		local availableBulletHole: Part = PoolHandler.BulletPool:Acquire(hitPos.Position)
 		if availableBulletHole then
-			availableBulletHole.CFrame = hitPos
-			local weld: WeldConstraint? = availableBulletHole:FindFirstChildOfClass("WeldConstraint")
-			if weld then
-				weld.Part1 = result.Instance
-			end
-
-			availableBulletHole.Anchored = false
+			TeleportAndWeld(availableBulletHole, hitPos, result.Instance)
 		end
 	elseif name == "Burn" then
 		local availableBurnMark: Part = PoolHandler.BurnMarksPool:Acquire(hitPos.Position)
 		if availableBurnMark then
-			availableBurnMark.CFrame = hitPos
-
-			local weld: WeldConstraint? = availableBurnMark:FindFirstChildOfClass("WeldConstraint")
-			if weld then
-				weld.Part1 = result.Instance
-			end
-
-			availableBurnMark.Anchored = false
+			TeleportAndWeld(availableBurnMark, hitPos, result.Instance)
 		end
 	end
 end

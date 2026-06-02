@@ -1,17 +1,25 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local SplineClass = require(ReplicatedStorage.Shared.SplineClass)
 local Templates = ReplicatedStorage.Shared.Templates
 local TrainPosRemote = ReplicatedStorage.Shared.Remote.TrainPositionRemote
+local TrainPaths = ReplicatedStorage.Shared.Paths.TrainPaths
 
 local TrainHandler = {}
 
 local TrainTemplate = nil
 local CarriageTemplate = nil
-local TargetTrainCFrame = nil
-local TargetCarriageCFrame = nil
-local CurrentTrainCFrame = nil
-local CurrentCarriageCFrame = nil
-local LERP_ALPHA = 0.3
+local ClientSpline = nil
+
+local CARRIAGE_OFFSET = 78
+local ServerDistance = 0
+local ClientDistance = 0
+local CurrentSpeed = 0
+local PredictedSpeed = 0
+local SPEED_SMOOTH = 8 -- how fast speed estimate catches up
+local CORRECT_GAIN = 3 -- gentle correction, not 5 (reduces rubber-band)
+local SNAP_THRESHOLD = 15 -- only hard-snap if VERY desynced
+
 local function DisableCollisions(model)
 	for _, part in model:GetDescendants() do
 		if part:IsA("BasePart") then
@@ -25,55 +33,73 @@ function TrainHandler:Initialize()
 	CarriageTemplate = Templates:FindFirstChild("ClientCarriage"):Clone()
 
 	if not TrainTemplate or not CarriageTemplate then
-		warn("Client can't spawn in train or carriage models")
 		return
 	end
 
 	TrainTemplate.PrimaryPart = TrainTemplate:FindFirstChild("BASE", true)
 	CarriageTemplate.PrimaryPart = CarriageTemplate:FindFirstChild("BASE", true)
-	if not TrainTemplate.PrimaryPart or not CarriageTemplate.PrimaryPart then
-		warn("Client train models are missing BASE part")
-		return
-	end
-	local trainRope: RopeConstraint = TrainTemplate:FindFirstChildOfClass("RopeConstraint")
-	local carriageAttachPoint: Attachment = CarriageTemplate:FindFirstChild("AttachPoint", true)
 
+	local trainRope = TrainTemplate:FindFirstChildOfClass("RopeConstraint")
+	local carriageAttachPoint = CarriageTemplate:FindFirstChild("AttachPoint", true)
 	if trainRope and carriageAttachPoint then
 		trainRope.Attachment1 = carriageAttachPoint
 	end
 
 	DisableCollisions(TrainTemplate)
-	DisableCollisions(CarriageTemplate)
 
 	TrainTemplate.Parent = workspace
 	CarriageTemplate.Parent = workspace
 
-	TrainPosRemote.OnClientEvent:Connect(function(trainCFrame: CFrame, carriageCFrame: CFrame)
-		if trainCFrame then
-			TargetTrainCFrame = trainCFrame
+	-- 1. Build the Spline on the Client so it knows the track
+	local TrainPositions = {}
+	for i = 1, #TrainPaths:GetChildren() do
+		local part = TrainPaths[`Seg_{i}`]
+		if part then
+			TrainPositions[i] = part.Position
 		end
-		if carriageCFrame then
-			TargetCarriageCFrame = carriageCFrame
+	end
+	ClientSpline = SplineClass.new(TrainPositions, { Tension = 1, Looped = true })
+
+	-- Smoothing constants
+
+	TrainPosRemote.OnClientEvent:Connect(function(netDistance: number, netSpeed: number)
+		ServerDistance = netDistance
+		-- Smooth the speed rather than jumping to it instantly
+		-- (actual lerp happens in RenderStepped)
+		CurrentSpeed = netSpeed
+
+		-- Only hard-snap if wildly out of sync
+		if math.abs(ClientDistance - ServerDistance) > SNAP_THRESHOLD then
+			ClientDistance = ServerDistance
 		end
 	end)
 
-	RunService.RenderStepped:Connect(function()
-		if TargetTrainCFrame then
-			CurrentTrainCFrame = CurrentTrainCFrame and CurrentTrainCFrame:Lerp(TargetTrainCFrame, LERP_ALPHA)
-				or TargetTrainCFrame
+	RunService.RenderStepped:Connect(function(dt)
+		if not ClientSpline then
+			return
 		end
-		if TargetCarriageCFrame then
-			CurrentCarriageCFrame = CurrentCarriageCFrame
-					and CurrentCarriageCFrame:Lerp(TargetCarriageCFrame, LERP_ALPHA)
-				or TargetCarriageCFrame
-		end
-		if CurrentTrainCFrame and CurrentCarriageCFrame then
-			workspace:BulkMoveTo(
-				{ TrainTemplate.PrimaryPart, CarriageTemplate.PrimaryPart },
-				{ CurrentTrainCFrame, CurrentCarriageCFrame },
-				Enum.BulkMoveMode.FireCFrameChanged
-			)
-		end
+
+		-- 1. Smooth our local speed estimate toward the server's reported speed
+		PredictedSpeed = PredictedSpeed + (CurrentSpeed - PredictedSpeed) * (dt * SPEED_SMOOTH)
+
+		-- 2. Dead-reckon forward using smoothed speed
+		ClientDistance = ClientDistance + PredictedSpeed * dt
+
+		-- 3. Gently nudge toward server distance — low gain prevents rubber-band
+		local correction = (ServerDistance - ClientDistance) * (dt * CORRECT_GAIN)
+		ClientDistance = ClientDistance + correction
+
+		-- 4. Sample spline
+		local len = ClientSpline.Length
+		local trainCFrame = ClientSpline:GetCFrame(ClientDistance % len, true)
+		local carriageCFrame = ClientSpline:GetCFrame((ClientDistance - CARRIAGE_OFFSET) % len, true)
+
+		-- 5. BulkMoveTo — moves the weld root, Roblox handles descendants via welds
+		workspace:BulkMoveTo(
+			{ TrainTemplate.PrimaryPart, CarriageTemplate.PrimaryPart },
+			{ trainCFrame, carriageCFrame },
+			Enum.BulkMoveMode.FireCFrameChanged
+		)
 	end)
 end
 
