@@ -217,6 +217,20 @@ SoundData.Sounds = {
 		Group = "Voiceline",
 		PoolSize = 1,
 	},
+	SpecialShopGreeting = {
+		SoundId = "rbxassetid://94212318976458",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
+	SpecialShopExit = {
+		SoundId = "rbxassetid://97942745564233",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+		PoolSize = 1,
+	},
 	BankGreeting = {
 		SoundId = "rbxassetid://105250576858171",
 		Volume = 1,

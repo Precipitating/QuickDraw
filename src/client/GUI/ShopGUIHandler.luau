@@ -81,7 +81,7 @@ function ShopGUIHandler:ConnectRobuxList(robuxList: ScrollingFrame)
 	end
 end
 
-function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt)
+function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt, exitAudioName: string)
 	local exitButton: TextButton = Utility.GetInstance(gui, true, "Exit")
 	local throwablesButton: TextButton = Utility.GetInstance(gui, true, "BG", "ThrowablesButton")
 	local weaponsButton: TextButton = Utility.GetInstance(gui, true, "BG", "WeaponsButton")
@@ -114,7 +114,9 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
 		self:Disconnect()
 		gui:Destroy()
-		SoundManager.PlayKeyed("Voiceline", "ShopExit")
+		if exitAudioName then
+			SoundManager.PlayKeyed("Voiceline", exitAudioName)
+		end
 		PlayerContext.ApplyMouseLock(true)
 		ClientUtility.ToggleControls(true)
 		CrosshairHandler:ToggleCrosshairVisibility(false)

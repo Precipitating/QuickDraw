@@ -187,6 +187,69 @@ local GunData = {
 			:Done()
 			:Build(),
 	},
+	RoperShotgun = {
+		MaxAmmo = 4,
+		MaxAmmoStack = 3,
+		ShotDelay = 0.5,
+		Damage = 25,
+		Velocity = 1250,
+		Cost = 1250,
+		MaxSimulationDistance = 120,
+		PelletsPerShot = 10,
+		MinBulletSpeed = 10,
+		MaxSpreadAngle = 6,
+		ReloadTimePerBullet = 3,
+		GunType = "Shotgun",
+		DragCoefficient = 0.0015,
+		ShootSoundName = "CoachShot",
+		ShootNoAmmoName = "CoachClick",
+		ReloadSoundName = "CoachReload",
+		GunRecoil = 75,
+		CameraRecoil = 60,
+		ProjectileData = Vetra.BehaviorBuilder
+			.new()
+			:Physics()
+			:MaxDistance(107)
+			:MinSpeed(36)
+			:Done()
+			:Drag()
+			:Coefficient(0.002)
+			:Model(Vetra.Enums.DragModel.GL)
+			:SegmentInterval(0.05)
+			:Done()
+			:Pierce()
+			:Max(1)
+			:SpeedThreshold(214)
+			:SpeedRetention(0.5)
+			:NormalBias(0.3)
+			:Filter(function(_ctx, _result, _vel)
+				return _result.Material == Enum.Material.Glass
+			end)
+			:Done()
+			:Tumble()
+			:OnPierce(true)
+			:SpeedThreshold(143)
+			:DragMultiplier(2.5)
+			:LateralStrength(36)
+			:Done()
+			:Fragmentation()
+			:OnPierce(true)
+			:Count(3)
+			:Deviation(25)
+			:Done()
+			:Debug()
+			:Visualize(false)
+			:Done()
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
+			:HighFidelity()
+			:SegmentSize(0.6)
+			:FrameBudget(1)
+			:Done()
+			:Build(),
+	},
 }
 
 for _, gun in GunData do

@@ -5,9 +5,6 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
-local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
-
-local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local MoneyDropHandler = require(ServerScriptService.Server.MoneyDropHandler)
 local ServerData = require(ServerScriptService.Server.ServerData)
 
@@ -45,10 +42,8 @@ function HumanPlayer:InitializeWeaponLoadout()
 	local savedThrowableData = ServerData.GetThrowableData(self.Player)
 
 	-- Gun
-	if savedGunName then
-		self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
-		self.Inventory:EquipWeapon("Gun")
-	end
+	self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
+	self.Inventory:EquipWeapon("Gun")
 
 	-- self.Inventory:AddWeaponToInventory("Molotov", 9)
 	-- self.Inventory:EquipWeapon("Throwable")

@@ -10,6 +10,7 @@ local Registry = BehaviorRegistry.new()
 Registry:Register("Winchester", GunData["Winchester"].ProjectileData)
 Registry:Register("Revolver", GunData["Revolver"].ProjectileData)
 Registry:Register("Coach", GunData["Coach"].ProjectileData)
+Registry:Register("RoperShotgun", GunData["RoperShotgun"].ProjectileData)
 
 Registry:Register("Dynamite", ThrowableData["Dynamite"].ProjectileData)
 Registry:Register("KetchumGrenade", ThrowableData["KetchumGrenade"].ProjectileData)

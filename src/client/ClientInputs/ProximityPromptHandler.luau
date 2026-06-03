@@ -12,14 +12,26 @@ ProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", Proxi
 
 local PROMPT_HANDLERS = {
 	["ShopPrompt"] = function(player: Player, prompt: ProximityPrompt)
-		if player.PlayerGui:FindFirstChild("ShopGUI") then
-			return
+		local shopGUI = nil
+		if not CollectionService:HasTag(prompt, "Special") then
+			if player.PlayerGui:FindFirstChild("ShopGUI") then
+				return
+			end
+			shopGUI = GUI.ShopGUI:Clone()
+			shopGUI.Parent = player.PlayerGui
+			shopGUI.Enabled = true
+			SoundManager.PlayKeyed("Voiceline", "ShopGreeting")
+			ShopGUIHandler:ConnectShopGUI(shopGUI, prompt, "ShopExit")
+		else
+			if player.PlayerGui:FindFirstChild("SpecialShopGUI") then
+				return
+			end
+			shopGUI = GUI.SpecialShopGUI:Clone()
+			shopGUI.Parent = player.PlayerGui
+			shopGUI.Enabled = true
+			SoundManager.PlayKeyed("Voiceline", "SpecialShopGreeting")
+			ShopGUIHandler:ConnectShopGUI(shopGUI, prompt, "SpecialShopExit")
 		end
-		local shop = GUI.ShopGUI:Clone()
-		shop.Parent = player.PlayerGui
-		shop.Enabled = true
-		SoundManager.PlayKeyed("Voiceline", "ShopGreeting")
-		ShopGUIHandler:ConnectShopGUI(shop, prompt)
 	end,
 	["BankPrompt"] = function(player: Player, prompt: ProximityPrompt)
 		if player.PlayerGui:FindFirstChild("BankGUI") then
