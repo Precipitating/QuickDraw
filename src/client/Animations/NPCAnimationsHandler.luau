@@ -66,29 +66,31 @@ function NPCAnimationsHandler:ToggleNPCAnimations(enable: boolean)
 end
 
 function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
-	if AnimatedNPCS[character] then
-		self:RemoveNPCAnimationController(character)
-	end
-	local controller = nil
-	local humanoid = character:WaitForChild("Humanoid", 60)
-	if not humanoid then
-		warn(`[NPCAnimationsHandler:AddNPCAnimationController] humanoid missing, can't initialize NPC animation`)
-		return
-	end
-	local hrp = character:WaitForChild("HumanoidRootPart", 60)
-	if not hrp then
-		warn(
-			`[NPCAnimationsHandler:AddNPCAnimationController] HumanoidRootPart missing, can't initialize NPC animation`
-		)
-		return
-	end
-	local isLegless = HumanNetwork.networker:fetch("IsLegless", humanoid)
-	if isLegless then
-		controller = AnimationController.new(character, CrawlAnims, DefaultAnimateParams)
-	else
-		controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)
-	end
-	AnimatedNPCS[character] = controller
+	task.spawn(function()
+		if AnimatedNPCS[character] then
+			self:RemoveNPCAnimationController(character)
+		end
+		local controller = nil
+		local humanoid = character:WaitForChild("Humanoid", 10)
+		if not humanoid then
+			warn(`[NPCAnimationsHandler:AddNPCAnimationController] humanoid missing, can't initialize NPC animation`)
+			return
+		end
+		local hrp = character:WaitForChild("HumanoidRootPart", 10)
+		if not hrp then
+			warn(
+				`[NPCAnimationsHandler:AddNPCAnimationController] HumanoidRootPart missing, can't initialize NPC animation`
+			)
+			return
+		end
+		local isLegless = HumanNetwork.networker:fetch("IsLegless", humanoid)
+		if isLegless then
+			controller = AnimationController.new(character, CrawlAnims, DefaultAnimateParams)
+		else
+			controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)
+		end
+		AnimatedNPCS[character] = controller
+	end)
 end
 
 function NPCAnimationsHandler:RemoveNPCAnimationController(character: Model)

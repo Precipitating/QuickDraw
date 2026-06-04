@@ -51,6 +51,11 @@ function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastRes
 		if availableBurnMark then
 			TeleportAndWeld(availableBurnMark, hitPos, result.Instance)
 		end
+	elseif name == "CannonBall" then
+		local availableBurnMark: Part = PoolHandler.CannonHolePool:Acquire(hitPos.Position)
+		if availableBurnMark then
+			TeleportAndWeld(availableBurnMark, hitPos, result.Instance)
+		end
 	end
 end
 

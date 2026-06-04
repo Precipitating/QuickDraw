@@ -68,7 +68,7 @@ local GunData = {
 		MaxAmmoStack = 3,
 		ShotDelay = 0.8,
 		Damage = 35,
-		Cost = 2500,
+		Cost = 1250,
 		DragCoefficient = 0.00008,
 		Velocity = 2000,
 		MinBulletSpeed = 36,
@@ -130,7 +130,7 @@ local GunData = {
 		ShotDelay = 1,
 		Damage = 20,
 		Velocity = 1196,
-		Cost = 750,
+		Cost = 500,
 		MaxSimulationDistance = 107,
 		PelletsPerShot = 8,
 		MinBulletSpeed = 36,
@@ -193,7 +193,7 @@ local GunData = {
 		ShotDelay = 0.5,
 		Damage = 25,
 		Velocity = 1250,
-		Cost = 1250,
+		Cost = 1750,
 		MaxSimulationDistance = 120,
 		PelletsPerShot = 10,
 		MinBulletSpeed = 10,
@@ -246,6 +246,48 @@ local GunData = {
 			:Done()
 			:HighFidelity()
 			:SegmentSize(0.6)
+			:FrameBudget(1)
+			:Done()
+			:Build(),
+	},
+	CannonGun = {
+		MaxAmmo = 1,
+		MaxAmmoStack = 3,
+		ShotDelay = 0,
+		Damage = 500,
+		Velocity = 1250,
+		Cost = 2000,
+		MaxSimulationDistance = 120,
+		PelletsPerShot = 1,
+		MinBulletSpeed = 50,
+		ReloadTimePerBullet = 7,
+		GunType = "Cannon",
+		DragCoefficient = 0.0015,
+		ShootSoundName = "CannonShot",
+		ShootNoAmmoName = "CoachClick",
+		ReloadSoundName = "CannonReload",
+		GunRecoil = 500,
+		CameraRecoil = 500,
+		ProjectileData = Vetra.BehaviorBuilder
+			.new()
+			:Physics()
+			:MaxDistance(200)
+			:MinSpeed(55)
+			:Done()
+			:Drag()
+			:Coefficient(0.035)
+			:Model(Vetra.Enums.DragModel.GL)
+			:SegmentInterval(0.05)
+			:Done()
+			:Debug()
+			:Visualize(true)
+			:Done()
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.CannonBallCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
+			:HighFidelity()
+			:SegmentSize(1.5)
 			:FrameBudget(1)
 			:Done()
 			:Build(),

@@ -213,6 +213,7 @@ function Gun:Reload()
 	end
 	local reloadTimePerBullet = gunData.ReloadTimePerBullet
 	local reloadSound = gunData.ReloadSoundName
+	local reloadSoundStart = gunData.ReloadSoundStartName
 	local bulletsToReload = self.MaxAmmo - self.CurrentAmmo
 	if bulletsToReload <= 0 then
 		return
@@ -223,6 +224,9 @@ function Gun:Reload()
 	end
 	self.Reloading = true
 
+	if reloadSoundStart then
+		ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, self.Handle.CFrame)
+	end
 	for _ = 1, bulletsToReload do
 		task.wait(reloadTimePerBullet)
 

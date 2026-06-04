@@ -168,6 +168,21 @@ SoundData.Sounds = {
 		Group = "SFX",
 		PoolSize = 3,
 	},
+
+	CannonReload = {
+		SoundId = "rbxassetid://204039974",
+		Volume = 3,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	CannonShot = {
+		SoundId = "rbxassetid://140683456896595",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+
+	--
 	Headshot = {
 		SoundId = "rbxassetid://132435334799057",
 		Volume = 1,
@@ -527,6 +542,14 @@ SoundData.Sounds = {
 	TumbleWeedPickup = {
 		SoundId = "rbxassetid://9114518070",
 		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+
+	-- Material SFX
+	GlassSmash = {
+		SoundId = "rbxassetid://83597774521615",
+		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},

@@ -23,6 +23,21 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame)
 		if not product:isA("ImageButton") then
 			continue
 		end
+
+		-- Apply correct price dynamically (visual side)
+		local price: TextLabel = product:WaitForChild("Price", 10)
+		if price then
+			if productList.Name == "WeaponsList" then
+				price.Text = if (GunData[product.Name] and GunData[product.Name].Cost)
+					then `${GunData[product.Name].Cost}`
+					else "Free"
+			else
+				price.Text = if (ThrowableData[product.Name] and ThrowableData[product.Name].Cost)
+					then `${ThrowableData[product.Name].Cost}`
+					else "Free"
+			end
+		end
+
 		self.janitor:Add(product.Activated:Connect(function(_, _)
 			local exists = PlayerContext.PlayerGui:FindFirstChild("BuyConfirmationGUI")
 			if exists then

@@ -20,6 +20,13 @@ local math_sqrt = math.sqrt
 local math_cos = math.cos
 local math_abs = math.abs
 local math_sin = math.sin
+local MaterialHitData = {
+	[Enum.Material.Glass] = {
+		HitSound = "GlassSmash",
+		Destroy = true,
+		HitParticle = "GlassShatter",
+	},
+}
 
 type Destroyable = ClassTypes.Destroyable
 
@@ -238,6 +245,30 @@ function ProjectileEvents:GunHitEnvironment(raycastResult: RaycastResult)
 	ServerEffectsDisplayer:DisplayProjectileMark("Bullet", raycastResult)
 end
 
+function ProjectileEvents:ProjectileHitMaterial(result: RaycastResult)
+	local hitCFrame = result.Instance.CFrame
+	local material = result.Instance.Material
+	if not hitCFrame or not material then
+		return
+	end
+	local data = material and MaterialHitData[material]
+	if data then
+		ServerSoundHandler:Play3DOneShotToOthers(
+			nil,
+			data.HitSound,
+			hitCFrame,
+			{ Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1 }
+		)
+
+		if data.Destroy then
+			result.Instance:Destroy()
+		end
+
+		if data.HitParticle then
+			ServerEffectsDisplayer:DisplayDestroyParticle(data.HitParticle, hitCFrame.Position)
+		end
+	end
+end
 function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastResult?)
 	-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
 	if not result then
@@ -248,6 +279,8 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 
 	-- ON BULLET HIT
 	if data.ProjectileType == "Bullet" then
+		self:ProjectileHitMaterial(result)
+
 		local hitPlayer = ProjectileEvents:GunHitPlayer(context.UserData, result)
 		if hitPlayer then
 			return
@@ -295,6 +328,9 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 
 	local throwableData = context.UserData.Data
 	local owner = context.UserData.Owner
+
+	self:ProjectileHitMaterial(result)
+
 	-- handle hitting player
 	if self:FragmentHitPlayer(result, owner, throwableData) then
 		return
@@ -320,7 +356,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
 		if not human then
 			return
-		end -- player died/left
+		end
 
 		local currentGunName = human.Inventory and human.Inventory:GetGun() and human.Inventory:GetGun().Name
 		if not currentGunName then
@@ -332,6 +368,8 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			warn("GunData missing from OnProjectileHitReceivePlayer")
 			return
 		end
+
+		self:ProjectileHitMaterial(result)
 
 		local hitPlayer = ProjectileEvents:GunHitPlayer(gunData, result, context.UserData.Owner)
 		if hitPlayer then
@@ -399,6 +437,7 @@ end
 function ProjectileEvents:Initialize()
 	ProjectileContext.VetraSignals.OnPierce:Connect(function(context, result, velocity, pierceCount: number)
 		print("OnPierce fired")
+		self:ProjectileHitMaterial(result)
 	end)
 
 	ProjectileContext.Net.OnFireRejected:Connect(function(player, reason)

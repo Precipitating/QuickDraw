@@ -19,4 +19,5 @@ return {
 	BulletPool = PoolInitialize(ReplicatedStorage.Shared.Templates.BulletHole, 50, "BulletHolePool"),
 	BloodPool = PoolInitialize(ReplicatedStorage.Shared.Templates.Blood, 12, "BloodPool"),
 	BurnMarksPool = PoolIntializeList(ReplicatedStorage.Shared.Templates.BurnMarks:GetChildren(), 20, "BurnMarksPool"),
+	CannonHolePool = PoolInitialize(ReplicatedStorage.Shared.Templates.CannonHole, 50, "CannonHolePool"),
 }

@@ -36,8 +36,14 @@ local function TryDisplayProjectileMark(context, result: RaycastResult?)
 
 	if context.CosmeticBulletObject then
 		local canDisplayBulletHole = result.Instance and CanDisplayBulletHole(result.Instance)
-		if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") and canDisplayBulletHole then
+
+		if not canDisplayBulletHole then
+			return
+		end
+		if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
 			EffectsDisplayer:DisplayProjectileMark("Bullet", result)
+		elseif CollectionService:HasTag(context.CosmeticBulletObject, "CannonBall") then
+			EffectsDisplayer:DisplayProjectileMark("CannonBall", result)
 		end
 	end
 end
