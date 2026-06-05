@@ -12,7 +12,7 @@ require(script.Sound.ClientSoundHandler)
 require(script.Gun.ClientGunHandler)
 require(script.Throwable.ClientThrowableHandler)
 require(script.Train.TrainHandler):Initialize()
-
+require(script.GUI.PopupHandler)
 local function WaitForPlayerLoad()
 	ClientUtility.ToggleControls(false)
 	CoreGUIHandler.ToggleBackpackVisibility(false)

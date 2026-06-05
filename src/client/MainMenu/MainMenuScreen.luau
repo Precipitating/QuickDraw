@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 local TS = game:GetService("TweenService")
+
 local ZoneHandler = require(script.Parent.Parent.ZoneHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Inputs = require(script.Parent.Parent.Parent.Client.ClientInputs.Inputs)

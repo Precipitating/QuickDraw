@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBX5BA8569A1ACA4E809373D0EA3315F2AB">
+	<Item class="Part" referent="RBXC5E1FE4B66C14891B55FB7AE5F3EAA26">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
@@ -18,7 +18,7 @@
 			<token name="BottomSurfaceInput">0</token>
 			<CoordinateFrame name="CFrame">
 				<X>-86.727417</X>
-				<Y>3.31452084</Y>
+				<Y>2.37176347</Y>
 				<Z>-145.000504</Z>
 				<R00>1</R00>
 				<R01>0</R01>
@@ -100,7 +100,7 @@
 			<int64 name="SourceAssetId">8416208584</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Decal" referent="RBXEFCC08E3493D4042B72FAD65DB9F07B6">
+		<Item class="Decal" referent="RBXBC42FAA3E3454AEB80EA6F52F0B303DC">
 			<Properties>
 				<Color3 name="Color3">
 					<R>1</R>
@@ -133,7 +133,7 @@
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>
-		<Item class="WeldConstraint" referent="RBXEFAEF0C3DD5742A7A26296ACC3C69E1B">
+		<Item class="WeldConstraint" referent="RBXEA3C13DC30734E74944524838F29C7F6">
 			<Properties>
 				<CoordinateFrame name="CFrame0">
 					<X>0</X>
@@ -149,7 +149,7 @@
 					<R21>0</R21>
 					<R22>1</R22>
 				</CoordinateFrame>
-				<Ref name="Part0Internal">RBX5BA8569A1ACA4E809373D0EA3315F2AB</Ref>
+				<Ref name="Part0Internal">RBXC5E1FE4B66C14891B55FB7AE5F3EAA26</Ref>
 				<Ref name="Part1Internal">null</Ref>
 				<int name="State">1</int>
 				<BinaryString name="AttributesSerialize"></BinaryString>

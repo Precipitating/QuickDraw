@@ -16,7 +16,13 @@ return {
 	end),
 
 	GunSignals.PlayerHit:Connect(
-		function(hitObj: RaycastResult?, playerHumanoid: Humanoid?, damageInflicted: number, shooter: Player? | Model?)
+		function(
+			hitObj: RaycastResult?,
+			playerHumanoid: Humanoid?,
+			damageInflicted: number,
+			cosmeticBullet: BasePart?,
+			shooter: Player? | Model?
+		)
 			if not hitObj then
 				warn("[GunSignals.PlayerHit] Hit object reference invalid")
 				return
@@ -41,6 +47,7 @@ return {
 			end
 			local gunShotData: ClassTypes.GunShotDamage = {
 				Type = "Shot",
+				CosmeticBulletObject = cosmeticBullet,
 				RaycastResult = hitObj,
 				TargetHuman = humanClass,
 				Damage = damageInflicted,

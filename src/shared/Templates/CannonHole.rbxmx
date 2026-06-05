@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBX03AF91C1031348A1A0FFB5C0401B8899">
+	<Item class="Part" referent="RBXC690DBE53DDD40009F7ECA9BC7E3F12C">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
@@ -18,7 +18,7 @@
 			<token name="BottomSurfaceInput">0</token>
 			<CoordinateFrame name="CFrame">
 				<X>-97.217659</X>
-				<Y>3.85010338</Y>
+				<Y>-70.5268402</Y>
 				<Z>-142.758087</Z>
 				<R00>1</R00>
 				<R01>0</R01>
@@ -100,7 +100,34 @@
 			<int64 name="SourceAssetId">8416208584</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Decal" referent="RBX3A4885D41C8945AD85796D7A07E2E479">
+		<Item class="WeldConstraint" referent="RBX26E28D4F2C5E4EC7B59B64B6E6F34497">
+			<Properties>
+				<CoordinateFrame name="CFrame0">
+					<X>0</X>
+					<Y>0</Y>
+					<Z>0</Z>
+					<R00>1</R00>
+					<R01>0</R01>
+					<R02>0</R02>
+					<R10>0</R10>
+					<R11>1</R11>
+					<R12>0</R12>
+					<R20>0</R20>
+					<R21>0</R21>
+					<R22>1</R22>
+				</CoordinateFrame>
+				<Ref name="Part0Internal">RBXC690DBE53DDD40009F7ECA9BC7E3F12C</Ref>
+				<Ref name="Part1Internal">null</Ref>
+				<int name="State">1</int>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">WeldConstraint</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="Decal" referent="RBX571CF6CCD31C41D2AFF5CF52BEB73D34">
 			<Properties>
 				<Color3 name="Color3">
 					<R>1</R>
@@ -130,33 +157,6 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Decal</string>
 				<int64 name="SourceAssetId">8135535096</int64>
-				<BinaryString name="Tags"></BinaryString>
-			</Properties>
-		</Item>
-		<Item class="WeldConstraint" referent="RBX3DFA14A11CC4496C8719E30A154538CD">
-			<Properties>
-				<CoordinateFrame name="CFrame0">
-					<X>0</X>
-					<Y>0</Y>
-					<Z>0</Z>
-					<R00>1</R00>
-					<R01>0</R01>
-					<R02>0</R02>
-					<R10>0</R10>
-					<R11>1</R11>
-					<R12>0</R12>
-					<R20>0</R20>
-					<R21>0</R21>
-					<R22>1</R22>
-				</CoordinateFrame>
-				<Ref name="Part0Internal">RBX03AF91C1031348A1A0FFB5C0401B8899</Ref>
-				<Ref name="Part1Internal">null</Ref>
-				<int name="State">1</int>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">WeldConstraint</string>
-				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
 		</Item>

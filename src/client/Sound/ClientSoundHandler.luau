@@ -25,6 +25,7 @@ end
 
 function ClientSoundHandler:Play3DNPCVoiceline(soundName: string, soundInstance: Sound, config: PlayOptions?)
 	if not soundInstance then
+		-- usually because of client not in range
 		return
 	end
 	SoundManager.Play3DNPCVoiceline(soundName, soundInstance, config)

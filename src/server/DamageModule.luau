@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -130,6 +131,23 @@ local function HandleLimbDestroyed(humanClass: Human, limbName: string, damage: 
 	end)
 end
 
+local function ApplyHumanRepercussionsAfterShot(human: Human, cosmeticBullet: BasePart?)
+	if not cosmeticBullet or not human then
+		return
+	end
+
+	-- Ragdoll and get blown back strongly
+	if CollectionService:HasTag(cosmeticBullet, "CannonBall") then
+		local force = 150
+		local dir: Vector3 = (human.HRP.Position - cosmeticBullet.Position).Unit * human.HRP.AssemblyMass * force
+		print("Impulse dir:", dir, "| Magnitude:", dir.Magnitude)
+		human:Ragdoll(5)
+		task.defer(function()
+			human:ApplyImpulse(dir)
+		end)
+	end
+end
+
 function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage)
 	local hitObj = if damageData.Type == "Inflict" then damageData.LimbHit else damageData.RaycastResult
 	local human = damageData.TargetHuman
@@ -151,7 +169,7 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 	local damage = damageData.Damage
 	local shooter = damageData.Shooter
 	local shotPos = if damageData.Type == "Shot" then damageData.ShotPosition else nil
-
+	local cosmeticBulletObj = damageData.CosmeticBulletObject
 	if not hitObj then
 		warn("[DamageHuman] Invalid hit object")
 		return
@@ -177,8 +195,11 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 		human.HRP,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
-	DamageModule:ApplyDamage(human, limbName, damage, shotPos, shooter)
 
+	-- Apply special logic that may occur after being shot by a specific bullet type
+
+	DamageModule:ApplyDamage(human, limbName, damage, shotPos, shooter)
+	ApplyHumanRepercussionsAfterShot(human, cosmeticBulletObj)
 	if limbHealth[limbName] <= 0 then
 		HandleLimbDestroyed(human, limbName, damage)
 	end

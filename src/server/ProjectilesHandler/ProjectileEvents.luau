@@ -45,7 +45,7 @@ local function GetHumanoidFromHit(instance: Instance): Humanoid?
 	return humanoid
 end
 
-function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, owner: Player?)
+function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, owner: Player?, bulletCosmetic: BasePart?)
 	local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
 	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
 
@@ -58,7 +58,7 @@ function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, ow
 	end
 
 	-- hit body part
-	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, hitData.Damage, owner or hitData.Owner)
+	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, hitData.Damage, bulletCosmetic, owner or hitData.Owner)
 	print(`{raycastResult.Instance.Name} hit!`)
 	return true
 end
@@ -75,14 +75,14 @@ function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResul
 	return true
 end
 
-function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwableData)
+function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwableData, cosmeticBullet: BasePart?)
 	local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
 	if isModel then
 		local humanoid = isModel:FindFirstChild("Humanoid")
 		local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
 		if humanoid then
 			if throwableData.Type == "Explosive" then
-				GunSignals.PlayerHit:Fire(hit, humanoid, throwableData.Damage, isPlayer)
+				GunSignals.PlayerHit:Fire(hit, humanoid, throwableData.Damage, cosmeticBullet, isPlayer)
 			elseif throwableData.Type == "Spread" then
 				GunSignals.InflictLimbDamage:Fire(
 					throwableData.SpreadParticle,
@@ -240,9 +240,9 @@ end
 
 -- This should be executed last, as every other option should be exhausted before deciding we've hit
 -- the environment.
-function ProjectileEvents:GunHitEnvironment(raycastResult: RaycastResult)
+function ProjectileEvents:GunHitEnvironment(gunData, raycastResult: RaycastResult)
 	-- hit environment
-	ServerEffectsDisplayer:DisplayProjectileMark("Bullet", raycastResult)
+	ServerEffectsDisplayer:DisplayProjectileMark(gunData.ProjectileType or "Bullet", raycastResult)
 end
 
 function ProjectileEvents:ProjectileHitMaterial(result: RaycastResult)
@@ -269,6 +269,7 @@ function ProjectileEvents:ProjectileHitMaterial(result: RaycastResult)
 		end
 	end
 end
+
 function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastResult?)
 	-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
 	if not result then
@@ -276,25 +277,26 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	end
 	--warn(`OnHit fired by server {result.Instance.Name}`)
 	local data = context.UserData
+	local projectileType = data.ProjectileType
 
 	-- ON BULLET HIT
-	if data.ProjectileType == "Bullet" then
+	if projectileType == "Bullet" then
 		self:ProjectileHitMaterial(result)
-
-		local hitPlayer = ProjectileEvents:GunHitPlayer(context.UserData, result)
+		local bulletCosmetic = context.CosmeticBulletObject
+		local hitPlayer = ProjectileEvents:GunHitPlayer(data, result, nil, bulletCosmetic)
 		if hitPlayer then
 			return
 		end
 
-		local hitDestroyable = ProjectileEvents:GunHitDestroyable(context.UserData, result)
+		local hitDestroyable = ProjectileEvents:GunHitDestroyable(data, result)
 		if hitDestroyable then
 			return
 		end
 
-		ProjectileEvents:GunHitEnvironment(result)
+		ProjectileEvents:GunHitEnvironment(data, result)
 
 		-- ON THROWABLE IMPACT LAND
-	elseif data.ProjectileType == "Throwable" then
+	elseif projectileType == "Throwable" then
 		local throwableData = data.Data
 		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
 		if context.CosmeticBulletObject then
@@ -315,7 +317,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 			end
 		end)
 		-- ON SHRAPNEL HIT
-	elseif data.ProjectileType == "Shrapnel" then
+	elseif projectileType == "Shrapnel" then
 		self:OnFragmentHit(context, result)
 	end
 end
@@ -328,11 +330,12 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 
 	local throwableData = context.UserData.Data
 	local owner = context.UserData.Owner
+	local cosmeticBullet = context.CosmeticBulletObject
 
 	self:ProjectileHitMaterial(result)
 
 	-- handle hitting player
-	if self:FragmentHitPlayer(result, owner, throwableData) then
+	if self:FragmentHitPlayer(result, owner, throwableData, cosmeticBullet) then
 		return
 	end
 
@@ -350,7 +353,6 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 		return
 	end
 	warn(`OnHit fired by player. Hit object: {result.Instance.Name}`)
-
 	-- GUN PROJECTILES
 	if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
 		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
@@ -358,6 +360,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			return
 		end
 
+		-- Ensure relevant data exists
 		local currentGunName = human.Inventory and human.Inventory:GetGun() and human.Inventory:GetGun().Name
 		if not currentGunName then
 			return
@@ -369,13 +372,18 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			return
 		end
 
+		-- Custom logic if it hits a specified material
 		self:ProjectileHitMaterial(result)
 
-		local hitPlayer = ProjectileEvents:GunHitPlayer(gunData, result, context.UserData.Owner)
+		-- Hit Human class
+		local bulletCosmetic = context.CosmeticBulletObject
+
+		local hitPlayer = ProjectileEvents:GunHitPlayer(gunData, result, context.UserData.Owner, bulletCosmetic)
 		if hitPlayer then
 			return
 		end
 
+		-- Hit Destroyable class
 		local hitDestroyable = ProjectileEvents:GunHitDestroyable(gunData, result, context.UserData.Owner)
 		if hitDestroyable then
 			return
@@ -408,6 +416,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 
 		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
 
+		-- Destroy visual grenade after x seconds
 		if context.CosmeticBulletObject then
 			Debris:AddItem(context.CosmeticBulletObject, throwableData.DetonationTime)
 		end
@@ -416,6 +425,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 			human.Inventory:RemoveWeapon("Throwable")
 		end
 
+		-- Detonates grenade after specified detonation time and spawns visuals and fragments.
 		task.delay(throwableData.DetonationTime, function()
 			-- Re-validate after delay, player may have left by now
 			if not result then

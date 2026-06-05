@@ -74,42 +74,6 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	humanClass:ApplyImpulse(impulse)
 end
 
--- function Destroyable:BodyPartDamage(damagedObject: BasePart?)
--- 	if not damagedObject then
--- 		return false
--- 	end
-
--- 	local parent = damagedObject.Parent
--- 	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
--- 	local isBodyPart = damagedObject:IsA("MeshPart") and humanoid
-
--- 	if isBodyPart then
--- 		if self.HumanEffect == "Spread" then
--- 			GunSignals.InflictLimbDamage:Fire(
--- 				self.SpreadParticle,
--- 				self.SpreadDuration or 1,
--- 				self.BaseDamage,
--- 				damagedObject,
--- 				humanoid,
--- 				self.PlayerWhoDestroyed
--- 			)
--- 		else
--- 			if self.HumanEffect == "Damage" then
--- 				GunSignals.InflictLimbDamage:Fire(
--- 					nil,
--- 					1,
--- 					self.BaseDamage,
--- 					damagedObject,
--- 					humanoid,
--- 					self.PlayerWhoDestroyed
--- 				)
--- 			end
--- 		end
--- 		return true
--- 	end
--- 	return false
--- end
-
 function Destroyable:ApplyRadiusDamage()
 	local modelPos = self.ModelRef:GetPivot().Position
 	local partsInRadius = workspace:GetPartBoundsInRadius(modelPos, self.Radius)

@@ -41,18 +41,18 @@ function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastRes
 
 	local hitPos = self:GetHoleCFrame(result.Position, result.Normal)
 
-	if name == "Bullet" then
+	if name == "CannonBall" then
+		local availableBurnMark: Part = PoolHandler.CannonHolePool:Acquire(hitPos.Position)
+		if availableBurnMark then
+			TeleportAndWeld(availableBurnMark, hitPos, result.Instance)
+		end
+	elseif name == "Bullet" then
 		local availableBulletHole: Part = PoolHandler.BulletPool:Acquire(hitPos.Position)
 		if availableBulletHole then
 			TeleportAndWeld(availableBulletHole, hitPos, result.Instance)
 		end
 	elseif name == "Burn" then
 		local availableBurnMark: Part = PoolHandler.BurnMarksPool:Acquire(hitPos.Position)
-		if availableBurnMark then
-			TeleportAndWeld(availableBurnMark, hitPos, result.Instance)
-		end
-	elseif name == "CannonBall" then
-		local availableBurnMark: Part = PoolHandler.CannonHolePool:Acquire(hitPos.Position)
 		if availableBurnMark then
 			TeleportAndWeld(availableBurnMark, hitPos, result.Instance)
 		end

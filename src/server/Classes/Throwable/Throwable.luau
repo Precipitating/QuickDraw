@@ -112,19 +112,4 @@ function Throwable:Destroy()
 	warn("Throwable class destroyed")
 end
 
--- function Throwable:AddThrowableToInventory(maxAmmo: number)
--- 	if maxAmmo then
--- 		self.CurrentAmmo = maxAmmo
--- 	end
--- 	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.Name):Clone()
--- 	self.Tool = clone
-
--- 	clone.Parent = if self.Owner.HumanType == "Player" then self.Owner.Player.Backpack else self.Character
--- 	self.Janitor:Add(self.Tool)
--- 	self.RaycastParams.ExcludeInstances = { self.Tool }
-
--- 	if self.Owner.HumanType == "Player" then
--- 		ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, clone)
--- 	end
--- end
 return Throwable

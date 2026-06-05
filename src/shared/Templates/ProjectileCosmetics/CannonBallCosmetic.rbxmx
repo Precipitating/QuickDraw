@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBXA1B1C319884F43E4A86A8AD24A2332B1">
+	<Item class="Part" referent="RBX8A54B62A1C524A0A9198E67F6DD34C6C">
 		<Properties>
 			<token name="shape">0</token>
 			<token name="formFactorRaw">1</token>
@@ -98,7 +98,7 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">CannonBallCosmetic</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags">Q2Fubm9uQmFsbA==</BinaryString>
+			<BinaryString name="Tags">QnVsbGV0AENhbm5vbkJhbGw=</BinaryString>
 		</Properties>
 	</Item>
 </roblox>
