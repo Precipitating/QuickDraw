@@ -1,6 +1,7 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local GamepassIds = require(ReplicatedStorage.Shared.GamepassIds)
 local AwardConstants = require(script.Parent.AwardConstants)
 local ServerData = require(script.Parent.Parent.ServerData)
@@ -22,14 +23,14 @@ end
 function AwardHandler.AwardNPCKill(killer: Player)
 	local ownsDoubleMoney = AwardHandler.OwnsGamePass(killer, GamepassIds.DoubleMoney)
 
-	ServerData.UpdateMoney(
-		killer,
-		if ownsDoubleMoney then AwardConstants.NPC_KILL_AWARD * 2 else AwardConstants.NPC_KILL_AWARD
-	)
-	ServerData.UpdateBounty(
-		killer,
-		if ownsDoubleMoney then AwardConstants.NPC_KILL_AWARD * 2 else AwardConstants.NPC_KILL_BOUNTY
-	)
+	local awardAmount = if ownsDoubleMoney then AwardConstants.NPC_KILL_AWARD * 2 else AwardConstants.NPC_KILL_AWARD
+	local bounty = if ownsDoubleMoney then AwardConstants.NPC_KILL_AWARD * 2 else AwardConstants.NPC_KILL_BOUNTY
+
+	ServerData.UpdateMoney(killer, awardAmount)
+	ServerData.UpdateBounty(killer, bounty)
+
+	PopupGUI:NewPopup(killer, 2, `NPC killed: ${awardAmount}`)
+	PopupGUI:NewPopup(killer, 2, `Bounty: +${bounty}`)
 end
 
 function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
@@ -42,11 +43,21 @@ function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
 		then AwardConstants.PLAYER_KILL_AWARD + victimBounty
 		else AwardConstants.PLAYER_KILL_AWARD
 
-	ServerData.UpdateBank(killer, if ownsDoubleMoney then finalMoneyAward * 2 else finalMoneyAward)
-	ServerData.UpdateBounty(
+	finalMoneyAward = if ownsDoubleMoney then finalMoneyAward * 2 else finalMoneyAward
+	local killerNewBounty = if ownsDoubleMoney
+		then AwardConstants.PLAYER_KILL_BOUNTY * 2
+		else AwardConstants.PLAYER_KILL_BOUNTY
+
+	ServerData.UpdateBank(killer, finalMoneyAward)
+	PopupGUI:NewPopup(
 		killer,
-		if ownsDoubleMoney then AwardConstants.PLAYER_KILL_BOUNTY * 2 else AwardConstants.PLAYER_KILL_BOUNTY
+		2,
+		if victimBounty
+			then `{killer.Name} killed! Bounty claimed +${finalMoneyAward}`
+			else `{killer.Name} killed! +${finalMoneyAward}`
 	)
+	ServerData.UpdateBounty(killer, killerNewBounty)
+	PopupGUI:NewPopup(killer, 2, `Bounty: +${killerNewBounty}`)
 
 	if victimBounty and victimBounty > 0 then
 		ServerData.SetBounty(victim, 0)

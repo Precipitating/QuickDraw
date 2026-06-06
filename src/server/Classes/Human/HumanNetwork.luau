@@ -27,10 +27,25 @@ function HumanNetwork:FinishedLoadingGame(player: Player)
 	end
 end
 
+function HumanNetwork:GetCurrentGunName(player: Player)
+	assert(player, "[ShopGUI:GetCurrentGun] Missing player argument")
+	local human = PlayerManager:GetHumanClassFromPlayer(player)
+
+	local currentGun = human.Inventory:GetGun()
+	if not currentGun then
+		warn("Error getting current gun")
+		return nil
+	end
+
+	return currentGun.Name
+end
 function HumanNetwork:ToggleBackpackVisibility(player: Player, active: boolean)
 	self.networker:fire(player, "ToggleBackpackVisibility", active)
 end
 
-HumanNetwork.networker =
-	Networker.new("HumanNetwork", HumanNetwork, { HumanNetwork.IsLegless, HumanNetwork.FinishedLoadingGame })
+HumanNetwork.networker = Networker.new(
+	"HumanNetwork",
+	HumanNetwork,
+	{ HumanNetwork.IsLegless, HumanNetwork.FinishedLoadingGame, HumanNetwork.GetCurrentGunName }
+)
 return HumanNetwork

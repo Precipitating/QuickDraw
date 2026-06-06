@@ -12,22 +12,22 @@ local PurchaseHandler = {}
 -- currency
 ProductFunctions[3594526331] = function(_, player)
 	ServerData.UpdateBank(player, 1250)
-	PopupGUI:NewPopup(player, 3, `Added 1250 to bank!`)
+	PopupGUI:NewPopup(player, 3, `Added $1250 to bank!`)
 	return true
 end
 ProductFunctions[3594526330] = function(_, player)
 	ServerData.UpdateBank(player, 2500)
-	PopupGUI:NewPopup(player, 3, `Added 2500 to bank!`)
+	PopupGUI:NewPopup(player, 3, `Added $2500 to bank!`)
 	return true
 end
 ProductFunctions[3594526329] = function(_, player)
 	ServerData.UpdateBank(player, 5000)
-	PopupGUI:NewPopup(player, 3, `Added 5000 to bank!`)
+	PopupGUI:NewPopup(player, 3, `Added $5000 to bank!`)
 	return true
 end
 ProductFunctions[3594526328] = function(_, player)
 	ServerData.UpdateBank(player, 10000)
-	PopupGUI:NewPopup(player, 3, `Added 10000 to bank!`)
+	PopupGUI:NewPopup(player, 3, `Added $10,000 to bank!`)
 	return true
 end
 

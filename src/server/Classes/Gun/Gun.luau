@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local GunSignals = require(script.Parent.GunSignals)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
+local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -28,6 +29,8 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model, too
 	self.MaxAmmo = gunData.MaxAmmo
 	self.MaxAmmoStack = gunData.MaxAmmoStack
 	self.CurrentAmmo = gunData.MaxAmmo
+	self.Jammed = false
+	self.HoldingGun = false
 	self.AmmoReserve = gunData.MaxAmmo * self.MaxAmmoStack
 	self.Reloading = false
 	self.GunType = gunData.GunType
@@ -227,6 +230,10 @@ function Gun:Reload()
 	if reloadSoundStart then
 		ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, self.Handle.CFrame)
 	end
+
+	if self.PlayerRef and self.PlayerRef:IsA("Player") then
+		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading, {reloadTimePerBullet} seconds per round`)
+	end
 	for _ = 1, bulletsToReload do
 		task.wait(reloadTimePerBullet)
 
@@ -276,42 +283,4 @@ function Gun:ToggleCollision(state: boolean, tool: Tool?)
 	end
 end
 
--- function Gun:AddGunToInventory()
--- 	local clone: Tool = ReplicatedStorage.Shared.Templates:FindFirstChild(self.Name):Clone()
--- 	self.Tool = clone
--- 	self.ShootPoint = clone:WaitForChild("ShootPoint", 10)
--- 	self.Handle = clone:WaitForChild("Handle", 10)
-
--- 	local muzzle = clone:FindFirstChild("MuzzleFlash", true)
--- 	if not muzzle then
--- 		error("Missing muzzle flash reference")
--- 	end
-
--- 	self.Janitor:Add(clone.Equipped:Connect(function(_)
--- 		self.Equipped = true
--- 	end))
--- 	self.Janitor:Add(clone.Unequipped:Connect(function(_)
--- 		self.Equipped = false
--- 	end))
--- 	-- if its NPC, playerRef should be a model instead of a player instance.
--- 	local excludeModel = self.PlayerRef:IsA("Player") and self.PlayerRef.Character or self.PlayerRef
--- 	self.RaycastParams.ExcludeInstances = { excludeModel, self.Tool }
-
--- 	self.MuzzleFlash = muzzle:FindFirstChildOfClass("Attachment")
--- 	if not self.MuzzleFlash then
--- 		error("Missing muzzle flash attachment reference")
--- 	end
-
--- 	if self.PlayerRef:IsA("Player") then
--- 		clone.Parent = self.PlayerRef.Backpack
--- 		GunSignals.ConnectGunSignal:Fire(self.PlayerRef, clone)
--- 		self.Janitor:Add(self.Tool)
--- 		self:InitializeAmmoValues()
--- 	else
--- 		-- should be HumanNPC class
--- 		-- NPC auto equips gun for now
--- 		self:ToggleCollision(false)
--- 		self.HumanClassRef:EquipGun(clone)
--- 	end
--- end
 return Gun

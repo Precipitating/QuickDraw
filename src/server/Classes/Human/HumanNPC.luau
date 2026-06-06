@@ -298,6 +298,11 @@ function HumanNPC:EquipGun(gunTool: Tool?)
 	end
 
 	self.Humanoid:EquipTool(gunTool)
+
+	local gunClass = self.Inventory:GetGun()
+	if gunClass then
+		gunClass.Holding = true
+	end
 end
 
 function HumanNPC:UnEquipCurrentTool()

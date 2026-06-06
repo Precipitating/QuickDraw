@@ -25,6 +25,13 @@ SoundData.Sounds = {
 		Group = "SFX",
 		PoolSize = 6,
 	},
+	UnjamWeapon = {
+		SoundId = "rbxassetid://96208385832784",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+		PoolSize = 6,
+	},
 
 	-- Music
 	MainTheme = {

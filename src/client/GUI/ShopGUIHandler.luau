@@ -1,5 +1,6 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local CrosshairHandler = require(script.Parent.CrosshairHandler)
@@ -17,7 +18,22 @@ local ShopGUIHandler = {}
 ShopGUIHandler.janitor = Janitor.new()
 ShopGUIHandler.networker = Networker.new("ShopNetwork", ShopGUIHandler)
 
-function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame)
+local function UpdateRefillPrice(refillButton: TextButton?)
+	if not refillButton then
+		return
+	end
+	local currentGunName = HumanNetwork.networker:fetch("GetCurrentGunName")
+	if currentGunName then
+		if currentGunName == "Revolver" then
+			refillButton.Text = `REFILL AMMO  <br/> <font color="#FFFFFF">FREE </font>`
+		else
+			refillButton.Text = `REFILL AMMO  <br/> <font color="#FFFFFF">${GunData[currentGunName].RefillCost}</font>`
+		end
+	end
+end
+
+-- If refillAmmoButton is passed, it means we need to reupdate refill ammo cost when we buy the product type.
+function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame, refillAmmoButton: TextButton?)
 	local children = productList:GetChildren()
 	for _, product in children do
 		if not product:isA("ImageButton") then
@@ -28,13 +44,16 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame)
 		local price: TextLabel = product:WaitForChild("Price", 10)
 		if price then
 			if productList.Name == "WeaponsList" then
-				price.Text = if (GunData[product.Name] and GunData[product.Name].Cost)
-					then `${GunData[product.Name].Cost}`
-					else "Free"
+				local gunCostText =
+					`{if GunData[product.Name].Cost == 0 then "Free" else "$" .. GunData[product.Name].Cost} `
+				price.Text = if GunData[product.Name] and GunData[product.Name].Cost then gunCostText else "Error"
 			else
+				local throwableCostText = `{if ThrowableData[product.Name].Cost == 0
+					then "Free"
+					else "$" .. ThrowableData[product.Name].Cost}`
 				price.Text = if (ThrowableData[product.Name] and ThrowableData[product.Name].Cost)
-					then `${ThrowableData[product.Name].Cost}`
-					else "Free"
+					then throwableCostText
+					else "Error"
 			end
 		end
 
@@ -70,6 +89,7 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame)
 				if not bought then
 					SoundManager.PlayKeyed("UI", "Error")
 				else
+					UpdateRefillPrice(refillAmmoButton)
 					SoundManager.PlayKeyed("UI", "Purchase")
 				end
 			end)
@@ -120,6 +140,8 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 		task.wait()
 	until not PlayerContext.Character:FindFirstChildOfClass("Tool")
 
+	UpdateRefillPrice(refillAmmoButton)
+
 	CoreGUIHandler.ToggleBackpackVisibility(false)
 	ClientUtility.ToggleControls(false)
 	PlayerContext.ApplyMouseLock(false)
@@ -153,6 +175,7 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	end))
 	self.janitor:Add(refillAmmoButton.Activated:Connect(function(_, _)
 		local bought = self.networker:fetch("BuyRefillAmmo")
+
 		if not bought then
 			SoundManager.PlayKeyed("UI", "Error")
 		else
@@ -166,8 +189,8 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 		weaponsList.Visible = false
 	end))
 
-	self:ConnectProductList(weaponsList)
-	self:ConnectProductList(throwablesList)
+	self:ConnectProductList(weaponsList, refillAmmoButton)
+	self:ConnectProductList(throwablesList, refillAmmoButton)
 	self:ConnectRobuxList(robuxList)
 end
 

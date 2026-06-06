@@ -46,7 +46,11 @@ function ServerEffectsDisplayer:DisplayMuzzleFlashToOthers(player: Player?, gunT
 		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
+
 	local shotPos = gunTool:FindFirstChild("Frame", true)
+	if not shotPos then
+		return
+	end
 	if player and player:IsA("Player") then
 		self.networker:fireAllExcept(player, "DisplayMuzzleFlash", gunTool)
 

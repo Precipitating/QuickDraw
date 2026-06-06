@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local PopupHandler = require(script.Parent.Parent.GUI.PopupHandler)
+local ClientSoundHandler = require(script.Parent.Parent.Sound.ClientSoundHandler)
 local ClientVetraContext = require(script.Parent.Parent.ClientProjectilesHandler.ClientVetraContext)
 local EffectsDisplayer = require(script.Parent.Parent.VisualEffectsHandler.EffectsDisplayer)
 local CrosshairHandler = require(script.Parent.Parent.GUI.CrosshairHandler)
@@ -341,6 +343,11 @@ function ClientGunHandler:AttemptReload()
 	end
 	local currAmmo, maxAmmo, ammoReserve = GunNetwork:fetch("GetAmmoCount")
 
+	if GunNetwork:fetch("IsGunJammed") then
+		GunNetwork:fire("UnjamGun")
+		return
+	end
+
 	if currAmmo == maxAmmo or PlayerContext.Humanoid.Health <= 0 then
 		return
 	end
@@ -378,6 +385,15 @@ function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
 	end
 end
 
+function ClientGunHandler:AfterShot()
+	GunNetwork:fire("ReduceGunAmmo")
+	GunNetwork:fire("GunJamIfRolled")
+
+	if PlayerContext.Reloading then
+		self:StopReloading()
+	end
+end
+
 function ClientGunHandler:SingleShot(shootAttachment: Attachment, gunTool: Tool, gunData)
 	local context = nil
 	if HoldingRMB then
@@ -398,11 +414,8 @@ function ClientGunHandler:SingleShot(shootAttachment: Attachment, gunTool: Tool,
 		})
 		ClientVetraContext.Net:Fire(context, gunTool.Name)
 	end
-	GunNetwork:fire("ReduceGunAmmo")
 
-	if PlayerContext.Reloading then
-		self:StopReloading()
-	end
+	ClientGunHandler:AfterShot()
 end
 function ClientGunHandler:SpreadShot(shootAttachment: Attachment, gunTool: Tool, gunData)
 	local context = nil
@@ -435,10 +448,7 @@ function ClientGunHandler:SpreadShot(shootAttachment: Attachment, gunTool: Tool,
 			ClientVetraContext.Net:Fire(context, gunTool.Name)
 		end
 	end
-	GunNetwork:fire("ReduceGunAmmo")
-	if PlayerContext.Reloading then
-		self:StopReloading()
-	end
+	ClientGunHandler:AfterShot()
 end
 
 function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
@@ -452,7 +462,6 @@ function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
 
 	-- holding RMB means the bullet will fire via camera's lookvector
 	-- else gun barrel
-
 	if gunData.GunType == "Shotgun" then
 		self:SpreadShot(shootAttachment, gunTool, gunData)
 	else
@@ -554,25 +563,27 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 		end))
 
 		self.janitor:Add(gunTool.Activated:Connect(function()
+			-- early exits
 			if PlayerContext.Humanoid.Health <= 0 then
 				return
 			end
-
 			local gunData = GunData[gunTool.Name]
 			local now = os.clock()
 			if now - LastShot < gunData.ShotDelay then
 				return
 			end
+
 			LastShot = now
 			local currAmmo, _, _ = GunNetwork:fetch("GetAmmoCount")
-
 			-- no ammo, return early
-			if currAmmo and currAmmo <= 0 then
+			if currAmmo and currAmmo <= 0 or GunNetwork:fetch("IsGunJammed") then
 				SoundManager.Play(gunData.ShootNoAmmoName, {
 					Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 				})
 				return
 			end
+			-- safe to shoot
+
 			self:ShootGun(gunTool, gunData)
 		end))
 	end)
