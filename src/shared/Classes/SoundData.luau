@@ -188,6 +188,18 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	GatlingShot = {
+		SoundId = "rbxassetid://87594026554349",
+		Volume = 3,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	GatlingReload = {
+		SoundId = "rbxassetid://18835944702",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 
 	--
 	Headshot = {

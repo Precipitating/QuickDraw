@@ -207,6 +207,85 @@ function Gun:Destroy()
 	table.clear(self)
 end
 
+function Gun:BulletByBulletReload(bulletsToReload: number, reloadTime: number, reloadSound: string)
+	local isPlayer = self.PlayerRef and self.PlayerRef:IsA("Player")
+
+	if isPlayer then
+		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading, {reloadTime} seconds per round`)
+	end
+	for _ = 1, bulletsToReload do
+		task.wait(reloadTime)
+
+		if self.HumanClassRef and self.HumanClassRef.Dead then
+			return
+		end
+		if not self.Reloading then
+			return
+		end
+
+		if isPlayer then
+			if self.AmmoReserve <= 0 then
+				return
+			end
+		end
+
+		if not self.UpdateAmmo then
+			return
+		end
+
+		self:UpdateAmmo(1)
+		if isPlayer then
+			self:UpdateAmmoReserve(-1)
+		end
+
+		if self.Handle then
+			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
+		end
+	end
+
+	return nil
+end
+
+function Gun:ReloadAsMagazine(bulletsToReload: number, reloadTime: number, gunName: string, reloadSound: string)
+	if not self.Handle then
+		return
+	end
+
+	local character = self.HumanClassRef and self.HumanClassRef.Character
+
+	if not character then
+		warn("[Gun:ReloadAsMagazine] failed: Missing character ref")
+		return
+	end
+
+	local dead = self.HumanClassRef.Dead
+	if dead then
+		return
+	end
+
+	if self.PlayerRef and self.PlayerRef:IsA("Player") then
+		if self.AmmoReserve <= 0 then
+			return
+		end
+
+		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading magazine, {reloadTime} seconds`)
+	end
+
+	ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
+
+	task.wait(reloadTime)
+
+	if not self.Reloading then
+		return
+	end
+	if Utility.IsHoldingTool(character, gunName) then
+		self:UpdateAmmoReserve(-bulletsToReload)
+		self:UpdateAmmo(bulletsToReload)
+	else
+		return
+	end
+end
+
 function Gun:Reload()
 	local gunName = self.Name
 	local gunData = if gunName then GunData[gunName] else nil
@@ -214,8 +293,9 @@ function Gun:Reload()
 		warn("[Gun:Reload] Missing gun data ")
 		return
 	end
-	local reloadTimePerBullet = gunData.ReloadTimePerBullet
+	local reloadTime = gunData.ReloadTimePerBullet or gunData.ReloadTime
 	local reloadSound = gunData.ReloadSoundName
+	local gunType = gunData.GunType
 	local reloadSoundStart = gunData.ReloadSoundStartName
 	local bulletsToReload = self.MaxAmmo - self.CurrentAmmo
 	if bulletsToReload <= 0 then
@@ -231,40 +311,29 @@ function Gun:Reload()
 		ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, self.Handle.CFrame)
 	end
 
-	if self.PlayerRef and self.PlayerRef:IsA("Player") then
-		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading, {reloadTimePerBullet} seconds per round`)
+	if not gunType then
+		error("Current gun has no gun type!")
+		return
 	end
-	for _ = 1, bulletsToReload do
-		task.wait(reloadTimePerBullet)
 
-		if not self.Reloading or self.HumanClassRef.Dead then
-			return self.CurrentAmmo
-		end
-
-		if self.PlayerRef:IsA("Player") then
-			if self.AmmoReserve <= 0 then
-				self:StopReloading()
-				return self.CurrentAmmo
-			end
-		end
-
-		self:UpdateAmmo(1)
-		if self.PlayerRef:IsA("Player") then
-			self:UpdateAmmoReserve(-1)
-		end
-
-		if self.Handle then
-			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
-		end
+	if gunType == "Automatic" then
+		self:ReloadAsMagazine(bulletsToReload, reloadTime, gunName, reloadSound)
+	else
+		self:BulletByBulletReload(bulletsToReload, reloadTime, reloadSound)
 	end
 
 	-- Finished loading to max ammo without interruptions, update flags.
-	self:StopReloading()
-
+	if self.StopReloading then
+		self:StopReloading()
+	end
 	return self.CurrentAmmo
 end
 
 function Gun:StopReloading(replicateToClient: boolean?)
+	if not self.Reloading then
+		return
+	end
+
 	self.Reloading = false
 
 	if replicateToClient == nil or replicateToClient == true then

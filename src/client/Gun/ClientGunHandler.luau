@@ -4,7 +4,6 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local PopupHandler = require(script.Parent.Parent.GUI.PopupHandler)
-local ClientSoundHandler = require(script.Parent.Parent.Sound.ClientSoundHandler)
 local ClientVetraContext = require(script.Parent.Parent.ClientProjectilesHandler.ClientVetraContext)
 local EffectsDisplayer = require(script.Parent.Parent.VisualEffectsHandler.EffectsDisplayer)
 local CrosshairHandler = require(script.Parent.Parent.GUI.CrosshairHandler)
@@ -31,13 +30,21 @@ local CurrentCamera = workspace.CurrentCamera
 local ADSTween = nil
 local ADSTweenInfo = TweenInfo.new(GunConfig.ADS_SPEED, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
 
-local HoldingRMB = false
 local GunEquipConn = nil
 local GunDisconnectConn = nil
+
 local LastCrosshairHit = 0
 local LastShot = 0
+
 local Crosshair3DPosition = nil
 local Crosshair3DSize = nil
+
+local HoldingRMB = false
+
+local HOLD_THRESHOLD = 0.2
+local CAN_RELOAD_AFTER_SHOT_THRESHOLD = 0.2
+local HoldingLMB = nil
+local HoldingLMBStart = nil
 
 -- for camera recoil
 local RecoilSpring = Ripple.createSpring(0, {
@@ -217,8 +224,7 @@ local function CastBarrelRay(crosshairBB: BillboardGui, gunTool: Tool, shootPoin
 	end
 	local gunName = gunTool.Name
 	local gunData = GunData[gunName]
-	local minBulletSpeed = gunData.MinBulletSpeed or 0
-	local bulletVelocity = gunData.Velocity or minBulletSpeed
+	local bulletVelocity = gunData.Velocity
 	local dragCoefficient = gunData.DragCoefficient or 0
 	local maxCrosshairDistance = GunData[gunName].MaxSimulationDistance or 1000
 	local origin: Vector3 = shootPoint.WorldPosition
@@ -343,6 +349,10 @@ function ClientGunHandler:AttemptReload()
 	end
 	local currAmmo, maxAmmo, ammoReserve = GunNetwork:fetch("GetAmmoCount")
 
+	if os.clock() - LastShot < CAN_RELOAD_AFTER_SHOT_THRESHOLD then
+		return
+	end
+
 	if GunNetwork:fetch("IsGunJammed") then
 		GunNetwork:fire("UnjamGun")
 		return
@@ -390,6 +400,7 @@ function ClientGunHandler:AfterShot()
 	GunNetwork:fire("GunJamIfRolled")
 
 	if PlayerContext.Reloading then
+		PopupHandler:NewPopup(1, "Cancelled reload")
 		self:StopReloading()
 	end
 end
@@ -515,6 +526,29 @@ function ClientGunHandler:ToggleAmmoGUI(enabled: boolean)
 
 	gui.Enabled = enabled
 end
+
+function ClientGunHandler:TryShoot(gunTool: Tool?)
+	if not gunTool then
+		return
+	end
+	if PlayerContext.Humanoid.Health <= 0 then
+		return
+	end
+	local gunData = GunData[gunTool.Name]
+	local now = os.clock()
+	if now - LastShot < gunData.ShotDelay then
+		return
+	end
+	LastShot = now
+	local currAmmo, _, _ = GunNetwork:fetch("GetAmmoCount")
+	if currAmmo and currAmmo <= 0 or GunNetwork:fetch("IsGunJammed") then
+		SoundManager.Play(gunData.ShootNoAmmoName, {
+			Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
+		})
+		return
+	end
+	self:ShootGun(gunTool, GunData[gunTool.Name])
+end
 function ClientGunHandler:ConnectGun(gunTool: Tool?)
 	if not gunTool then
 		error("Can't connect guns, tool reference not valid!")
@@ -536,7 +570,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 
 		self:AddCollisionConstraints(gunTool)
 
-		-- we use this because we disabled the default RMB camera movement by sinking RMB, but we want RMB to work
+		-- We use this because we disabled the default RMB camera movement by sinking RMB, but we want RMB to work
 		-- so we set this at a higher priority so we can still allow RMB inputs for this only
 		ContextActionService:BindActionAtPriority("ADSAction", function(_, inputState, input)
 			if inputState == Enum.UserInputState.Begin then
@@ -556,35 +590,48 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 			if gameProcessed then
 				return
 			end
-			-- reload
+			-- Reload
 			if input.KeyCode == Enum.KeyCode.R then
 				self:AttemptReload()
 			end
 		end))
 
+		-- Single shot
 		self.janitor:Add(gunTool.Activated:Connect(function()
-			-- early exits
-			if PlayerContext.Humanoid.Health <= 0 then
-				return
+			self:TryShoot(gunTool)
+		end))
+
+		-- Held down LMB, only for guns with "Automatic" type
+		ContextActionService:BindAction("LMBHeldAction", function(_, inputState, _)
+			if inputState == Enum.UserInputState.Begin then
+				HoldingLMBStart = os.clock()
+				HoldingLMB = false
+			elseif inputState == Enum.UserInputState.End then
+				HoldingLMBStart = nil
+				HoldingLMB = false
 			end
-			local gunData = GunData[gunTool.Name]
-			local now = os.clock()
-			if now - LastShot < gunData.ShotDelay then
+			return Enum.ContextActionResult.Pass
+		end, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.Touch)
+
+		local gunType = GunData[gunTool.Name] and GunData[gunTool.Name].GunType
+		if not gunType then
+			return
+		end
+
+		self.janitor:Add(RunService.Heartbeat:Connect(function()
+			if HoldingLMBStart and not HoldingLMB then
+				if os.clock() - HoldingLMBStart >= HOLD_THRESHOLD then
+					HoldingLMB = true
+				end
+			end
+
+			if gunType ~= "Automatic" then
 				return
 			end
 
-			LastShot = now
-			local currAmmo, _, _ = GunNetwork:fetch("GetAmmoCount")
-			-- no ammo, return early
-			if currAmmo and currAmmo <= 0 or GunNetwork:fetch("IsGunJammed") then
-				SoundManager.Play(gunData.ShootNoAmmoName, {
-					Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
-				})
-				return
+			if HoldingLMB then
+				self:TryShoot(gunTool)
 			end
-			-- safe to shoot
-
-			self:ShootGun(gunTool, gunData)
 		end))
 	end)
 
@@ -593,6 +640,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 		self:ToggleAmmoGUI(false)
 		HoldingRMB = false
 		ContextActionService:UnbindAction("ADSAction")
+		ContextActionService:UnbindAction("LMBHeldAction")
 		CurrentCamera.CameraSubject = PlayerContext.Humanoid
 		self:DisconnectGun()
 		ClientGunHandler.CancelADS()

@@ -27,6 +27,7 @@ function Inventory.new(owner: Human): Inventory
 		Throwable = nil,
 	}
 
+	-- boolean state if weapon in inventory, not actually holding
 	self.EquippedWeapons = {
 		Gun = false,
 		Throwable = false,

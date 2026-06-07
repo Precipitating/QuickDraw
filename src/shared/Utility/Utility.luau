@@ -1,3 +1,5 @@
+local Players = game:GetService("Players")
+
 local RandomModule = require(script.Parent.RandomModule)
 return {
 	SumNumberTable = function(tbl: {})
@@ -58,5 +60,15 @@ return {
 		local spreadCFrame = CFrame.new(Vector3.zero, baseDirection) * CFrame.Angles(randomX, randomY, 0)
 
 		return spreadCFrame.LookVector
+	end,
+
+	IsHoldingTool = function(character: Model, name: string)
+		if not character then
+			return false
+		end
+
+		local holdingTool = character:FindFirstChild(name)
+
+		return holdingTool
 	end,
 }

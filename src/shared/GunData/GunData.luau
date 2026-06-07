@@ -14,7 +14,6 @@ local GunData = {
 		ShotDelay = 0.35,
 		Damage = 25,
 		Velocity = 1250,
-		MinBulletSpeed = 36,
 		Cost = 0,
 		RefillCost = 0,
 		DragCoefficient = 0.0008,
@@ -23,7 +22,7 @@ local GunData = {
 		ShootSoundName = "RevolverShot",
 		ShootNoAmmoName = "RevolverClick",
 		ReloadSoundName = "RevolverReload",
-		MaxSimulationDistance = 650,
+		MaxSimulationDistance = 1250,
 		GunRecoil = 50,
 		CameraRecoil = 20,
 		ProjectileData = Vetra.BehaviorBuilder
@@ -73,10 +72,9 @@ local GunData = {
 		RefillCost = 100,
 		DragCoefficient = 0.00008,
 		Velocity = 2000,
-		MinBulletSpeed = 36,
 		ReloadTimePerBullet = 1,
 		GunType = "Lever",
-		MaxSimulationDistance = 1250,
+		MaxSimulationDistance = 2000,
 		ShootSoundName = "WinchesterShot",
 		ShootNoAmmoName = "RevolverClick",
 		LoadNextRoundName = "WinchesterLoadBullet",
@@ -87,7 +85,7 @@ local GunData = {
 			.BehaviorBuilder
 			.new()
 			:Physics()
-			:MaxDistance(643)
+			:MaxDistance(2000)
 			:MinSpeed(36)
 			:Done()
 			:Drag()
@@ -136,7 +134,6 @@ local GunData = {
 		RefillCost = 100,
 		MaxSimulationDistance = 107,
 		PelletsPerShot = 8,
-		MinBulletSpeed = 36,
 		MaxSpreadAngle = 8,
 		ReloadTimePerBullet = 2,
 		GunType = "Shotgun",
@@ -163,7 +160,7 @@ local GunData = {
 			:SpeedRetention(0.5)
 			:NormalBias(0.3)
 			:Filter(function(_ctx, _result, _vel)
-				return _result.Material == Enum.Material.Glass
+				return pierceableMaterials[_result.Material] == true
 			end)
 			:Done()
 			:Tumble()
@@ -201,7 +198,6 @@ local GunData = {
 		RefillCost = 200,
 		MaxSimulationDistance = 120,
 		PelletsPerShot = 10,
-		MinBulletSpeed = 10,
 		MaxSpreadAngle = 6,
 		ReloadTimePerBullet = 3,
 		GunType = "Shotgun",
@@ -214,7 +210,7 @@ local GunData = {
 		ProjectileData = Vetra.BehaviorBuilder
 			.new()
 			:Physics()
-			:MaxDistance(107)
+			:MaxDistance(120)
 			:MinSpeed(36)
 			:Done()
 			:Drag()
@@ -228,7 +224,7 @@ local GunData = {
 			:SpeedRetention(0.5)
 			:NormalBias(0.3)
 			:Filter(function(_ctx, _result, _vel)
-				return _result.Material == Enum.Material.Glass
+				return pierceableMaterials[_result.Material] == true
 			end)
 			:Done()
 			:Tumble()
@@ -260,12 +256,11 @@ local GunData = {
 		MaxAmmoStack = 3,
 		ShotDelay = 0,
 		Damage = 500,
-		Velocity = 1250,
+		Velocity = 1000,
 		Cost = 2000,
 		RefillCost = 200,
-		MaxSimulationDistance = 120,
+		MaxSimulationDistance = 900,
 		PelletsPerShot = 1,
-		MinBulletSpeed = 50,
 		ReloadTimePerBullet = 5,
 		GunType = "Cannon",
 		DragCoefficient = 0.0015,
@@ -274,16 +269,37 @@ local GunData = {
 		ReloadSoundName = "CannonReload",
 		GunRecoil = 500,
 		CameraRecoil = 500,
-		ProjectileData = Vetra.BehaviorBuilder
+		ProjectileData = Vetra
+			.BehaviorBuilder
 			.new()
 			:Physics()
-			:MaxDistance(200)
-			:MinSpeed(55)
+			:MaxDistance(900) -- cannonballs carry serious range
+			:MinSpeed(30) -- dense ball keeps rolling even when slowed
+			:BulletMass(0.9) -- ~900g, miniature iron cannonball
 			:Done()
 			:Drag()
-			:Coefficient(0.035)
-			:Model(Vetra.Enums.DragModel.GL)
+			:Coefficient(0.045) -- sphere has higher Cd, but mass compensates
+			:Model(Vetra.Enums.DragModel.GL) -- GL is correct here, it's designed for spherical projectiles
 			:SegmentInterval(0.05)
+			:Done()
+			:Pierce()
+			:Max(2) -- punches through barrels, wood walls, light cover
+			:SpeedThreshold(80) -- needs momentum to punch through
+			:SpeedRetention(0.8) -- barely slows, it's iron and heavy
+			:Filter(function(_ctx, _result, _vel)
+				return pierceableMaterials[_result.Material] == true
+			end)
+			:Done()
+			:Bounce()
+			:Max(3) -- cannonballs skip and roll historically
+			:Restitution(0.35) -- low bounce height, it's not rubber
+			:SpeedThreshold(20) -- stops bouncing when nearly halted
+			:NormalPerturbation(0.04) -- slight surface irregularity on each bounce
+			:Done()
+			:CornerTrap() -- prevents ball getting wedged in geometry during bouncing
+			:Done()
+			:Wind()
+			:Response(0.15) -- nearly immune to wind, it's a dense iron ball
 			:Done()
 			:Debug()
 			:Visualize(true)
@@ -293,8 +309,72 @@ local GunData = {
 			:Container(workspace.ProjectilesFolder)
 			:Done()
 			:HighFidelity()
-			:SegmentSize(1.5)
-			:FrameBudget(1)
+			:SegmentSize(0.8) -- finer than original for accurate bounce resolution
+			:FrameBudget(3) -- single shot weapon, can afford the budget
+			:Done()
+			:Build(),
+	},
+	Gatling = {
+		MaxAmmo = 20,
+		MaxAmmoStack = 3,
+		ShotDelay = 0.2,
+		Damage = 20,
+		Velocity = 2250,
+		Cost = 5000,
+		RefillCost = 300,
+		MaxSimulationDistance = 600,
+		ReloadTime = 3,
+		GunType = "Automatic",
+		DragCoefficient = 0.0015,
+		ShootSoundName = "GatlingShot",
+		ShootNoAmmoName = "CoachClick",
+		ReloadSoundName = "GatlingReload",
+		GunRecoil = 50,
+		CameraRecoil = 50,
+		ProjectileData = Vetra
+			.BehaviorBuilder
+			.new()
+			:Physics()
+			:MaxDistance(600) -- gatling isn't long-range; ~600 studs is realistic
+			:MinSpeed(50) -- let bullets fully travel before culling
+			:BulletMass(0.028) -- ~28g, typical .45-70 Government round
+			:Done()
+			:Drag()
+			:Coefficient(0.035) -- heavy lead slug, moderate drag over distance
+			:Model(Vetra.Enums.DragModel.G7) -- G7 fits elongated flat-base bullets better than GL (GL = grenades/spherical)
+			:SegmentInterval(0.05)
+			:Done()
+			:Pierce()
+			:Max(1) -- punches through one thin surface (wood planks, barrels)
+			:SpeedThreshold(120) -- needs momentum to pierce
+			:SpeedRetention(0.65) -- loses significant speed going through material
+			:Filter(function(_ctx, _result, _vel)
+				return pierceableMaterials[_result.Material] == true
+			end)
+			:Done()
+			:Tumble()
+			:SpeedThreshold(80) -- soft lead tumbles when slowed
+			:DragMultiplier(3.5) -- tumbling bleeds speed fast
+			:LateralStrength(0.4) -- visible wobble path
+			:OnPierce(true) -- always tumbles after punching through something
+			:Done()
+			:Wind()
+			:Response(0.5) -- open frontier battlefields, noticeable crosswind
+			:Done()
+			:GyroDrift()
+			:Rate(0.006) -- subtle right-hand drift from rifled barrels
+			:Done()
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
+			:HighFidelity()
+			:SegmentSize(0.4) -- finer than before for accurate tumble/pierce resolution
+			:FrameBudget(4) -- gatling fires many bullets at once, needs more budget
+			:Done()
+			:BatchTravel(true) -- batch OnTravel events since many rounds are in-flight simultaneously
+			:Debug()
+			:Visualize(true)
 			:Done()
 			:Build(),
 	},
