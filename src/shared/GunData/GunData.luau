@@ -185,6 +185,7 @@ local GunData = {
 			:SegmentSize(0.6)
 			:FrameBudget(1)
 			:Done()
+			:BatchTravel(true)
 			:Build(),
 	},
 	RoperShotgun = {
@@ -249,6 +250,7 @@ local GunData = {
 			:SegmentSize(0.6)
 			:FrameBudget(1)
 			:Done()
+			:BatchTravel(true)
 			:Build(),
 	},
 	CannonGun = {

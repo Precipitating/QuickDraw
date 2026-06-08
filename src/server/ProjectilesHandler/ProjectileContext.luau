@@ -5,8 +5,8 @@ local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
 local BulletContext = require(ReplicatedStorage.Shared.Vetra.Core.BulletContext)
 local Enums = require(ReplicatedStorage.Shared.Vetra.VetraNet.Types.Enums)
 
-local Solver = Vetra.new()
-local Net = VetraNet.new(Solver, VetraRegistry, {
+local ServerSolver = Vetra.new()
+local Net = VetraNet.new(ServerSolver, VetraRegistry, {
 	Mode = Enums.NetworkMode.SharedAuthority,
 	MaxOriginTolerance = 20,
 	MaxConcurrentPerPlayer = 50,
@@ -14,11 +14,11 @@ local Net = VetraNet.new(Solver, VetraRegistry, {
 	BurstLimit = 40,
 	ReplicateState = true,
 })
-local VetraSignals = Solver:GetSignals()
+local VetraSignals = ServerSolver:GetSignals()
 
 return {
 	Net = Net,
-	Solver = Solver,
+	Solver = ServerSolver,
 	BulletContext = BulletContext,
 	VetraSignals = VetraSignals,
 }

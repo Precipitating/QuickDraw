@@ -75,6 +75,26 @@ function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResul
 	return true
 end
 
+local function HandleSubTypes(subtype: string, duration: number, hit: RaycastResult)
+	if not hit then
+		return
+	end
+
+	if subtype == "Hook" then
+		local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
+		if not isModel then
+			return
+		end
+		local isHuman = isModel:FindFirstChild("Humanoid")
+
+		if not isHuman then
+			return
+		end
+		local humanClass = PlayerManager:GetHumanClass(isHuman)
+		humanClass:Ragdoll(duration)
+	end
+end
+
 function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwableData, cosmeticBullet: BasePart?)
 	local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
 	if isModel then
@@ -93,6 +113,14 @@ function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwable
 					isPlayer
 				)
 			end
+
+			-- special effects add-on
+			task.spawn(function()
+				if throwableData.Subtype and throwableData.SubtypeEffectDuration then
+					HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
+				end
+			end)
+
 			return true
 		end
 	end

@@ -17,6 +17,7 @@ Registry:Register("Gatling", GunData["Gatling"].ProjectileData)
 Registry:Register("Dynamite", ThrowableData["Dynamite"].ProjectileData)
 Registry:Register("KetchumGrenade", ThrowableData["KetchumGrenade"].ProjectileData)
 Registry:Register("Molotov", ThrowableData["Molotov"].ProjectileData)
+Registry:Register("HookGrenade", ThrowableData["HookGrenade"].ProjectileData)
 
 Registry:Register("Shrapnel", GeneralProjectilesData.Shrapnel.ProjectileData)
 

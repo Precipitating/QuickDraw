@@ -100,6 +100,40 @@ local ThrowableData = {
 			:Done()
 			:Build(),
 	},
+	HookGrenade = {
+		Name = "HookGrenade",
+		MaxAmmo = 1,
+		ThrowDelay = 5,
+		Damage = 1,
+		Cost = 500,
+		Velocity = 100,
+		DetonationTime = 3,
+		BlastRadius = 3,
+		FragmentCount = 100,
+		ThrowSound = "ThrowProjectile",
+		LandSound = "HookGrenadeLand",
+		DetonationSound = "GrappleHook",
+		Type = "Explosive",
+		Subtype = "Hook",
+		SubtypeEffectDuration = 5,
+		ImpactParticle = "Explosion",
+		ProjectileData = Vetra.BehaviorBuilder
+			.Grenade()
+			:Bounce()
+			:Max(1)
+			:Done()
+			:When(isServer, function(b)
+				b:Cosmetic()
+					:AutoDelete(false)
+					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.HookGrenadeCosmetic)
+					:Container(workspace.ProjectilesFolder)
+					:Done()
+			end)
+			:Physics()
+			:MinSpeed(10)
+			:Done()
+			:Build(),
+	},
 }
 
 for _, throwable in ThrowableData do

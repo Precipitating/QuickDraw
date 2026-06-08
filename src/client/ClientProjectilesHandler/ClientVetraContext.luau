@@ -9,7 +9,7 @@ local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
 
 local ClientSolver = Vetra.new()
 local Net = VetraNet.new(ClientSolver, VetraRegistry)
-
+local Signals = ClientSolver:GetSignals()
 local NoProjectileDecalList = { "Destroyable", "Player", "NPC", "Barrier" }
 
 local function CanDisplayBulletHole(instance: Instance)
@@ -49,7 +49,7 @@ local function TryDisplayProjectileMark(context, result: RaycastResult?)
 end
 
 local function Initialize()
-	ClientSolver:GetSignals().OnHit:Connect(function(context, result: RaycastResult?, _velocity)
+	Signals.OnHit:Connect(function(context, result: RaycastResult?, _velocity)
 		warn("[CLIENT] onHit called")
 		if not result then
 			return
@@ -57,7 +57,7 @@ local function Initialize()
 		TryDisplayProjectileMark(context, result)
 	end)
 
-	ClientSolver:GetSignals().OnPierce:Connect(function(context, result: RaycastResult?, _velocity, pierceCount)
+	Signals.OnPierce:Connect(function(context, result: RaycastResult?, _velocity, pierceCount)
 		if not result then
 			return
 		end

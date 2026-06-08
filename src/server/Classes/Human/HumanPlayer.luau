@@ -45,8 +45,8 @@ function HumanPlayer:InitializeWeaponLoadout()
 	self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
 	self.Inventory:EquipWeapon("Gun")
 
-	-- self.Inventory:AddWeaponToInventory("Molotov", 9)
-	-- self.Inventory:EquipWeapon("Throwable")
+	self.Inventory:AddWeaponToInventory("HookGrenade", 9)
+	self.Inventory:EquipWeapon("Throwable")
 
 	if savedThrowableData then
 		-- Throwable

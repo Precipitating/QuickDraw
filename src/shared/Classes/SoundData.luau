@@ -137,6 +137,20 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	GrappleHook = {
+		SoundId = "rbxassetid://118662377115778",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	HookGrenadeLand = {
+		SoundId = "rbxassetid://101646201420499",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+
+	--
 	WinchesterLoadBullet = {
 		SoundId = "rbxassetid://75139130130084",
 		Volume = 1,
