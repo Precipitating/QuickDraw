@@ -176,6 +176,7 @@ export type DamageData = {
 	Damage: number,
 	Shooter: Player?,
 	CosmeticBulletObject: BasePart?,
+	CanAffectShooter: boolean?,
 }
 export type InflictingDamage = DamageData & {
 	Type: "Inflict",

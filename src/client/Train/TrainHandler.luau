@@ -52,8 +52,8 @@ function TrainHandler:Initialize()
 
 	-- 1. Build the Spline on the Client so it knows the track
 	local TrainPositions = {}
-	for i = 1, #TrainPaths:GetChildren() do
-		local part = TrainPaths[`Seg_{i}`]
+	for i = 1, #TrainPaths:GetChildren(), 1 do
+		local part = TrainPaths:WaitForChild(`TrackPath_{i}`, 1)
 		if part then
 			TrainPositions[i] = part.Position
 		end

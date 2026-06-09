@@ -157,8 +157,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Health = HumanConstants.MAX_HP
 	self.Character = character
 	self.Humanoid = humanoid
-	self.HRP = humanoid.RootPart
-	self.RootPart = rootPart :: BasePart
+	self.HRP = rootPart
 	self.Dead = false
 	self.Animator = humanoid:FindFirstChildOfClass("Animator")
 	self.Stamina = 100
@@ -757,14 +756,14 @@ end
 	@param position Vector3? -- Optional world position to apply force at (defaults to RootPart position)
 ]=]
 function Human:ApplyImpulse(force: Vector3, position: Vector3?)
-	if not self.RootPart or not self.RootPart.Parent then
+	if not self.HRP then
 		return
 	end
 
 	if position then
-		self.RootPart:ApplyImpulseAtPosition(force, position)
+		self.HRP:ApplyImpulseAtPosition(force, position)
 	else
-		self.RootPart:ApplyImpulse(force)
+		self.HRP:ApplyImpulse(force)
 	end
 end
 

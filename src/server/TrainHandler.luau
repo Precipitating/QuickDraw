@@ -101,8 +101,11 @@ function TrainHandler:Initialize()
 		return
 	end
 
-	for i = 1, #TrainPaths:GetChildren() do
-		local part = TrainPaths[`Seg_{i}`]
+	for i = 1, #TrainPaths:GetChildren(), 1 do
+		local part = TrainPaths:FindFirstChild(`TrackPath_{i}`)
+		if not part then
+			continue
+		end
 		TrainPositions[i] = part.Position
 		if CollectionService:HasTag(part, "StationPoint") then
 			table.insert(StationPoints, {

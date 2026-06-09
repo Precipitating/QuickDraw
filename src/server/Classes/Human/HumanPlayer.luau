@@ -62,7 +62,7 @@ function HumanPlayer:Ragdoll(duration: number)
 end
 
 function HumanPlayer:ApplyImpulse(force: Vector3, position: Vector3?)
-	HumanSignals.ApplyImpulseToClient:Fire(self.Player, self.RootPart, force, position)
+	HumanSignals.ApplyImpulseToClient:Fire(self.Player, self.HRP, force, position)
 end
 
 function HumanPlayer:ConnectGUIs()

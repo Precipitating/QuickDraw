@@ -114,9 +114,9 @@ function HumanNPC:OnHit(damage: number, damageMultiplier: number, limbName: stri
 	Human.OnHit(self, damage, damageMultiplier, limbName, shooter)
 
 	-- If sheriff is hit by player, make them an enemy to the sheriff
-
-	if CollectionService:HasTag(self.Character, "Sheriff") and shooter:IsA("Player") then
-		local shooterCharacter = shooter.Character
+	local isShooterPlayer = if typeof(shooter) == "Instance" and shooter:IsA("Player") then shooter else nil
+	if CollectionService:HasTag(self.Character, "Sheriff") and isShooterPlayer then
+		local shooterCharacter = isShooterPlayer.Character
 		if shooterCharacter then
 			CollectionService:AddTag(shooterCharacter, "Wanted")
 		end

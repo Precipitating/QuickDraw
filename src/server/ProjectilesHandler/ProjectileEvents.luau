@@ -75,23 +75,78 @@ function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResul
 	return true
 end
 
-local function HandleSubTypes(subtype: string, duration: number, hit: RaycastResult)
+function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: number)
+	local character = hit.Instance:FindFirstAncestorOfClass("Model")
+	if not character then
+		return
+	end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		return
+	end
+
+	local raycastParams = RaycastParams.new()
+	raycastParams.FilterDescendantsInstances = { character }
+	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+
+	local wallHit = workspace:Raycast(hit.Position, -hit.Normal * 70, raycastParams)
+	if not wallHit then
+		return
+	end
+	if wallHit.Instance.CollisionGroup == "Ground" then
+		return
+	end
+
+	local hitPart = hit.Instance :: BasePart
+	local wallPart = wallHit.Instance :: BasePart
+
+	-- FIX 1: Parent the attachments FIRST, then set WorldPosition
+	local att0 = Instance.new("Attachment")
+	att0.Parent = hitPart
+	att0.WorldPosition = wallHit.Position
+
+	local att1 = Instance.new("Attachment")
+	att1.Parent = wallPart
+	att1.WorldPosition = wallHit.Position
+
+	-- FIX 2: Fixed the Enum typo (Added 's' to TwoAttachments)
+	local alignPos = Instance.new("AlignPosition")
+	alignPos.Mode = Enum.PositionAlignmentMode.TwoAttachment
+	alignPos.Attachment0 = att0
+	alignPos.Attachment1 = att1
+	alignPos.RigidityEnabled = true
+	alignPos.Parent = hitPart
+
+	-- FIX 3: Force the Humanoid into Physics mode so it doesn't fight the hook
+	humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+
+	-- Clean up
+	task.delay(duration, function()
+		if att0 then
+			att0:Destroy()
+		end
+		if att1 then
+			att1:Destroy()
+		end
+		if alignPos then
+			alignPos:Destroy()
+		end
+
+		-- Safely restore the humanoid state if they are still alive
+		if humanoid and humanoid.Parent then
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
+	end)
+end
+
+function ProjectileEvents:HandleSubTypes(subtype: string, duration: number, hit: RaycastResult)
 	if not hit then
 		return
 	end
 
 	if subtype == "Hook" then
-		local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
-		if not isModel then
-			return
-		end
-		local isHuman = isModel:FindFirstChild("Humanoid")
-
-		if not isHuman then
-			return
-		end
-		local humanClass = PlayerManager:GetHumanClass(isHuman)
-		humanClass:Ragdoll(duration)
+		self:ApplyHookSubEffect(hit, duration)
 	end
 end
 
@@ -102,7 +157,7 @@ function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwable
 		local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
 		if humanoid then
 			if throwableData.Type == "Explosive" then
-				GunSignals.PlayerHit:Fire(hit, humanoid, throwableData.Damage, cosmeticBullet, isPlayer)
+				GunSignals.PlayerHit:Fire(hit, humanoid, throwableData.Damage, cosmeticBullet, isPlayer, true)
 			elseif throwableData.Type == "Spread" then
 				GunSignals.InflictLimbDamage:Fire(
 					throwableData.SpreadParticle,
@@ -110,14 +165,15 @@ function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwable
 					throwableData.Damage,
 					hit.Instance,
 					humanoid,
-					isPlayer
+					isPlayer,
+					true
 				)
 			end
 
 			-- special effects add-on
 			task.spawn(function()
 				if throwableData.Subtype and throwableData.SubtypeEffectDuration then
-					HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
+					self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
 				end
 			end)
 
@@ -216,13 +272,65 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 	return false
 end
 
+function ProjectileEvents:ApplyExplosionForce(
+	target: BasePart,
+	explosionCenter: Vector3,
+	force: number,
+	impulseAppliedList: {}
+)
+	local hasModel = target.Parent
+	if not hasModel or not hasModel:FindFirstChild("Humanoid") then
+		return
+	end
+
+	local humanoid = hasModel:FindFirstChild("Humanoid")
+	if impulseAppliedList[humanoid] then
+		return
+	end
+	impulseAppliedList[humanoid] = true
+
+	local humanClass = PlayerManager:GetHumanClass(humanoid)
+
+	if not humanClass then
+		return
+	end
+
+	if humanClass.Ragdoll then
+		humanClass:Ragdoll(3)
+	end
+
+	if target.Anchored then
+		return
+	end
+
+	local direction = target.Position - explosionCenter
+	if direction.Magnitude == 0 then
+		direction = Vector3.new(0, 1, 0) -- Safe fallback if center is identical to root
+	else
+		-- Normalize the actual direction, then blend in a slight upward trajectory
+		direction = (direction.Unit + Vector3.new(0, 0.5, 0)).Unit
+	end
+
+	if humanClass.ApplyImpulse then
+		humanClass:ApplyImpulse(direction * force * target.AssemblyMass)
+	end
+
+	return true
+end
+
 function ProjectileEvents:ApplyThrowableRadiusDamage(origin: Vector3, radius: number, explosiveData, owner)
 	local partsInRadius = workspace:GetPartBoundsInRadius(origin, radius)
-
-	for _, obj in partsInRadius do
-		-- affect humans only
-		self:BodyPartDamage(obj, explosiveData, owner)
-	end
+	local isSpread = explosiveData.Type and explosiveData.Type == "Spread"
+	task.spawn(function()
+		local impulseAppliedList = {}
+		for _, obj in partsInRadius do
+			-- affect humans only
+			self:BodyPartDamage(obj, explosiveData, owner)
+			if not isSpread then
+				self:ApplyExplosionForce(obj, origin, radius, impulseAppliedList)
+			end
+		end
+	end)
 end
 
 -- For throwables
@@ -236,7 +344,7 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 	local blastRadius = throwableData.BlastRadius
 
 	-- apply radius damage first, for guaranteed damage within it
-	self:ApplyThrowableRadiusDamage(center, blastRadius, throwableData, owner)
+	self:ApplyThrowableRadiusDamage(center, 100, throwableData, owner)
 
 	-- spawn fragments on surface outwards from the radius
 	for _ = 1, throwableData.FragmentCount do

@@ -160,7 +160,7 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 		return
 	end
 
-	if damageData.Shooter == (human and human.Player) then
+	if not damageData.CanAffectShooter and damageData.Shooter == (human and human.Player) then
 		warn("Player attempted to shoot themself, denied")
 		return
 	end

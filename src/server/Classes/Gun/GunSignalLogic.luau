@@ -21,7 +21,8 @@ return {
 			playerHumanoid: Humanoid?,
 			damageInflicted: number,
 			cosmeticBullet: BasePart?,
-			shooter: Player? | Model?
+			shooter: Player? | Model?,
+			canAffectShooter: boolean?
 		)
 			if not hitObj then
 				warn("[GunSignals.PlayerHit] Hit object reference invalid")
@@ -53,6 +54,7 @@ return {
 				Damage = damageInflicted,
 				ShotPosition = hrp.Position,
 				Shooter = shooter,
+				CanAffectShooter = canAffectShooter,
 			}
 
 			DamageModule.DamageHuman(gunShotData)
@@ -66,7 +68,8 @@ return {
 			damageInflicted: number,
 			limb: MeshPart,
 			humanoid: Humanoid,
-			shooter: Player?
+			shooter: Player?,
+			canAffectShooter: boolean?
 		)
 			if not limb then
 				warn("[GunSignals.PlayerHit] Limb reference invalid")
@@ -97,6 +100,7 @@ return {
 				TargetHuman = humanClass,
 				LimbHit = limb,
 				Shooter = shooter,
+				CanAffectShooter = canAffectShooter,
 			}
 
 			DamageModule:ApplyInflictingDamage(shotData)

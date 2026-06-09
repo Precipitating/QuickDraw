@@ -12,7 +12,7 @@ function ServerData.Initialize()
 			bounty = 0,
 			bank = 0,
 			lastJoinedTime = nil,
-			equippedWeapon = "Coach",
+			equippedWeapon = "Revolver",
 			equippedThrowable = nil,
 			combatLogged = false,
 		},
