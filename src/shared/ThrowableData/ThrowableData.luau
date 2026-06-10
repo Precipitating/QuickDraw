@@ -105,7 +105,7 @@ local ThrowableData = {
 		MaxAmmo = 1,
 		ThrowDelay = 5,
 		Damage = 5,
-		Cost = 500,
+		Cost = 300,
 		Velocity = 100,
 		DetonationTime = 3,
 		BlastRadius = 3,
@@ -115,7 +115,7 @@ local ThrowableData = {
 		DetonationSound = "GrappleHook",
 		Type = "Explosive",
 		Subtype = "Hook",
-		SubtypeEffectDuration = 3,
+		SubtypeEffectDuration = 10,
 		ImpactParticle = "Explosion",
 		ProjectileData = Vetra.BehaviorBuilder
 			.Grenade()

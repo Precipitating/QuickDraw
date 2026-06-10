@@ -20,6 +20,13 @@ local math_sqrt = math.sqrt
 local math_cos = math.cos
 local math_abs = math.abs
 local math_sin = math.sin
+
+local RAY_DISTANCE = 60 -- max distance for straight + fan raycasts
+local SPHERE_RADIUS = 2.5 -- radius for spherecast sweep
+local FAN_ANGLE_OFFSET = 0.3 -- how far off-axis the fan raycasts angle
+local SPATIAL_SEARCH_AHEAD = 10 -- how far ahead of hit to centre the bounds search
+local SPATIAL_SEARCH_RADIUS = 8 -- radius of the spatial bounds search
+
 local MaterialHitData = {
 	[Enum.Material.Glass] = {
 		HitSound = "GlassSmash",
@@ -76,66 +83,113 @@ function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResul
 end
 
 function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: number)
-	local character = hit.Instance:FindFirstAncestorOfClass("Model")
-	if not character then
+	if not hit or not duration then
+		warn("ApplyHookSubEffect: missing arguments")
 		return
 	end
 
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then
+	local limbPart = hit.Instance :: BasePart
+	if not limbPart or not limbPart.Parent then
 		return
 	end
 
-	local raycastParams = RaycastParams.new()
-	raycastParams.FilterDescendantsInstances = { character }
-	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-
-	local wallHit = workspace:Raycast(hit.Position, -hit.Normal * 70, raycastParams)
-	if not wallHit then
-		return
-	end
-	if wallHit.Instance.CollisionGroup == "Ground" then
+	local character = limbPart.Parent
+	if not character:FindFirstChildOfClass("Humanoid") then
 		return
 	end
 
-	local hitPart = hit.Instance :: BasePart
-	local wallPart = wallHit.Instance :: BasePart
+	local rayParams = RaycastParams.new()
+	rayParams.FilterDescendantsInstances = { character }
+	rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-	-- FIX 1: Parent the attachments FIRST, then set WorldPosition
-	local att0 = Instance.new("Attachment")
-	att0.Parent = hitPart
-	att0.WorldPosition = wallHit.Position
+	-- hit.Normal points back at the shooter, so negate it to get travel direction
+	local travelDir = -hit.Normal
 
-	local att1 = Instance.new("Attachment")
-	att1.Parent = wallPart
-	att1.WorldPosition = wallHit.Position
+	-- ── Anchor search (tries each strategy until one succeeds) ────────────
 
-	-- FIX 2: Fixed the Enum typo (Added 's' to TwoAttachments)
-	local alignPos = Instance.new("AlignPosition")
-	alignPos.Mode = Enum.PositionAlignmentMode.TwoAttachment
-	alignPos.Attachment0 = att0
-	alignPos.Attachment1 = att1
-	alignPos.RigidityEnabled = true
-	alignPos.Parent = hitPart
+	local anchorPos: Vector3
+	local anchorInstance: BasePart
 
-	-- FIX 3: Force the Humanoid into Physics mode so it doesn't fight the hook
-	humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	-- Strategy 1: straight raycast in travel direction
+	local straightRay = workspace:Raycast(hit.Position, travelDir * 0.2, rayParams)
+	if straightRay and straightRay.Instance.CollisionGroup ~= "Ground" then
+		anchorPos = straightRay.Position
+		anchorInstance = straightRay.Instance
+	end
 
-	-- Clean up
+	-- Strategy 2: spherecast — catches walls the straight ray narrowly misses
+	if not anchorPos then
+		local sphereRay = workspace:Spherecast(hit.Position, SPHERE_RADIUS, travelDir * 0.2, rayParams)
+		if sphereRay and sphereRay.Instance.CollisionGroup ~= "Ground" then
+			anchorPos = sphereRay.Position
+			anchorInstance = sphereRay.Instance
+		end
+	end
+
+	-- Strategy 3: fan raycasts at slight angles
+	if not anchorPos then
+		for _, offset in { Vector3.yAxis, -Vector3.yAxis, Vector3.xAxis, -Vector3.xAxis } do
+			local fanDir = (travelDir + offset * FAN_ANGLE_OFFSET).Unit
+			local fanRay = workspace:Raycast(hit.Position, fanDir * RAY_DISTANCE, rayParams)
+			if fanRay and fanRay.Instance.CollisionGroup ~= "Ground" then
+				anchorPos = fanRay.Position
+				anchorInstance = fanRay.Instance
+				break
+			end
+		end
+	end
+
+	-- Strategy 4: spatial query for any nearby anchored part
+	if not anchorPos then
+		local overlapParams = OverlapParams.new()
+		overlapParams.FilterDescendantsInstances = { character }
+		overlapParams.FilterType = Enum.RaycastFilterType.Exclude
+		local nearby = workspace:GetPartBoundsInRadius(
+			hit.Position + travelDir * SPATIAL_SEARCH_AHEAD,
+			SPATIAL_SEARCH_RADIUS,
+			overlapParams
+		)
+		for _, part in nearby do
+			if part:IsA("BasePart") and part.Anchored and part.CollisionGroup ~= "Ground" then
+				anchorPos = part.Position
+				anchorInstance = part
+				break
+			end
+		end
+	end
+
+	-- ─────────────── Attachments ───────────────
+
+	local limbAttach = Instance.new("Attachment")
+	limbAttach.Parent = limbPart
+	limbAttach.WorldPosition = hit.Position
+
+	local endAttach = Instance.new("Attachment")
+	endAttach.Parent = anchorInstance
+	endAttach.WorldPosition = anchorPos
+
+	-- ── Rope ─────────────────────────────────────────────────────────────
+
+	local rope = Instance.new("RopeConstraint")
+	rope.Attachment0 = endAttach
+	rope.Attachment1 = limbAttach
+	rope.Length = (hit.Position - anchorPos).Magnitude
+	rope.Restitution = 0
+	rope.Visible = true
+	rope.Thickness = 0.2
+	rope.Parent = limbPart
+
+	-- ── Cleanup ──────────────────────────────────────────────────────────
+
 	task.delay(duration, function()
-		if att0 then
-			att0:Destroy()
+		if limbAttach and limbAttach.Parent then
+			limbAttach:Destroy()
 		end
-		if att1 then
-			att1:Destroy()
+		if endAttach and endAttach.Parent then
+			endAttach:Destroy()
 		end
-		if alignPos then
-			alignPos:Destroy()
-		end
-
-		-- Safely restore the humanoid state if they are still alive
-		if humanoid and humanoid.Parent then
-			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		if rope and rope.Parent then
+			rope:Destroy()
 		end
 	end)
 end
@@ -344,7 +398,7 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 	local blastRadius = throwableData.BlastRadius
 
 	-- apply radius damage first, for guaranteed damage within it
-	self:ApplyThrowableRadiusDamage(center, 100, throwableData, owner)
+	self:ApplyThrowableRadiusDamage(center, 20, throwableData, owner)
 
 	-- spawn fragments on surface outwards from the radius
 	for _ = 1, throwableData.FragmentCount do

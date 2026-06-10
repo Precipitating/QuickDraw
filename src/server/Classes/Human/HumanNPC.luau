@@ -316,7 +316,7 @@ function HumanNPC:Die(shooter: Player?)
 	end
 
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
-	if shooter and shooter:IsA("Player") then
+	if shooter and typeof(shooter) == "Instance" and shooter:IsA("Player") then
 		AwardHandler.AwardNPCKill(shooter)
 	end
 end
