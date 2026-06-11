@@ -6,8 +6,6 @@ local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-
 local Throwable = {}
 
 type Human = ClassTypes.Human

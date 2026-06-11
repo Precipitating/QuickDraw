@@ -48,6 +48,9 @@ function HumanPlayer:InitializeWeaponLoadout()
 	self.Inventory:AddWeaponToInventory("HookGrenade", 9)
 	self.Inventory:EquipWeapon("Throwable")
 
+	self.Inventory:AddWeaponToInventory("BearTrap")
+	self.Inventory:EquipWeapon("Trap")
+
 	if savedThrowableData then
 		-- Throwable
 		local throwable = self.Inventory:AddWeaponToInventory(savedThrowableData.Name)

@@ -151,6 +151,22 @@ SoundData.Sounds = {
 	},
 
 	--
+
+	-- Trap Data
+	BearTrapPlaced = {
+		SoundId = "rbxassetid://9126278027",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	BearTrapActivated = {
+		SoundId = "rbxassetid://99109622391662",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+
+	--
 	WinchesterLoadBullet = {
 		SoundId = "rbxassetid://75139130130084",
 		Volume = 1,

@@ -2,11 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local ThrowableSignals = require(ServerScriptService.Server.Classes.Throwable.ThrowableSignals)
+local Trap = require(ServerScriptService.Server.Classes.Trap.Trap)
 local WeaponTools = ReplicatedStorage.Shared.Templates
 type Human = ClassTypes.Human
 type Inventory = ClassTypes.Inventory
@@ -25,12 +27,14 @@ function Inventory.new(owner: Human): Inventory
 	self.StoredWeapons = {
 		Gun = nil,
 		Throwable = nil,
+		Trap = nil,
 	}
 
 	-- boolean state if weapon in inventory, not actually holding
 	self.EquippedWeapons = {
 		Gun = false,
 		Throwable = false,
+		Trap = false,
 	}
 
 	return self
@@ -170,7 +174,7 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?)
 		return false
 	end
 
-	local weaponClone = WeaponTools:FindFirstChild(name)
+	local weaponClone = WeaponTools:FindFirstChild(name, true)
 	if not weaponClone then
 		warn("[Inventory:EquipWeapon] Can't equip weapon, template doesnt exist")
 		return false
@@ -189,6 +193,13 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?)
 		end
 		self.StoredWeapons["Throwable"] = Throwable.new(name, self.Owner, quantity, weaponClone)
 		self.StoredWeapons["Throwable"].Janitor:Add(weaponClone)
+	elseif TrapData[name] then
+		if self.StoredWeapons["Trap"] then
+			self:RemoveWeapon("Trap")
+		end
+
+		self.StoredWeapons["Trap"] = Trap.new(name, self.Owner, quantity, weaponClone)
+		self.StoredWeapons["Trap"].Janitor:Add(weaponClone)
 	else
 		warn(`{name} is an invalid weapon to add to inventory!`)
 		return false
@@ -209,6 +220,9 @@ function Inventory:GetGun()
 end
 function Inventory:GetThrowable()
 	return self.StoredWeapons["Throwable"]
+end
+function Inventory:GetTrap()
+	return self.StoredWeapons["Trap"]
 end
 function Inventory:GetOccupiedSlotCount()
 	return self.OccupiedSlots
