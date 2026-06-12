@@ -1,10 +1,11 @@
 local TrapData = {
 	BearTrap = {
+		Name = "BearTrap",
 		MaxAmmo = 1,
 		MaxAmmoStack = 1,
 		Cost = 550,
-		Damage = 50,
-		PlaceSoundName = "BearTrapPlace",
+		Damage = 100,
+		PlaceSoundName = "BearTrapPlaced",
 		TrapActivatedSoundName = "BearTrapActivated",
 	},
 }

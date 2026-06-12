@@ -40,15 +40,16 @@ end
 function HumanPlayer:InitializeWeaponLoadout()
 	local savedGunName = ServerData.GetWeaponName(self.Player)
 	local savedThrowableData = ServerData.GetThrowableData(self.Player)
+	local savedTrapData = ServerData.GetTrapData(self.Player)
 
 	-- Gun
 	self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
 	self.Inventory:EquipWeapon("Gun")
 
-	self.Inventory:AddWeaponToInventory("HookGrenade", 9)
+	self.Inventory:AddWeaponToInventory(savedThrowableData or "HookGrenade", 9)
 	self.Inventory:EquipWeapon("Throwable")
 
-	self.Inventory:AddWeaponToInventory("BearTrap")
+	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
 	self.Inventory:EquipWeapon("Trap")
 
 	if savedThrowableData then

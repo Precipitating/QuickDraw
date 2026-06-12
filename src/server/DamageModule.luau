@@ -148,8 +148,29 @@ local function ApplyHumanRepercussionsAfterShot(human: Human, cosmeticBullet: Ba
 	end
 end
 
-function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage)
-	local hitObj = if damageData.Type == "Inflict" then damageData.LimbHit else damageData.RaycastResult
+local function CheckAndHandleLimbDestroyed(human: Human, damage: number, limbName: string)
+	local limbHealth = human.LimbHealth
+	local limbHP = limbHealth[limbName]
+	if limbHP then
+		HandleLimbDestroyed(human, limbName, damage)
+	end
+end
+
+local function CheckAndHandleDeadHuman(human: Human, shooter: Player?)
+	if human.Health <= 0 then
+		human:Die(shooter)
+	end
+end
+
+function DamageModule.DamageHuman(
+	damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage
+)
+	local hitObj = nil
+	if damageData.Type == "Shot" then
+		hitObj = damageData.RaycastResult
+	else
+		hitObj = damageData.LimbHit
+	end
 	local human = damageData.TargetHuman
 
 	if not human then
@@ -200,15 +221,11 @@ function DamageModule.DamageHuman(damageData: ClassTypes.InflictingDamage | Clas
 
 	DamageModule:ApplyDamage(human, limbName, damage, shotPos, shooter)
 	ApplyHumanRepercussionsAfterShot(human, cosmeticBulletObj)
-	if limbHealth[limbName] <= 0 then
-		HandleLimbDestroyed(human, limbName, damage)
-	end
 
+	CheckAndHandleLimbDestroyed(human, damage, limbName)
+	CheckAndHandleDeadHuman(human, shooter)
 	if not human or not human.Health then
 		return
-	end
-	if human.Health <= 0 then
-		human:Die(shooter)
 	end
 
 	if typeof(hitObj) == "RaycastResult" then

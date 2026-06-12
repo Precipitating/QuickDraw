@@ -3,10 +3,10 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
+local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local TrapPlaceables = ReplicatedStorage.Shared.Templates.Traps
 local TRAP_PLACE_STUDS_FORWARD = 5
 local TRAP_PLACE_STUDS_DOWN = 10
@@ -14,12 +14,20 @@ local TrapActivatedLogic = {
 	BearTrap = function(trapModel: Model?, hitPart: BasePart | MeshPart, hitHuman: Human, trapData)
 		local activateSound = trapData.TrapActivatedSoundName
 		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame)
-		GunSignals.PlayerHit:Fire({ Instance = hitPart }, hitHuman.Humanoid, trapData.Damage, nil, trapModel, false)
+
+		local data = {
+			Damage = trapData.Damage,
+			LimbHit = hitPart,
+			TargetHuman = hitHuman,
+			CanAffectShooter = false,
+		} :: ClassTypes.TrapDamage
+
+		DamageModule.DamageHuman(data)
 
 		hitHuman:Ragdoll(5)
 
-		if hitPart and hitPart.Parent then
-			hitPart.Parent:Destroy()
+		if trapModel then
+			trapModel:Destroy()
 		end
 	end,
 }
@@ -30,18 +38,20 @@ type Human = ClassTypes.Human
 
 function Trap.new(trapName: string, humanRef: Human, ammo: number?, tool: Tool?)
 	assert(humanRef, "Trap class initialization failed: Missing inventory ref")
+	assert(tool, "Missing tool ref for new trap class")
 	local self = setmetatable({}, Trap)
 	local trapData = TrapData[trapName]
 	if not trapData then
 		warn("Trap class initialization failed: Trap name is invalid")
 		return
 	end
+	self.Janitor = Janitor.new()
 	self.Name = trapName
-	self.Tool = tool
+	self.Tool = self.Janitor:Add(tool)
 	self.Damage = trapData.Damage
 	self.CurrentAmmo = if ammo then ammo else trapData.MaxAmmo
 	self.MaxAmmo = trapData.MaxAmmo
-	self.Janitor = Janitor.new()
+
 	self.Owner = humanRef
 	return self
 end
@@ -52,6 +62,20 @@ function Trap:UpdateAmmo(amount: number)
 		self.Owner.Inventory:RemoveWeapon("Trap")
 	end
 	return true
+end
+
+function Trap:Destroy()
+	self.Janitor:Cleanup()
+
+	self.Tool = nil
+	self.Owner = nil
+	self.Name = nil
+	self.Damage = nil
+	self.CurrentAmmo = nil
+	self.MaxAmmo = nil
+
+	setmetatable(self, nil)
+	table.clear(self)
 end
 
 function Trap:ConnectTrap(trapCollider: BasePart)
@@ -78,6 +102,14 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 			return
 		end
 
+		if self.Owner and self.Owner.Invincible then
+			return
+		end
+
+		if self.Owner and self.Owner.Dead then
+			return
+		end
+
 		local hitParent = hitPart and hitPart.Parent
 		if not hitParent then
 			return
@@ -101,11 +133,14 @@ function Trap:Place()
 		return
 	end
 
-	-- Get tool position
-	local handle: BasePart = Utility.GetInstance(self.Tool, false, "Handle")
+	-- Use HRP as raycast origin for consistency and no reliance on physics
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		return
+	end
 
 	-- Define raycast origin
-	local rayCastPosition = handle.Position + (handle.CFrame.LookVector * TRAP_PLACE_STUDS_FORWARD)
+	local rayCastPosition = hrp.Position + (hrp.CFrame.LookVector * TRAP_PLACE_STUDS_FORWARD)
 
 	local placeRay = workspace:Raycast(rayCastPosition, -Vector3.yAxis * TRAP_PLACE_STUDS_DOWN)
 
@@ -122,10 +157,12 @@ function Trap:Place()
 
 	template = template:Clone()
 
-	template.Position = placeRay.Position
+	template:PivotTo(CFrame.new(placeRay.Position))
 	template.Parent = workspace
 
-	self:ConnectTrap(template:FindFirstChild("Collider"))
+	self:ConnectTrap(template:FindFirstChild("Collision"))
+
+	self:UpdateAmmo(-1)
 end
 
 return Trap

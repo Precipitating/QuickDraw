@@ -190,5 +190,9 @@ export type GunShotDamage = DamageData & {
 	RaycastResult: RaycastResult,
 	ShotPosition: Vector3?,
 }
+export type TrapDamage = DamageData & {
+	Type: "Trap",
+	LimbHit: BasePart,
+}
 
 return nil

@@ -9,6 +9,7 @@ local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local ThrowableSignals = require(ServerScriptService.Server.Classes.Throwable.ThrowableSignals)
 local Trap = require(ServerScriptService.Server.Classes.Trap.Trap)
+local TrapSignals = require(ServerScriptService.Server.Classes.Trap.TrapSignals)
 local WeaponTools = ReplicatedStorage.Shared.Templates
 type Human = ClassTypes.Human
 type Inventory = ClassTypes.Inventory
@@ -151,6 +152,8 @@ function Inventory:EquipWeapon(weaponType: string)
 		elseif weaponType == "Throwable" then
 			weapon.RaycastParams.ExcludeInstances = { weapon.Tool }
 			ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, weapon.Tool)
+		elseif weaponType == "Trap" then
+			TrapSignals.ConnectTrapSignal:Fire(self.Owner.Player, weapon.Tool)
 		end
 	elseif ownerType == "NPC" then
 		local character = self.Owner.Character

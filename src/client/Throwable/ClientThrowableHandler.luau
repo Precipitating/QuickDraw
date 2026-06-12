@@ -11,10 +11,9 @@ local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 local ClientThrowableHandler = {}
 ClientThrowableHandler.networker = Networker.new("ThrowableNetwork", ClientThrowableHandler)
-ClientThrowableHandler.janitor = Janitor.new()
+local InnerJanitor = Janitor.new()
+local OuterJanitor = Janitor.new()
 
-local ThrowableEquipConn = nil
-local ThrowableDisconnectConn = nil
 local ThrowableRaycastParams = RaycastParams.new()
 ThrowableRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 local LastThrown = 0
@@ -56,44 +55,44 @@ function ClientThrowableHandler:ConnectThrowable(throwable: Tool?)
 	end
 	warn(`[CLIENT] Connecting {throwable.Name}`)
 
-	if ThrowableEquipConn and ThrowableDisconnectConn then
-		ThrowableEquipConn:Disconnect()
-		ThrowableDisconnectConn:Disconnect()
-	end
+	OuterJanitor:Add(throwable.Equipped:Connect(function(_: Mouse)
+		InnerJanitor:Cleanup() -- clear previous equip if any
 
-	ThrowableEquipConn = throwable.Equipped:Connect(function(_: Mouse)
-		self.janitor:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
+		InnerJanitor:Add(UserInputService.InputBegan:Connect(function(input: InputObject, gameProcessed: boolean)
 			if gameProcessed then
 				return
 			end
 		end))
 
-		self.janitor:Add(throwable.Activated:Connect(function()
+		InnerJanitor:Add(throwable.Activated:Connect(function()
 			if PlayerContext.Humanoid.Health <= 0 then
 				return
 			end
 
-			-- ammo check on server
 			local ammo = self.networker:fetch("GetAmmo")
 			if not ammo or ammo <= 0 then
 				return
 			end
 
-			-- cooldown check
 			local now = os.clock()
 			if now - LastThrown < ThrowableData[throwable.Name].ThrowDelay then
 				return
 			end
-			LastThrown = now
 
+			LastThrown = now
 			self:Throw(throwable)
 		end))
-	end)
+	end))
 
-	ThrowableDisconnectConn = throwable.Unequipped:Connect(function()
+	OuterJanitor:Add(throwable.Unequipped:Connect(function()
 		warn(`[CLIENT] Disconnecting {throwable.Name} connection`)
-		self.janitor:Cleanup()
-	end)
+		InnerJanitor:Cleanup()
+	end))
+
+	OuterJanitor:Add(throwable.Destroying:Connect(function()
+		InnerJanitor:Cleanup()
+		OuterJanitor:Cleanup()
+	end))
 end
 
 return ClientThrowableHandler

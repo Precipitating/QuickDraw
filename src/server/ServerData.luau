@@ -14,6 +14,7 @@ function ServerData.Initialize()
 			lastJoinedTime = nil,
 			equippedWeapon = "Revolver",
 			equippedThrowable = nil,
+			equippedTrap = nil,
 			combatLogged = false,
 		},
 		profileStoreIndex = "Main",
@@ -97,6 +98,10 @@ function ServerData.GetThrowableData(player: Player)
 end
 function ServerData.GetWeaponName(player: Player)
 	return DataService:get(player, { "equippedWeapon" })
+end
+
+function ServerData.GetTrapData(player: Player)
+	return DataService:get(player, { "equippedTrap" })
 end
 
 function ServerData.SaveThrowableEquipped(player: Player, throwableName: string?, throwableAmmo: number?)
