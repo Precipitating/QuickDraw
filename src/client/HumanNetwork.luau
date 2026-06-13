@@ -41,8 +41,8 @@ end
 function HumanNetwork:FinishedLoadingGame()
 	self.networker:fire("FinishedLoadingGame")
 end
-function HumanNetwork:ToggleBackpackVisibility(active: boolean)
-	CoreGUIHandler.ToggleBackpackVisibility(active)
+function HumanNetwork:ToggleBackpackVisibility(active: boolean, locked: boolean?)
+	CoreGUIHandler.ToggleBackpackVisibility(active, locked)
 end
 
 function HumanNetwork:AdjustGrayscale(saturationTarget: number)

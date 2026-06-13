@@ -4,9 +4,8 @@ local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
-local ClientData = require(StarterPlayer.StarterPlayerScripts.Client.ClientData)
+local ClientData = require(script.Parent.Parent.ClientData)
 local ClientUtility = require(script.Parent.ClientUtility)
 local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
@@ -158,8 +157,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 
 	-- Reset colour corrector
 	PlayerContext.ColorCorrector.Saturation = 0
-	CoreGUIHandler.ToggleBackpackVisibility(true)
-
+	CoreGUIHandler.ToggleBackpackVisibility(true, false)
 	ClientUtility.ToggleControls(true)
 
 	CurrentCamera.CameraSubject = humanoid

@@ -11,6 +11,7 @@ local GamepassIds = require(ReplicatedStorage.Shared.GamepassIds)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local GUI = ReplicatedStorage.Shared.GUI
 
@@ -48,12 +49,9 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame, refillAm
 					`{if GunData[product.Name].Cost == 0 then "Free" else "$" .. GunData[product.Name].Cost} `
 				price.Text = if GunData[product.Name] and GunData[product.Name].Cost then gunCostText else "Error"
 			else
-				local throwableCostText = `{if ThrowableData[product.Name].Cost == 0
-					then "Free"
-					else "$" .. ThrowableData[product.Name].Cost}`
-				price.Text = if (ThrowableData[product.Name] and ThrowableData[product.Name].Cost)
-					then throwableCostText
-					else "Error"
+				local data = ThrowableData[product.Name] or TrapData[product.Name]
+				local throwableCostText = `{if data.Cost == 0 then "Free" else "$" .. data.Cost}`
+				price.Text = if data and data.Cost then throwableCostText else "Error"
 			end
 		end
 
@@ -66,10 +64,13 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame, refillAm
 			local productName = product.Name
 			-- get product price
 			local productCost = 0
+
 			if productList.Name == "WeaponsList" then
 				productCost = GunData[productName].Cost
 			elseif productList.Name == "ThrowablesList" then
 				productCost = ThrowableData[productName].Cost
+			elseif productList.Name == "TrapsList" then
+				productCost = TrapData[productName].Cost
 			end
 			productCost = tostring(productCost)
 
@@ -120,19 +121,23 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	local exitButton: TextButton = Utility.GetInstance(gui, true, "Exit")
 	local throwablesButton: TextButton = Utility.GetInstance(gui, true, "BG", "ThrowablesButton")
 	local weaponsButton: TextButton = Utility.GetInstance(gui, true, "BG", "WeaponsButton")
+	local trapsButton: TextButton = Utility.GetInstance(gui, true, "BG", "TrapsButton")
 	local robuxButton: TextButton = Utility.GetInstance(gui, true, "BG", "RobuxButton")
 	local refillAmmoButton: TextButton = Utility.GetInstance(gui, true, "BG", "AmmoRefillButton")
 
 	local weaponsList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "WeaponsList")
 	local throwablesList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "ThrowablesList")
+	local trapsList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "TrapsList")
 	local robuxList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "RobuxList")
 
 	assert(exitButton, "Missing exit button from ShopGUI")
 	assert(refillAmmoButton, "Missing ammo refill button from ShopGUI")
 	assert(throwablesButton, "Missing throwables button from ShopGUI")
 	assert(weaponsButton, "Missing weapons button from ShopGUI")
+	assert(trapsButton, "Missing traps button from ShopGUI")
 	assert(throwablesList, "Missing throwables list from ShopGUI")
 	assert(weaponsList, "Missing weapons list from ShopGUI")
+	assert(trapsList, "Missing traps list  from ShopGUI")
 
 	linkedPrompt.Enabled = false
 	PlayerContext.Humanoid:UnequipTools()
@@ -166,13 +171,30 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 		throwablesList.Visible = true
 		weaponsList.Visible = false
 		robuxList.Visible = false
+		trapsList.Visible = false
 	end))
 
 	self.janitor:Add(weaponsButton.Activated:Connect(function(_, _)
 		weaponsList.Visible = true
 		throwablesList.Visible = false
 		robuxList.Visible = false
+		trapsList.Visible = false
 	end))
+
+	self.janitor:Add(trapsButton.Activated:Connect(function(_, _)
+		trapsList.Visible = true
+		throwablesList.Visible = false
+		robuxList.Visible = false
+		weaponsList.Visible = false
+	end))
+
+	self.janitor:Add(robuxButton.Activated:Connect(function(_, _)
+		robuxList.Visible = true
+		throwablesList.Visible = false
+		weaponsList.Visible = false
+		trapsList.Visible = false
+	end))
+
 	self.janitor:Add(refillAmmoButton.Activated:Connect(function(_, _)
 		local bought = self.networker:fetch("BuyRefillAmmo")
 
@@ -183,14 +205,9 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 		end
 	end))
 
-	self.janitor:Add(robuxButton.Activated:Connect(function(_, _)
-		robuxList.Visible = true
-		throwablesList.Visible = false
-		weaponsList.Visible = false
-	end))
-
 	self:ConnectProductList(weaponsList, refillAmmoButton)
 	self:ConnectProductList(throwablesList, refillAmmoButton)
+	self:ConnectProductList(trapsList, refillAmmoButton)
 	self:ConnectRobuxList(robuxList)
 end
 

@@ -2,7 +2,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -57,6 +56,9 @@ function Trap.new(trapName: string, humanRef: Human, ammo: number?, tool: Tool?)
 end
 
 function Trap:UpdateAmmo(amount: number)
+	if amount > 0 and self.CurrentAmmo >= self.MaxAmmo then
+		return false
+	end
 	self.CurrentAmmo = math.max(0, self.CurrentAmmo + amount)
 	if self.CurrentAmmo <= 0 then
 		self.Owner.Inventory:RemoveWeapon("Trap")

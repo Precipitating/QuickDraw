@@ -128,7 +128,7 @@ end
 
 function Inventory:EquipWeapon(weaponType: string)
 	if not self:CanEquip() then
-		return
+		return false
 	end
 	local weapon = self.StoredWeapons[weaponType]
 	if not weapon then
@@ -138,7 +138,7 @@ function Inventory:EquipWeapon(weaponType: string)
 	local ownerType = self.Owner and self.Owner.HumanType
 	if not ownerType then
 		warn("[Inventory:EquipWeapon] Failed to get owner type")
-		return
+		return false
 	end
 
 	if ownerType == "Player" then

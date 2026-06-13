@@ -25,6 +25,21 @@ export type Throwable = {
 	Throw: (self: Throwable, cameraLookVector: Vector3) -> (),
 	UpdateAmmo: (self: Throwable, amount: number) -> boolean,
 }
+
+export type Trap = {
+	Janitor: any,
+	Name: string,
+	Tool: Tool,
+	Damage: number,
+	CurrentAmmo: number,
+	MaxAmmo: number,
+	Owner: any,
+
+	UpdateAmmo: (self: Trap, amount: number) -> (),
+	Destroy: (self: Trap) -> (),
+	ConnectTrap: (self: Trap, trapCollider: BasePart) -> (),
+	Place: (self: Trap) -> (),
+}
 export type Inventory = {
 	-- Owner
 	Owner: Human,
@@ -56,6 +71,7 @@ export type Inventory = {
 	GetOccupiedSlotCount: (self: Inventory) -> number,
 	GetGun: (self: Inventory) -> Gun?,
 	GetThrowable: (self: Inventory) -> Throwable?,
+	GetTrap: (self: Inventory) -> Trap?,
 	IsFull: (self: Inventory) -> boolean,
 }
 export type AI = {

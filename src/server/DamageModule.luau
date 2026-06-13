@@ -151,7 +151,8 @@ end
 local function CheckAndHandleLimbDestroyed(human: Human, damage: number, limbName: string)
 	local limbHealth = human.LimbHealth
 	local limbHP = limbHealth[limbName]
-	if limbHP then
+
+	if limbHP and limbHealth[limbName] <= 0 then
 		HandleLimbDestroyed(human, limbName, damage)
 	end
 end

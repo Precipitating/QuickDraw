@@ -1,10 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local CommonGUIFunctions = require(script.Parent.CommonGUIFunctions)
 local PopupGUI = require(script.Parent.PopupGUI)
-local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerData = require(ServerScriptService.Server.ServerData)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -56,6 +57,43 @@ function ShopGUI:BuyRefillAmmo(player: Player)
 	PopupGUI:NewPopup(player, 1, `Refilled ammo`)
 	return true
 end
+
+local function BuyConsumableWeapon(player: Player, human: ClassTypes.Human, productName: string, type: string)
+	local currentItem = nil
+	local success = true
+	if type == "Throwable" then
+		currentItem = human.Inventory:GetThrowable()
+	elseif type == "Trap" then
+		currentItem = human.Inventory:GetTrap()
+	else
+		warn("[BuyConsumableWeapon] UNKNOWN TYPE TO CONECT")
+		return false
+	end
+
+	if currentItem then
+		-- Already in inventory, increase its ammo instead by 1
+		if currentItem.Name == productName then
+			success = currentItem:UpdateAmmo(1)
+			if success then
+				PopupGUI:NewPopup(player, 1, `Increased {productName} ammo +1`)
+			else
+				PopupGUI:NewPopup(player, 1, `Cannot buy item, already max ammo`)
+			end
+			return success
+		else
+			success = human.Inventory:SwapWeapon(productName, type)
+			PopupGUI:NewPopup(player, 1, `Swapped weapon to {productName}`)
+		end
+	else
+		-- Not in inventory, add it.
+		PopupGUI:NewPopup(player, 1, `Bought {productName}`)
+		success = human.Inventory:AddWeaponToInventory(productName, 1)
+		success = human.Inventory:EquipWeapon(type)
+	end
+
+	return success
+end
+
 function ShopGUI:BuyItem(player: Player, productName: string, productCost: number, soundName: string?)
 	local human = PlayerManager:GetHumanClassFromPlayer(player)
 	if not human then
@@ -71,38 +109,30 @@ function ShopGUI:BuyItem(player: Player, productName: string, productCost: numbe
 		return false
 	end
 
+	local success = true
+
 	local currentGun = human.Inventory:GetGun()
 	if GunData[productName] then
 		if currentGun and currentGun.Name == productName then
+			PopupGUI:NewPopup(player, 1, `You already own this weapon!`)
 			return false
 		end
 		human.Inventory:SwapWeapon(productName, "Gun")
 		PopupGUI:NewPopup(player, 1, `Gun swapped to {productName}`)
 	elseif ThrowableData[productName] then
-		local currentThrowable = human.Inventory:GetThrowable()
-		if currentThrowable then
-			if currentThrowable.Name == productName then
-				currentThrowable.CurrentAmmo += 1
-				PopupGUI:NewPopup(player, 1, `Increased throwable ammo +1}`)
-			else
-				human.Inventory:SwapWeapon(productName, "Throwable")
-				PopupGUI:NewPopup(player, 1, `Swapped throwable to {productName}`)
-			end
-		else
-			PopupGUI:NewPopup(player, 1, `Bought {productName}`)
-			human.Inventory:AddWeaponToInventory(productName, 1)
-			human.Inventory:EquipWeapon("Throwable")
-		end
+		success = BuyConsumableWeapon(player, human, productName, "Throwable")
+	elseif TrapData[productName] then
+		success = BuyConsumableWeapon(player, human, productName, "Trap")
 	end
 
 	if soundName then
 		ServerSoundHandler:PlaySoundTo(player, soundName)
 	end
 
-	if productCost ~= 0 then
+	if productCost ~= 0 and success then
 		ServerData.UpdateMoney(player, -productCost)
 	end
-	return true
+	return success
 end
 ShopGUI.networker = Networker.new(
 	"ShopNetwork",

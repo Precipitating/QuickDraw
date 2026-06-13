@@ -1,38 +1,102 @@
+local ContextActionService = game:GetService("ContextActionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local ClientTrapHandler = {}
 
 ClientTrapHandler.networker = Networker.new("TrapNetwork", ClientTrapHandler)
 local InnerTrapJanitor = Janitor.new()
 local OuterTrapJanitor = Janitor.new()
+local HOLD_TRIGGER_TIME = 0.5
+local HoldingLMBStart = false
+local HoldingLMB = false
 
 function ClientTrapHandler:ConnectTrap(trap: Tool?)
 	if not trap then
 		return
 	end
 
+	local trapData = TrapData[trap.Name]
+	if not trapData then
+		warn("Trap data doesn't exist for this tool!")
+		return
+	end
+	local player = Players.LocalPlayer
+
+	local holdGUI: ScreenGui = player.PlayerGui:WaitForChild("PlaceGUI", 3)
+	if not holdGUI then
+		warn("Missing HoldGUI")
+		return
+	end
+
+	local holdGUIFill: Frame = Utility.GetInstance(holdGUI, true, "Frame", "Fill")
+
+	InnerTrapJanitor:Cleanup()
+	OuterTrapJanitor:Cleanup()
+
 	OuterTrapJanitor:Add(trap.Equipped:Connect(function()
 		warn("Trap connected")
-		local trapData = TrapData[trap.Name]
 
-		InnerTrapJanitor:Cleanup() -- clear previous equip if any
-		InnerTrapJanitor:Add(trap.Activated:Connect(function()
-			SoundManager.PlayKeyed("SFX", trapData.PlaceSoundName)
-			ClientTrapHandler.networker:fire("PlaceDownTrap", trap)
+		ContextActionService:BindAction("LMBHeldAction", function(_, inputState, _)
+			if inputState == Enum.UserInputState.Begin then
+				HoldingLMBStart = os.clock()
+				HoldingLMB = false
+				holdGUI.Enabled = true
+			elseif inputState == Enum.UserInputState.End then
+				HoldingLMBStart = nil
+				HoldingLMB = false
+				if holdGUI then
+					holdGUI.Enabled = false
+					holdGUIFill.Size = UDim2.fromScale(0, 1)
+				end
+			end
+			return Enum.ContextActionResult.Pass
+		end, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.Touch)
+
+		InnerTrapJanitor:Add(RunService.Heartbeat:Connect(function()
+			if not HoldingLMBStart then
+				return
+			end
+			local curr = os.clock()
+			local timeSinceHold = curr - HoldingLMBStart
+			if timeSinceHold >= HOLD_TRIGGER_TIME and not HoldingLMB then
+				HoldingLMB = true
+			end
+
+			print(timeSinceHold)
+
+			if timeSinceHold >= trapData.HoldTime then
+				SoundManager.PlayKeyed("SFX", trapData.PlaceSoundName)
+				ClientTrapHandler.networker:fire("PlaceDownTrap", trap)
+				holdGUI.Enabled = false
+				HoldingLMB = false
+			else
+				local barVal = math.min(timeSinceHold / trapData.HoldTime, 1)
+				holdGUIFill.Size = UDim2.fromScale(barVal, 1)
+			end
 		end))
 	end))
 
 	OuterTrapJanitor:Add(trap.Unequipped:Connect(function()
 		warn("Trap disconnected")
 		InnerTrapJanitor:Cleanup()
+		ContextActionService:UnbindAction("LMBHeldAction")
+		HoldingLMBStart = nil
+		HoldingLMB = false
 	end))
 
 	OuterTrapJanitor:Add(trap.Destroying:Connect(function()
 		InnerTrapJanitor:Cleanup()
 		OuterTrapJanitor:Cleanup()
+		ContextActionService:UnbindAction("LMBHeldAction")
+		HoldingLMBStart = nil
+		HoldingLMB = false
 	end))
 end
 

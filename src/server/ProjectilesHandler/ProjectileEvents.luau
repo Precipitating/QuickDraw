@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GeneralProjectilesData = require(ReplicatedStorage.Shared.GeneralProjectilesData)
@@ -10,6 +11,7 @@ local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ProjectileContext = require(script.Parent.ProjectileContext)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
+local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
 local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -98,6 +100,8 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 		return
 	end
 
+	local hitPlayer = Players:GetPlayerFromCharacter(character)
+
 	local rayParams = RaycastParams.new()
 	rayParams.FilterDescendantsInstances = { character }
 	rayParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -179,6 +183,10 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 	rope.Thickness = 0.2
 	rope.Parent = limbPart
 
+	if hitPlayer then
+		HumanNetwork:ToggleBackpackVisibility(hitPlayer, false, true)
+	end
+
 	-- ── Cleanup ──────────────────────────────────────────────────────────
 
 	task.delay(duration, function()
@@ -190,6 +198,9 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 		end
 		if rope and rope.Parent then
 			rope:Destroy()
+		end
+		if hitPlayer then
+			HumanNetwork:ToggleBackpackVisibility(hitPlayer, true, false)
 		end
 	end)
 end

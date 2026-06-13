@@ -19,16 +19,19 @@ return {
 	-- parent - starting instance
 	-- varargs - list of path names to traverse
 	GetInstance = function(parent: Instance, waitForChild: boolean, ...)
+		local caller = debug.info(2, "sln") -- source, line, name of the calling function
+		local tag = `[GetInstance ← {caller}]`
+
 		local current: Instance = parent
 		local paths = table.pack(...)
 
 		if not current then
+			warn(`{tag} Parent is nil`)
 			return nil
 		end
 
 		for i = 1, paths.n do
 			local name = paths[i]
-
 			local nextInstance: Instance?
 
 			if waitForChild then
@@ -38,7 +41,7 @@ return {
 			end
 
 			if not nextInstance then
-				warn(`[GetInstance] Cannot grab "{name}" reference`)
+				warn(`{tag} Cannot find "{name}" under "{current:GetFullName()}"`)
 				return nil
 			end
 

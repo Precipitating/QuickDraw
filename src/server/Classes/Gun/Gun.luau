@@ -147,11 +147,16 @@ function Gun:SpreadShot()
 end
 
 function Gun:UpdateAmmo(amount: number)
+	if amount > 0 and self.CurrentAmmo >= self.MaxAmmo then
+		return false
+	end
 	self.CurrentAmmo = math.clamp(self.CurrentAmmo + amount, 0, self.MaxAmmo)
 
 	if self.CurrentAmmoIntValue then
 		self.CurrentAmmoIntValue.Value = self.CurrentAmmo
 	end
+
+	return true
 end
 
 function Gun:UpdateAmmoReserve(amount: number)

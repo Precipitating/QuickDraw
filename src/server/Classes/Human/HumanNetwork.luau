@@ -39,8 +39,8 @@ function HumanNetwork:GetCurrentGunName(player: Player)
 
 	return currentGun.Name
 end
-function HumanNetwork:ToggleBackpackVisibility(player: Player, active: boolean)
-	self.networker:fire(player, "ToggleBackpackVisibility", active)
+function HumanNetwork:ToggleBackpackVisibility(player: Player, active: boolean, locked: boolean?)
+	self.networker:fire(player, "ToggleBackpackVisibility", active, locked)
 end
 
 HumanNetwork.networker = Networker.new(

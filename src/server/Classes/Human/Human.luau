@@ -57,7 +57,7 @@ local LIMB_CHAIN = {
 }
 
 local LimbHealth = {
-	Head = 35,
+	Head = 50,
 	UpperTorso = 85,
 	LowerTorso = 70,
 	LeftUpperArm = 60,
@@ -586,27 +586,36 @@ function Human:SetCrawlState()
 end
 
 function Human:MakeLimbFloppy(limbPart)
-	local animationConstraint: AnimationConstraint? = limbPart:FindFirstChildWhichIsA("AnimationConstraint", true)
-	local ballSocket: BallSocketConstraint? = limbPart:FindFirstChildOfClass("BallSocketConstraint")
-	local limbName = limbPart.Name
-	limbPart.CanCollide = false
-	limbPart.Massless = true
-	if animationConstraint then
-		animationConstraint.Enabled = false
-		animationConstraint.MaxForce = 0
-		animationConstraint.MaxTorque = 0
-		print(`{animationConstraint.Name} animation constraint disabled!`)
-	end
+	task.spawn(function()
+		local animationConstraint: AnimationConstraint? = limbPart:FindFirstChildWhichIsA("AnimationConstraint", true)
+		local ballSocket: BallSocketConstraint? = limbPart:FindFirstChildOfClass("BallSocketConstraint")
+		local limbName = limbPart.Name
+		limbPart.CanCollide = false
+		limbPart.Massless = true
+		if animationConstraint then
+			animationConstraint.Enabled = false
+			animationConstraint.MaxForce = 0
+			animationConstraint.MaxTorque = 0
+			print(`{animationConstraint.Name} animation constraint disabled!`)
 
-	if ballSocket then
-		ballSocket.LimitsEnabled = false
-		ballSocket.MaxFrictionTorque = 0
-		print(`{limbName} ball socket disabled!`)
-	end
+			-- If we ragdoll and stand up, it resets everything so reapply this
+			self.Janitor:Add(animationConstraint:GetPropertyChangedSignal("Enabled"):Connect(function()
+				if self.DisabledBodyParts[limbName] == true then
+					animationConstraint.Enabled = false
+				end
+			end))
+		end
 
-	if self.DisabledBodyParts[limbName] == false then
-		self.DisabledBodyParts[limbName] = true
-	end
+		if ballSocket then
+			ballSocket.LimitsEnabled = false
+			ballSocket.MaxFrictionTorque = 0
+			print(`{limbName} ball socket disabled!`)
+		end
+
+		if self.DisabledBodyParts[limbName] == false then
+			self.DisabledBodyParts[limbName] = true
+		end
+	end)
 end
 
 function Human:DisableLimb(limbName: string)
