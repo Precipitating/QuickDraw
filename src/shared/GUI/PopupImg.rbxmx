@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="ImageLabel" referent="RBXCB5EF5CAF815426699767F49233C8EEE">
+	<Item class="ImageLabel" referent="RBX6B5BBE20F2914E50BBD7EC6B95FFD97D">
 		<Properties>
 			<Content name="Image"><url>rbxassetid://76638785428526</url></Content>
 			<Color3 name="ImageColor3">
@@ -99,7 +99,18 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="TextLabel" referent="RBX79C9B82FED824ADF86DEC5394D4B5441">
+		<Item class="UIScale" referent="RBX1F71FAB89EDC49FDAC133B04B0E8FC6B">
+			<Properties>
+				<float name="Scale">1.00000001e-07</float>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">UIScale</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="TextLabel" referent="RBXC2731E4D5C9540C0BE37A6F376FC0E5F">
 			<Properties>
 				<Font name="FontFace">
 					<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -193,9 +204,9 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="UIScale" referent="RBX672E4C10724F49379DDA3480A7720943">
+			<Item class="UIScale" referent="RBX7EAE28B868704128AD394F18DCCE5CD1">
 				<Properties>
-					<float name="Scale">1.00000001e-07</float>
+					<float name="Scale">1</float>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -204,17 +215,6 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-		</Item>
-		<Item class="UIScale" referent="RBXC40AFDFAE39740E292E5C868055EA4E9">
-			<Properties>
-				<float name="Scale">1.00000001e-07</float>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">UIScale</string>
-				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
-			</Properties>
 		</Item>
 	</Item>
 </roblox>
