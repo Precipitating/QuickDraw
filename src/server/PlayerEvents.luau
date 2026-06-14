@@ -14,6 +14,7 @@ Players.CharacterAutoLoads = false
 
 local function InitializePlayer(player: Player, character: Model)
 	local humanClass: HumanPlayer = PlayerManager:AddHumanClass(player)
+	humanClass:ConnectGUIs()
 	local humanoid: Humanoid = character:WaitForChild("Humanoid") :: Humanoid
 	local bounty = ServerData.GetBounty(player)
 	if not humanoid then
@@ -49,6 +50,9 @@ local function InitializePlayer(player: Player, character: Model)
 	if CollectionService:HasTag(player, "FirstLoad") then
 		CollectionService:RemoveTag(player, "FirstLoad")
 		task.delay(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, function()
+			if not humanClass or not humanClass.SetInvincible then
+				return
+			end
 			humanClass:SetInvincible(false, false)
 		end)
 	end

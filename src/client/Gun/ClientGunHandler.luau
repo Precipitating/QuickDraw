@@ -335,7 +335,7 @@ function ClientGunHandler:DisplayGunEffects(gunTool: Tool)
 	EffectsDisplayer.networker:fire("DisplayMuzzleFlashToOthers", gunTool)
 
 	self:ApplyGunRecoil(gunTool)
-	SoundManager.Play(gunData.ShootSoundName, {
+	SoundManager.PlayKeyed("SFX", gunData.ShootSoundName, {
 		Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 	})
 	if gunData.LoadNextRoundName then
@@ -473,19 +473,22 @@ function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
 
 	-- holding RMB means the bullet will fire via camera's lookvector
 	-- else gun barrel
-	if gunData.GunType == "Shotgun" then
-		self:SpreadShot(shootAttachment, gunTool, gunData)
-	else
-		self:SingleShot(shootAttachment, gunTool, gunData)
-	end
+
+	task.spawn(function()
+		if gunData.GunType == "Shotgun" then
+			self:SpreadShot(shootAttachment, gunTool, gunData)
+		else
+			self:SingleShot(shootAttachment, gunTool, gunData)
+		end
+	end)
 
 	self:DisplayGunEffects(gunTool)
 end
 
 function ClientGunHandler:ConnectAmmoGUI(gun: Tool)
 	local gui: ScreenGui = Utility.GetInstance(PlayerContext.PlayerGui, true, "Ammo")
-	local currentAmmo: IntValue = Utility.GetInstance(gun, true, "CurrentAmmo")
-	local ammoReserve: IntValue = Utility.GetInstance(gun, true, "AmmoReserve")
+	local currentAmmo: number = gun:GetAttribute("CurrentAmmo") :: number
+	local ammoReserve: number = gun:GetAttribute("AmmoReserve") :: number
 	local currentAmmoLabel: TextLabel = Utility.GetInstance(gui, true, "BG", "CurrentAmmo")
 	local ammoReserveLabel: TextLabel = Utility.GetInstance(gui, true, "BG", "AmmoReserve")
 	if not currentAmmo or not ammoReserve then
@@ -501,19 +504,19 @@ function ClientGunHandler:ConnectAmmoGUI(gun: Tool)
 	currentAmmoLabel.Text = tostring(currAmmo)
 	ammoReserveLabel.Text = tostring(ammoReserves)
 
-	self.janitor:Add(currentAmmo.Changed:Connect(function(newValue: number)
+	self.janitor:Add(gun:GetAttributeChangedSignal("CurrentAmmo"):Connect(function()
 		if not currentAmmoLabel then
 			warn("Missing current ammo label")
 			return
 		end
-		currentAmmoLabel.Text = tostring(newValue)
+		currentAmmoLabel.Text = tostring(gun:GetAttribute("CurrentAmmo"))
 	end))
-	self.janitor:Add(ammoReserve.Changed:Connect(function(newValue: number)
+	self.janitor:Add(gun:GetAttributeChangedSignal("AmmoReserve"):Connect(function()
 		if not ammoReserveLabel then
 			warn("Missing current ammo reserve label")
 			return
 		end
-		ammoReserveLabel.Text = tostring(newValue)
+		ammoReserveLabel.Text = tostring(gun:GetAttribute("AmmoReserve"))
 	end))
 end
 
@@ -540,7 +543,7 @@ function ClientGunHandler:TryShoot(gunTool: Tool?)
 		return
 	end
 	LastShot = now
-	local currAmmo, _, _ = GunNetwork:fetch("GetAmmoCount")
+	local currAmmo = gunTool:GetAttribute("CurrentAmmo")
 	if currAmmo and currAmmo <= 0 or GunNetwork:fetch("IsGunJammed") then
 		SoundManager.Play(gunData.ShootNoAmmoName, {
 			Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,

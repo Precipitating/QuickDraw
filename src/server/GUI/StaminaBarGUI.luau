@@ -15,14 +15,6 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 	local playerClass = PlayerManager:GetHumanClass(humanoid)
 	local currentStamina = playerClass.Stamina
 
-	-- why numbervalue? syncs to client, utilizing its Changed connection for efficiency instead
-	-- of sending a remote event every heartbeat
-	local numberValue = Instance.new("NumberValue")
-	numberValue.Name = "Stamina"
-	numberValue.Value = HumanConstants.MAX_STAMINA
-	numberValue.Parent = player.Character
-	playerClass.StaminaValue = numberValue
-
 	-- will auto disconnect when playerClass is removed (when player dies)
 	playerClass.Janitor:Add(RunService.Heartbeat:Connect(function(dt)
 		-- sprint
@@ -59,7 +51,7 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 			end
 		end
 
-		numberValue.Value = currentStamina
+		playerClass.Character:SetAttribute("Stamina", currentStamina)
 		playerClass.Stamina = currentStamina
 	end))
 

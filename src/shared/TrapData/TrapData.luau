@@ -5,7 +5,7 @@ local TrapData = {
 		MaxAmmoStack = 1,
 		Cost = 550,
 		Damage = 55,
-		HoldTime = 5,
+		HoldTime = 3,
 		PlaceSoundName = "BearTrapPlaced",
 		TrapActivatedSoundName = "BearTrapActivated",
 	},

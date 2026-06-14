@@ -169,6 +169,7 @@ export type HumanPlayer = Human & {
 	HumanType: "Player",
 	Player: Player,
 	AdjustGrayscale: (self: HumanPlayer) -> (),
+	ConnectGUIs: (self: HumanPlayer) -> (),
 }
 
 export type HumanNPC = Human & {

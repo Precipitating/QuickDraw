@@ -91,6 +91,7 @@ end
 function AI:StateChangeReset()
 	self.Owner:ToggleRightArmAimer(false)
 	self.Owner:ToggleTorsoAimer(false)
+	self:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 
 	self:StopPathfind()
 end

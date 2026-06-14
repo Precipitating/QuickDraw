@@ -70,6 +70,7 @@ function HumanPlayer:ApplyImpulse(force: Vector3, position: Vector3?)
 end
 
 function HumanPlayer:ConnectGUIs()
+	self.Character:SetAttribute("Stamina", 100)
 	HumanSignals.ConnectHumanGUIs:Fire(self.Player, self.Humanoid)
 end
 

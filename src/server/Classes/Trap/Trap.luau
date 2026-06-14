@@ -2,11 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local TrapPlaceables = ReplicatedStorage.Shared.Templates.Traps
+
 local TRAP_PLACE_STUDS_FORWARD = 5
 local TRAP_PLACE_STUDS_DOWN = 10
 local TrapActivatedLogic = {
@@ -93,22 +95,8 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 		return
 	end
 
-	local human = self.Owner
-	if not human then
-		warn("[ConnectTrap] Missing human reference")
-		return
-	end
-
 	trapCollider.Touched:Once(function(hitPart: BasePart)
 		if not TrapActivatedLogic[trapName] then
-			return
-		end
-
-		if self.Owner and self.Owner.Invincible then
-			return
-		end
-
-		if self.Owner and self.Owner.Dead then
 			return
 		end
 
@@ -117,11 +105,19 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 			return
 		end
 
-		if not hitParent:FindFirstChild("Humanoid") then
+		local hitHumanoid = hitParent:FindFirstChild("Humanoid")
+
+		if not hitHumanoid then
 			return
 		end
 
-		TrapActivatedLogic[trapName](trapCollider.Parent, hitPart, human, trapData)
+		local hitHuman = HumanRegistry:Get(hitHumanoid)
+
+		if not hitHuman then
+			warn("Trap cannot activate, whatever triggered has no human class")
+			return
+		end
+		TrapActivatedLogic[trapName](trapCollider.Parent, hitPart, hitHuman, trapData)
 	end)
 end
 

@@ -158,9 +158,9 @@ function Inventory:EquipWeapon(weaponType: string)
 	elseif ownerType == "NPC" then
 		local character = self.Owner.Character
 		local tool = weapon.Tool
-
 		weapon:ToggleCollision(false)
 		tool.Parent = character
+		weapon:InitializeAmmoValues()
 	else
 		warn("Can't equip weapon, invalid human type")
 		return false

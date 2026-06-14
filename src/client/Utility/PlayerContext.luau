@@ -189,8 +189,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 end
 
 local function ConnectGUIConnections(character: Model)
-	local staminaValue: NumberValue = Utility.GetInstance(character, true, "Stamina")
-	HumanGUIHandler.ConnectStaminaGUI(PlayerContext.PlayerGui, staminaValue)
+	HumanGUIHandler.ConnectStaminaGUI(PlayerContext.PlayerGui, character)
 end
 
 local function OnDeath()

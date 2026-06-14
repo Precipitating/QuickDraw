@@ -11,7 +11,7 @@ local GunData = {
 	Revolver = {
 		MaxAmmo = 6,
 		MaxAmmoStack = 3,
-		ShotDelay = 0.35,
+		ShotDelay = 0.25,
 		Damage = 25,
 		Velocity = 1250,
 		Cost = 0,
@@ -85,17 +85,18 @@ local GunData = {
 			.BehaviorBuilder
 			.new()
 			:Physics()
-			:MaxDistance(2000)
-			:MinSpeed(36)
+			:MaxDistance(350)
+			:MinSpeed(8)
+			:MaxSpeed(260)
 			:Done()
 			:Drag()
-			:Coefficient(0.00008)
+			:Coefficient(0.005)
 			:Model(Vetra.Enums.DragModel.GL)
 			:SegmentInterval(0.05)
 			:Done()
 			:Pierce()
 			:Max(1)
-			:SpeedThreshold(428)
+			:SpeedThreshold(80)
 			:SpeedRetention(0.75)
 			:NormalBias(0.5)
 			:Filter(function(_ctx, _result, _vel)
@@ -104,12 +105,12 @@ local GunData = {
 			:Done()
 			:Tumble()
 			:OnPierce(true)
-			:SpeedThreshold(143)
-			:DragMultiplier(1.8)
+			:SpeedThreshold(60)
+			:DragMultiplier(2.0)
 			:LateralStrength(14)
 			:Done()
 			:GyroDrift()
-			:Rate(0.7) --
+			:Rate(0.4) -- shorter barrel, less rifling twist than a rifle
 			:Done()
 			:HighFidelity()
 			:SegmentSize(0.4)
@@ -319,7 +320,7 @@ local GunData = {
 	Gatling = {
 		MaxAmmo = 20,
 		MaxAmmoStack = 3,
-		ShotDelay = 0.2,
+		ShotDelay = 0.3,
 		Damage = 20,
 		Velocity = 2250,
 		Cost = 5000,

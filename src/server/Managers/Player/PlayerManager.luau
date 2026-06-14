@@ -1,14 +1,11 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanNPC = require(ServerScriptService.Server.Classes.Human.HumanNPC)
 local HumanPlayer = require(ServerScriptService.Server.Classes.Human.HumanPlayer)
-
+local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 type HumanPlayer = ClassTypes.HumanPlayer
 
 local PlayerManager = {}
-PlayerManager.HumanClasses = {}
 
 function PlayerManager:AddHumanClass(player: Player)
 	if not player then
@@ -17,53 +14,30 @@ function PlayerManager:AddHumanClass(player: Player)
 	end
 	local character = player.Character
 	local humanoid = character:WaitForChild("Humanoid")
-	self.HumanClasses[humanoid] = HumanPlayer.new(humanoid, player)
-	self.HumanClasses[humanoid]:ConnectGUIs()
+	local humanClass = HumanPlayer.new(humanoid, player)
 
-	return self.HumanClasses[humanoid]
+	return HumanRegistry:Add(humanoid, humanClass)
 end
 
 function PlayerManager:AddHumanClassNPC(humanoid: Humanoid?, classType: string, optionalData: any?)
 	assert(humanoid, "[PlayerManager:AddHumanClassNPC] should be humanoid argument!")
-	self.HumanClasses[humanoid] = HumanNPC.new(humanoid, classType, optionalData)
-	return self.HumanClasses[humanoid]
+	local humanClass = HumanNPC.new(humanoid, classType, optionalData)
+	return HumanRegistry:Add(humanoid, humanClass)
 end
 
 function PlayerManager:RemoveHumanClass(humanoid: Humanoid?)
-	local entry = self.HumanClasses[humanoid]
-	if not entry then
-		warn(`Can't remove player from class as it doesn't exist`)
+	if not humanoid then
 		return
 	end
-	entry = nil
-
-	print("Player removed from table!")
+	HumanRegistry:Remove(humanoid)
 end
 
 function PlayerManager:GetHumanClass(key: Humanoid)
-	if not key then
-		warn(`GetHumanClass argument 'key' is invalid`)
-		return
-	end
-
-	if not PlayerManager.HumanClasses[key] then
-		warn(`GetHumanClass invalid key`)
-		return
-	end
-	return self.HumanClasses[key]
+	return HumanRegistry:Get(key)
 end
 
 function PlayerManager:GetHumanClassFromPlayer(player: Player)
-	if not player then
-		return
-	end
-	local character = player.Character
-	local humanoid: Humanoid? = Utility.GetInstance(character, false, "Humanoid")
-	assert(humanoid, "[Inputs:GetHumanClassFromPlayer] Humanoid is nil")
-	local humanClass = PlayerManager:GetHumanClass(humanoid)
-	assert(humanClass, "[Inputs:GetHumanClassFromPlayer] Reference to humanClass is nil")
-
-	return humanClass, humanoid
+	return HumanRegistry:GetFromPlayer(player)
 end
 
 return PlayerManager

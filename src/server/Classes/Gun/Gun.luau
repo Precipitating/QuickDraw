@@ -40,8 +40,7 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model, too
 	self.ShotDelay = gunData.ShotDelay
 	self.LastShot = 0
 	self.Damage = gunData.Damage
-	self.CurrentAmmoIntValue = nil
-	self.AmmoReserveIntValue = nil
+
 	-- if its NPC, its their model, else player instance
 	self.PlayerRef = player
 	if player:IsA("Player") then
@@ -67,17 +66,8 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model, too
 end
 
 function Gun:InitializeAmmoValues()
-	local currentAmmoVal: IntValue = Instance.new("IntValue")
-	currentAmmoVal.Name = "CurrentAmmo"
-	currentAmmoVal.Value = self.CurrentAmmo
-	currentAmmoVal.Parent = self.Tool
-	self.CurrentAmmoIntValue = currentAmmoVal
-
-	local ammoReserveVal: IntValue = Instance.new("IntValue")
-	ammoReserveVal.Name = "AmmoReserve"
-	ammoReserveVal.Value = self.AmmoReserve
-	ammoReserveVal.Parent = self.Tool
-	self.AmmoReserveIntValue = ammoReserveVal
+	self.Tool:SetAttribute("CurrentAmmo", self.CurrentAmmo)
+	self.Tool:SetAttribute("AmmoReserve", self.AmmoReserve)
 end
 
 function Gun:SingleShot()
@@ -150,20 +140,24 @@ function Gun:UpdateAmmo(amount: number)
 	if amount > 0 and self.CurrentAmmo >= self.MaxAmmo then
 		return false
 	end
+	if not self.Tool then
+		return false
+	end
 	self.CurrentAmmo = math.clamp(self.CurrentAmmo + amount, 0, self.MaxAmmo)
 
-	if self.CurrentAmmoIntValue then
-		self.CurrentAmmoIntValue.Value = self.CurrentAmmo
-	end
+	self.Tool:SetAttribute("CurrentAmmo", self.CurrentAmmo)
 
 	return true
 end
 
 function Gun:UpdateAmmoReserve(amount: number)
-	self.AmmoReserve = math.clamp(self.AmmoReserve + amount, 0, self.MaxAmmo * self.MaxAmmoStack)
-	if self.AmmoReserveIntValue then
-		self.AmmoReserveIntValue.Value = self.AmmoReserve
+	if not self.Tool then
+		return
 	end
+
+	self.AmmoReserve = math.clamp(self.AmmoReserve + amount, 0, self.MaxAmmo * self.MaxAmmoStack)
+
+	self.Tool:SetAttribute("AmmoReserve", self.AmmoReserve)
 end
 
 -- This is for NPCS, player shooting is handled on client via VetraNet

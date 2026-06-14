@@ -4,7 +4,6 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
-local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 

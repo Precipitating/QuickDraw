@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Stack = require(ReplicatedStorage.Shared.Classes.Stack)
+local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
@@ -210,16 +211,16 @@ function RangeAI:Attack()
 		return
 	end
 	if currentGun.Reloading then
+		print(`{self.Owner.Name} reloadin`)
 		return
 	end
 
 	if currentGun.CurrentAmmo <= 0 then
-		task.spawn(function()
-			currentGun:Reload()
-		end)
+		currentGun:Reload()
 	else
 		currentGun:ShootGun()
-		handle:ApplyImpulseAtPosition(handle.AssemblyMass * UP * 100, shootPoint.WorldPosition)
+		local recoil = GunData[self.WeaponName].GunRecoil
+		handle:ApplyImpulseAtPosition(handle.AssemblyMass * UP * recoil, shootPoint.WorldPosition)
 	end
 end
 
