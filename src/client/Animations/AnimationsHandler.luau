@@ -10,6 +10,7 @@ AnimationsHandler.networker = Networker.new("AnimationNetwork", AnimationsHandle
 local LoadedAnimations = {
 	Roll = true,
 	Kick = true,
+	PlaceDownTrap = true,
 }
 
 function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)

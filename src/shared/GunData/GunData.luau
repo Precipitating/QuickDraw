@@ -67,7 +67,7 @@ local GunData = {
 		MaxAmmo = 8,
 		MaxAmmoStack = 3,
 		ShotDelay = 0.8,
-		Damage = 35,
+		Damage = 50,
 		Cost = 1250,
 		RefillCost = 100,
 		DragCoefficient = 0.00008,
@@ -86,8 +86,7 @@ local GunData = {
 			.new()
 			:Physics()
 			:MaxDistance(350)
-			:MinSpeed(8)
-			:MaxSpeed(260)
+			:MinSpeed(260)
 			:Done()
 			:Drag()
 			:Coefficient(0.005)
@@ -121,7 +120,7 @@ local GunData = {
 			:Container(workspace.ProjectilesFolder)
 			:Done()
 			:Debug()
-			:Visualize(false)
+			:Visualize(true)
 			:Done()
 			:Build(),
 	},

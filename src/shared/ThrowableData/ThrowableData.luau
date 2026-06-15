@@ -8,7 +8,7 @@ local ThrowableData = {
 		ThrowDelay = 5,
 		Damage = 40,
 		Cost = 100,
-		Velocity = 70,
+		Velocity = 80,
 		DetonationTime = 3,
 		FragmentCount = 450,
 		BlastRadius = 10,
@@ -18,10 +18,26 @@ local ThrowableData = {
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
 		ShrapnelSpeed = 200,
-		ProjectileData = Vetra.BehaviorBuilder
+		ProjectileData = Vetra
+			.BehaviorBuilder
 			.Grenade()
+			:Clone() -- branch off the preset rather than mutating it
+			:Physics()
+			:MaxDistance(150) -- shorter realistic throw range than a grenade lob
+			:MinSpeed(2)
+			:Done()
 			:Bounce()
-			:Max(1)
+			:Max(2) -- a couple of dull thumps, not a lively bounce
+			:Restitution(0.2) -- low restitution: dynamite doesn't bounce much
+			:SpeedThreshold(8) -- stops bouncing once it's rolling slowly
+			:NormalPerturbation(0.03)
+			:Done()
+			:Drag()
+			:Coefficient(0.015) -- slight extra drag for the heavier, blockier shape
+			:Done()
+			:CornerTrap()
+			:TimeThreshold(0.01)
+			:DisplacementThreshold(0.25)
 			:Done()
 			:When(isServer, function(b)
 				b:Cosmetic()
@@ -48,21 +64,26 @@ local ThrowableData = {
 		DetonationSound = "DynamiteExplosion",
 		Type = "Explosive",
 		ImpactParticle = "Explosion",
-		ProjectileData = Vetra.BehaviorBuilder
+		ProjectileData = Vetra
+			.BehaviorBuilder
 			.Grenade()
+			:Clone()
 			:Bounce()
-			:Max(0)
+			:Max(0) -- terminates on first contact, no bouncing
+			:Done()
+			:Physics()
+			:MinSpeed(10) -- thrown with more force than a standard lob
+			:MaxDistance(200)
+			:Done()
+			:Drag()
+			:Coefficient(0.012) -- glass-bottle-ish shape, slightly more drag than a round grenade
 			:Done()
 			:When(isServer, function(b)
 				b:Cosmetic()
-					:AutoDelete(true)
 					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.KetchumGrenadeCosmetic)
 					:Container(workspace.ProjectilesFolder)
 					:Done()
 			end)
-			:Physics()
-			:MinSpeed(10)
-			:Done()
 			:Build(),
 	},
 
@@ -72,7 +93,7 @@ local ThrowableData = {
 		ThrowDelay = 5,
 		Damage = 2,
 		Cost = 200,
-		Velocity = 100,
+		Velocity = 200,
 		DetonationTime = 0,
 		BlastRadius = 6,
 		FragmentCount = 300,
@@ -83,21 +104,26 @@ local ThrowableData = {
 		ImpactParticle = "FireExplosion",
 		SpreadParticle = "Burning",
 		SpreadDuration = 5,
-		ProjectileData = Vetra.BehaviorBuilder
+		ProjectileData = Vetra
+			.BehaviorBuilder
 			.Grenade()
+			:Clone()
 			:Bounce()
-			:Max(0)
+			:Max(0) -- shatters on first contact, no bouncing
+			:Done()
+			:Physics()
+			:MinSpeed(8)
+			:MaxDistance(120) -- shorter realistic throw than a frag grenade
+			:Done()
+			:Drag()
+			:Coefficient(0.02) -- bottle + rag wick catches more air
 			:Done()
 			:When(isServer, function(b)
 				b:Cosmetic()
-					:AutoDelete(true)
 					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.MolotovCosmetic)
 					:Container(workspace.ProjectilesFolder)
 					:Done()
 			end)
-			:Physics()
-			:MinSpeed(8)
-			:Done()
 			:Build(),
 	},
 	HookGrenade = {
@@ -106,7 +132,7 @@ local ThrowableData = {
 		ThrowDelay = 5,
 		Damage = 3,
 		Cost = 300,
-		Velocity = 100,
+		Velocity = 200,
 		DetonationTime = 3,
 		BlastRadius = 3,
 		FragmentCount = 100,
@@ -117,10 +143,26 @@ local ThrowableData = {
 		Subtype = "Hook",
 		SubtypeEffectDuration = 10,
 		ImpactParticle = "Explosion",
-		ProjectileData = Vetra.BehaviorBuilder
+		ProjectileData = Vetra
+			.BehaviorBuilder
 			.Grenade()
+			:Clone() -- branch off the shared preset
 			:Bounce()
-			:Max(1)
+			:Max(1) -- one heavy thud before the mud lump settles
+			:Restitution(0.15) -- mud absorbs most of the impact, barely rebounds
+			:SpeedThreshold(10)
+			:Done()
+			:Physics()
+			:MinSpeed(10)
+			:MaxDistance(180)
+			:Done()
+			:Drag()
+			:Coefficient(0.018) -- lumpy, irregular shape catches air unevenly
+			:Done()
+			:Fragmentation()
+			:Count(6) -- the embedded grappling hooks scatter on detonation
+			:Deviation(35) -- wide spread angle, chaotic hook trajectories
+			:OnPierce(false) -- only fragments on terminal impact, not pierce
 			:Done()
 			:When(isServer, function(b)
 				b:Cosmetic()
@@ -129,9 +171,6 @@ local ThrowableData = {
 					:Container(workspace.ProjectilesFolder)
 					:Done()
 			end)
-			:Physics()
-			:MinSpeed(10)
-			:Done()
 			:Build(),
 	},
 }

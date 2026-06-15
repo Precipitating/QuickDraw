@@ -37,9 +37,16 @@ function HumanRegistry:GetFromPlayer(player: Player)
 	end
 	local character = player.Character
 	local humanoid: Humanoid? = Utility.GetInstance(character, false, "Humanoid")
-	assert(humanoid, "[HumanRegistry:GetFromPlayer] Humanoid is nil")
+
+	if not humanoid then
+		warn("[HumanRegistry:GetFromPlayer] Humanoid is nil")
+		return
+	end
 	local humanClass = self:Get(humanoid)
-	assert(humanClass, "[HumanRegistry:GetFromPlayer] Reference to humanClass is nil")
+	if not humanClass then
+		warn("[HumanRegistry:GetFromPlayer] Reference to humanClass is nil, probably died")
+		return
+	end
 	return humanClass, humanoid
 end
 

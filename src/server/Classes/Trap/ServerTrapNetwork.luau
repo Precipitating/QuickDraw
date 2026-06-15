@@ -45,7 +45,7 @@ function ServerTrapNetwork:PlaceDownTrap(player: Player)
 		return
 	end
 
-	trap:Place()
+	return trap:Place()
 end
 
 ServerTrapNetwork.networker = Networker.new(

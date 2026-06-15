@@ -25,8 +25,8 @@ function RangeAttack:Enter(previous, targetData: any)
 	while self.Human.IsRagdolled do
 		task.wait(1)
 	end
-	self.AI:StateChangeReset()
 	assert(targetData.Target, "[RangeAttack:Enter] Missing target ")
+	self.AI:StateChangeReset()
 	self.Target = targetData.Target
 	self.Cornered = targetData.Cornered
 
@@ -34,7 +34,7 @@ function RangeAttack:Enter(previous, targetData: any)
 		nil,
 		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
 		self.Human.VoicelineSound,
-		{ MaxDistance = 200 }
+		{ MaxDistance = 100 }
 	)
 
 	self.Machine:Start()

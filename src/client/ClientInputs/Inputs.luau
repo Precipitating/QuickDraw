@@ -24,8 +24,8 @@ local function FaceTowardsMovementDirection()
 	end
 end
 
-function Inputs:ToggleBackpackVisibility(active: boolean)
-	CoreGUIHandler.ToggleBackpackVisibility(active)
+function Inputs:ToggleBackpackVisibility(active: boolean, locked: boolean?)
+	CoreGUIHandler.ToggleBackpackVisibility(active, locked)
 end
 
 function Inputs:Initialize()

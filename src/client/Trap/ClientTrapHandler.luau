@@ -2,7 +2,9 @@ local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
+local PopupHandler = require(script.Parent.Parent.GUI.PopupHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
@@ -16,6 +18,47 @@ local OuterTrapJanitor = Janitor.new()
 local HOLD_TRIGGER_TIME = 0.5
 local HoldingLMBStart = false
 local HoldingLMB = false
+
+local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
+	local thrown = false
+	local humanoid: Humanoid = PlayerContext.Humanoid
+	if not humanoid or not trap then
+		return false
+	end
+	local humanoidState = humanoid:GetState()
+	if humanoidState ~= Enum.HumanoidStateType.Running then
+		return false
+	end
+
+	humanoid.WalkSpeed = 0
+
+	local placeAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("PlaceDownTrap")
+	local placeMarkerConn = placeAnim:GetMarkerReachedSignal("Placed"):Once(function()
+		if humanoid.Health >= 0 then
+			local placed = ClientTrapHandler.networker:fetch("PlaceDownTrap", trap)
+
+			if not placed then
+				PopupHandler:NewPopup(2, "Cannot place trap, invalid floor or no floor found")
+				SoundManager.PlayKeyed("SFX", "Error")
+				return
+			end
+			SoundManager.PlayKeyed("SFX", placeSoundName)
+			thrown = placed
+		end
+	end)
+
+	placeAnim.Stopped:Once(function()
+		if placeMarkerConn then
+			placeMarkerConn:Disconnect()
+		end
+
+		if humanoid and humanoid.Health > 0 then
+			humanoid.WalkSpeed = 6
+		end
+	end)
+
+	return thrown
+end
 
 function ClientTrapHandler:ConnectTrap(trap: Tool?)
 	if not trap then
@@ -69,13 +112,12 @@ function ClientTrapHandler:ConnectTrap(trap: Tool?)
 				HoldingLMB = true
 			end
 
-			print(timeSinceHold)
-
 			if timeSinceHold >= trapData.HoldTime then
-				SoundManager.PlayKeyed("SFX", trapData.PlaceSoundName)
-				ClientTrapHandler.networker:fire("PlaceDownTrap", trap)
+				PlaceDownTrap(trap, trapData.PlaceSoundName)
+
 				holdGUI.Enabled = false
 				HoldingLMB = false
+				HoldingLMBStart = nil
 			else
 				local barVal = math.min(timeSinceHold / trapData.HoldTime, 1)
 				holdGUIFill.Size = UDim2.fromScale(barVal, 1)
@@ -88,6 +130,8 @@ function ClientTrapHandler:ConnectTrap(trap: Tool?)
 		InnerTrapJanitor:Cleanup()
 		ContextActionService:UnbindAction("LMBHeldAction")
 		HoldingLMBStart = nil
+		holdGUI.Enabled = false
+		holdGUIFill.Size = UDim2.fromScale(0, 1)
 		HoldingLMB = false
 	end))
 
@@ -95,6 +139,8 @@ function ClientTrapHandler:ConnectTrap(trap: Tool?)
 		InnerTrapJanitor:Cleanup()
 		OuterTrapJanitor:Cleanup()
 		ContextActionService:UnbindAction("LMBHeldAction")
+		holdGUI.Enabled = false
+		holdGUIFill.Size = UDim2.fromScale(0, 1)
 		HoldingLMBStart = nil
 		HoldingLMB = false
 	end))

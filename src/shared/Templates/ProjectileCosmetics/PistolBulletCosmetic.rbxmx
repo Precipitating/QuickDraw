@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBXF26232C365CE4242B8C05120814B6AFC">
+	<Item class="MeshPart" referent="RBX45D884BC57C7488DA9259C0219080866">
 		<Properties>
 			<bool name="DoubleSided">true</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -55,7 +55,7 @@
 			<CoordinateFrame name="CFrame">
 				<X>0.0170725435</X>
 				<Y>0.0458620787</Y>
-				<Z>0.0820939839</Z>
+				<Z>-75.8604813</Z>
 				<R00>1</R00>
 				<R01>0</R01>
 				<R02>0</R02>
@@ -136,7 +136,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags">QnVsbGV0</BinaryString>
 		</Properties>
-		<Item class="SurfaceAppearance" referent="RBXBE91D5324FF947BB960B850A166ED149">
+		<Item class="SurfaceAppearance" referent="RBX2F41929351EA4B6BAB776C0895CF0445">
 			<Properties>
 				<token name="AlphaMode">0</token>
 				<Color3 name="Color">
@@ -163,6 +163,82 @@
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">SurfaceAppearance</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="Attachment" referent="RBX2771DC9CF9E64DE997260A2175F7BE4A">
+			<Properties>
+				<CoordinateFrame name="CFrame">
+					<X>-0.0808002055</X>
+					<Y>0</Y>
+					<Z>-0.082408905</Z>
+					<R00>1</R00>
+					<R01>0</R01>
+					<R02>0</R02>
+					<R10>0</R10>
+					<R11>1</R11>
+					<R12>0</R12>
+					<R20>0</R20>
+					<R21>0</R21>
+					<R22>1</R22>
+				</CoordinateFrame>
+				<bool name="Visible">false</bool>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Att2</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="Attachment" referent="RBX8806AEC369A74F9080D5D3F12D6E4F4D">
+			<Properties>
+				<CoordinateFrame name="CFrame">
+					<X>-0.080102928</X>
+					<Y>0</Y>
+					<Z>0.082069397</Z>
+					<R00>1</R00>
+					<R01>0</R01>
+					<R02>0</R02>
+					<R10>0</R10>
+					<R11>1</R11>
+					<R12>0</R12>
+					<R20>0</R20>
+					<R21>0</R21>
+					<R22>1</R22>
+				</CoordinateFrame>
+				<bool name="Visible">false</bool>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Att1</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+		<Item class="Trail" referent="RBXFDC9AD417EEE493C83A326AB040057CD">
+			<Properties>
+				<Ref name="Attachment0">RBX2771DC9CF9E64DE997260A2175F7BE4A</Ref>
+				<Ref name="Attachment1">RBX8806AEC369A74F9080D5D3F12D6E4F4D</Ref>
+				<float name="Brightness">1</float>
+				<ColorSequence name="Color">0 1 0.764706 0.215686 0 1 1 0.764706 0.215686 0 </ColorSequence>
+				<bool name="Enabled">true</bool>
+				<bool name="FaceCamera">true</bool>
+				<float name="Lifetime">0.100000001</float>
+				<float name="LightEmission">1</float>
+				<float name="LightInfluence">0</float>
+				<float name="MaxLength">10</float>
+				<float name="MinLength">0.100000001</float>
+				<Content name="Texture"><url>rbxassetid://5367817750</url></Content>
+				<float name="TextureLength">1</float>
+				<token name="TextureMode">0</token>
+				<NumberSequence name="Transparency">0 0 0 1 0 0 </NumberSequence>
+				<NumberSequence name="WidthScale">0 1 0 0.49713 0.74375 0 0.610792 0.125 0 1 0 0 </NumberSequence>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Trail</string>
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>

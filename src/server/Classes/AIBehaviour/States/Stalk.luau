@@ -108,7 +108,6 @@ function Stalk:Update(dt)
 end
 
 function Stalk:Exit(nextState)
-	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 	self.Machine:Stop()
 	self.AI.NoobPath:Stop()
 end

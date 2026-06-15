@@ -218,36 +218,49 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	end
 	--warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
-
 function HumanNPC:AimRightArmTowards(target)
-	if self.DisabledBodyParts["RightUpperArm"] == true then
-		return
+	-- 1. Early exits & Guard rails
+	if self.DisabledBodyParts["RightUpperArm"] then
+		return false
 	end
-	self:ToggleRightArmAimer(true)
-	self:ToggleTorsoAimer(true)
-	local rightArm = self.BodyParts["RightUpperArm"]
-	local origin = rightArm.Position
 
-	local targetPos
+	local rightArm = self.BodyParts["RightUpperArm"]
+	if not rightArm or not self.HRP then
+		return false
+	end
+
+	-- 2. Clean Target Position Resolution
+	local targetPos: Vector3?
+
 	if typeof(target) == "Instance" then
 		if target:IsA("Model") then
+			-- R6/R15 adaptability or custom 'UpperBody'
 			local upperTorso = target:FindFirstChild("UpperBody")
-			if upperTorso then
-				targetPos = upperTorso.Position
-			else
-				targetPos = target:GetPivot().Position
-			end
+				or target:FindFirstChild("UpperTorso")
+				or target:FindFirstChild("Torso")
+			targetPos = upperTorso and upperTorso.Position or target:GetPivot().Position
 		elseif target:IsA("BasePart") then
 			targetPos = target.Position
 		end
-	else
-		-- target is a Vector3
+	elseif typeof(target) == "Vector3" then
 		targetPos = target
 	end
 
+	-- Safety check if target type was invalid
+	if not targetPos then
+		warn("AimRightArmTowards received an invalid target.")
+		return false
+	end
+
+	-- 3. Activation
+	self:ToggleRightArmAimer(true)
+	self:ToggleTorsoAimer(true)
+
+	-- 4. Calculate Arm and Torso Aim CFrames
+	local origin = rightArm.Position
 	local lookCF = CFrame.lookAt(origin, targetPos)
 
-	-- smooth time-based noise
+	-- Smooth time-based noise (Procedural Sway)
 	local t = os.clock() * HumanConstants.SWAY_SPEED
 	local seed = self.NoiseSeed
 
@@ -258,23 +271,46 @@ function HumanNPC:AimRightArmTowards(target)
 	local swayPitch = pitchNoise * HumanConstants.SWAY_AMOUNT
 
 	lookCF *= CFrame.Angles(math.rad(90) + swayPitch, swayYaw, 0)
-
 	self.RightArmAimer.CFrame = lookCF
 
-	local flattenedLookAt = Vector3.new(targetPos.X, self.HRP.Position.Y, targetPos.Z)
-	self.TorsoAimer.CFrame = CFrame.lookAt(self.HRP.Position, flattenedLookAt)
+	-- Torso Alignment
+	local hrpPos = self.HRP.Position
+	local flattenedLookAt = Vector3.new(targetPos.X, hrpPos.Y, targetPos.Z)
 
-	-- Wait until the rotation has complete, using dot product to check if facing correct direction
-	repeat
-		task.wait()
-		if not self.HRP then
-			break
+	-- Prevent NaN errors if target is directly above/below the HRP
+	if (flattenedLookAt - hrpPos).Magnitude > 0.001 then
+		self.TorsoAimer.CFrame = CFrame.lookAt(hrpPos, flattenedLookAt)
+	end
+
+	-- 5. Non-blocking Alignment Check
+	task.defer(function()
+		local startTime = os.clock()
+		local TIMEOUT = 3 -- Prevents infinite loops if NPC gets stuck
+
+		while os.clock() - startTime < TIMEOUT do
+			task.wait()
+
+			-- Ensure instances still exist
+			if not self.HRP or not self.HRP.Parent then
+				break
+			end
+
+			local currentLook = self.HRP.CFrame.LookVector
+			local toTarget = (flattenedLookAt - self.HRP.Position)
+
+			if toTarget.Magnitude < 0.1 then
+				break
+			end -- Already at target
+			local targetLook = toTarget.Unit
+
+			local aligned = currentLook:Dot(targetLook) >= 0.99
+			local settled = self.HRP.AssemblyAngularVelocity.Magnitude < 0.01
+
+			if aligned and settled then
+				break
+			end
 		end
-		local currentLook = self.HRP.CFrame.LookVector
-		local targetLook = (flattenedLookAt - self.HRP.Position).Unit
-		local aligned = currentLook:Dot(targetLook) >= 0.99
-		local settled = self.HRP.AssemblyAngularVelocity.Magnitude < 0.01
-	until aligned and settled
+	end)
 
 	return true
 end

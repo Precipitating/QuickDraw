@@ -162,8 +162,15 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 		end
 	end
 
+	if hitPlayer then
+		HumanNetwork:ToggleBackpackVisibility(hitPlayer, false, true)
+	end
+
 	-- ─────────────── Attachments ───────────────
 
+	if not anchorPos then
+		return
+	end
 	local limbAttach = Instance.new("Attachment")
 	limbAttach.Parent = limbPart
 	limbAttach.WorldPosition = hit.Position
@@ -182,12 +189,6 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 	rope.Visible = true
 	rope.Thickness = 0.2
 	rope.Parent = limbPart
-
-	if hitPlayer then
-		HumanNetwork:ToggleBackpackVisibility(hitPlayer, false, true)
-	end
-
-	-- ── Cleanup ──────────────────────────────────────────────────────────
 
 	task.delay(duration, function()
 		if limbAttach and limbAttach.Parent then
@@ -479,7 +480,6 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	--warn(`OnHit fired by server {result.Instance.Name}`)
 	local data = context.UserData
 	local projectileType = data.ProjectileType
-
 	-- ON BULLET HIT
 	if projectileType == "Bullet" then
 		self:ProjectileHitMaterial(result)

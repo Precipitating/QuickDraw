@@ -35,22 +35,33 @@ function Seek:PredictTarget(target: Model | BasePart): Vector3
 	return currentTargetPos + targetVelocity * self.PredictionAheadTime
 end
 
+function Seek:MoveToLastSeenLocation(target: Model | BasePart)
+	local ai = self.AI
+	local predictedTargetLocation = self:PredictTarget(target)
+	local safeSeekPos = ai:FindAnglePosition(
+		self.Human.BodyParts["RightUpperArm"].Position,
+		target,
+		predictedTargetLocation,
+		self.AI.MinAttackDistance,
+		false
+	)
+	ai:PathFindTo(safeSeekPos)
+end
+
 function Seek:Enter(previous, seekData)
 	warn(`[SERVER] {self.Human.Character.Name} Entered Seek from {previous}`)
-	self.AI:StateChangeReset()
+
 	if not seekData then
 		warn("No last seen target, back to default state")
 		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		return
 	end
-
 	-- Either player model or a basepart
 	local target: Model | BasePart = seekData.Target
 	assert(target, "NPC Seek state cannot proceed, target is nil")
 
+	self.AI:StateChangeReset()
 	self.Machine:Start()
-
-	local predictedTargetLocation = self:PredictTarget(target)
 
 	local ai = self.AI
 	local legless = self.Human.Legless
@@ -67,14 +78,7 @@ function Seek:Enter(previous, seekData)
 	)
 
 	-- 1. Move to last seen position OR a valid position around the last seen position (respecting radius and vision)
-	local safeSeekPos = ai:FindAnglePosition(
-		self.Human.BodyParts["RightUpperArm"].Position,
-		target,
-		predictedTargetLocation,
-		self.AI.MinAttackDistance,
-		false
-	)
-	ai:PathFindTo(safeSeekPos)
+	local moved = self:MoveToLastSeenLocation(target)
 
 	if not self.AI or not self.AI.NoobPath or not self.AI.NoobPath.Reached then
 		return
@@ -144,7 +148,6 @@ function Seek:Update(dt)
 end
 
 function Seek:Exit(nextState)
-	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 	self.Machine:Stop()
 	self.AI.NoobPath:Stop()
 end

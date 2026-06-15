@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
@@ -131,36 +132,45 @@ function Trap:Place()
 		return
 	end
 
+	local humanoid = character:FindFirstChild("Humanoid")
+	if not humanoid then
+		return false
+	end
+
 	-- Use HRP as raycast origin for consistency and no reliance on physics
 	local hrp = character:FindFirstChild("HumanoidRootPart")
 	if not hrp then
-		return
+		return false
 	end
 
+	-- 1.
 	-- Define raycast origin
 	local rayCastPosition = hrp.Position + (hrp.CFrame.LookVector * TRAP_PLACE_STUDS_FORWARD)
 
 	local placeRay = workspace:Raycast(rayCastPosition, -Vector3.yAxis * TRAP_PLACE_STUDS_DOWN)
 
 	if not placeRay and self.Owner.Player then
-		PopupGUI:NewPopup(self.Owner.Player, 2, "Cannot place trap, invalid floor or no floor found")
-		return
+		return false
 	end
 
+	-- 2. Clone template and place on floor
 	local template = TrapPlaceables:FindFirstChild(`{self.Name}Placed`)
 
 	if not template then
-		return
+		return false
 	end
 
 	template = template:Clone()
 
+	-- 2.1 Ensure not moving when placing
 	template:PivotTo(CFrame.new(placeRay.Position))
 	template.Parent = workspace
 
 	self:ConnectTrap(template:FindFirstChild("Collision"))
 
 	self:UpdateAmmo(-1)
+
+	return true
 end
 
 return Trap

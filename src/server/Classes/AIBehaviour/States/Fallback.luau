@@ -21,7 +21,6 @@ function Fallback:Enter(previous, fallbackData)
 	while self.Human.IsRagdolled do
 		task.wait(1)
 	end
-
 	self.AI:StateChangeReset()
 
 	-- Variables
@@ -109,8 +108,6 @@ function Fallback:CanTransition(toStateName: string)
 	return true
 end
 
-function Fallback:Exit(nextState)
-	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
-end
+function Fallback:Exit(nextState) end
 
 return Fallback

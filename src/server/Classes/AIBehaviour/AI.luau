@@ -313,8 +313,8 @@ function AI:ThrowThrowable(targetPos)
 	local toTargetDir = (targetPos - origin).Unit
 	local throwDirection = (CFrame.new(Vector3.zero, toTargetDir) * CFrame.Angles(lowArc, 0, 0)).LookVector
 
-	throwable:Throw(throwDirection)
-	return true
+	local thrown = throwable:Throw(throwDirection)
+	return thrown
 end
 
 function AI:CheckSurroundingsForEnemy()
@@ -372,8 +372,6 @@ function AI:CheckLineOfSight()
 	return foundParts
 end
 function AI:PathFindTo(targetPos: Vector3)
-	self:StateChangeReset()
-
 	if self.Owner.IsRagdolled then
 		return
 	end
