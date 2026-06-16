@@ -1,11 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
 local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
-local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
+local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local TrapPlaceables = ReplicatedStorage.Shared.Templates.Traps
@@ -13,7 +13,13 @@ local TrapPlaceables = ReplicatedStorage.Shared.Templates.Traps
 local TRAP_PLACE_STUDS_FORWARD = 5
 local TRAP_PLACE_STUDS_DOWN = 10
 local TrapActivatedLogic = {
-	BearTrap = function(trapModel: Model?, hitPart: BasePart | MeshPart, hitHuman: Human, trapData)
+	BearTrap = function(
+		_: ClassTypes.Human?,
+		trapModel: Model?,
+		hitPart: BasePart | MeshPart,
+		hitHuman: Human,
+		trapData
+	)
 		local activateSound = trapData.TrapActivatedSoundName
 		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame)
 
@@ -27,6 +33,39 @@ local TrapActivatedLogic = {
 		DamageModule.DamageHuman(data)
 
 		hitHuman:Ragdoll(5)
+
+		if trapModel then
+			trapModel:Destroy()
+		end
+	end,
+
+	TripMine = function(
+		trapOwner: ClassTypes.Human,
+		trapModel: BasePart,
+		hitPart: BasePart | MeshPart,
+		hitHuman: Human,
+		trapData
+	)
+		local activateSound = trapData.TrapActivatedSoundName
+		local explosiveData = ThrowableData[trapData.AttachedExplosive]
+		if not explosiveData then
+			warn("Tripmine missing explosive data")
+			return
+		end
+		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame)
+
+		local context = ProjectileContext.BulletContext.new({
+			Origin = trapModel:GetPivot().Position + Vector3.new(0, 1, 0),
+			Direction = -Vector3.yAxis,
+			Speed = explosiveData.Velocity,
+			RaycastParams = explosiveData.RaycastParams,
+		})
+
+		context.UserData.Class = { Owner = trapOwner }
+		context.UserData.ProjectileType = "Throwable"
+		context.UserData.Data = explosiveData
+
+		ProjectileContext.Solver:Fire(context, explosiveData.ProjectileData)
 
 		if trapModel then
 			trapModel:Destroy()
@@ -53,6 +92,7 @@ function Trap.new(trapName: string, humanRef: Human, ammo: number?, tool: Tool?)
 	self.Damage = trapData.Damage
 	self.CurrentAmmo = if ammo then ammo else trapData.MaxAmmo
 	self.MaxAmmo = trapData.MaxAmmo
+	self.Disguised = trapData.Disguise or false
 
 	self.Owner = humanRef
 	return self
@@ -96,7 +136,9 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 		return
 	end
 
-	trapCollider.Touched:Once(function(hitPart: BasePart)
+	local trapOwner = self.Owner
+	local hitCollisionConn = nil
+	hitCollisionConn = trapCollider.Touched:Connect(function(hitPart: BasePart)
 		if not TrapActivatedLogic[trapName] then
 			return
 		end
@@ -118,7 +160,9 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 			warn("Trap cannot activate, whatever triggered has no human class")
 			return
 		end
-		TrapActivatedLogic[trapName](trapCollider.Parent, hitPart, hitHuman, trapData)
+
+		TrapActivatedLogic[trapName](trapOwner, trapCollider.Parent, hitPart, hitHuman, trapData)
+		hitCollisionConn:Disconnect()
 	end)
 end
 
@@ -162,11 +206,24 @@ function Trap:Place()
 
 	template = template:Clone()
 
-	-- 2.1 Ensure not moving when placing
-	template:PivotTo(CFrame.new(placeRay.Position))
+	-- 2.1 Blend trap to environment if diguised = true
+	if self.Disguised then
+		if template:IsA("BasePart") then
+			template.Material = placeRay.Instance.Material
+			template.BrickColor = placeRay.Instance.BrickColor
+		end
+	end
+
+	-- 2.2 Ensure not moving when placing
+	if template:IsA("Model") then
+		template:PivotTo(CFrame.new(placeRay.Position))
+	else
+		template.Position = placeRay.Position
+	end
 	template.Parent = workspace
 
-	self:ConnectTrap(template:FindFirstChild("Collision"))
+	-- 3 Enable trap functionality
+	self:ConnectTrap(template:FindFirstChild("Collision") or template)
 
 	self:UpdateAmmo(-1)
 

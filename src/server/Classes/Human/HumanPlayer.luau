@@ -49,7 +49,7 @@ function HumanPlayer:InitializeWeaponLoadout()
 	self.Inventory:AddWeaponToInventory(savedThrowableData or "HookGrenade", 9)
 	self.Inventory:EquipWeapon("Throwable")
 
-	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
+	self.Inventory:AddWeaponToInventory(savedTrapData or "TripMine")
 	self.Inventory:EquipWeapon("Trap")
 
 	if savedThrowableData then

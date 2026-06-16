@@ -28,66 +28,73 @@ function Inputs:ToggleBackpackVisibility(active: boolean, locked: boolean?)
 	CoreGUIHandler.ToggleBackpackVisibility(active, locked)
 end
 
-function Inputs:Initialize()
-	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
-		if processed then
+function Inputs:ConnectSprint(input: InputObject)
+	if not input then
+		return
+	end
+	if input.KeyCode == Enum.KeyCode.LeftShift then
+		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and PlayerContext.IsMoving then
+			self.networker:fire("ToggleSprint", true)
+		end
+	end
+end
+
+function Inputs:ConnectRoll(input: InputObject)
+	if not input then
+		return
+	end
+	if input.KeyCode == Enum.KeyCode.E then
+		if not PlayerContext.CanRoll then
 			return
 		end
 
-		-- sprint
-		if input.KeyCode == Enum.KeyCode.LeftShift then
-			if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and PlayerContext.IsMoving then
-				self.networker:fire("ToggleSprint", true)
-			end
-		end
+		local rollActivated = self.networker:fetch("ApplyRollDrain", PlayerContext.HRP.CFrame.LookVector)
 
-		-- roll
-		if input.KeyCode == Enum.KeyCode.E then
-			if not PlayerContext.CanRoll then
-				return
-			end
-
-			local rollActivated = self.networker:fetch("ApplyRollDrain", PlayerContext.HRP.CFrame.LookVector)
-
-			if rollActivated then
-				PlayerContext.CanRoll = false
-				local rollAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Roll")
-				PlayerContext.Humanoid:UnequipTools()
-				ClientSoundHandler:PlayOneShot("Roll")
-				FaceTowardsMovementDirection()
-				rollAnim.Stopped:Once(function()
-					PlayerContext.CanRoll = true
-				end)
-			end
-		end
-
-		-- kick
-		if input.KeyCode == Enum.KeyCode.F then
-			if not PlayerContext.CanKick then
-				return
-			end
-
-			local kickActivated = self.networker:fetch("ApplyKickDrain")
-			if not kickActivated then
-				return
-			end
-
-			local kickAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Kick")
-			if not kickAnim then
-				warn("Kick animation missing, restoring state")
-				return
-			end
-
-			PlayerContext.CanKick = false
-			ClientUtility.ToggleControls(false)
-
-			kickAnim.Stopped:Once(function()
-				PlayerContext.CanKick = true
-				ClientUtility.ToggleControls(true)
+		if rollActivated then
+			PlayerContext.CanRoll = false
+			local rollAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Roll")
+			PlayerContext.Humanoid:UnequipTools()
+			ClientSoundHandler:PlayOneShot("Roll")
+			FaceTowardsMovementDirection()
+			rollAnim.Stopped:Once(function()
+				PlayerContext.CanRoll = true
 			end)
 		end
-	end)
+	end
+end
 
+function Inputs:ConnectKick(input: InputObject)
+	if not input then
+		return
+	end
+
+	if input.KeyCode == Enum.KeyCode.F then
+		if not PlayerContext.CanKick then
+			return
+		end
+
+		local kickActivated = self.networker:fetch("ApplyKickDrain")
+		if not kickActivated then
+			return
+		end
+
+		local kickAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Kick")
+		if not kickAnim then
+			warn("Kick animation missing, restoring state")
+			return
+		end
+
+		PlayerContext.CanKick = false
+		ClientUtility.ToggleControls(false)
+
+		kickAnim.Stopped:Once(function()
+			PlayerContext.CanKick = true
+			ClientUtility.ToggleControls(true)
+		end)
+	end
+end
+
+function Inputs:ConnectOnJump()
 	UserInputService.JumpRequest:Connect(function()
 		if not PlayerContext.CanJump then
 			return
@@ -103,10 +110,13 @@ function Inputs:Initialize()
 			end)
 		end
 
-		task.wait(1)
-		PlayerContext.CanJump = true
+		task.delay(1, function()
+			PlayerContext.CanJump = true
+		end)
 	end)
+end
 
+function Inputs:ConnectInputEnd()
 	UserInputService.InputEnded:Connect(function(input, processed)
 		if processed then
 			return
@@ -117,6 +127,23 @@ function Inputs:Initialize()
 			end
 		end
 	end)
+end
+
+function Inputs:Initialize()
+	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+		if processed then
+			return
+		end
+
+		self:ConnectSprint(input)
+		self:ConnectRoll(input)
+		self:ConnectKick(input)
+	end)
+	--
+	self:ConnectOnJump()
+
+	--
+	self:ConnectInputEnd()
 end
 
 return Inputs

@@ -70,6 +70,9 @@ end
 
 function Inputs:ToggleSprint(player: Player, active: boolean)
 	local humanClass, humanoid = PlayerManager:GetHumanClassFromPlayer(player)
+	if not humanClass or not humanClass.Stamina then
+		return
+	end
 	local stamina = humanClass.Stamina
 	if humanClass.Legless then
 		return

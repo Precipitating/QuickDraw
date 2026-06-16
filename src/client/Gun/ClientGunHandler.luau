@@ -192,7 +192,7 @@ local function PredictBulletLanding(
 	local prevPos = shootOrigin
 	local vel = direction * initialVelocity
 
-	for i = 1, STEPS do
+	for _ = 1, STEPS do
 		local speed = vel.Magnitude
 		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
 		local gravAccel = Vector3.new(0, -GRAVITY, 0)

@@ -513,8 +513,11 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 			)
 			ServerEffectsDisplayer:DisplayDestroyParticle(throwableData.ImpactParticle, hitPos)
 			self:SpawnFragments(result, data.Class.Owner, throwableData)
-			if data.Class.CurrentAmmo <= 0 and type(data.Class.Destroy) == "function" then
-				data.Class:Destroy()
+
+			if data.Class and data.Class.CurrentAmmo and data.Class.Destroy then
+				if data.Class.CurrentAmmo <= 0 and type(data.Class.Destroy) == "function" then
+					data.Class:Destroy()
+				end
 			end
 		end)
 		-- ON SHRAPNEL HIT

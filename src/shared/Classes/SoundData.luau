@@ -165,6 +165,18 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	TripMinePlaced = {
+		SoundId = "rbxassetid://122782690363016",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	TripMineActivated = {
+		SoundId = "rbxassetid://133384716023284",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 
 	--
 	WinchesterLoadBullet = {

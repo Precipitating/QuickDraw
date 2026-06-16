@@ -1,4 +1,5 @@
 local ContextActionService = game:GetService("ContextActionService")
+local PlacesService = game:GetService("PlacesService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -47,6 +48,7 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 		end
 	end)
 
+	--
 	placeAnim.Stopped:Once(function()
 		if placeMarkerConn then
 			placeMarkerConn:Disconnect()
