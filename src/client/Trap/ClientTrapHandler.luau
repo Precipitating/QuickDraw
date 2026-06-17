@@ -39,7 +39,12 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 			local placed = ClientTrapHandler.networker:fetch("PlaceDownTrap", trap)
 
 			if not placed then
-				PopupHandler:NewPopup(2, "Cannot place trap, invalid floor or no floor found")
+				if trap.Name == "RopeTrap" then
+					PopupHandler:NewPopup(2, "Cannot place trap, it needs a ceiling within 50 studs above trap.")
+				else
+					PopupHandler:NewPopup(2, "Cannot place trap, invalid floor or no floor found")
+				end
+
 				SoundManager.PlayKeyed("SFX", "Error")
 				return
 			end

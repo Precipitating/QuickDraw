@@ -21,6 +21,18 @@ local TrapData = {
 		PlaceSoundName = "TripMinePlaced",
 		TrapActivatedSoundName = "TripMineActivated",
 	},
+	RopeTrap = {
+		Name = "RopeTrap",
+		MaxAmmo = 1,
+		MaxAmmoStack = 1,
+		Damage = 10,
+		Cost = 100,
+		HoldTime = 3,
+		Duration = 5,
+		CeilingDistance = 50,
+		PlaceSoundName = "RopeTrapPlaced",
+		TrapActivatedSoundName = "RopeTrapActivated",
+	},
 }
 for _, gun in TrapData do
 	table.freeze(gun)

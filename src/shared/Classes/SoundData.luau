@@ -177,6 +177,18 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	RopeTrapPlaced = {
+		SoundId = "rbxassetid://123350827153183",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	RopeTrapActivated = {
+		SoundId = "rbxassetid://86165035080520",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 
 	--
 	WinchesterLoadBullet = {

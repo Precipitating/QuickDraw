@@ -14,7 +14,7 @@ function HumanNetwork:IsLegless(player: Player, humanoid: Humanoid?)
 		warn("[HumanNetwork:IsLegless] Key is incorrect")
 		return nil
 	end
-	return humanClass.Legless
+	return humanClass and humanClass.Legless
 end
 
 function HumanNetwork:FinishedLoadingGame(player: Player)
