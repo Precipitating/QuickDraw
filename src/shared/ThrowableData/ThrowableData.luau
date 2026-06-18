@@ -9,6 +9,7 @@ local ThrowableData = {
 		Damage = 40,
 		Cost = 100,
 		Velocity = 80,
+		Description = "A loaded timed explosive of 3 seconds, doing 40 damage a pellet with 450 fragment counts.",
 		DetonationTime = 3,
 		FragmentCount = 450,
 		BlastRadius = 10,
@@ -32,9 +33,6 @@ local ThrowableData = {
 			:SpeedThreshold(8) -- stops bouncing once it's rolling slowly
 			:NormalPerturbation(0.03)
 			:Done()
-			:Drag()
-			:Coefficient(0.015) -- slight extra drag for the heavier, blockier shape
-			:Done()
 			:CornerTrap()
 			:TimeThreshold(0.01)
 			:DisplacementThreshold(0.25)
@@ -56,6 +54,7 @@ local ThrowableData = {
 		Damage = 30,
 		Cost = 300,
 		Velocity = 150,
+		Description = "A high damage throwable missile, spraying 300 fragments of shrapnel (30 damage per pellet)",
 		DetonationTime = 0,
 		BlastRadius = 3,
 		FragmentCount = 300,
@@ -75,9 +74,6 @@ local ThrowableData = {
 			:MinSpeed(10) -- thrown with more force than a standard lob
 			:MaxDistance(200)
 			:Done()
-			:Drag()
-			:Coefficient(0.012) -- glass-bottle-ish shape, slightly more drag than a round grenade
-			:Done()
 			:When(isServer, function(b)
 				b:Cosmetic()
 					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.KetchumGrenadeCosmetic)
@@ -94,6 +90,7 @@ local ThrowableData = {
 		Damage = 2,
 		Cost = 200,
 		Velocity = 200,
+		Description = "A fire explosive, dealing 2 damage for 5 seconds to affected limb.",
 		DetonationTime = 0,
 		BlastRadius = 6,
 		FragmentCount = 300,
@@ -115,9 +112,6 @@ local ThrowableData = {
 			:MinSpeed(8)
 			:MaxDistance(120) -- shorter realistic throw than a frag grenade
 			:Done()
-			:Drag()
-			:Coefficient(0.02) -- bottle + rag wick catches more air
-			:Done()
 			:When(isServer, function(b)
 				b:Cosmetic()
 					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.MolotovCosmetic)
@@ -133,6 +127,7 @@ local ThrowableData = {
 		Damage = 3,
 		Cost = 300,
 		Velocity = 200,
+		Description = "A grenade designed to disable the player via a grapple hook explosion. Any clean connections will bind the player's limb to nearby walls.",
 		DetonationTime = 3,
 		BlastRadius = 3,
 		FragmentCount = 100,
@@ -155,9 +150,6 @@ local ThrowableData = {
 			:Physics()
 			:MinSpeed(10)
 			:MaxDistance(180)
-			:Done()
-			:Drag()
-			:Coefficient(0.018) -- lumpy, irregular shape catches air unevenly
 			:Done()
 			:Fragmentation()
 			:Count(6) -- the embedded grappling hooks scatter on detonation

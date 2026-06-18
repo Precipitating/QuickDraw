@@ -171,7 +171,7 @@ function Inventory:EquipWeapon(weaponType: string)
 end
 
 -- Just stores to inventory, nothing will occur physically
-function Inventory:AddWeaponToInventory(name: string, quantity: number?)
+function Inventory:AddWeaponToInventory(name: string, quantity: number?, maxQuantity: number?)
 	if self:IsFull() then
 		warn(`Inventory full, can't add {name}`)
 		return false
@@ -194,7 +194,7 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?)
 		if self.StoredWeapons["Throwable"] then
 			self:RemoveWeapon("Throwable")
 		end
-		self.StoredWeapons["Throwable"] = Throwable.new(name, self.Owner, quantity, weaponClone)
+		self.StoredWeapons["Throwable"] = Throwable.new(name, self.Owner, quantity, maxQuantity, weaponClone)
 		self.StoredWeapons["Throwable"].Janitor:Add(weaponClone)
 	elseif TrapData[name] then
 		if self.StoredWeapons["Trap"] then

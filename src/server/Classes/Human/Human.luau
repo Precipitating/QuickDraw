@@ -560,9 +560,6 @@ function Human:FixCrawlADS()
 		Utility.GetInstance(rightUpperArm, false, "RightShoulderBallSocket")
 	local rightLowerArm: MeshPart = self.BodyParts["RightLowerArm"]
 
-	local gun = self.Inventory:GetGun()
-
-	assert(gun, "[Human:FixCrawlADS] gun tool missing")
 	assert(rightUpperArm, "[Human:FixCrawlADS] RightUpperArm missing from BodyParts")
 	assert(rightLowerArm, "[Human:FixCrawlADS] RightLowerArm missing from BodyParts")
 
@@ -576,8 +573,10 @@ function Human:FixCrawlADS()
 	rightShoulderBallSocket.UpperAngle = 100
 
 	-- disable gun's collision
-	if self.Inventory:GetGun() then
-		self.Inventory:GetGun():ToggleCollision(false)
+	local gun = self.Inventory:GetGun()
+
+	if gun then
+		gun:ToggleCollision(false)
 	end
 end
 

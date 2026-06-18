@@ -30,6 +30,8 @@ function RangeAI.new(human: Human, classType: string, optionalData: any?)
 	self.EyeRange = classData.EyeRange
 	self.WeaponName = classData.WeaponName
 	self.ThrowableName = classData.ThrowableName
+	self.ThrowableAmmo = classData.ThrowableAmmo
+	self.MaxThrowableAmmo = classData.MaxThrowableAmmo
 	self.AttackState = (classData and classData.AttackStateName)
 			and {
 				Name = classData.AttackStateName,

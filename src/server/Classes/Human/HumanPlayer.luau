@@ -111,7 +111,7 @@ function HumanPlayer:Die(killer: Player?)
 		return
 	end
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
-	if killer then
+	if killer and typeof(killer) ~= "table" then
 		if killer:IsA("Player") then
 			warn("PLAYER KILLED PLAYAH")
 			AwardHandler.AwardPlayerKill(self.Player, killer)

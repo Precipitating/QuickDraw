@@ -65,7 +65,7 @@ export type Inventory = {
 	CanEquip: (self: Inventory) -> boolean,
 	SwapWeapon: (self: Inventory, newWeaponName: string, weaponType: string) -> boolean,
 	EquipWeapon: (self: Inventory, weaponType: string) -> boolean?,
-	AddWeaponToInventory: (self: Inventory, name: string, quantity: number?) -> boolean,
+	AddWeaponToInventory: (self: Inventory, name: string, quantity: number?, maxQuantity: number?) -> boolean,
 	GetAvailableSlotCount: (self: Inventory) -> number,
 	GetMaxSlotCount: (self: Inventory) -> number,
 	GetOccupiedSlotCount: (self: Inventory) -> number,

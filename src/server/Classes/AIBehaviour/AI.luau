@@ -34,6 +34,7 @@ function AI.new(owner: Human, classType: string)
 	self.DefaultState = { Name = "", Data = nil }
 	self.WeaponName = nil
 	self.ThrowableName = nil
+	self.ThrowableAmmo = nil
 	self.SeekTurnDelay = 0.5
 	self.NoobPath = NoobPath.Humanoid(
 		self.Owner.Character,

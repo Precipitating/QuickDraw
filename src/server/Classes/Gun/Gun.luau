@@ -137,9 +137,6 @@ function Gun:SpreadShot()
 end
 
 function Gun:UpdateAmmo(amount: number)
-	if amount > 0 and self.CurrentAmmo >= self.MaxAmmo then
-		return false
-	end
 	if not self.Tool then
 		return false
 	end

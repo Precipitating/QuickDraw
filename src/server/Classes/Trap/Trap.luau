@@ -146,7 +146,10 @@ local TrapActivatedLogic = {
 		local rope = Instance.new("RopeConstraint")
 		rope.Attachment0 = ceilingAttachment
 		rope.Attachment1 = limbAttachment
+		rope.Visible = true
+		rope.Length = raycastResult.Distance * 0.6
 		rope.Parent = ceiling
+		rope.Color = BrickColor.new(Color3.fromRGB(142, 77, 165))
 
 		local activateSound = trapData.TrapActivatedSoundName
 		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame)

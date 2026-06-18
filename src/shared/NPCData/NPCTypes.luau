@@ -39,6 +39,7 @@ return {
 		WeaponName = nil,
 		ThrowableName = "KetchumGrenade",
 		ThrowableAmmo = 999,
+		MaxThrowableAmmo = 999,
 		MinAttackDistance = 20,
 		MaxAttackDistance = 150,
 		AttackCooldown = 3,

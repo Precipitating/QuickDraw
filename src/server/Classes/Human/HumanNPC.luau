@@ -46,7 +46,7 @@ function HumanNPC:InitializeWeaponLoadout()
 	end
 
 	if self.AI.ThrowableName then
-		self.Inventory:AddWeaponToInventory(self.AI.ThrowableName, self.AI.Type.ThrowableAmmo)
+		self.Inventory:AddWeaponToInventory(self.AI.ThrowableName, self.AI.ThrowableAmmo, self.AI.MaxThrowableAmmo)
 	end
 end
 

@@ -134,6 +134,12 @@ local function SpawnLoop(spawnerModel, spawnLocation)
 	if NPCEvents.CurrentSpawnedNPCS < NPCEvents.MaxNPCSAllowed then
 		local spawnerType = spawnerModel:GetAttribute("SpawnerType")
 		if not CanSpawn(spawnerType) then
+			task.delay(
+				RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
+				SpawnLoop,
+				spawnerModel,
+				spawnLocation
+			)
 			return
 		end
 

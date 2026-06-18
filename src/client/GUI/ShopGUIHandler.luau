@@ -1,5 +1,6 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
@@ -33,6 +34,62 @@ local function UpdateRefillPrice(refillButton: TextButton?)
 	end
 end
 
+function ShopGUIHandler:ConnectInformationToolTip(product: ImageButton)
+	if not product then
+		return
+	end
+
+	local data = GunData[product.Name] or ThrowableData[product.Name] or TrapData[product.Name]
+	if not data then
+		return
+	end
+	local desc = data.Description
+
+	if not desc then
+		return
+	end
+
+	local tooltip: Frame? = Utility.GetInstance(PlayerContext.PlayerGui, true, "ShopToolTipGUI", "ShopToolTip")
+
+	if not tooltip then
+		return
+	end
+
+	local tooltipTxt: TextLabel? = Utility.GetInstance(tooltip, true, "TextLabel")
+
+	if not tooltipTxt then
+		return
+	end
+
+	local toolTipConn = nil
+
+	local mouse = PlayerContext.Player:GetMouse()
+
+	self.janitor:Add(product.MouseEnter:Connect(function()
+		tooltipTxt.Text = desc
+
+		-- tooltip follow mouse pos
+		if toolTipConn then
+			toolTipConn:Disconnect()
+		end
+
+		toolTipConn = RunService.RenderStepped:Connect(function()
+			tooltip.Position = UDim2.fromOffset(mouse.X + 20, mouse.Y)
+		end)
+
+		tooltip.Visible = true
+	end))
+	self.janitor:Add(product.MouseLeave:Connect(function()
+		task.defer(function()
+			tooltipTxt.Text = ""
+			tooltip.Visible = false
+			if toolTipConn then
+				toolTipConn:Disconnect()
+			end
+		end)
+	end))
+end
+
 -- If refillAmmoButton is passed, it means we need to reupdate refill ammo cost when we buy the product type.
 function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame, refillAmmoButton: TextButton?)
 	local children = productList:GetChildren()
@@ -54,6 +111,8 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame, refillAm
 				price.Text = if data and data.Cost then throwableCostText else "Error"
 			end
 		end
+
+		self:ConnectInformationToolTip(product)
 
 		self.janitor:Add(product.Activated:Connect(function(_, _)
 			local exists = PlayerContext.PlayerGui:FindFirstChild("BuyConfirmationGUI")

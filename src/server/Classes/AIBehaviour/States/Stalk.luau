@@ -25,6 +25,13 @@ function Stalk:MoveToTarget(target)
 		self.AI.MinAttackDistance,
 		false
 	)
+
+	if not safeStalkPos then
+		task.wait(5)
+		self:MoveToTarget(target)
+		return
+	end
+
 	ai:PathFindTo(safeStalkPos)
 end
 
