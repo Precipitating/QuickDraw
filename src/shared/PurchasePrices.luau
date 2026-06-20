@@ -1,3 +1,3 @@
 return {
-	MEDIC_COST = 100,
+	MEDIC_COST = 0,
 }

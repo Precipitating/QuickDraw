@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
+local HumanLimbGUI = require(ServerScriptService.Server.GUI.HumanLimbGUI)
 local MoneyDropHandler = require(ServerScriptService.Server.MoneyDropHandler)
 local ServerData = require(ServerScriptService.Server.ServerData)
 
@@ -13,6 +14,20 @@ local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
+
+local LimbHealth = {
+	Head = 50,
+	UpperTorso = 85,
+	LowerTorso = 70,
+	LeftUpperArm = 60,
+	LeftLowerArm = 60,
+	RightUpperArm = 999,
+	RightLowerArm = 999,
+	LeftUpperLeg = 40,
+	LeftLowerLeg = 40,
+	RightUpperLeg = 40,
+	RightLowerLeg = 40,
+}
 
 function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	assert(player, "HumanPlayer constructor needs a valid player instance!")
@@ -124,6 +139,13 @@ function HumanPlayer:Die(killer: Player?)
 	end
 end
 
+function HumanPlayer:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model)
+	Human.OnHit(self, damage, damageMultiplier, limbName, shooter)
+
+	-- update limb hp gui, changing limb health colour green->orange->red
+	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
+end
+
 function HumanPlayer:RevertCrawlState()
 	if not self.Legless then
 		return
@@ -192,6 +214,21 @@ function HumanPlayer:SetCrawlState()
 end
 function HumanPlayer:HealAll()
 	Human.HealAll(self)
+
+	-- update limb gui hp for all limbs to green again
+	task.spawn(function()
+		for key, bodyPart in self.BodyParts do
+			if not bodyPart then
+				continue
+			end
+
+			if not LimbHealth[key] then
+				continue
+			end
+			HumanLimbGUI:UpdateLimbGUIHP(self.Player, key, LimbHealth[key])
+		end
+	end)
+
 	self:AdjustGrayscale()
 end
 -- scale gray screen tint on client via current health

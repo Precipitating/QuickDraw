@@ -1,7 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
-
+require(script.Parent.Parent.GUI.HumanLimbGUIHandler)
 local ZoneHandler = require(script.Parent.Parent.ZoneHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Inputs = require(script.Parent.Parent.Parent.Client.ClientInputs.Inputs)
@@ -15,6 +15,7 @@ local ClientInputs = require(script.Parent.Parent.ClientInputs.ProximityPromptHa
 local NPCHandler = require(script.Parent.Parent.NPCs.NPCHandler)
 local ClientData = require(script.Parent.Parent.ClientData)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
+
 local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 

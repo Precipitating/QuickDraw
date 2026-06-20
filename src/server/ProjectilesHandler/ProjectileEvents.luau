@@ -657,9 +657,11 @@ function ProjectileEvents:Initialize()
 	ProjectileContext.Net.OnFireRejected:Connect(function(player, reason)
 		warn(`Rejected projectile hit because of {reason}`)
 	end)
-
 	-- for NPCS/Server
-	ProjectileContext.Solver:GetSignals().OnHit:Connect(function(context, result, velocity)
+	ProjectileContext.VetraSignals.OnHit:Connect(function(context, result, velocity)
+		if not result or not result.Instance then
+			return
+		end
 		local owner = context.UserData.Owner
 		if owner and typeof(owner) == "Instance" and owner:IsA("Player") then
 			if context.UserData.ProjectileType ~= "Shrapnel" then
@@ -671,7 +673,7 @@ function ProjectileEvents:Initialize()
 
 	-- players firing from client
 	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
-		if not result then
+		if not result or not result.Instance then
 			return
 		end
 		context.UserData["Owner"] = player

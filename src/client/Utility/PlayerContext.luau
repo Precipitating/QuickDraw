@@ -20,6 +20,14 @@ local CurrentCamera = workspace.CurrentCamera
 local DefaultAnimations = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
 local Player = Players.LocalPlayer
 
+local HealthGradient = ColorSequence.new({
+	ColorSequenceKeypoint.new(0.0, Color3.fromRGB(255, 0, 0)), -- 0% HP: Bright Red
+	ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 100, 0)), -- 25% HP: Deep Orange
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 200, 0)), -- 50% HP: Yellow-Orange
+	ColorSequenceKeypoint.new(0.75, Color3.fromRGB(150, 220, 0)), -- 75% HP: Lime Green
+	ColorSequenceKeypoint.new(1.0, Color3.fromRGB(0, 255, 0)), -- 100% HP: Pure Green
+})
+
 local Crosshair = ReplicatedStorage.Shared.Templates.Crosshair
 local DefaultAnimateParams = {
 	ApplyRigScale = true,
@@ -45,6 +53,27 @@ PlayerContext.Camera = nil
 PlayerContext.RightArmYaw = nil
 PlayerContext.janitor = Janitor.new()
 PlayerContext.HRPOrientation = nil
+
+-- Helper function to evaluate the color at a specific percentage (0 to 1)
+local function EvalColorSequence(sequence: ColorSequence, percentage: number): Color3
+	local keypoints = sequence.Keypoints
+	percentage = math.clamp(percentage, 0, 1)
+
+	-- Find which two keypoints our percentage falls between
+	for i = 1, #keypoints - 1 do
+		local currentKey = keypoints[i]
+		local nextKey = keypoints[i + 1]
+
+		if percentage >= currentKey.Time and percentage <= nextKey.Time then
+			-- Calculate how far we are between these two specific keypoints
+			local alpha = (percentage - currentKey.Time) / (nextKey.Time - currentKey.Time)
+			-- Blend smoothly between them
+			return currentKey.Value:Lerp(nextKey.Value, alpha)
+		end
+	end
+
+	return keypoints[#keypoints].Value
+end
 
 function PlayerContext.ApplyMouseLock(on: boolean)
 	if on then
@@ -120,6 +149,58 @@ function PlayerContext.StayOnMovingPlatform(movingPart: BasePart | Model)
 	)
 end
 
+function PlayerContext:UpdateLimbsGUIHP(limbPartName: string, healthPercent: number)
+	if not self.LimbHPModel then
+		return
+	end
+	local limb = self.LimbHPModel:WaitForChild(limbPartName, 5)
+	if not limb then
+		return
+	end
+
+	limb.Color = EvalColorSequence(HealthGradient, healthPercent)
+end
+
+function PlayerContext:SetupLimbGUI()
+	-- Get references
+	if not self.Player or not self.Character then
+		warn("[SetupLimbGUI] Missing character/Player ref")
+		return
+	end
+
+	local gui = PlayerContext.PlayerGui and Utility.GetInstance(PlayerContext.PlayerGui, true, "LimbsHPGUI")
+	if not gui then
+		return
+	end
+	local success, rigClone = pcall(function()
+		return Players:CreateHumanoidModelFromUserIdAsync(self.Player.UserId)
+	end)
+
+	if not success then
+		return
+	end
+
+	rigClone:PivotTo(CFrame.fromEulerAnglesXYZ(0, math.rad(180), 0) + Vector3.new(0, 3, 0))
+
+	-- Fixes accessory misplacement
+	rigClone.Parent = workspace
+	PlayerContext.LimbHPModel = rigClone
+
+	rigClone.Parent = gui.Frame
+
+	-- Set all bodypart to green, meaning 100% hp
+	for _, part in rigClone:GetDescendants() do
+		if part:IsA("Shirt") or part:IsA("ShirtGraphic") or part:IsA("Pants") then
+			part:Destroy()
+			continue
+		end
+		if not part:IsA("BasePart") then
+			continue
+		end
+		part.Color = Color3.fromRGB(0, 255, 0)
+	end
+end
+
 local function RefreshPlayerContextRefs(player: Player, character: Model)
 	assert(player, "Missing player when refreshing PlayerContext")
 	assert(character, "Missing character when refreshing PlayerContext")
@@ -140,6 +221,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.Reloading = false
 	PlayerContext.MovingPlatformConn = nil
 	PlayerContext.LastMovingPlatformCFrame = nil
+	PlayerContext.LimbHPModel = nil
 
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
@@ -186,6 +268,8 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 			PlayerContext.IsMoving = false
 		end
 	end))
+
+	PlayerContext:SetupLimbGUI()
 end
 
 local function ConnectGUIConnections(character: Model)

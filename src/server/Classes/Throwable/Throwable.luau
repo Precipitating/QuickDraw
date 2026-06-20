@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local ProjectileContext = require(ServerScriptService.Server.ProjectilesHandler.ProjectileContext)
+local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 
 local Throwable = {}
