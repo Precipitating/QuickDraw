@@ -26,6 +26,8 @@ return {
 
 	ON_DEATH_MONEY_LOSS_MULTIPLIER = 0.5,
 
+	LIMB_DISMEMBER_HP = -60,
+
 	SWAY_SPEED = 1.5,
 	SWAY_AMOUNT = math.rad(7), -- 7 degrees max
 }

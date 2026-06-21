@@ -7,7 +7,7 @@ local HumanLimbGUIHandler = {}
 HumanLimbGUIHandler.janitor = Janitor.new()
 HumanLimbGUIHandler.networker = Networker.new("HumanLimbGUINetwork", HumanLimbGUIHandler)
 
-function HumanLimbGUIHandler:UpdateLimbGUIHP(limbName: string, limbHealthPercentage: number)
+function HumanLimbGUIHandler:UpdateLimbGUIHP(limbName: string, limbHealthPercentage: number?)
 	PlayerContext:UpdateLimbsGUIHP(limbName, limbHealthPercentage)
 end
 

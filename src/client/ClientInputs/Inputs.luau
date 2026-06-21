@@ -34,7 +34,7 @@ function Inputs:ConnectSprint(input: InputObject)
 	end
 	if input.KeyCode == Enum.KeyCode.LeftShift then
 		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and PlayerContext.IsMoving then
-			self.networker:fire("ToggleSprint", true)
+			self.networker:fire("ToggleSprint", true, PlayerContext.HoldingWeapon)
 		end
 	end
 end
@@ -123,7 +123,7 @@ function Inputs:ConnectInputEnd()
 		end
 		if input.KeyCode == Enum.KeyCode.LeftShift then
 			if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
-				self.networker:fire("ToggleSprint", false)
+				self.networker:fire("ToggleSprint", false, PlayerContext.HoldingWeapon)
 			end
 		end
 	end)

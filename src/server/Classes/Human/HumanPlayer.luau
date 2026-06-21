@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
@@ -10,7 +11,6 @@ local MoneyDropHandler = require(ServerScriptService.Server.MoneyDropHandler)
 local ServerData = require(ServerScriptService.Server.ServerData)
 
 local Human = require(script.Parent.Human)
-local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
@@ -61,10 +61,10 @@ function HumanPlayer:InitializeWeaponLoadout()
 	self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
 	self.Inventory:EquipWeapon("Gun")
 
-	self.Inventory:AddWeaponToInventory(savedThrowableData or "HookGrenade", 9)
+	self.Inventory:AddWeaponToInventory(savedThrowableData or "Molotov", 9)
 	self.Inventory:EquipWeapon("Throwable")
 
-	self.Inventory:AddWeaponToInventory(savedTrapData or "RopeTrap")
+	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
 	self.Inventory:EquipWeapon("Trap")
 
 	if savedThrowableData then
@@ -144,6 +144,11 @@ function HumanPlayer:OnHit(damage: number, damageMultiplier: number, limbName: s
 
 	-- update limb hp gui, changing limb health colour green->orange->red
 	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
+end
+
+function HumanPlayer:DestroyLimb(limbName: string)
+	Human.DestroyLimb(self, limbName)
+	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, nil)
 end
 
 function HumanPlayer:RevertCrawlState()

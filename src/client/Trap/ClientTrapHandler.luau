@@ -8,6 +8,7 @@ local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local PopupHandler = require(script.Parent.Parent.GUI.PopupHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
@@ -60,7 +61,7 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 		end
 
 		if humanoid and humanoid.Health > 0 then
-			humanoid.WalkSpeed = 6
+			humanoid.WalkSpeed = HumanConstants.WALKSPEED
 		end
 	end)
 

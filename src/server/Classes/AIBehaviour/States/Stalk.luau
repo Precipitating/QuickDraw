@@ -1,6 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
-local ServerScriptService = game:GetService("ServerScriptService")
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local BaseState = require(script.Parent.BaseState)
 
 local Stalk = setmetatable({}, BaseState)

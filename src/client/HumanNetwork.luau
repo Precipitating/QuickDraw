@@ -17,7 +17,7 @@ function HumanNetwork:RagdollClient(ragdollTime: number)
 	PlayerContext.Humanoid:UnequipTools()
 	PlayerContext.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
 	PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-	Inputs.networker:fire("ToggleSprint", false)
+	Inputs.networker:fire("ToggleSprint", false, PlayerContext.HoldingWeapon)
 	task.delay(ragdollTime, function()
 		if PlayerContext.Humanoid then
 			PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)

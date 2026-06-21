@@ -28,6 +28,7 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model, too
 	self.Name = gunName
 	self.MaxAmmo = gunData.MaxAmmo
 	self.MaxAmmoStack = gunData.MaxAmmoStack
+	self.EquipWalkspeedMultiplier = gunData.EquipWalkspeedMultiplier or 1
 	self.CurrentAmmo = gunData.MaxAmmo
 	self.Jammed = false
 	self.HoldingGun = false
@@ -52,17 +53,27 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model, too
 	local muzzleFlash = tool and tool:FindFirstChild("MuzzleFlash", true)
 	self.MuzzleFlash = if muzzleFlash then muzzleFlash:FindFirstChildOfClass("Attachment") else nil
 
-	-- projectile data
-	-- self.FastCast = FastCast.new()
-	-- self.BulletVelocity = gunData.Velocity
-	-- self.ProjectileData = FastCast.newBehavior()
 	self.RaycastParams = RaycastParams.new()
 	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
-	-- self.ProjectileData.Acceleration = Vector3.new(0, -workspace.Gravity, 0)
-	-- self.ProjectileData.AutoIgnoreContainer = true
+	self:InitializeEvents()
 
 	return self
+end
+
+function Gun:InitializeEvents()
+	if not self.Tool then
+		return
+	end
+	local tool: Tool = self.Tool
+
+	self.Janitor:Add(tool.Equipped:Connect(function()
+		self.HoldingGun = true
+	end))
+
+	self.Janitor:Add(tool.Unequipped:Connect(function()
+		self.HoldingGun = false
+	end))
 end
 
 function Gun:InitializeAmmoValues()

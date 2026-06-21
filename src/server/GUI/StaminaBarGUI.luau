@@ -1,9 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Inputs = require(ServerScriptService.Server.ServerInputs.Inputs)
+
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local StaminaBarGUI = {}
 

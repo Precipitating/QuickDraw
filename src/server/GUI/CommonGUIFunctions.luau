@@ -1,5 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local CommonGUIFunctions = {}
 

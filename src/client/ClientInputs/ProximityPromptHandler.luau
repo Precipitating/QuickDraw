@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ShopGUIHandler = require(script.Parent.Parent.GUI.ShopGUIHandler)
@@ -60,7 +61,16 @@ local PROMPT_HANDLERS = {
 		ProximityPromptHandler.networker:fire("HealPlayer", prompt)
 	end,
 	["LootPrompt"] = function(_: Player, prompt: ProximityPrompt)
-		ProximityPromptHandler.networker:fire("LootPickup", prompt)
+		ProximityPromptHandler.networker:fire("LootPickup", "TumbleWeed", prompt)
+	end,
+	["TombstonePrompt"] = function(_: Player, prompt: ProximityPrompt)
+		prompt.Enabled = false
+		ClientDigHandler:StartDigging()
+
+		task.delay(5, function()
+			ClientDigHandler:StopDigging()
+			ProximityPromptHandler.networker:fire("LootPickup", "Tombstone", prompt)
+		end)
 	end,
 }
 

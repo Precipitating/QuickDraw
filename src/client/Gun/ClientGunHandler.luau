@@ -16,6 +16,7 @@ local Ripple = require(ReplicatedStorage.Packages.Ripple)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local GunDataTypes = require(ReplicatedStorage.Shared.GunData.GunDataTypes)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
@@ -552,6 +553,7 @@ function ClientGunHandler:TryShoot(gunTool: Tool?)
 	end
 	self:ShootGun(gunTool, GunData[gunTool.Name])
 end
+
 function ClientGunHandler:ConnectGun(gunTool: Tool?)
 	if not gunTool then
 		error("Can't connect guns, tool reference not valid!")
@@ -563,6 +565,8 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 		GunDisconnectConn:Disconnect()
 	end
 
+	local gunData = GunData[gunTool.Name]
+
 	GunEquipConn = gunTool.Equipped:Connect(function(_: Mouse)
 		-- arm moves where camera is looking + 3D crosshair
 		local _: Part, crosshairBB: BillboardGui, _: ImageLabel = Get3DCrosshair()
@@ -570,8 +574,15 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 		ApplyCameraGunRecoil()
 		self:ToggleAmmoGUI(true)
 		self:ConnectAmmoGUI(gunTool)
-
 		self:AddCollisionConstraints(gunTool)
+		PlayerContext.HoldingWeapon = true
+
+		-- Adjust walkspeed when equipping weapon
+		if gunData.EquipWalkspeedMultiplier then
+			if PlayerContext.Humanoid then
+				PlayerContext.Humanoid.WalkSpeed = PlayerContext.Humanoid.WalkSpeed * gunData.EquipWalkspeedMultiplier
+			end
+		end
 
 		-- We use this because we disabled the default RMB camera movement by sinking RMB, but we want RMB to work
 		-- so we set this at a higher priority so we can still allow RMB inputs for this only
@@ -616,7 +627,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 			return Enum.ContextActionResult.Pass
 		end, false, Enum.UserInputType.MouseButton1, Enum.UserInputType.Touch)
 
-		local gunType = GunData[gunTool.Name] and GunData[gunTool.Name].GunType
+		local gunType = gunData and gunData.GunType
 		if not gunType then
 			return
 		end
@@ -648,6 +659,8 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 		self:DisconnectGun()
 		ClientGunHandler.CancelADS()
 		PlayerContext.RightArmYaw.Enabled = false
+		PlayerContext.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+		PlayerContext.HoldingWeapon = false
 		self.janitor:Cleanup()
 	end)
 end

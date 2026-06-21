@@ -53,7 +53,7 @@ PlayerContext.Camera = nil
 PlayerContext.RightArmYaw = nil
 PlayerContext.janitor = Janitor.new()
 PlayerContext.HRPOrientation = nil
-
+PlayerContext.HoldingWeapon = false
 -- Helper function to evaluate the color at a specific percentage (0 to 1)
 local function EvalColorSequence(sequence: ColorSequence, percentage: number): Color3
 	local keypoints = sequence.Keypoints
@@ -149,7 +149,7 @@ function PlayerContext.StayOnMovingPlatform(movingPart: BasePart | Model)
 	)
 end
 
-function PlayerContext:UpdateLimbsGUIHP(limbPartName: string, healthPercent: number)
+function PlayerContext:UpdateLimbsGUIHP(limbPartName: string, healthPercent: number?)
 	if not self.LimbHPModel then
 		return
 	end
@@ -158,7 +158,7 @@ function PlayerContext:UpdateLimbsGUIHP(limbPartName: string, healthPercent: num
 		return
 	end
 
-	limb.Color = EvalColorSequence(HealthGradient, healthPercent)
+	limb.Color = if not healthPercent then Color3.fromRGB(0, 0, 0) else EvalColorSequence(HealthGradient, healthPercent)
 end
 
 function PlayerContext:SetupLimbGUI()
@@ -222,6 +222,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.MovingPlatformConn = nil
 	PlayerContext.LastMovingPlatformCFrame = nil
 	PlayerContext.LimbHPModel = nil
+	PlayerContext.HoldingWeapon = false
 
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}

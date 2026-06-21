@@ -3,9 +3,10 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local DataService = require(ReplicatedStorage.Packages.DataService).server
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local ServerData = require(script.Parent.ServerData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local SpawnHandler = require(script.Parent.SpawnHandler.SpawnHandler)
 local PlayerCharacters = {}
@@ -25,7 +26,7 @@ local function InitializePlayer(player: Player, character: Model)
 	if bounty > 0 then
 		CollectionService:AddTag(character, "Wanted")
 	end
-	humanoid.WalkSpeed = 6
+	humanoid.WalkSpeed = HumanConstants.WALKSPEED
 
 	PlayerCharacters[player] = humanClass
 

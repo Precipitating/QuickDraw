@@ -110,7 +110,6 @@ local ThrowableData = {
 			:Done()
 			:Physics()
 			:MinSpeed(8)
-			:MaxDistance(120) -- shorter realistic throw than a frag grenade
 			:Done()
 			:When(isServer, function(b)
 				b:Cosmetic()

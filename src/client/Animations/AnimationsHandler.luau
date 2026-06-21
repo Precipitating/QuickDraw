@@ -11,6 +11,7 @@ local LoadedAnimations = {
 	Roll = true,
 	Kick = true,
 	PlaceDownTrap = true,
+	CrouchDig = true,
 }
 
 function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)

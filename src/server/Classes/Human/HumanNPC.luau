@@ -4,13 +4,13 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
 local Human = require(script.Parent.Human)
-local HumanConstants = require(script.Parent.HumanConstants)
 
 local HumanNPC = setmetatable({}, Human)
 HumanNPC.__index = HumanNPC

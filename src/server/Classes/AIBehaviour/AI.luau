@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local NoobPath = require(ReplicatedStorage.Shared.Pathfinding.NoobPath)
 local Path = require(ReplicatedStorage.Shared.Pathfinding.Path)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -13,7 +14,7 @@ local Seek = require(ServerScriptService.Server.Classes.AIBehaviour.States.Seek)
 local StateMachine = require(script.Parent.StateMachine)
 
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+
 local raycastParams = RaycastParams.new()
 raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 

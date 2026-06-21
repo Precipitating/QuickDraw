@@ -1,13 +1,13 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local HumanConstants = require(script.Parent.HumanConstants)
 local HumanSignals = require(script.Parent.HumanSignals)
 local Inventory = require(script.Parent.Inventory)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local BloodFlowEmitter = ReplicatedStorage.Shared.Templates.BloodFlow
@@ -700,6 +700,10 @@ function Human:HideLimb(limb)
 
 	if self.DisabledBodyParts[limbName] == false then
 		self.DisabledBodyParts[limbName] = true
+	end
+
+	if self.LimbHealth[limbName] then
+		self.LimbHealth[limbName] = HumanConstants.LIMB_DISMEMBER_HP
 	end
 end
 

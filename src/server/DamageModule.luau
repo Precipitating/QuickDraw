@@ -3,6 +3,7 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
@@ -109,7 +110,7 @@ local function HandleLimbDestroyed(humanClass: Human, limbName: string, damage: 
 	end
 
 	if limbName ~= "UpperTorso" and limbName ~= "LowerTorso" then
-		if humanClass.LimbHealth[limbName] <= -60 then
+		if humanClass.LimbHealth[limbName] <= HumanConstants.LIMB_DISMEMBER_HP then
 			humanClass:DestroyLimb(limbName)
 			return
 		end

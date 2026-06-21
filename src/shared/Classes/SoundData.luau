@@ -626,6 +626,21 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+
+	-- Tombstone
+	SandDig = {
+		SoundId = "rbxassetid://103746325474402",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Looped = true,
+		Group = "SFX",
+	},
+	SandPickup = {
+		SoundId = "rbxassetid://122165369916243",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 }
 
 -- Default group volumes

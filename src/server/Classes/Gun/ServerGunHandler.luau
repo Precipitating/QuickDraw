@@ -96,7 +96,7 @@ function ServerGunHandler:GetAmmoCount(player: Player?)
 	end
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 
-	local currentGun: Gun? = humanClass.Inventory:GetGun()
+	local currentGun: Gun? = humanClass and humanClass.Inventory and humanClass.Inventory:GetGun()
 
 	if not currentGun then
 		return nil, nil, nil

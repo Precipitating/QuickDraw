@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local HumanConstants = require(ServerScriptService.Server.Classes.Human.HumanConstants)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
@@ -77,12 +77,23 @@ function Inputs:ToggleSprint(player: Player, active: boolean)
 	if humanClass.Legless then
 		return
 	end
+
+	local inventory = humanClass and humanClass.Inventory
+	local gun = inventory and inventory:GetGun()
+	local isHoldingGun = gun and gun.HoldingGun
+	local sprintSpeed = if isHoldingGun
+		then HumanConstants.SPRINT_SPEED * gun.EquipWalkspeedMultiplier
+		else HumanConstants.SPRINT_SPEED
+	local walkSpeed = if isHoldingGun
+		then HumanConstants.WALKSPEED * gun.EquipWalkspeedMultiplier
+		else HumanConstants.WALKSPEED
+
 	if active and stamina and stamina > 0 then
-		humanoid.WalkSpeed = HumanConstants.SPRINT_SPEED
+		humanoid.WalkSpeed = sprintSpeed
 		stamina = math.clamp(stamina, 0, HumanConstants.MAX_STAMINA)
 		humanClass.Sprinting = true
 	else
-		humanoid.WalkSpeed = HumanConstants.WALKSPEED
+		humanoid.WalkSpeed = walkSpeed
 		humanClass.Sprinting = false
 	end
 end
