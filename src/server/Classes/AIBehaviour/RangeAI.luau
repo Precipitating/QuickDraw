@@ -178,16 +178,16 @@ end
 function RangeAI:CorrectRangePosition(targetPos: Vector3): string | boolean
 	local currentPos = self.Owner.Character:GetPivot().Position
 	local distance = (targetPos - currentPos).Magnitude
-
+	local legless = self.Owner:IsLegless()
 	-- Must be 5 studs PAST max before seeking, add a buffer to account for pathfinding inaccuracies
 	if distance >= self.MaxAttackDistance + 5 then
 		return "Seek"
 	end
 	-- Must be 5 studs PAST min before falling back
-	if distance <= self.MinAttackDistance - 5 and not self.Owner.Legless then
+	if distance <= self.MinAttackDistance - 5 and not legless then
 		return "Fallback"
 	end
-	if not self.Owner.Legless then
+	if not legless then
 		self:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 	end
 	return true

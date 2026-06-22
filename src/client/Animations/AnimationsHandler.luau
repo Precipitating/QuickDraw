@@ -12,6 +12,8 @@ local LoadedAnimations = {
 	Kick = true,
 	PlaceDownTrap = true,
 	CrouchDig = true,
+	BargeRun = true,
+	BargeWindup = true,
 }
 
 function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)
@@ -26,14 +28,14 @@ function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)
 	end
 end
 
-function AnimationsHandler.PlayCustomAnimation(name: string)
+function AnimationsHandler.PlayCustomAnimation(name: string, speed: number?)
 	local animationInstance = LoadedAnimations[name]
 	if not animationInstance then
 		warn(`Can't play custom animation {name}, missing from table`)
 		return
 	end
 
-	animationInstance:Play()
+	animationInstance:Play(nil, nil, speed)
 
 	return animationInstance
 end

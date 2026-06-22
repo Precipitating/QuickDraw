@@ -54,6 +54,8 @@ PlayerContext.RightArmYaw = nil
 PlayerContext.janitor = Janitor.new()
 PlayerContext.HRPOrientation = nil
 PlayerContext.HoldingWeapon = false
+PlayerContext.IsCharging = false
+PlayerContext.Legless = false
 -- Helper function to evaluate the color at a specific percentage (0 to 1)
 local function EvalColorSequence(sequence: ColorSequence, percentage: number): Color3
 	local keypoints = sequence.Keypoints
@@ -201,12 +203,23 @@ function PlayerContext:SetupLimbGUI()
 	end
 end
 
+function PlayerContext:SyncLeglessState()
+	self.janitor:Add(self.Character:GetAttributeChangedSignal("Legless"):Connect(function()
+		PlayerContext.Legless = self.Character:GetAttribute("Legless")
+	end))
+end
+
 local function RefreshPlayerContextRefs(player: Player, character: Model)
 	assert(player, "Missing player when refreshing PlayerContext")
 	assert(character, "Missing character when refreshing PlayerContext")
 
-	local humanoid = character:WaitForChild("Humanoid")
-	local hrp = character:WaitForChild("HumanoidRootPart")
+	local humanoid: Humanoid? = character:WaitForChild("Humanoid", 5) :: Humanoid
+	local hrp = character:WaitForChild("HumanoidRootPart", 5)
+
+	if not humanoid or not hrp then
+		error("Cannot refresh PlayerContext, missing humanoid or HRP")
+		return
+	end
 
 	PlayerContext.Player = player
 	PlayerContext.Character = character or player.CharacterAdded:Wait()
@@ -223,6 +236,8 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.LastMovingPlatformCFrame = nil
 	PlayerContext.LimbHPModel = nil
 	PlayerContext.HoldingWeapon = false
+	PlayerContext.IsCharging = false
+	PlayerContext.Legless = false
 
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
@@ -271,6 +286,9 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	end))
 
 	PlayerContext:SetupLimbGUI()
+
+	-- Sync legless state attribute that changes from server
+	PlayerContext:SyncLeglessState()
 end
 
 local function ConnectGUIConnections(character: Model)

@@ -83,7 +83,7 @@ function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
 			)
 			return
 		end
-		local isLegless = HumanNetwork.networker:fetch("IsLegless", humanoid)
+		local isLegless = character:GetAttribute("Legless")
 		if isLegless then
 			controller = AnimationController.new(character, CrawlAnims, DefaultAnimateParams)
 		else

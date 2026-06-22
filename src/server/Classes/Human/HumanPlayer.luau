@@ -152,7 +152,7 @@ function HumanPlayer:DestroyLimb(limbName: string)
 end
 
 function HumanPlayer:RevertCrawlState()
-	if not self.Legless then
+	if not self:IsLegless() then
 		return
 	end
 
@@ -176,14 +176,14 @@ function HumanPlayer:RevertCrawlState()
 		currentGun:ToggleCollision(true)
 	end
 
-	self.Legless = false
+	self:UpdateLeglessState(false)
 end
 function HumanPlayer:SetCrawlState()
 	if self.Dead then
 		return
 	end
 
-	if self.Legless then
+	if self:IsLegless() then
 		return
 	end
 
@@ -212,7 +212,7 @@ function HumanPlayer:SetCrawlState()
 
 		self:FixCrawlADS()
 
-		self.Legless = true
+		self:UpdateLeglessState(true)
 
 		warn(`Player should be legless now`)
 	end

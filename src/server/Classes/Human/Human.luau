@@ -182,13 +182,38 @@ function Human.new(humanoid: Humanoid?): Human
 
 	self.AnimationControllerState = false
 
-	self.Legless = false
-
 	self:OnHumanoidStateChange()
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
+	self:SetupAttributes()
 
 	return self :: any
+end
+
+function Human:SetupAttributes()
+	if not self.Character then
+		warn("Cannot setup human attributes, character model missing")
+		return
+	end
+	self.Character:SetAttribute("Legless", false)
+end
+
+function Human:IsLegless()
+	if not self.Character then
+		warn("Cannot get legless state, character model missing")
+		return
+	end
+
+	return self.Character:GetAttribute("Legless")
+end
+
+function Human:UpdateLeglessState(isLegless: boolean)
+	if not self.Character then
+		warn("Cannot update legless state, missing character")
+		return
+	end
+
+	self.Character:SetAttribute("Legless", isLegless)
 end
 
 function Human:GetHealthPercentage()
@@ -433,7 +458,7 @@ function Human:HealAll()
 		end
 	end
 
-	if self.Legless then
+	if self:IsLegless() then
 		self:RevertCrawlState()
 	end
 end

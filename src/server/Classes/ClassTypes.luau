@@ -212,4 +212,9 @@ export type TrapDamage = DamageData & {
 	LimbHit: BasePart,
 }
 
+export type BargeDamage = DamageData & {
+	Type: "Barge",
+	LimbHit: BasePart,
+}
+
 return nil

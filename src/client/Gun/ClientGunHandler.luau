@@ -272,9 +272,7 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 	local shootPoint = gunTool:WaitForChild("ShootPoint", 10) :: Attachment
 	crosshairRaycastParams.ExcludeInstances = { PlayerContext.Character, gunTool, crosshairPart }
 
-	local parentPart = if HumanNetwork.networker:fetch("IsLegless")
-		then PlayerContext.HRP
-		else PlayerContext.BodyParts["UpperTorso"]
+	local parentPart = if PlayerContext.Legless then PlayerContext.HRP else PlayerContext.BodyParts["UpperTorso"]
 
 	-----------------------------------------------------------------------
 	-- BindToRenderStep at the very end so nothing overwrites us

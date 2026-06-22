@@ -7,4 +7,6 @@ return {
 	Kick = 72567578152465,
 	PlaceDownTrap = 137725023820205,
 	CrouchDig = 102516227298407,
+	BargeRun = 119665275935251,
+	BargeWindup = 131054778807822,
 }

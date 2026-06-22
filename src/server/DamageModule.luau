@@ -49,7 +49,7 @@ function DamageModule:ApplyDamage(
 	if not human or not human.LimbHealth or not human.LimbHealth[limbName] or human.Dead or human.Invincible then
 		return
 	end
-	local gun = human.Inventory:GetGun()
+	local gun = human.Inventory and human.Inventory:GetGun()
 
 	if gun then
 		local reloading = gun.Reloading
@@ -165,7 +165,7 @@ local function CheckAndHandleDeadHuman(human: Human, shooter: Player?)
 end
 
 function DamageModule.DamageHuman(
-	damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage
+	damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
 )
 	local hitObj = nil
 	if damageData.Type == "Shot" then

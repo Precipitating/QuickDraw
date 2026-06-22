@@ -64,7 +64,7 @@ function Seek:Enter(previous, seekData)
 	self.Machine:Start()
 
 	local ai = self.AI
-	local legless = self.Human.Legless
+	local legless = self.Human:IsLegless()
 
 	if not legless then
 		ai:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)

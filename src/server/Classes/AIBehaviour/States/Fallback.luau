@@ -56,7 +56,7 @@ function Fallback:Enter(previous, fallbackData)
 	end
 
 	-- 2. Position found, run and move there
-	if not self.Human.Legless then
+	if not self.Human:IsLegless() then
 		self.AI:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
 	end
 	self.AI:PathFindTo(safePos)

@@ -1,7 +1,7 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
-local Inputs = require(script.Parent.ClientInputs.Inputs)
+
 local PlayerContext = require(script.Parent.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local ColorCorrection: ColorCorrectionEffect = Lighting:WaitForChild("ColorCorrection")
@@ -13,11 +13,12 @@ function HumanNetwork:RagdollClient(ragdollTime: number)
 		warn("Can't ragdoll on client, humanoid missing")
 		return
 	end
+	local Inputs = require(script.Parent.ClientInputs.Inputs)
 
 	PlayerContext.Humanoid:UnequipTools()
 	PlayerContext.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
 	PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-	Inputs.networker:fire("ToggleSprint", false, PlayerContext.HoldingWeapon)
+	Inputs.networker:fire("ToggleSprint", false)
 	task.delay(ragdollTime, function()
 		if PlayerContext.Humanoid then
 			PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)

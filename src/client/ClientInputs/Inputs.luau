@@ -1,4 +1,6 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
@@ -33,8 +35,11 @@ function Inputs:ConnectSprint(input: InputObject)
 		return
 	end
 	if input.KeyCode == Enum.KeyCode.LeftShift then
+		if PlayerContext.IsCharging then
+			return
+		end
 		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and PlayerContext.IsMoving then
-			self.networker:fire("ToggleSprint", true, PlayerContext.HoldingWeapon)
+			self.networker:fire("ToggleSprint", true)
 		end
 	end
 end
@@ -45,6 +50,18 @@ function Inputs:ConnectRoll(input: InputObject)
 	end
 	if input.KeyCode == Enum.KeyCode.E then
 		if not PlayerContext.CanRoll then
+			return
+		end
+
+		if CollectionService:HasTag(PlayerContext.Player, "Jailed") then
+			return
+		end
+
+		if PlayerContext.IsCharging then
+			return
+		end
+
+		if PlayerContext.IsCharging then
 			return
 		end
 
@@ -122,14 +139,17 @@ function Inputs:ConnectInputEnd()
 			return
 		end
 		if input.KeyCode == Enum.KeyCode.LeftShift then
+			if PlayerContext.IsCharging then
+				return
+			end
 			if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
-				self.networker:fire("ToggleSprint", false, PlayerContext.HoldingWeapon)
+				self.networker:fire("ToggleSprint", false)
 			end
 		end
 	end)
 end
 
-function Inputs:Initialize()
+function Inputs:ConnectInputBegin()
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		if processed then
 			return
@@ -138,12 +158,88 @@ function Inputs:Initialize()
 		self:ConnectSprint(input)
 		self:ConnectRoll(input)
 		self:ConnectKick(input)
+		self:ConnectBarge(input)
 	end)
-	--
-	self:ConnectOnJump()
+end
 
-	--
+function Inputs:StopBarge()
+	if PlayerContext.janitor:Get("BargeConn") then
+		local humanoid = PlayerContext.Humanoid
+
+		PlayerContext.janitor:Remove("BargeConn")
+		CoreGUIHandler.ToggleBackpackVisibility(true, false)
+		AnimationsHandler.StopCustomAnimation("BargeRun")
+		PlayerContext.IsCharging = false
+		Inputs.networker:fire("ToggleSprint", false)
+		self.networker:fire("DestroyBargeCollision")
+		if humanoid then
+			humanoid:Move(Vector3.new(0, 0, 0), false)
+		end
+		ClientUtility.ToggleControls(true)
+	end
+end
+
+function Inputs:ConnectBarge(input: InputObject)
+	if not input then
+		return
+	end
+	if input.KeyCode == Enum.KeyCode.C then
+		if
+			not PlayerContext.Humanoid
+			or PlayerContext.Humanoid.Health <= 0
+			or PlayerContext.IsMoving
+			or PlayerContext.Legless
+			or PlayerContext.IsCharging
+		then
+			return
+		end
+		PlayerContext.IsCharging = true
+		local canBarge = self.networker:fetch("CanBarge")
+		if not canBarge then
+			PlayerContext.IsCharging = false
+			return
+		end
+
+		ClientUtility.ToggleControls(false)
+		CoreGUIHandler.ToggleBackpackVisibility(false, true)
+		local bargeWindupAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("BargeWindup")
+
+		bargeWindupAnim.Ended:Once(function()
+			if not PlayerContext or not PlayerContext.Humanoid or not PlayerContext.HRP then
+				return
+			end
+			if not PlayerContext.IsCharging then
+				return
+			end
+			if PlayerContext.Legless then
+				return
+			end
+
+			-- Play animation and run until stamina runs out
+			AnimationsHandler.PlayCustomAnimation("BargeRun")
+			Inputs.networker:fire("ToggleSprint", true)
+			self.networker:fire("AddBargeCollision")
+
+			PlayerContext.janitor:Add(
+				RunService.RenderStepped:Connect(function()
+					PlayerContext.Player:Move(PlayerContext.HRP.CFrame.LookVector)
+				end),
+				"Disconnect",
+				"BargeConn"
+			)
+		end)
+	end
+end
+
+-- Is called when player's stamina has touched 0
+function Inputs:StaminaDepleted()
+	self:StopBarge()
+end
+
+function Inputs:Initialize()
+	self:ConnectInputBegin()
 	self:ConnectInputEnd()
+	self:ConnectOnJump()
 end
 
 return Inputs

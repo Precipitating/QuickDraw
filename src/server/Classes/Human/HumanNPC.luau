@@ -122,7 +122,7 @@ function HumanNPC:OnHit(damage: number, damageMultiplier: number, limbName: stri
 	end
 end
 function HumanNPC:RevertCrawlState()
-	if not self.Legless then
+	if not self:isLegless() then
 		return
 	end
 
@@ -151,7 +151,7 @@ function HumanNPC:RevertCrawlState()
 		currentGun:ToggleCollision(true)
 	end
 
-	self.Legless = false
+	self:UpdateLeglessState(false)
 end
 
 function HumanNPC:SetCrawlState()
@@ -160,7 +160,7 @@ function HumanNPC:SetCrawlState()
 	end
 	local parts = self.DisabledBodyParts
 
-	if self.Legless then
+	if self:IsLegless() then
 		return
 	end
 
@@ -196,7 +196,7 @@ function HumanNPC:SetCrawlState()
 
 		self:FixCrawlADS()
 
-		self.Legless = true
+		self:UpdateLeglessState(true)
 
 		warn(`{self.Character.Name} should be legless now`)
 	end
@@ -317,12 +317,17 @@ end
 
 function HumanNPC:Ragdoll(duration: number)
 	local humanoid = self.Humanoid
+	self:UnEquipCurrentTool()
 	humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
 	humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+
 	task.delay(duration, function()
 		if humanoid then
 			humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
 			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+			task.wait(0.3)
+			self.Inventory:EquipWeapon("Gun")
 		end
 	end)
 end
@@ -341,7 +346,9 @@ function HumanNPC:EquipGun(gunTool: Tool?)
 end
 
 function HumanNPC:UnEquipCurrentTool()
-	self.Humanoid:UnEquipTools()
+	if self.Humanoid then
+		self.Humanoid:UnequipTools()
+	end
 end
 
 function HumanNPC:Die(shooter: Player?)
