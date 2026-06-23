@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ClientUtility = require(StarterPlayer.StarterPlayerScripts.Client.Utility.ClientUtility)
 local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
@@ -162,12 +163,15 @@ function Inputs:ConnectInputBegin()
 	end)
 end
 
-function Inputs:StopBarge()
-	if PlayerContext.janitor:Get("BargeConn") then
-		local humanoid = PlayerContext.Humanoid
+function Inputs:StopBarge(hitType: string)
+	if not PlayerContext.janitor:Get("BargeConn") then
+		return
+	end
 
+	local function ResetBarge()
+		local humanoid = PlayerContext.Humanoid
 		PlayerContext.janitor:Remove("BargeConn")
-		CoreGUIHandler.ToggleBackpackVisibility(true, false)
+
 		AnimationsHandler.StopCustomAnimation("BargeRun")
 		PlayerContext.IsCharging = false
 		Inputs.networker:fire("ToggleSprint", false)
@@ -175,8 +179,25 @@ function Inputs:StopBarge()
 		if humanoid then
 			humanoid:Move(Vector3.new(0, 0, 0), false)
 		end
-		ClientUtility.ToggleControls(true)
 	end
+
+	ResetBarge()
+
+	-- Hit a wall, play a custom stagger animation
+	if hitType and hitType == "Environment" then
+		SoundManager.PlayKeyed("SFX", "ImpactHit")
+		local bargeHitEnvAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("BargeHitEnvironment")
+
+		bargeHitEnvAnim.Ended:Once(function()
+			ResetBarge()
+			CoreGUIHandler.ToggleBackpackVisibility(true, false)
+			ClientUtility.ToggleControls(true)
+		end)
+		return
+	end
+
+	CoreGUIHandler.ToggleBackpackVisibility(true, false)
+	ClientUtility.ToggleControls(true)
 end
 
 function Inputs:ConnectBarge(input: InputObject)
@@ -223,6 +244,10 @@ function Inputs:ConnectBarge(input: InputObject)
 			PlayerContext.janitor:Add(
 				RunService.RenderStepped:Connect(function()
 					PlayerContext.Player:Move(PlayerContext.HRP.CFrame.LookVector)
+
+					if PlayerContext.Legless then
+						self:StopBarge("None")
+					end
 				end),
 				"Disconnect",
 				"BargeConn"
@@ -233,7 +258,7 @@ end
 
 -- Is called when player's stamina has touched 0
 function Inputs:StaminaDepleted()
-	self:StopBarge()
+	self:StopBarge("None")
 end
 
 function Inputs:Initialize()

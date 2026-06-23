@@ -327,7 +327,9 @@ function HumanNPC:Ragdoll(duration: number)
 			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 
 			task.wait(0.3)
-			self.Inventory:EquipWeapon("Gun")
+			if self.Inventory and self.Inventory.EquipWeapon then
+				self.Inventory:EquipWeapon("Gun")
+			end
 		end
 	end)
 end

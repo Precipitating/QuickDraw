@@ -79,6 +79,7 @@ local function LoadMenuGUI()
 		ClientUtility.ToggleControls(true)
 		CoreGUIHandler.ToggleBackpackVisibility(true)
 		ZoneHandler:Initialize()
+		NPCHandler:InitializeNPCDialogue()
 	end)
 
 	startButton.MouseEnter:Connect(function()

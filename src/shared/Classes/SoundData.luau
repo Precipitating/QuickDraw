@@ -641,6 +641,13 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	--
+	ImpactHit = {
+		SoundId = "rbxassetid://140626490819228",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 }
 
 -- Default group volumes

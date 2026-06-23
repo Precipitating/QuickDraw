@@ -9,4 +9,5 @@ return {
 	CrouchDig = 102516227298407,
 	BargeRun = 119665275935251,
 	BargeWindup = 131054778807822,
+	BargeHitEnvironment = 139755214511454,
 }

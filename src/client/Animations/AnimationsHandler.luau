@@ -14,6 +14,7 @@ local LoadedAnimations = {
 	CrouchDig = true,
 	BargeRun = true,
 	BargeWindup = true,
+	BargeHitEnvironment = true,
 }
 
 function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)

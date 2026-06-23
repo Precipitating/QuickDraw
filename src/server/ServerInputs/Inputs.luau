@@ -188,7 +188,7 @@ function Inputs:AddBargeCollision(player: Player)
 			DamageModule.DamageHuman(data)
 			collider:Destroy()
 			weld:Destroy()
-			self.networker:fire(player, "StopBarge")
+			self.networker:fire(player, "StopBarge", "Environment")
 
 			return
 		end
@@ -230,7 +230,7 @@ function Inputs:AddBargeCollision(player: Player)
 
 		collider:Destroy()
 		weld:Destroy()
-		self.networker:fire(player, "StopBarge")
+		self.networker:fire(player, "StopBarge", "Human")
 	end)
 end
 
