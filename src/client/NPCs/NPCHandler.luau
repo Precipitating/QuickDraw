@@ -1,13 +1,11 @@
 local CollectionService = game:GetService("CollectionService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local NPCAnimationsHandler = require(script.Parent.Parent.Animations.NPCAnimationsHandler)
 local NPCHandler = {}
 
 function NPCHandler:InitializeNPCDialogue()
-	local DialogueData = require(ReplicatedStorage.Shared.DialogueData)
+	local DialogueData = require(script.Parent.Parent.DialogueData)
 	local dialogueNPCS = CollectionService:GetTagged("NPCPrompt")
-
 	for _, npcPrompt in dialogueNPCS do
 		local model = npcPrompt.Parent
 		if not model then
