@@ -48,6 +48,44 @@ function Seek:MoveToLastSeenLocation(target: Model | BasePart)
 	ai:PathFindTo(safeSeekPos)
 end
 
+function Seek:LookAroundAndReact(ai)
+	local foundEnemy = ai:LookAround()
+
+	-- Enemy spotted, either:
+	-- Fallback if too close
+	-- Go closer within range
+	-- Go to attack state if range satisfied
+
+	-- If not spotted, go back to default state (patrol)
+	if foundEnemy and not CollectionService:HasTag(foundEnemy, "Dead") then
+		local targetPos = if foundEnemy:IsA("Model") then foundEnemy:GetPivot().Position else foundEnemy.Position
+		local inRange = ai:CorrectRangePosition(targetPos)
+
+		if typeof(inRange) == "string" then
+			if inRange == "Fallback" then
+				self.Machine:Transition("Fallback", { Target = foundEnemy })
+				return
+			elseif inRange == "Seek" then
+				-- Pathfinded but still too far, give up and go back to default state
+				self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+				return
+			end
+		end
+
+		-- inRange is true, distance is valid
+		self.Machine:Transition(self.AI.AttackState.Name, { Target = foundEnemy })
+	else
+		ServerSoundHandler:Play3DNPCVoiceline(
+			nil,
+			`RangedAILostSight1{self.AI.Type}`,
+			self.Human.VoicelineSound,
+			{ MaxDistance = 200 }
+		)
+
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+	end
+end
+
 function Seek:Enter(previous, seekData)
 	warn(`[SERVER] {self.Human.Character.Name} Entered Seek from {previous}`)
 
@@ -78,55 +116,40 @@ function Seek:Enter(previous, seekData)
 	)
 
 	-- 1. Move to last seen position OR a valid position around the last seen position (respecting radius and vision)
-	local moved = self:MoveToLastSeenLocation(target)
+	self:MoveToLastSeenLocation(target)
 
 	if not self.AI or not self.AI.NoobPath or not self.AI.NoobPath.Reached then
+		warn("Seek pathfind failed, returning to default state")
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		return
 	end
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
-		if not success then
+		if not success or not self.Human then
 			warn("Seek pathfind failed, returning to default state")
 			self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 			return
 		end
+
+		--
 		warn("Reached")
-		if not self.Human then
-			return
-		end
+		self:LookAroundAndReact(ai)
+	end))
 
-		local foundEnemy = ai:LookAround()
-		if foundEnemy and not CollectionService:HasTag(foundEnemy, "Dead") then
-			local targetPos = if foundEnemy:IsA("Model") then foundEnemy:GetPivot().Position else foundEnemy.Position
-			local inRange = ai:CorrectRangePosition(targetPos)
+	self.Janitor:Add(self.AI.NoobPath.Trapped:Connect(function(trapType: string)
+		warn(`Seek pathfind failed, returning to default state: {trapType}`)
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+		return
+	end))
 
-			if typeof(inRange) == "string" then
-				if inRange == "Fallback" then
-					self.Machine:Transition("Fallback", { Target = foundEnemy })
-					return
-				elseif inRange == "Seek" then
-					-- Pathfinded but still too far, give up and go back to default state
-					self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
-					return
-				end
-			end
-
-			-- inRange is true, distance is valid
-			self.Machine:Transition(self.AI.AttackState.Name, { Target = foundEnemy })
-		else
-			ServerSoundHandler:Play3DNPCVoiceline(
-				nil,
-				`RangedAILostSight1{self.AI.Type}`,
-				self.Human.VoicelineSound,
-				{ MaxDistance = 200 }
-			)
-
-			self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
-		end
+	self.Janitor:Add(self.AI.NoobPath.Error:Connect(function(errorType: string)
+		warn(`NPC seek error: {errorType}`)
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+		return
 	end))
 end
 
--- Check for enemy during pathfind
+-- Check for enemy during pathfind, so it doesn't just check WHEN pathfind finishes
 function Seek:Update(dt)
 	local ai = self.AI
 	local now = os.clock()

@@ -175,6 +175,9 @@ export type HumanPlayer = Human & {
 export type HumanNPC = Human & {
 	HumanType: "NPC",
 	AI: AI,
+	AimRightArmTowards: (self: HumanNPC, target: Vector3) -> boolean,
+	ToggleTorsoAimer: (self: HumanNPC, enable: boolean) -> (),
+	ToggleRightArmAimer: (self: HumanNPC, enable: boolean) -> (),
 }
 
 export type Destroyable = {

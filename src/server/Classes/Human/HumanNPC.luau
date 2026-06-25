@@ -101,11 +101,8 @@ function HumanNPC:ToggleRightArmAimer(enable: boolean)
 	if rightArmOrientator.Enabled == enable then
 		return
 	end
-	if enable then
-		rightArmOrientator.Enabled = true
-	else
-		rightArmOrientator.Enabled = false
-	end
+
+	rightArmOrientator.Enabled = enable
 	rightArmOrientator.CFrame = CFrame.identity
 end
 
@@ -207,15 +204,10 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	if torsoAimer.Enabled == enable then
 		return
 	end
-	torsoAimer.CFrame = CFrame.new()
 
-	if enable then
-		self.AI:StopPathfind()
+	torsoAimer.Enabled = enable
+	torsoAimer.CFrame = CFrame.identity
 
-		torsoAimer.Enabled = true
-	else
-		torsoAimer.Enabled = false
-	end
 	--warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 function HumanNPC:AimRightArmTowards(target)

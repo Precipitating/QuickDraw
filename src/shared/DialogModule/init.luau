@@ -46,6 +46,10 @@ function DialogModule.new(npcName, npc, prompt, animation)
 	self.responded = eventSignal.Event -- Expose the event to connect to
 	self.fireResponded = eventSignal -- Keep a reference to the BindableEvent
 
+	local closedEvent = Instance.new("BindableEvent")
+	self.closed = closedEvent.Event
+	self.fireClosed = closedEvent
+
 	-- tween variables
 	self.animNameText = tweenService:Create(self.npcGui.name, TweenInfo.new(0.3), { TextTransparency = 1 })
 	self.animNameStroke = tweenService:Create(self.npcGui.name.UIStroke, TweenInfo.new(0.3), { Transparency = 1 })
@@ -120,33 +124,20 @@ function DialogModule:triggerDialog(player, questionNumber)
 
 	task.spawn(function()
 		self.talking = true
+		self.talking = true
 		local dialogObject = self.npcGui.dialog
 		dialogObject.Visible = true
-		dialogObject.Text = ""
-		local currenttext = ""
-		local skip = false
-		local arrow = 0
-		for i, letter in string.split(dialog.text, "") do
-			currenttext = currenttext .. letter
-			if letter == "<" then
-				skip = true
-			end
-			if letter == ">" then
-				skip = false
-				arrow += 1
-				continue
-			end
-			if arrow == 2 then
-				arrow = 0
-			end
-			if skip then
-				continue
-			end
-			dialogObject.Text = currenttext .. if arrow == 1 then "</font>" else ""
+		dialogObject.Text = dialog.text
+		dialogObject.MaxVisibleGraphemes = 0
+
+		local totalGraphemes = utf8.len((dialog.text:gsub("%b<>", "")))
+		for i = 1, totalGraphemes do
+			dialogObject.MaxVisibleGraphemes = i
 			TICK_SOUND:Play()
 			task.wait(0.02)
 		end
-		dialogObject.Text = dialog.text
+
+		dialogObject.MaxVisibleGraphemes = -1
 		self.talking = false
 
 		-- inputs
@@ -268,7 +259,9 @@ function DialogModule:triggerDialog(player, questionNumber)
 
 		local range = 10
 		while self.active do
-			local distance = (player.Character.PrimaryPart.Position - self.npc.Torso.Position).Magnitude
+			local torso = self.npc:FindFirstChild("Torso") or self.npc:FindFirstChild("UpperTorso")
+			local torsoPos = torso.Position
+			local distance = (player.Character.PrimaryPart.Position - torsoPos).Magnitude
 
 			if distance > range or collectionService:HasTag(player.Character, "Dead") then
 				self:hideGui()
@@ -310,7 +303,6 @@ function DialogModule:hideGui(exitQuip, notActuallyAnExitQuip)
 	self.active = false
 	self.talking = true
 	notActuallyAnExitQuip = notActuallyAnExitQuip or false
-	turnProximityPromptsOn(not notActuallyAnExitQuip)
 
 	self.talking = false
 
@@ -341,6 +333,8 @@ function DialogModule:hideGui(exitQuip, notActuallyAnExitQuip)
 		option.Visible = false
 	end
 
+	self.fireClosed:Fire()
+
 	local dialogObject = self.npcGui.dialog
 	if exitQuip then
 		dialogObject.TextTransparency = 0
@@ -349,42 +343,26 @@ function DialogModule:hideGui(exitQuip, notActuallyAnExitQuip)
 		self.npcGui.name.UIStroke.Transparency = 1
 		self.npcGui.arrow.TextTransparency = 1
 		self.npcGui.arrow.UIStroke.Transparency = 1
-		local currenttext = ""
-		dialogObject.Text = ""
+
+		dialogObject.Text = exitQuip
+		dialogObject.MaxVisibleGraphemes = 0
 		dialogObject.Visible = true
-		local skip = false
-		local arrow = 0
-		for i, letter in string.split(exitQuip, "") do
-			if dialogObject.Text ~= currenttext and skip == 0 then
-				warn("other dialog happening")
-				break
-			end
-			currenttext = currenttext .. letter
-			if letter == "<" then
-				skip = true
-			end
-			if letter == ">" then
-				skip = false
-				arrow += 1
-				continue
-			end
-			if arrow == 2 then
-				arrow = 0
-			end
-			if skip then
-				continue
-			end
-			dialogObject.Text = currenttext .. if arrow == 1 then "</font>" else ""
+
+		local totalGraphemes = utf8.len((exitQuip:gsub("%b<>", "")))
+		for i = 1, totalGraphemes do
+			dialogObject.MaxVisibleGraphemes = i
 			TICK_SOUND:Play()
 			task.wait(0.02)
 		end
 
-		dialogObject.Text = exitQuip
+		dialogObject.MaxVisibleGraphemes = -1
+		turnProximityPromptsOn(true)
+
 		if notActuallyAnExitQuip then
 			return
 		end
 	end
-
+	turnProximityPromptsOn(not notActuallyAnExitQuip)
 	task.spawn(function()
 		if exitQuip then
 			task.wait(2)
