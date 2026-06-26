@@ -9,6 +9,8 @@ local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
+type HumanNPC = ClassTypes.HumanNPC
+
 local Fallback = setmetatable({}, BaseState)
 Fallback.__index = Fallback
 
@@ -46,7 +48,7 @@ function Fallback:MoveToFallbackPosition(fallbackPos: Vector3)
 	return true
 end
 
-function Fallback:AimNPCTowards(human: ClassTypes.HumanNPC, targetPos: Vector3, target, NPCAimArm: MeshPart?)
+function Fallback:AimNPCTowards(human: HumanNPC, targetPos: Vector3, target, NPCAimArm: MeshPart?)
 	if not targetPos or not human or not target or not NPCAimArm then
 		return false
 	end
@@ -68,44 +70,7 @@ function Fallback:AimNPCTowards(human: ClassTypes.HumanNPC, targetPos: Vector3, 
 	return true
 end
 
-function Fallback:Enter(previous, fallbackData)
-	warn("Entered Fallback from", previous)
-	while self.Human.IsRagdolled do
-		task.wait(1)
-	end
-	self.AI:StateChangeReset()
-
-	-- Variables
-	local human = self.Human
-	local target = fallbackData.Target
-
-	if not target then
-		error("Fallback state missing target!")
-	end
-	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-	local currentGun = human.Inventory:GetGun()
-	-- Disable reload if we're reloading & play voiceline
-	if currentGun then
-		currentGun:StopReloading()
-	end
-	ServerSoundHandler:Play3DNPCVoiceline(
-		nil,
-		`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
-		self.Human.VoicelineSound,
-		{ MaxDistance = 200 }
-	)
-
-	-- 1. Find a suitable position around player to go to
-	local hasFallbackPos = self:FindFallbackPosition(human, target)
-
-	if not hasFallbackPos then
-		return
-	end
-
-	-- 2. Position found, run and move there
-	self:MoveToFallbackPosition(hasFallbackPos)
-
-	-- 3. Wait for NPC to arrive at destination
+function Fallback:PathFindToFallbackPosition(human: HumanNPC, target, targetPos: Vector3?)
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		warn("arrived fallback pos")
 		-- get updated target position
@@ -146,6 +111,52 @@ function Fallback:Enter(previous, fallbackData)
 		self.Machine:Transition("Seek", { Target = target })
 		return
 	end))
+end
+
+function Fallback:StopReloading(human: HumanNPC)
+	local currentGun = human.Inventory:GetGun()
+	if currentGun then
+		currentGun:StopReloading()
+	end
+end
+
+function Fallback:Enter(previous, fallbackData)
+	warn("Entered Fallback from", previous)
+	while self.Human.IsRagdolled do
+		task.wait(1)
+	end
+	self.AI:StateChangeReset()
+
+	-- Variables
+	local human = self.Human
+	local target = fallbackData.Target
+
+	if not target then
+		error("Fallback state missing target!")
+	end
+	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+
+	self:StopReloading(human)
+
+	ServerSoundHandler:Play3DNPCVoiceline(
+		nil,
+		`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
+		self.Human.VoicelineSound,
+		{ MaxDistance = 100 }
+	)
+
+	-- 1. Find a suitable position around player to go to
+	local hasFallbackPos = self:FindFallbackPosition(human, target)
+
+	if not hasFallbackPos then
+		return
+	end
+
+	-- 2. Position found, run and move there
+	self:MoveToFallbackPosition(hasFallbackPos)
+
+	-- 3. Wait for NPC to arrive at destination
+	self:PathFindToFallbackPosition(human, target, targetPos)
 end
 
 function Fallback:CanTransition(toStateName: string)
