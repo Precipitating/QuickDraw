@@ -4,7 +4,9 @@ local RunService = game:GetService("RunService")
 local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
+local QuestGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.QuestGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClientUtility = require(StarterPlayer.StarterPlayerScripts.Client.Utility.ClientUtility)
 local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
@@ -160,6 +162,7 @@ function Inputs:ConnectInputBegin()
 		self:ConnectRoll(input)
 		self:ConnectKick(input)
 		self:ConnectBarge(input)
+		self:ConnectQuests(input)
 	end)
 end
 
@@ -259,6 +262,23 @@ end
 -- Is called when player's stamina has touched 0
 function Inputs:StaminaDepleted()
 	self:StopBarge("None")
+end
+
+function Inputs:ConnectQuests(input: InputObject)
+	if not input then
+		return
+	end
+
+	if input.KeyCode ~= Enum.KeyCode.M then
+		return
+	end
+
+	local gui = Utility.GetInstance(PlayerContext.PlayerGui, true, "QuestsGUI")
+	if not gui then
+		warn("Cannot get QuestGUI reference!")
+		return
+	end
+	QuestGUIHandler:ConnectQuestGUI(gui)
 end
 
 function Inputs:Initialize()

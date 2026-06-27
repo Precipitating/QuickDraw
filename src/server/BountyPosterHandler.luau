@@ -9,6 +9,7 @@ local BountyPosterHandler = {}
 local Active = false
 local PosterTemplate = ReplicatedStorage.Shared.Templates.BountyPoster
 local PosterLocations = ReplicatedStorage.Shared.BountyPosterPositions
+local CHECK_COOLDOWN = 60
 local StoredPosters = {}
 
 local function SetAvatarThumbnail(imageLabel: ImageLabel, userId: number)
@@ -60,7 +61,7 @@ function BountyPosterHandler:Start()
 
 	task.spawn(function()
 		while Active do
-			task.wait(5)
+			task.wait(CHECK_COOLDOWN)
 
 			for _, player in Players:GetPlayers() do
 				local bounty = ServerData.GetBounty(player)

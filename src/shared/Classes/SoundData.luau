@@ -648,6 +648,15 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+
+	-- Quests
+
+	QuestComplete = {
+		SoundId = "rbxassetid://129864648066823",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 }
 
 -- Default group volumes

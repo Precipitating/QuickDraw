@@ -16,6 +16,7 @@ function ServerData.Initialize()
 			equippedThrowable = nil,
 			equippedTrap = nil,
 			combatLogged = false,
+			quests = { BotKiller1 = { Name = "BotKiller1", Progress = 0 } },
 		},
 		profileStoreIndex = "Main",
 		useMock = true,
@@ -118,6 +119,16 @@ function ServerData.GetBankBalance(player: Player)
 end
 function ServerData.GetBounty(player: Player)
 	return DataService:get(player, { "bounty" })
+end
+function ServerData.GetActiveQuests(player: Player)
+	return DataService:get(player, { "quests" })
+end
+
+function ServerData:AddNewQuest(player: Player, name: string)
+	DataService:update(player, { "quests", name }, { Name = name, Progress = 0 })
+end
+function ServerData:GetActiveQuestData(player: Player, name: string)
+	return DataService:get(player, { "quests", name })
 end
 
 return ServerData
