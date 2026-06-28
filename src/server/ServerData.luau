@@ -16,7 +16,8 @@ function ServerData.Initialize()
 			equippedThrowable = nil,
 			equippedTrap = nil,
 			combatLogged = false,
-			quests = { BotKiller1 = { Name = "BotKiller1", Progress = 0 } },
+			quests = {},
+			completedQuests = {},
 		},
 		profileStoreIndex = "Main",
 		useMock = true,
@@ -125,10 +126,34 @@ function ServerData.GetActiveQuests(player: Player)
 end
 
 function ServerData:AddNewQuest(player: Player, name: string)
-	DataService:update(player, { "quests", name }, { Name = name, Progress = 0 })
+	DataService:set(player, { "quests", name }, { Name = name, Progress = 0 })
+end
+
+function ServerData:GetUserData(player: Player)
+	return DataService:getProfile(player)
 end
 function ServerData:GetActiveQuestData(player: Player, name: string)
 	return DataService:get(player, { "quests", name })
+end
+
+function ServerData:CompleteQuest(player: Player, name: string)
+	DataService:set(player, { "completedQuests", name }, true)
+	DataService:set(player, { "quests", name }, nil)
+end
+
+function ServerData:UpdateQuestProgress(player: Player, name: string, value: number)
+	if not self:GetActiveQuestData(player, name) then
+		return
+	end
+
+	DataService:update(player, { "quests", name, "Progress" }, function(currentProgress)
+		local progress = currentProgress or 0
+		return progress + value
+	end)
+end
+
+function ServerData:GetCompletedQuests(player: Player)
+	return DataService:get(player, { "completedQuests" })
 end
 
 return ServerData

@@ -1,14 +1,14 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
 
-local QuestGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.QuestGUIHandler)
+local CrosshairHandler = require(script.Parent.Parent.GUI.CrosshairHandler)
+local QuestGUIHandler = require(script.Parent.Parent.GUI.QuestGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-local ClientUtility = require(StarterPlayer.StarterPlayerScripts.Client.Utility.ClientUtility)
-local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
+local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
+local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local ClientSoundHandler = require(script.Parent.Parent.Sound.ClientSoundHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -278,6 +278,8 @@ function Inputs:ConnectQuests(input: InputObject)
 		warn("Cannot get QuestGUI reference!")
 		return
 	end
+	PlayerContext.ApplyMouseLock(false)
+
 	QuestGUIHandler:ConnectQuestGUI(gui)
 end
 

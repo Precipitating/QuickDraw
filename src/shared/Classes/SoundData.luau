@@ -657,6 +657,13 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+
+	SmokeDetector = {
+		SoundId = "rbxassetid://135543502679167",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "UI",
+	},
 }
 
 -- Default group volumes

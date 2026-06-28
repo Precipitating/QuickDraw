@@ -2,6 +2,7 @@ local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
+local QuestHandler = require(ServerScriptService.Server.Quests.QuestHandler)
 local GamepassIds = require(ReplicatedStorage.Shared.GamepassIds)
 local AwardConstants = require(script.Parent.AwardConstants)
 local ServerData = require(script.Parent.Parent.ServerData)
@@ -31,6 +32,8 @@ function AwardHandler.AwardNPCKill(killer: Player)
 
 	PopupGUI:NewPopup(killer, 2, `NPC killed: ${awardAmount}`)
 	PopupGUI:NewPopup(killer, 2, `Bounty: +${bounty}`)
+
+	QuestHandler:ProgressQuests(killer)
 end
 
 function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
@@ -63,5 +66,7 @@ function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
 		ServerData.SetBounty(victim, 0)
 		ServerSoundHandler:PlaySoundTo(killer, "BountyClaimed", nil)
 	end
+
+	QuestHandler:ProgressQuests(killer)
 end
 return AwardHandler

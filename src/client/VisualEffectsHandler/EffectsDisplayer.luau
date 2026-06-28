@@ -1,8 +1,7 @@
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
-local PoolHandler = require(StarterPlayer.StarterPlayerScripts.Client.Pools.PoolHandler)
+local PoolHandler = require(script.Parent.Parent.Pools.PoolHandler)
 local Particles = ReplicatedStorage.Shared.Effects
 local EffectsDisplayer = {}
 

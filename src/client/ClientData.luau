@@ -13,6 +13,9 @@ function ClientData.Initialize()
 		CurrencyText.Text = `${amt}`
 		warn(`{Player.Name} client update money! {amt}`)
 	end)
+	DataService:getChangedSignal("quests"):Connect(function(data)
+		SoundManager.PlayKeyed("UI", "SmokeDetector")
+	end)
 	CurrencyText.Text = `${DataService:get("currency")}`
 end
 

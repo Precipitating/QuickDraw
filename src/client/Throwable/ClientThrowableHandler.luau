@@ -1,8 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 local UserInputService = game:GetService("UserInputService")
-local ClientVetraContext =
-	require(StarterPlayer.StarterPlayerScripts.Client.ClientProjectilesHandler.ClientVetraContext)
+local ClientVetraContext = require(script.Parent.Parent.ClientProjectilesHandler.ClientVetraContext)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)

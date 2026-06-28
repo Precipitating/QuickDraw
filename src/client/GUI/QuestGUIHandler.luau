@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local CrosshairHandler = require(script.Parent.CrosshairHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
@@ -14,6 +15,14 @@ local QuestGUIHandler = {}
 QuestGUIHandler.janitor = Janitor.new()
 QuestGUIHandler.networker = Networker.new("QuestNetwork", QuestGUIHandler)
 
+function QuestGUIHandler:AttemptToGiveQuest(name: string, npcModel: Model?)
+	if not name or not npcModel then
+		return
+	end
+
+	self.networker:fire("AddQuest", name, npcModel)
+end
+
 function QuestGUIHandler:PopulateWithObtainedQuests(parent, questDataFrame)
 	if not parent or not questDataFrame then
 		warn(`[PopulateWithObtainedQuests] Missing arguments validity`)
@@ -26,8 +35,10 @@ function QuestGUIHandler:PopulateWithObtainedQuests(parent, questDataFrame)
 		return
 	end
 
-	for _, quest: { Name: string, Progress: number } in result do
-		local questData = QuestData[quest.Name]
+	for key, quest: { Name: string, Progress: number } in result do
+		local questName = string.match(quest.Name, "%a+")
+		local questNumber = tonumber(string.match(quest.Name, "%d+"))
+		local questData = QuestData[questName][questNumber]
 
 		if not questData then
 			continue
@@ -37,18 +48,26 @@ function QuestGUIHandler:PopulateWithObtainedQuests(parent, questDataFrame)
 		btn.Text = questData.Title
 		self.janitor:Add(btn, "Destroy")
 		self.janitor:Add(btn.Activated:Connect(function()
+			local progress = quest.Progress / questData.QuestRequirement
 			questDataFrame.Title.Text = questData.Title
 			questDataFrame.Description.Text = questData.Description
-			questDataFrame.ProgressBar.Size = UDim2.fromScale(quest.Progress / questData.QuestRequirement, 1)
+			questDataFrame.ProgressBar.Frame.Size = UDim2.fromScale(progress, 1)
 			questDataFrame.Visible = true
-			self.janitor:Add(questDataFrame.ClaimReward.Activated:Once(function()
-				local awardClaimed = self.networker:fetch("ClaimAward", quest.Name)
 
-				if awardClaimed then
-					SoundManager.PlayKeyed("SFX", "QuestComplete")
-					questDataFrame.ClaimReward.Visible = false
-				end
-			end))
+			if progress == 1 then
+				local rewardButton = questDataFrame.ClaimReward
+				rewardButton.Visible = true
+				self.janitor:Add(questDataFrame.ClaimReward.Activated:Once(function()
+					local awardClaimed = self.networker:fetch("ClaimAward", quest.Name)
+
+					if awardClaimed then
+						SoundManager.PlayKeyed("SFX", "QuestComplete")
+						rewardButton.Visible = false
+						questDataFrame.Visible = false
+						btn:Destroy()
+					end
+				end))
+			end
 		end))
 
 		btn.Parent = parent
@@ -60,6 +79,7 @@ function QuestGUIHandler:ConnectQuestGUI(gui: ScreenGui)
 		self:Disconnect(gui)
 		return
 	end
+
 	local questBG: TextButton = Utility.GetInstance(gui, true, "BG")
 	local questData: Frame = Utility.GetInstance(questBG, true, "QuestData")
 	local questTitle: TextLabel = Utility.GetInstance(questBG, true, "Title")
@@ -79,9 +99,15 @@ function QuestGUIHandler:ConnectQuestGUI(gui: ScreenGui)
 	assert(questProgressFrame, "Missing questProgressFrame from QuestGUI")
 	assert(exitButton, "Missing exitButton from QuestGUI")
 
-	PlayerContext.ApplyMouseLock(false)
-	CrosshairHandler:ToggleCrosshairVisibility(true)
+	CoreGUIHandler.ToggleBackpackVisibility(false, true)
+	if PlayerContext.Humanoid then
+		PlayerContext.Humanoid:UnequipTools()
+	end
+	task.defer(function()
+		CrosshairHandler:ToggleCrosshairVisibility(true)
+	end)
 
+	questData.Visible = false
 	self:PopulateWithObtainedQuests(scrollingFrame, questData)
 	gui.Enabled = true
 	exitButton.Activated:Once(function()
@@ -93,6 +119,8 @@ function QuestGUIHandler:Disconnect(gui)
 	gui.Enabled = false
 	PlayerContext.ApplyMouseLock(true)
 	CrosshairHandler:ToggleCrosshairVisibility(false)
+	CoreGUIHandler.ToggleBackpackVisibility(true, false)
+
 	self.janitor:Cleanup()
 end
 

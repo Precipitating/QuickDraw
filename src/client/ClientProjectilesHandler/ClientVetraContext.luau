@@ -1,8 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 --  ────── Vetra Variables ──────
-local EffectsDisplayer = require(StarterPlayer.StarterPlayerScripts.Client.VisualEffectsHandler.EffectsDisplayer)
+local EffectsDisplayer = require(script.Parent.Parent.VisualEffectsHandler.EffectsDisplayer)
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
 local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
 local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)

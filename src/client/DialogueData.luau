@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
-local ClientSoundHandler = require(StarterPlayer.StarterPlayerScripts.Client.Sound.ClientSoundHandler)
-local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
+local QuestGUIHandler = require(script.Parent.GUI.QuestGUIHandler)
+local ClientSoundHandler = require(script.Parent.Sound.ClientSoundHandler)
+local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
 local DialogModule = require(ReplicatedStorage.Shared.DialogModule)
 local PlayerContext = require(script.Parent.Utility.PlayerContext)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -247,6 +247,33 @@ return {
 				[5] = {
 					[1] = function(d)
 						d:hideGui("I'll be waiting for your bounty poster.")
+					end,
+				},
+			},
+		})
+	end,
+	KillerNPC = function(npcModel: Model?, prompt: ProximityPrompt?)
+		InitNPC(npcModel, prompt, {
+			name = "Killa K",
+			font = "RomanAntique",
+			dialogs = {
+				{
+					text = "Want some quick cash?",
+					responses = { "Yes", "No" },
+				},
+				{
+					text = "I'll give you a mission, rack some bodies up and i'll give you some cash.",
+					responses = { "YES!", "I'm a peacekeeper, no" },
+				},
+			},
+			responses = {
+				[1] = {
+					[1] = function(d)
+						QuestGUIHandler:AttemptToGiveQuest("BotKiller", npcModel)
+						d:hideGui("Check your quests (M key), I might have added one.")
+					end,
+					[2] = function(d)
+						d:hideGui("Your loss.")
 					end,
 				},
 			},
