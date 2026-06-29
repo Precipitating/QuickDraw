@@ -9,11 +9,13 @@ local ActiveJailCountdowns = {}
 local CHECK_RADIUS = 30
 local JAIL_TIME = 60
 
-local function NormalSpawn(characterModel: Model?)
-	if not characterModel then
+local function NormalSpawn(player: Player)
+	if not player or not player.Character then
 		warn("Can't spawn, character model missing")
 		return
 	end
+
+	local characterModel = player.Character
 	local safeLocations = {}
 	local spawnLocations = SpawnLocations:GetChildren()
 
@@ -45,7 +47,9 @@ local function NormalSpawn(characterModel: Model?)
 		return
 	end
 
-	characterModel:PivotTo(safeLocations[RandomModule.GetRandomIntBetween(1, #safeLocations)].CFrame)
+	local chosenSpawnLoc = safeLocations[RandomModule.GetRandomIntBetween(1, #safeLocations)]
+	HumanNetwork:ForceStreamArea(player, chosenSpawnLoc.Position)
+	characterModel:PivotTo(chosenSpawnLoc.CFrame)
 end
 local function ToggleJailedGUI(player: Player?, active: boolean)
 	if not player then
@@ -108,6 +112,8 @@ local function JailSpawn(player: Player?, characterModel: Model?)
 	ToggleJailedGUI(player, true)
 	local chosenSpawnCFrame = chosenSpawn.CFrame
 
+	HumanNetwork:ForceStreamArea(player, chosenSpawnCFrame.Position)
+
 	characterModel:PivotTo(chosenSpawnCFrame)
 
 	SpawnHandler:ResetTimerIfJailed(player)
@@ -146,7 +152,7 @@ function SpawnHandler:SpawnPlayer(player: Player, loadCharacter: boolean?)
 		warn("Jail spawn")
 		JailSpawn(player, characterModel)
 	else
-		NormalSpawn(characterModel)
+		NormalSpawn(player)
 	end
 end
 

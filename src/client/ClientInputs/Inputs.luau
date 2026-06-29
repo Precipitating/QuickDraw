@@ -3,7 +3,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
-local CrosshairHandler = require(script.Parent.Parent.GUI.CrosshairHandler)
 local QuestGUIHandler = require(script.Parent.Parent.GUI.QuestGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -270,6 +269,10 @@ function Inputs:ConnectQuests(input: InputObject)
 	end
 
 	if input.KeyCode ~= Enum.KeyCode.M then
+		return
+	end
+
+	if not PlayerContext.Character or CollectionService:HasTag(PlayerContext.Character, "Dead") then
 		return
 	end
 

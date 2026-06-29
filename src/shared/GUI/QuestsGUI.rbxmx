@@ -2,13 +2,13 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="ScreenGui" referent="RBX82FA8A83796C4105B74D3DF6D3854798">
+	<Item class="ScreenGui" referent="RBXAC9D89D709D2420981192F5802856724">
 		<Properties>
 			<bool name="ClipToDeviceSafeArea">true</bool>
 			<int name="DisplayOrder">0</int>
 			<token name="SafeAreaCompatibility">1</token>
 			<token name="ScreenInsets">1</token>
-			<bool name="Enabled">false</bool>
+			<bool name="Enabled">true</bool>
 			<bool name="ResetOnSpawn">false</bool>
 			<token name="ZIndexBehavior">1</token>
 			<bool name="AutoLocalize">true</bool>
@@ -25,7 +25,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>
-		<Item class="Frame" referent="RBXEA095561A9474FB49D89F02506429E3A">
+		<Item class="Frame" referent="RBX3277BA22579A40B2831DB4976815A887">
 			<Properties>
 				<token name="Style">0</token>
 				<bool name="Active">false</bool>
@@ -73,7 +73,7 @@
 					<YO>0</YO>
 				</UDim2>
 				<token name="SizeConstraint">0</token>
-				<bool name="Visible">true</bool>
+				<bool name="Visible">false</bool>
 				<int name="ZIndex">1</int>
 				<bool name="AutoLocalize">true</bool>
 				<Ref name="RootLocalizationTable">null</Ref>
@@ -89,7 +89,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<BinaryString name="Tags"></BinaryString>
 			</Properties>
-			<Item class="UICorner" referent="RBX2F427DE325FF4157B8DF3D45D6742F59">
+			<Item class="UICorner" referent="RBX53ED36BCDFFB439896A5F49F9FF97E54">
 				<Properties>
 					<UDim name="BottomLeftRadius">
 						<S>0.100000001</S>
@@ -115,7 +115,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="UIStroke" referent="RBXBA28F8B9D57C44419CBA7EFD8B73565F">
+			<Item class="UIStroke" referent="RBX30F2C6E2AFE345829F1F3E4E5AC18F30">
 				<Properties>
 					<token name="ApplyStrokeMode">0</token>
 					<UDim name="BorderOffset">
@@ -142,7 +142,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="TextLabel" referent="RBX85A6D058A0634E488952DF40009FBC50">
+			<Item class="TextLabel" referent="RBX1763DF1906584B6B9D056D524EB1A0A8">
 				<Properties>
 					<Font name="FontFace">
 						<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -237,7 +237,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="UIShadow" referent="RBX4C926473D3F04AC0BF087E4595FB6308">
+			<Item class="UIShadow" referent="RBX4CDB70BC886648E89409B5935BD878CE">
 				<Properties>
 					<UDim name="BlurRadius">
 						<S>0.0799999982</S>
@@ -271,9 +271,9 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="UIScale" referent="RBXAD9345CE5CF74FFAB53D69094441ECAB">
+			<Item class="UIScale" referent="RBX42B59CC6EDC7489A958774E22F17A756">
 				<Properties>
-					<float name="Scale">1</float>
+					<float name="Scale">1.00000001e-07</float>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -282,7 +282,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="UIGradient" referent="RBX61BFA947A41241258BE95E24E35949DD">
+			<Item class="UIGradient" referent="RBX5288DAAAA6E94A18BAE278D6B3B1CA72">
 				<Properties>
 					<ColorSequence name="Color">0 0.67451 0.619608 0 0 1 1 0.917647 0 0 </ColorSequence>
 					<bool name="Enabled">true</bool>
@@ -303,7 +303,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="ScrollingFrame" referent="RBX4986CFD8441C4BD2B414212A9EDBA285">
+			<Item class="ScrollingFrame" referent="RBX87EE2BB68978415A863B309E5C3AA198">
 				<Properties>
 					<token name="AutomaticCanvasSize">0</token>
 					<Content name="BottomImage"><url>rbxasset://textures/ui/Scroll/scroll-bottom.png</url></Content>
@@ -393,7 +393,7 @@
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
-				<Item class="UIListLayout" referent="RBX1B1DF97B2FE94C2E97738E4E09C15EEB">
+				<Item class="UIListLayout" referent="RBX4CF6A9C600FF4D559EAB61A6F34D9354">
 					<Properties>
 						<token name="HorizontalFlex">0</token>
 						<token name="ItemLineAlignment">0</token>
@@ -416,7 +416,7 @@
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="Frame" referent="RBX35B7068638F7447F83F2DCE47D59E247">
+			<Item class="Frame" referent="RBX4C7DFD6D956F40779D96FAFD9C5AC8DB">
 				<Properties>
 					<token name="Style">0</token>
 					<bool name="Active">false</bool>
@@ -480,7 +480,7 @@
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
-				<Item class="TextLabel" referent="RBX708B6C15E71449D98CBB29B627F15ADA">
+				<Item class="TextLabel" referent="RBXA364E0C330E24535A6F67DBB23839495">
 					<Properties>
 						<Font name="FontFace">
 							<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -574,7 +574,7 @@
 						<int64 name="SourceAssetId">-1</int64>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
-					<Item class="UICorner" referent="RBX29D28FC3D8604E1A98F4CFB653A9AA73">
+					<Item class="UICorner" referent="RBX54A546DCACF9425DA3512A249B5F2441">
 						<Properties>
 							<UDim name="BottomLeftRadius">
 								<S>0</S>
@@ -601,7 +601,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="TextLabel" referent="RBX5656C69D5FF5496491BF2CE3AB46AA27">
+				<Item class="TextLabel" referent="RBX53D3EF1E5D804994B1905EDCCDA77E31">
 					<Properties>
 						<Font name="FontFace">
 							<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -614,7 +614,7 @@
 						<int name="MaxVisibleGraphemes">-1</int>
 						<string name="OpenTypeFeatures"></string>
 						<bool name="RichText">false</bool>
-						<string name="Text">Description</string>
+						<string name="Text">This is a description that descibes quest data</string>
 						<Color3 name="TextColor3">
 							<R>0</R>
 							<G>0</G>
@@ -632,7 +632,7 @@
 						<float name="TextTransparency">0</float>
 						<token name="TextTruncate">0</token>
 						<bool name="TextWrapped">true</bool>
-						<token name="TextXAlignment">0</token>
+						<token name="TextXAlignment">2</token>
 						<token name="TextYAlignment">0</token>
 						<bool name="Active">false</bool>
 						<Vector2 name="AnchorPoint">
@@ -695,7 +695,7 @@
 						<int64 name="SourceAssetId">-1</int64>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
-					<Item class="UICorner" referent="RBXBE995E82B6BB4DD4A4EFB644660D5C16">
+					<Item class="UICorner" referent="RBXE93E4BE1EAAF42D6B077FAD804F905F3">
 						<Properties>
 							<UDim name="BottomLeftRadius">
 								<S>0</S>
@@ -722,7 +722,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="TextButton" referent="RBXFCF53A8A52D841F28DB47BDB92EA6517">
+				<Item class="TextButton" referent="RBX7A576CB6BE5D45129340325567E38ED0">
 					<Properties>
 						<Font name="FontFace">
 							<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -768,11 +768,11 @@
 						</Vector2>
 						<token name="AutomaticSize">0</token>
 						<Color3 name="BackgroundColor3">
-							<R>0</R>
+							<R>1</R>
 							<G>0</G>
-							<B>0</B>
+							<B>0.0156862754</B>
 						</Color3>
-						<float name="BackgroundTransparency">0.899999976</float>
+						<float name="BackgroundTransparency">0.5</float>
 						<Color3 name="BorderColor3">
 							<R>0</R>
 							<G>0</G>
@@ -822,8 +822,34 @@
 						<int64 name="SourceAssetId">-1</int64>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
+					<Item class="UICorner" referent="RBX4D2FA01098CB405D9B44B254685F8620">
+						<Properties>
+							<UDim name="BottomLeftRadius">
+								<S>0.5</S>
+								<O>0</O>
+							</UDim>
+							<UDim name="BottomRightRadius">
+								<S>0.5</S>
+								<O>0</O>
+							</UDim>
+							<UDim name="TopLeftRadius">
+								<S>0.5</S>
+								<O>0</O>
+							</UDim>
+							<UDim name="TopRightRadius">
+								<S>0.5</S>
+								<O>0</O>
+							</UDim>
+							<BinaryString name="AttributesSerialize"></BinaryString>
+							<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+							<bool name="DefinesCapabilities">false</bool>
+							<string name="Name">UICorner</string>
+							<int64 name="SourceAssetId">-1</int64>
+							<BinaryString name="Tags"></BinaryString>
+						</Properties>
+					</Item>
 				</Item>
-				<Item class="CanvasGroup" referent="RBXC7F44423FCDF41E583C90D1C24F95D35">
+				<Item class="CanvasGroup" referent="RBX69BC79D534304C70B2981ED5D51818FE">
 					<Properties>
 						<Color3 name="GroupColor3">
 							<R>1</R>
@@ -862,7 +888,7 @@
 						<UDim2 name="Position">
 							<XS>0.147558749</XS>
 							<XO>0</XO>
-							<YS>0.799363196</YS>
+							<YS>0.78418541</YS>
 							<YO>0</YO>
 						</UDim2>
 						<float name="Rotation">0</float>
@@ -872,7 +898,7 @@
 						<UDim2 name="Size">
 							<XS>0.747751653</XS>
 							<XO>0</XO>
-							<YS>0.0215815119</YS>
+							<YS>0.0696444586</YS>
 							<YO>0</YO>
 						</UDim2>
 						<token name="SizeConstraint">0</token>
@@ -892,7 +918,7 @@
 						<int64 name="SourceAssetId">-1</int64>
 						<BinaryString name="Tags"></BinaryString>
 					</Properties>
-					<Item class="UICorner" referent="RBX6E24C70E5B9A4CB8987B9573825CD914">
+					<Item class="UICorner" referent="RBXB660E5CEA51A48E1BBB98E28B6529232">
 						<Properties>
 							<UDim name="BottomLeftRadius">
 								<S>0.5</S>
@@ -918,7 +944,7 @@
 							<BinaryString name="Tags"></BinaryString>
 						</Properties>
 					</Item>
-					<Item class="Frame" referent="RBX0CB909750F8C4386A55D5E1F40358FA1">
+					<Item class="Frame" referent="RBXE680477E163E4278AD14216BDC5554AC">
 						<Properties>
 							<token name="Style">0</token>
 							<bool name="Active">false</bool>
@@ -983,9 +1009,104 @@
 							<BinaryString name="Tags"></BinaryString>
 						</Properties>
 					</Item>
+					<Item class="TextLabel" referent="RBX03A0243EBB60443FADB2EF457CB73B70">
+						<Properties>
+							<Font name="FontFace">
+								<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
+								<Weight>400</Weight>
+								<Style>Normal</Style>
+							</Font>
+							<float name="LineHeight">1</float>
+							<string name="LocalizationMatchIdentifier"></string>
+							<string name="LocalizationMatchedSourceText"></string>
+							<int name="MaxVisibleGraphemes">-1</int>
+							<string name="OpenTypeFeatures"></string>
+							<bool name="RichText">false</bool>
+							<string name="Text">?/?</string>
+							<Color3 name="TextColor3">
+								<R>0</R>
+								<G>0</G>
+								<B>0</B>
+							</Color3>
+							<token name="TextDirection">0</token>
+							<bool name="TextScaled">true</bool>
+							<float name="TextSize">14</float>
+							<Color3 name="TextStrokeColor3">
+								<R>0</R>
+								<G>0</G>
+								<B>0</B>
+							</Color3>
+							<float name="TextStrokeTransparency">1</float>
+							<float name="TextTransparency">0</float>
+							<token name="TextTruncate">0</token>
+							<bool name="TextWrapped">true</bool>
+							<token name="TextXAlignment">2</token>
+							<token name="TextYAlignment">1</token>
+							<bool name="Active">false</bool>
+							<Vector2 name="AnchorPoint">
+								<X>0</X>
+								<Y>0</Y>
+							</Vector2>
+							<token name="AutomaticSize">0</token>
+							<Color3 name="BackgroundColor3">
+								<R>1</R>
+								<G>1</G>
+								<B>1</B>
+							</Color3>
+							<float name="BackgroundTransparency">1</float>
+							<Color3 name="BorderColor3">
+								<R>0</R>
+								<G>0</G>
+								<B>0</B>
+							</Color3>
+							<token name="BorderMode">0</token>
+							<int name="BorderSizePixel">0</int>
+							<bool name="ClipsDescendants">false</bool>
+							<bool name="Draggable">false</bool>
+							<token name="InputSink">0</token>
+							<bool name="Interactable">true</bool>
+							<int name="LayoutOrder">0</int>
+							<Ref name="NextSelectionDown">null</Ref>
+							<Ref name="NextSelectionLeft">null</Ref>
+							<Ref name="NextSelectionRight">null</Ref>
+							<Ref name="NextSelectionUp">null</Ref>
+							<UDim2 name="Position">
+								<XS>0</XS>
+								<XO>0</XO>
+								<YS>0</YS>
+								<YO>0</YO>
+							</UDim2>
+							<float name="Rotation">0</float>
+							<bool name="Selectable">false</bool>
+							<Ref name="SelectionImageObject">null</Ref>
+							<int name="SelectionOrder">0</int>
+							<UDim2 name="Size">
+								<XS>1</XS>
+								<XO>0</XO>
+								<YS>1</YS>
+								<YO>0</YO>
+							</UDim2>
+							<token name="SizeConstraint">0</token>
+							<bool name="Visible">true</bool>
+							<int name="ZIndex">1</int>
+							<bool name="AutoLocalize">true</bool>
+							<Ref name="RootLocalizationTable">null</Ref>
+							<token name="SelectionBehaviorDown">0</token>
+							<token name="SelectionBehaviorLeft">0</token>
+							<token name="SelectionBehaviorRight">0</token>
+							<token name="SelectionBehaviorUp">0</token>
+							<bool name="SelectionGroup">false</bool>
+							<BinaryString name="AttributesSerialize"></BinaryString>
+							<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+							<bool name="DefinesCapabilities">false</bool>
+							<string name="Name">ProgressCount</string>
+							<int64 name="SourceAssetId">-1</int64>
+							<BinaryString name="Tags"></BinaryString>
+						</Properties>
+					</Item>
 				</Item>
 			</Item>
-			<Item class="Frame" referent="RBX823D9E3831F048FD9E217FD5C00B137C">
+			<Item class="Frame" referent="RBX7FF9CB92A7E2435492CF33AF3145AAC7">
 				<Properties>
 					<token name="Style">0</token>
 					<bool name="Active">false</bool>
@@ -1050,7 +1171,7 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-			<Item class="Frame" referent="RBX50DB575411CA4576AAAACA38BB8F2818">
+			<Item class="Frame" referent="RBX143F77B6FBB14E458EC876BF3ACD335E">
 				<Properties>
 					<token name="Style">0</token>
 					<bool name="Active">false</bool>
@@ -1115,132 +1236,132 @@
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
 			</Item>
-		</Item>
-		<Item class="TextButton" referent="RBXF723D028D2BD4041AEFA94B18CCAF056">
-			<Properties>
-				<Font name="FontFace">
-					<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
-					<Weight>400</Weight>
-					<Style>Normal</Style>
-				</Font>
-				<float name="LineHeight">1</float>
-				<string name="LocalizationMatchIdentifier"></string>
-				<string name="LocalizationMatchedSourceText"></string>
-				<int name="MaxVisibleGraphemes">-1</int>
-				<string name="OpenTypeFeatures"></string>
-				<bool name="RichText">false</bool>
-				<string name="Text">X</string>
-				<Color3 name="TextColor3">
-					<R>0</R>
-					<G>0</G>
-					<B>0</B>
-				</Color3>
-				<token name="TextDirection">0</token>
-				<bool name="TextScaled">true</bool>
-				<float name="TextSize">14</float>
-				<Color3 name="TextStrokeColor3">
-					<R>0</R>
-					<G>0</G>
-					<B>0</B>
-				</Color3>
-				<float name="TextStrokeTransparency">1</float>
-				<float name="TextTransparency">0</float>
-				<token name="TextTruncate">0</token>
-				<bool name="TextWrapped">true</bool>
-				<token name="TextXAlignment">2</token>
-				<token name="TextYAlignment">1</token>
-				<bool name="AutoButtonColor">true</bool>
-				<Ref name="HoverHapticEffect">null</Ref>
-				<bool name="Modal">false</bool>
-				<Ref name="PressHapticEffect">null</Ref>
-				<bool name="Selected">false</bool>
-				<token name="Style">0</token>
-				<bool name="Active">true</bool>
-				<Vector2 name="AnchorPoint">
-					<X>0</X>
-					<Y>0</Y>
-				</Vector2>
-				<token name="AutomaticSize">0</token>
-				<Color3 name="BackgroundColor3">
-					<R>1</R>
-					<G>0</G>
-					<B>0.0156862754</B>
-				</Color3>
-				<float name="BackgroundTransparency">0</float>
-				<Color3 name="BorderColor3">
-					<R>0</R>
-					<G>0</G>
-					<B>0</B>
-				</Color3>
-				<token name="BorderMode">0</token>
-				<int name="BorderSizePixel">0</int>
-				<bool name="ClipsDescendants">false</bool>
-				<bool name="Draggable">false</bool>
-				<token name="InputSink">0</token>
-				<bool name="Interactable">true</bool>
-				<int name="LayoutOrder">0</int>
-				<Ref name="NextSelectionDown">null</Ref>
-				<Ref name="NextSelectionLeft">null</Ref>
-				<Ref name="NextSelectionRight">null</Ref>
-				<Ref name="NextSelectionUp">null</Ref>
-				<UDim2 name="Position">
-					<XS>0.630309045</XS>
-					<XO>0</XO>
-					<YS>0.13208808</YS>
-					<YO>0</YO>
-				</UDim2>
-				<float name="Rotation">0</float>
-				<bool name="Selectable">true</bool>
-				<Ref name="SelectionImageObject">null</Ref>
-				<int name="SelectionOrder">0</int>
-				<UDim2 name="Size">
-					<XS>0.0304716788</XS>
-					<XO>0</XO>
-					<YS>0.0612846725</YS>
-					<YO>0</YO>
-				</UDim2>
-				<token name="SizeConstraint">0</token>
-				<bool name="Visible">true</bool>
-				<int name="ZIndex">1</int>
-				<bool name="AutoLocalize">true</bool>
-				<Ref name="RootLocalizationTable">null</Ref>
-				<token name="SelectionBehaviorDown">0</token>
-				<token name="SelectionBehaviorLeft">0</token>
-				<token name="SelectionBehaviorRight">0</token>
-				<token name="SelectionBehaviorUp">0</token>
-				<bool name="SelectionGroup">false</bool>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">ExitButton</string>
-				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
-			</Properties>
-			<Item class="UICorner" referent="RBX37E0A652BBCA416885B8DA4FB482EAA3">
+			<Item class="TextButton" referent="RBXB8BE0D1DEEB04ABD9321B227DEDD2E98">
 				<Properties>
-					<UDim name="BottomLeftRadius">
-						<S>0.5</S>
-						<O>0</O>
-					</UDim>
-					<UDim name="BottomRightRadius">
-						<S>0.5</S>
-						<O>0</O>
-					</UDim>
-					<UDim name="TopLeftRadius">
-						<S>0.5</S>
-						<O>0</O>
-					</UDim>
-					<UDim name="TopRightRadius">
-						<S>0.5</S>
-						<O>0</O>
-					</UDim>
+					<Font name="FontFace">
+						<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
+						<Weight>400</Weight>
+						<Style>Normal</Style>
+					</Font>
+					<float name="LineHeight">1</float>
+					<string name="LocalizationMatchIdentifier"></string>
+					<string name="LocalizationMatchedSourceText"></string>
+					<int name="MaxVisibleGraphemes">-1</int>
+					<string name="OpenTypeFeatures"></string>
+					<bool name="RichText">false</bool>
+					<string name="Text">X</string>
+					<Color3 name="TextColor3">
+						<R>0</R>
+						<G>0</G>
+						<B>0</B>
+					</Color3>
+					<token name="TextDirection">0</token>
+					<bool name="TextScaled">true</bool>
+					<float name="TextSize">14</float>
+					<Color3 name="TextStrokeColor3">
+						<R>0</R>
+						<G>0</G>
+						<B>0</B>
+					</Color3>
+					<float name="TextStrokeTransparency">1</float>
+					<float name="TextTransparency">0</float>
+					<token name="TextTruncate">0</token>
+					<bool name="TextWrapped">true</bool>
+					<token name="TextXAlignment">2</token>
+					<token name="TextYAlignment">1</token>
+					<bool name="AutoButtonColor">true</bool>
+					<Ref name="HoverHapticEffect">null</Ref>
+					<bool name="Modal">false</bool>
+					<Ref name="PressHapticEffect">null</Ref>
+					<bool name="Selected">false</bool>
+					<token name="Style">0</token>
+					<bool name="Active">true</bool>
+					<Vector2 name="AnchorPoint">
+						<X>0</X>
+						<Y>0</Y>
+					</Vector2>
+					<token name="AutomaticSize">0</token>
+					<Color3 name="BackgroundColor3">
+						<R>1</R>
+						<G>0</G>
+						<B>0.0156862754</B>
+					</Color3>
+					<float name="BackgroundTransparency">0</float>
+					<Color3 name="BorderColor3">
+						<R>0</R>
+						<G>0</G>
+						<B>0</B>
+					</Color3>
+					<token name="BorderMode">0</token>
+					<int name="BorderSizePixel">0</int>
+					<bool name="ClipsDescendants">false</bool>
+					<bool name="Draggable">false</bool>
+					<token name="InputSink">0</token>
+					<bool name="Interactable">true</bool>
+					<int name="LayoutOrder">0</int>
+					<Ref name="NextSelectionDown">null</Ref>
+					<Ref name="NextSelectionLeft">null</Ref>
+					<Ref name="NextSelectionRight">null</Ref>
+					<Ref name="NextSelectionUp">null</Ref>
+					<UDim2 name="Position">
+						<XS>0.79078275</XS>
+						<XO>0</XO>
+						<YS>0.0161463972</YS>
+						<YO>0</YO>
+					</UDim2>
+					<float name="Rotation">0</float>
+					<bool name="Selectable">true</bool>
+					<Ref name="SelectionImageObject">null</Ref>
+					<int name="SelectionOrder">0</int>
+					<UDim2 name="Size">
+						<XS>0.047977902</XS>
+						<XO>0</XO>
+						<YS>0.0612846762</YS>
+						<YO>0</YO>
+					</UDim2>
+					<token name="SizeConstraint">0</token>
+					<bool name="Visible">true</bool>
+					<int name="ZIndex">1</int>
+					<bool name="AutoLocalize">true</bool>
+					<Ref name="RootLocalizationTable">null</Ref>
+					<token name="SelectionBehaviorDown">0</token>
+					<token name="SelectionBehaviorLeft">0</token>
+					<token name="SelectionBehaviorRight">0</token>
+					<token name="SelectionBehaviorUp">0</token>
+					<bool name="SelectionGroup">false</bool>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
-					<string name="Name">UICorner</string>
+					<string name="Name">ExitButton</string>
 					<int64 name="SourceAssetId">-1</int64>
 					<BinaryString name="Tags"></BinaryString>
 				</Properties>
+				<Item class="UICorner" referent="RBX69FB4C22ABB442EB94AD8950F38ACCD8">
+					<Properties>
+						<UDim name="BottomLeftRadius">
+							<S>0.5</S>
+							<O>0</O>
+						</UDim>
+						<UDim name="BottomRightRadius">
+							<S>0.5</S>
+							<O>0</O>
+						</UDim>
+						<UDim name="TopLeftRadius">
+							<S>0.5</S>
+							<O>0</O>
+						</UDim>
+						<UDim name="TopRightRadius">
+							<S>0.5</S>
+							<O>0</O>
+						</UDim>
+						<BinaryString name="AttributesSerialize"></BinaryString>
+						<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+						<bool name="DefinesCapabilities">false</bool>
+						<string name="Name">UICorner</string>
+						<int64 name="SourceAssetId">-1</int64>
+						<BinaryString name="Tags"></BinaryString>
+					</Properties>
+				</Item>
 			</Item>
 		</Item>
 	</Item>

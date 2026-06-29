@@ -5,6 +5,7 @@ local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local CrosshairHandler = require(script.Parent.CrosshairHandler)
+local GUIEffects = require(script.Parent.GUIEffects)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
@@ -177,7 +178,13 @@ function ShopGUIHandler:ConnectRobuxList(robuxList: ScrollingFrame)
 end
 
 function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt, exitAudioName: string)
-	local exitButton: TextButton = Utility.GetInstance(gui, true, "Exit")
+	local bg: Frame = Utility.GetInstance(gui, true, "BG")
+
+	if GUIEffects:IsPopOpenOrOpening(bg) then
+		self:Disconnect(gui, exitAudioName, linkedPrompt)
+		return
+	end
+	local exitButton: TextButton = Utility.GetInstance(gui, true, "BG", "Exit")
 	local throwablesButton: TextButton = Utility.GetInstance(gui, true, "BG", "ThrowablesButton")
 	local weaponsButton: TextButton = Utility.GetInstance(gui, true, "BG", "WeaponsButton")
 	local trapsButton: TextButton = Utility.GetInstance(gui, true, "BG", "TrapsButton")
@@ -189,6 +196,7 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	local trapsList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "TrapsList")
 	local robuxList: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "RobuxList")
 
+	assert(bg, "Missing bg from ShopGUI")
 	assert(exitButton, "Missing exit button from ShopGUI")
 	assert(refillAmmoButton, "Missing ammo refill button from ShopGUI")
 	assert(throwablesButton, "Missing throwables button from ShopGUI")
@@ -213,17 +221,7 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self.networker:fire("OnGUIOpen", linkedPrompt:FindFirstAncestorOfClass("Model"))
 
 	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
-		self:Disconnect()
-		gui:Destroy()
-		if exitAudioName then
-			SoundManager.PlayKeyed("Voiceline", exitAudioName)
-		end
-		PlayerContext.ApplyMouseLock(true)
-		ClientUtility.ToggleControls(true)
-		CrosshairHandler:ToggleCrosshairVisibility(false)
-		CoreGUIHandler.ToggleBackpackVisibility(true)
-		self.networker:fire("OnGUIClose")
-		linkedPrompt.Enabled = true
+		self:Disconnect(gui, exitAudioName, linkedPrompt)
 	end))
 
 	self.janitor:Add(throwablesButton.Activated:Connect(function(_, _)
@@ -268,10 +266,31 @@ function ShopGUIHandler:ConnectShopGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self:ConnectProductList(throwablesList, refillAmmoButton)
 	self:ConnectProductList(trapsList, refillAmmoButton)
 	self:ConnectRobuxList(robuxList)
+
+	GUIEffects:PopIn(bg, 1, function()
+		-- If we die, disconnect automatically
+		PlayerContext.ActiveGUIs[gui] = function()
+			self:Disconnect(gui, exitAudioName, linkedPrompt)
+		end
+	end)
 end
 
-function ShopGUIHandler:Disconnect()
+function ShopGUIHandler:Disconnect(gui: ScreenGui, exitAudioName: string, linkedPrompt: ProximityPrompt)
+	local bg = gui:WaitForChild("BG", 3)
 	self.janitor:Cleanup()
+	GUIEffects:PopOut(bg, function()
+		gui:Destroy()
+		if exitAudioName then
+			SoundManager.PlayKeyed("Voiceline", exitAudioName)
+		end
+		PlayerContext.ApplyMouseLock(true)
+		ClientUtility.ToggleControls(true)
+		CrosshairHandler:ToggleCrosshairVisibility(false)
+		CoreGUIHandler.ToggleBackpackVisibility(true)
+		self.networker:fire("OnGUIClose")
+		linkedPrompt.Enabled = true
+		PlayerContext.ActiveGUIs[gui] = nil
+	end)
 end
 
 return ShopGUIHandler

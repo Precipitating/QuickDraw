@@ -238,6 +238,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.HoldingWeapon = false
 	PlayerContext.IsCharging = false
 	PlayerContext.Legless = false
+	PlayerContext.ActiveGUIs = {}
 
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
 	PlayerContext.BodyParts = {}
@@ -295,11 +296,18 @@ local function ConnectGUIConnections(character: Model)
 	HumanGUIHandler.ConnectStaminaGUI(PlayerContext.PlayerGui, character)
 end
 
+local function DisconnectActiveGUIs()
+	for guiRef, disconnectFunc in PlayerContext.ActiveGUIs do
+		disconnectFunc()
+	end
+end
+
 local function OnDeath()
 	PlayerContext.Humanoid.Died:Once(function()
 		PlayerContext.janitor:Cleanup()
 		HumanGUIHandler:Disconnect()
 		PlayerContext.ColorCorrector.Saturation = -1
+		DisconnectActiveGUIs()
 	end)
 end
 

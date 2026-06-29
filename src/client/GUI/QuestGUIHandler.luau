@@ -1,6 +1,8 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local CrosshairHandler = require(script.Parent.CrosshairHandler)
+local GUIEffects = require(script.Parent.GUIEffects)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
@@ -52,6 +54,7 @@ function QuestGUIHandler:PopulateWithObtainedQuests(parent, questDataFrame)
 			questDataFrame.Title.Text = questData.Title
 			questDataFrame.Description.Text = questData.Description
 			questDataFrame.ProgressBar.Frame.Size = UDim2.fromScale(progress, 1)
+			questDataFrame.ProgressBar.ProgressCount.Text = `{quest.Progress}/{questData.QuestRequirement}`
 			questDataFrame.Visible = true
 
 			if progress == 1 then
@@ -75,19 +78,24 @@ function QuestGUIHandler:PopulateWithObtainedQuests(parent, questDataFrame)
 end
 
 function QuestGUIHandler:ConnectQuestGUI(gui: ScreenGui)
-	if gui.Enabled then
-		self:Disconnect(gui)
+	if not gui then
 		return
 	end
 
 	local questBG: TextButton = Utility.GetInstance(gui, true, "BG")
+
+	if GUIEffects:IsPopOpenOrOpening(questBG) then
+		self:Disconnect(gui)
+		return
+	end
 	local questData: Frame = Utility.GetInstance(questBG, true, "QuestData")
 	local questTitle: TextLabel = Utility.GetInstance(questBG, true, "Title")
 	local questDescription: TextLabel = Utility.GetInstance(questData, true, "Description")
 	local questClaimButton: TextButton = Utility.GetInstance(questData, true, "ClaimReward")
 	local questProgressCanvas: CanvasGroup = Utility.GetInstance(questData, true, "ProgressBar")
 	local questProgressFrame: Frame = Utility.GetInstance(questProgressCanvas, true, "Frame")
-	local exitButton: TextButton = Utility.GetInstance(gui, true, "ExitButton")
+	local questProgressCount: TextLabel = Utility.GetInstance(questProgressCanvas, true, "ProgressCount")
+	local exitButton: TextButton = Utility.GetInstance(questBG, true, "ExitButton")
 	local scrollingFrame: ScrollingFrame = Utility.GetInstance(questBG, true, "ScrollingFrame")
 
 	assert(questBG, "Missing questBG from QuestGUI")
@@ -97,6 +105,7 @@ function QuestGUIHandler:ConnectQuestGUI(gui: ScreenGui)
 	assert(questClaimButton, "Missing questClaimButton from QuestGUI")
 	assert(questProgressCanvas, "Missing questProgressCanvas from QuestGUI")
 	assert(questProgressFrame, "Missing questProgressFrame from QuestGUI")
+	assert(questProgressCount, "Missing questProgressCount from QuestGUI")
 	assert(exitButton, "Missing exitButton from QuestGUI")
 
 	CoreGUIHandler.ToggleBackpackVisibility(false, true)
@@ -109,17 +118,29 @@ function QuestGUIHandler:ConnectQuestGUI(gui: ScreenGui)
 
 	questData.Visible = false
 	self:PopulateWithObtainedQuests(scrollingFrame, questData)
-	gui.Enabled = true
+
+	GUIEffects:PopIn(questBG, 1, function()
+		PlayerContext.ActiveGUIs[gui] = function()
+			self:Disconnect(gui)
+		end
+	end)
 	exitButton.Activated:Once(function()
 		self:Disconnect(gui)
 	end)
 end
 
 function QuestGUIHandler:Disconnect(gui)
-	gui.Enabled = false
+	local bg = gui:WaitForChild("BG", 3)
+	GUIEffects:PopOut(bg, function()
+		PlayerContext.ActiveGUIs[gui] = nil
+	end)
+
 	PlayerContext.ApplyMouseLock(true)
 	CrosshairHandler:ToggleCrosshairVisibility(false)
-	CoreGUIHandler.ToggleBackpackVisibility(true, false)
+
+	if not CollectionService:HasTag(PlayerContext.Player, "Jailed") then
+		CoreGUIHandler.ToggleBackpackVisibility(true, false)
+	end
 
 	self.janitor:Cleanup()
 end

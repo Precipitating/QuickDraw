@@ -30,6 +30,16 @@ function HumanNetwork:ToggleBackpackVisibility(player: Player, active: boolean, 
 	self.networker:fire(player, "ToggleBackpackVisibility", active, locked)
 end
 
+function HumanNetwork:ForceStreamArea(player: Player, position: Vector3)
+	local success = pcall(function()
+		player:RequestStreamAroundAsync(position)
+	end)
+
+	if success then
+		print("Area has been streamed in!")
+	end
+end
+
 HumanNetwork.networker =
 	Networker.new("HumanNetwork", HumanNetwork, { HumanNetwork.FinishedLoadingGame, HumanNetwork.GetCurrentGunName })
 return HumanNetwork
