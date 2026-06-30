@@ -40,8 +40,12 @@ function Inputs:ConnectSprint(input: InputObject)
 		if PlayerContext.IsCharging then
 			return
 		end
-		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and PlayerContext.IsMoving then
-			self.networker:fire("ToggleSprint", true)
+		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
+			if PlayerContext.IsMoving then
+				self.networker:fire("ToggleSprint", true)
+			else
+				self.networker:fire("ToggleSprint", false)
+			end
 		end
 	end
 end
@@ -240,7 +244,7 @@ function Inputs:ConnectBarge(input: InputObject)
 
 			-- Play animation and run until stamina runs out
 			AnimationsHandler.PlayCustomAnimation("BargeRun")
-			Inputs.networker:fire("ToggleSprint", true)
+			Inputs.networker:fire("ToggleSprint", true, true)
 			self.networker:fire("AddBargeCollision")
 
 			PlayerContext.janitor:Add(

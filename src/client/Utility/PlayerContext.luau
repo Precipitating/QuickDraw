@@ -11,6 +11,7 @@ local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
+local CameraShaker = require(ReplicatedStorage.Shared.Effects.CameraShaker)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local WindConstants = require(ReplicatedStorage.Shared.Wind.WindConstants)
 local WindLines = require(ReplicatedStorage.Shared.Wind.WindLines)
@@ -56,6 +57,7 @@ PlayerContext.HRPOrientation = nil
 PlayerContext.HoldingWeapon = false
 PlayerContext.IsCharging = false
 PlayerContext.Legless = false
+PlayerContext.CameraShaker = nil
 -- Helper function to evaluate the color at a specific percentage (0 to 1)
 local function EvalColorSequence(sequence: ColorSequence, percentage: number): Color3
 	local keypoints = sequence.Keypoints
@@ -353,6 +355,21 @@ local function SetupWind()
 	})
 end
 
+function PlayerContext:SetupCameraShake()
+	local prevCamCFrame = CurrentCamera.CFrame
+
+	PlayerContext.CameraShaker = CameraShaker.new(Enum.RenderPriority.Camera.Value, function(shakeCf)
+		prevCamCFrame = CurrentCamera.CFrame
+		CurrentCamera.CFrame = CurrentCamera.CFrame * shakeCf
+	end)
+
+	RunService:BindToRenderStep("ResetCF", Enum.RenderPriority.First.Value, function(dt)
+		CurrentCamera.CFrame = prevCamCFrame
+	end)
+
+	PlayerContext.CameraShaker:Start()
+end
+
 function PlayerContext:Initialize()
 	ClientData.WaitForData()
 	-- Needs reinitializing on respawn
@@ -372,6 +389,7 @@ function PlayerContext:Initialize()
 	end, false, Enum.ContextActionPriority.Low.Value, Enum.UserInputType.MouseButton2)
 
 	SetupWind()
+	self:SetupCameraShake()
 end
 
 return PlayerContext

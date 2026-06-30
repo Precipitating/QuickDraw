@@ -9,6 +9,7 @@ local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandle
 local HumanLimbGUI = require(ServerScriptService.Server.GUI.HumanLimbGUI)
 local MoneyDropHandler = require(ServerScriptService.Server.MoneyDropHandler)
 local ServerData = require(ServerScriptService.Server.ServerData)
+local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
 
 local Human = require(script.Parent.Human)
 local HumanSignals = require(script.Parent.HumanSignals)
@@ -47,6 +48,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 		self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
 	end
 
+	self:SetupMovementDetector()
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 
 	return self :: any
@@ -101,6 +103,51 @@ function HumanPlayer:SetInCombat(InCombat: boolean)
 		InCombatGUI.Enabled = true
 	else
 		InCombatGUI.Enabled = false
+	end
+end
+function HumanPlayer:SetupMovementDetector()
+	local humanoid = self.Humanoid
+	self.Janitor:Add(humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+		if humanoid.MoveDirection.Magnitude > 0 then
+			self.Moving = true
+		else
+			self.Moving = false
+			if self.Sprinting then
+				self:ToggleSprinting(false)
+			end
+		end
+	end))
+end
+
+function HumanPlayer:ToggleSprinting(active: boolean, bypassMovingRequirement: boolean?)
+	local stamina = self.Stamina
+	if self:IsLegless() then
+		return
+	end
+
+	if self.Sprinting == active then
+		return
+	end
+
+	local inventory = self and self.Inventory
+	local gun = inventory and inventory:GetGun()
+	local isHoldingGun = gun and gun.HoldingGun
+	local sprintSpeed = if isHoldingGun
+		then HumanConstants.SPRINT_SPEED * gun.EquipWalkspeedMultiplier
+		else HumanConstants.SPRINT_SPEED
+	local walkSpeed = if isHoldingGun
+		then HumanConstants.WALKSPEED * gun.EquipWalkspeedMultiplier
+		else HumanConstants.WALKSPEED
+
+	if active and stamina and stamina > 0 and (bypassMovingRequirement or self.Moving) then
+		self.Humanoid.WalkSpeed = sprintSpeed
+		stamina = math.clamp(stamina, 0, HumanConstants.MAX_STAMINA)
+		self.Sprinting = true
+		ServerScreenEffects:StartSustainEffect(self.Player, "Sprinting")
+	else
+		self.Humanoid.WalkSpeed = walkSpeed
+		self.Sprinting = false
+		ServerScreenEffects:StopAllSustainEffects(self.Player)
 	end
 end
 

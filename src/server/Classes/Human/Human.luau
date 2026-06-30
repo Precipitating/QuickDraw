@@ -162,6 +162,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Animator = humanoid:FindFirstChildOfClass("Animator")
 	self.Stamina = 100
 	self.Inventory = Inventory.new(self)
+	self.Moving = false
 	self.Sprinting = false
 	self.LastInvincible = nil
 	self.ActiveInvincibleDelayHandle = nil
@@ -186,10 +187,20 @@ function Human.new(humanoid: Humanoid?): Human
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
 	self:SetupAttributes()
+	self:SetupMovementDetector()
 
 	return self :: any
 end
-
+function Human:SetupMovementDetector()
+	local humanoid = self.Humanoid
+	self.Janitor:Add(humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+		if humanoid.MoveDirection.Magnitude > 0 then
+			self.Moving = true
+		else
+			self.Moving = false
+		end
+	end))
+end
 function Human:SetupAttributes()
 	if not self.Character then
 		warn("Cannot setup human attributes, character model missing")

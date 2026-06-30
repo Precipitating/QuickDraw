@@ -19,7 +19,7 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 	-- will auto disconnect when playerClass is removed (when player dies)
 	playerClass.Janitor:Add(RunService.Heartbeat:Connect(function(dt)
 		-- sprint
-		if playerClass.Sprinting then
+		if playerClass.Moving and playerClass.Sprinting then
 			currentStamina -= HumanConstants.STAMINA_DRAIN_RATE * dt
 		else
 			currentStamina += HumanConstants.STAMINA_REGEN_RATE * dt

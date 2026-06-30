@@ -1,9 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local CameraShaker = require(ReplicatedStorage.Shared.Effects.CameraShaker)
+local Networker = require(ReplicatedStorage.Packages.Networker).client
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local ScreenEffects = {}
+ScreenEffects.networker = Networker.new("ScreenEffectsNetwork", ScreenEffects)
 local ScreenEffectsJanitor = Janitor.new()
 
 function ScreenEffects:ToggleBlackScreen(transparency: number, tweenDuration: number?)
@@ -23,6 +26,16 @@ function ScreenEffects:ToggleBlackScreen(transparency: number, tweenDuration: nu
 
 	ScreenEffectsJanitor:Add(fadeTween, "Destroy", "BlackScreenConn")
 	fadeTween:Play()
+end
+
+function ScreenEffects:ApplyOneShotEffect(effectName: string)
+	PlayerContext.CameraShaker:Shake(CameraShaker.Presets[effectName])
+end
+function ScreenEffects:StartSustainEffect(effectName: string)
+	PlayerContext.CameraShaker:ShakeSustain(CameraShaker.Presets[effectName])
+end
+function ScreenEffects:StopAllSustainEffects(fadeOut: number)
+	PlayerContext.CameraShaker:StopSustained(fadeOut)
 end
 
 return ScreenEffects

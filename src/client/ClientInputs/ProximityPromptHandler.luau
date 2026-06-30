@@ -1,6 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local GUIEffects = require(StarterPlayer.StarterPlayerScripts.Client.GUI.GUIEffects)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
@@ -39,20 +41,46 @@ local PROMPT_HANDLERS = {
 			return
 		end
 		local bank = GUI.BankGUI:Clone()
+
+		local bg = bank:WaitForChild("BG", 3)
+		if not bg then
+			warn("Missing BG from BankGUI")
+			return
+		end
+		--
 		bank.Parent = player.PlayerGui
 		bank.Enabled = true
-		SoundManager.PlayKeyed("Voiceline", "BankGreeting")
-		BankGUIHandler:ConnectBankGUI(bank, prompt)
+
+		GUIEffects:PopIn(bg, 1, function()
+			SoundManager.PlayKeyed("Voiceline", "BankGreeting")
+			BankGUIHandler:ConnectBankGUI(bank, prompt)
+			PlayerContext.ActiveGUIs[bank] = function()
+				BankGUIHandler:CloseGUI(bank, bg, prompt)
+			end
+		end)
 	end,
 	["MercenaryPrompt"] = function(player: Player, prompt: ProximityPrompt)
 		if player.PlayerGui:FindFirstChild("MercenaryGUI") then
 			return
 		end
 		local mercGUI = GUI.MercenaryGUI:Clone()
+		--
+		local bg = mercGUI:WaitForChild("BG", 3)
+		if not bg then
+			warn("Missing BG from MercenaryGUI")
+			return
+		end
+		--
 		mercGUI.Parent = player.PlayerGui
 		mercGUI.Enabled = true
-		SoundManager.PlayKeyed("Voiceline", "MercGreeting")
-		MercenaryGUIHandler:ConnectMercenaryGUI(mercGUI, prompt)
+		GUIEffects:PopIn(bg, 1, function()
+			SoundManager.PlayKeyed("Voiceline", "MercGreeting")
+			MercenaryGUIHandler:ConnectMercenaryGUI(mercGUI, prompt)
+
+			PlayerContext.ActiveGUIs[mercGUI] = function()
+				MercenaryGUIHandler:CloseGUI(mercGUI, bg, prompt)
+			end
+		end)
 	end,
 	["CashPickupPrompt"] = function(_: Player, prompt: ProximityPrompt)
 		ProximityPromptHandler.networker:fire("CashPickedUp", prompt)

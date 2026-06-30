@@ -16,6 +16,7 @@ local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableDa
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local GUI = ReplicatedStorage.Shared.GUI
+local InfoToolTip = nil
 
 local ShopGUIHandler = {}
 ShopGUIHandler.janitor = Janitor.new()
@@ -50,6 +51,11 @@ function ShopGUIHandler:ConnectInformationToolTip(product: ImageButton)
 		return
 	end
 
+	local tooltipGUI = Utility.GetInstance(PlayerContext.PlayerGui, true, "ShopToolTipGUI")
+	if not tooltipGUI then
+		warn("Missing ShopToolTipGUI screen gui")
+		return
+	end
 	local tooltip: Frame? = Utility.GetInstance(PlayerContext.PlayerGui, true, "ShopToolTipGUI", "ShopToolTip")
 
 	if not tooltip then
@@ -66,6 +72,11 @@ function ShopGUIHandler:ConnectInformationToolTip(product: ImageButton)
 
 	local mouse = PlayerContext.Player:GetMouse()
 
+	-- Hide GUI if died whilst this is frame is active
+	PlayerContext.ActiveGUIs[tooltipGUI] = function()
+		tooltip.Visible = false
+	end
+
 	self.janitor:Add(product.MouseEnter:Connect(function()
 		tooltipTxt.Text = desc
 
@@ -79,6 +90,7 @@ function ShopGUIHandler:ConnectInformationToolTip(product: ImageButton)
 		end)
 
 		tooltip.Visible = true
+		InfoToolTip = tooltip
 	end))
 	self.janitor:Add(product.MouseLeave:Connect(function()
 		task.defer(function()
@@ -87,8 +99,74 @@ function ShopGUIHandler:ConnectInformationToolTip(product: ImageButton)
 			if toolTipConn then
 				toolTipConn:Disconnect()
 			end
+			InfoToolTip = nil
 		end)
 	end))
+end
+
+function ShopGUIHandler:AddConfirmationGUI(productList, product, refillAmmoButton)
+	local exists = PlayerContext.PlayerGui:FindFirstChild("BuyConfirmationGUI")
+	if exists then
+		exists:Destroy()
+	end
+	local confirmGUI = GUI.BuyConfirmationGUI:Clone()
+	local frame = confirmGUI:WaitForChild("ConfirmFrame", 3)
+	local productName = product.Name
+	-- get product price
+	local productCost = 0
+
+	if productList.Name == "WeaponsList" then
+		productCost = GunData[productName].Cost
+	elseif productList.Name == "ThrowablesList" then
+		productCost = ThrowableData[productName].Cost
+	elseif productList.Name == "TrapsList" then
+		productCost = TrapData[productName].Cost
+	end
+	productCost = tostring(productCost)
+
+	-- connect the gui up
+	local yesButton = Utility.GetInstance(confirmGUI, true, "ConfirmFrame", "YesButton")
+	assert(yesButton, "Missing yes button reference on confirmGUI")
+	local noButton = Utility.GetInstance(confirmGUI, true, "ConfirmFrame", "NoButton")
+	assert(noButton, "Missing no button reference on confirmGUI")
+	local confirmText = Utility.GetInstance(confirmGUI, true, "ConfirmFrame", "ConfirmLabel")
+	assert(confirmText, "Missing confirm label reference on confirmGUI")
+	confirmText.Text = `Do you want to buy {productName} for ${productCost}?`
+
+	self.janitor:Add(yesButton.Activated:Once(function(_, _)
+		local bought = self.networker:fetch("BuyItem", productName, productCost)
+
+		if not bought then
+			SoundManager.PlayKeyed("UI", "Error")
+		else
+			UpdateRefillPrice(refillAmmoButton)
+			SoundManager.PlayKeyed("UI", "Purchase")
+		end
+
+		GUIEffects:PopOut(frame, function()
+			confirmGUI:Destroy()
+		end)
+	end))
+
+	self.janitor:Add(noButton.Activated:Once(function(_, _)
+		GUIEffects:PopOut(frame, function()
+			confirmGUI:Destroy()
+		end)
+	end))
+
+	confirmGUI.Parent = PlayerContext.PlayerGui
+
+	GUIEffects:PopIn(frame, 1, function()
+		PlayerContext.ActiveGUIs[confirmGUI] = function()
+			GUIEffects:PopOut(frame, function()
+				confirmGUI:Destroy()
+			end)
+		end
+
+		if InfoToolTip then
+			InfoToolTip.Visible = false
+		end
+	end)
 end
 
 -- If refillAmmoButton is passed, it means we need to reupdate refill ammo cost when we buy the product type.
@@ -116,50 +194,7 @@ function ShopGUIHandler:ConnectProductList(productList: ScrollingFrame, refillAm
 		self:ConnectInformationToolTip(product)
 
 		self.janitor:Add(product.Activated:Connect(function(_, _)
-			local exists = PlayerContext.PlayerGui:FindFirstChild("BuyConfirmationGUI")
-			if exists then
-				exists:Destroy()
-			end
-			local confirmGUI = GUI.BuyConfirmationGUI:Clone()
-			local productName = product.Name
-			-- get product price
-			local productCost = 0
-
-			if productList.Name == "WeaponsList" then
-				productCost = GunData[productName].Cost
-			elseif productList.Name == "ThrowablesList" then
-				productCost = ThrowableData[productName].Cost
-			elseif productList.Name == "TrapsList" then
-				productCost = TrapData[productName].Cost
-			end
-			productCost = tostring(productCost)
-
-			-- connect the gui up
-			local yesButton = Utility.GetInstance(confirmGUI, true, "ConfirmFrame", "YesButton")
-			assert(yesButton, "Missing yes button reference on confirmGUI")
-			local noButton = Utility.GetInstance(confirmGUI, true, "ConfirmFrame", "NoButton")
-			assert(noButton, "Missing no button reference on confirmGUI")
-			local confirmText = Utility.GetInstance(confirmGUI, true, "ConfirmFrame", "ConfirmLabel")
-			assert(confirmText, "Missing confirm label reference on confirmGUI")
-			confirmText.Text = `Do you want to buy {productName} for ${productCost}?`
-
-			yesButton.Activated:Connect(function(_, _)
-				local bought = self.networker:fetch("BuyItem", productName, productCost)
-				confirmGUI:Destroy()
-
-				if not bought then
-					SoundManager.PlayKeyed("UI", "Error")
-				else
-					UpdateRefillPrice(refillAmmoButton)
-					SoundManager.PlayKeyed("UI", "Purchase")
-				end
-			end)
-
-			noButton.Activated:Connect(function(_, _)
-				confirmGUI:Destroy()
-			end)
-
-			confirmGUI.Parent = PlayerContext.PlayerGui
+			self:AddConfirmationGUI(productList, product, refillAmmoButton)
 		end))
 	end
 end

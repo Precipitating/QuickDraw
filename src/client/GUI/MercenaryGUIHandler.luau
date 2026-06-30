@@ -4,6 +4,7 @@ local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local CrosshairHandler = require(script.Parent.CrosshairHandler)
+local GUIEffects = require(script.Parent.GUIEffects)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
@@ -14,10 +15,29 @@ local MercenaryGUIHandler = {}
 MercenaryGUIHandler.janitor = Janitor.new()
 MercenaryGUIHandler.networker = Networker.new("MercenaryNetwork", MercenaryGUIHandler)
 
+function MercenaryGUIHandler:CloseGUI(gui: ScreenGui, bg: Frame, linkedPrompt: ProximityPrompt)
+	if not gui or not bg or not linkedPrompt then
+		return
+	end
+
+	SoundManager.PlayKeyed("Voiceline", "MercExit")
+	GUIEffects:PopOut(bg, function()
+		self:Disconnect()
+		gui:Destroy()
+
+		PlayerContext.ApplyMouseLock(true)
+		ClientUtility.ToggleControls(true)
+		CrosshairHandler:ToggleCrosshairVisibility(false)
+		CoreGUIHandler.ToggleBackpackVisibility(true)
+		self.networker:fire("OnGUIClose")
+		linkedPrompt.Enabled = true
+	end)
+end
+
 function MercenaryGUIHandler:ConnectMercenaryGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt)
 	local bg: TextButton = Utility.GetInstance(gui, true, "BG")
-	local frame: ScrollingFrame = Utility.GetInstance(gui, true, "BG", "ScrollingFrame")
-	local exitButton: TextButton = Utility.GetInstance(gui, true, "Exit")
+	local frame: ScrollingFrame = Utility.GetInstance(bg, true, "ScrollingFrame")
+	local exitButton: TextButton = Utility.GetInstance(bg, true, "Exit")
 	assert(bg, "Missing bg from MercenaryGUI")
 	assert(frame, "Missing frame from MercenaryGUI")
 	assert(exitButton, "Missing exitButton from MercenaryGUI")
@@ -58,16 +78,8 @@ function MercenaryGUIHandler:ConnectMercenaryGUI(gui: ScreenGui, linkedPrompt: P
 	end
 
 	-- Exit GUI
-	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
-		self:Disconnect()
-		gui:Destroy()
-		SoundManager.PlayKeyed("Voiceline", "MercExit")
-		PlayerContext.ApplyMouseLock(true)
-		ClientUtility.ToggleControls(true)
-		CrosshairHandler:ToggleCrosshairVisibility(false)
-		CoreGUIHandler.ToggleBackpackVisibility(true)
-		self.networker:fire("OnGUIClose")
-		linkedPrompt.Enabled = true
+	self.janitor:Add(exitButton.Activated:Once(function(_, _)
+		self:CloseGUI(gui, bg, linkedPrompt)
 	end))
 end
 

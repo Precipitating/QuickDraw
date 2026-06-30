@@ -3,6 +3,7 @@ local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local CrosshairHandler = require(script.Parent.CrosshairHandler)
+local GUIEffects = require(script.Parent.GUIEffects)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
@@ -23,13 +24,29 @@ function BankGUIHandler:DisplayBankBalance(currencyOwned: TextLabel?)
 	end
 end
 
-function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt)
-	local depositButton: TextButton = Utility.GetInstance(gui, true, "BG", "Deposit")
-	local withdrawButton: TextButton = Utility.GetInstance(gui, true, "BG", "Withdraw")
-	local exitButton: TextButton = Utility.GetInstance(gui, true, "Exit")
-	local inputBox: TextButton = Utility.GetInstance(gui, true, "BG", "Input")
-	local currencyOwned: TextLabel = Utility.GetInstance(gui, true, "BG", "CurrencyOwned")
+function BankGUIHandler:CloseGUI(gui: ScreenGui, bg: Frame, linkedPrompt: ProximityPrompt)
+	GUIEffects:PopOut(bg, function()
+		self:Disconnect()
+		gui:Destroy()
+		SoundManager.PlayKeyed("Voiceline", "BankExit")
+		PlayerContext.ApplyMouseLock(true)
+		ClientUtility.ToggleControls(true)
+		CrosshairHandler:ToggleCrosshairVisibility(false)
+		CoreGUIHandler.ToggleBackpackVisibility(true)
+		self.networker:fire("OnGUIClose")
+		linkedPrompt.Enabled = true
+	end)
+end
 
+function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPrompt)
+	local bg: Frame = Utility.GetInstance(gui, true, "BG")
+	local depositButton: TextButton = Utility.GetInstance(bg, true, "Deposit")
+	local withdrawButton: TextButton = Utility.GetInstance(bg, true, "Withdraw")
+	local exitButton: TextButton = Utility.GetInstance(bg, true, "Exit")
+	local inputBox: TextButton = Utility.GetInstance(bg, true, "Input")
+	local currencyOwned: TextLabel = Utility.GetInstance(bg, true, "CurrencyOwned")
+
+	assert(bg, "Missing bg from BankGUI")
 	assert(exitButton, "Missing exit button from BankGUI")
 	assert(depositButton, "Missing depositButton from BankGUI")
 	assert(withdrawButton, "Missing withdrawButton from BankGUI")
@@ -51,15 +68,7 @@ function BankGUIHandler:ConnectBankGUI(gui: ScreenGui, linkedPrompt: ProximityPr
 	self.networker:fire("OnGUIOpen", linkedPrompt:FindFirstAncestorOfClass("Model"))
 
 	self.janitor:Add(exitButton.Activated:Connect(function(_, _)
-		self:Disconnect()
-		gui:Destroy()
-		SoundManager.PlayKeyed("Voiceline", "BankExit")
-		PlayerContext.ApplyMouseLock(true)
-		ClientUtility.ToggleControls(true)
-		CrosshairHandler:ToggleCrosshairVisibility(false)
-		CoreGUIHandler.ToggleBackpackVisibility(true)
-		self.networker:fire("OnGUIClose")
-		linkedPrompt.Enabled = true
+		self:CloseGUI(gui, bg, linkedPrompt)
 	end))
 
 	self.janitor:Add(depositButton.Activated:Connect(function(_, _)
