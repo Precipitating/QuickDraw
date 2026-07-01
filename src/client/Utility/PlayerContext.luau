@@ -56,6 +56,7 @@ PlayerContext.janitor = Janitor.new()
 PlayerContext.HRPOrientation = nil
 PlayerContext.HoldingWeapon = false
 PlayerContext.IsCharging = false
+PlayerContext.IsBusy = false
 PlayerContext.Legless = false
 PlayerContext.CameraShaker = nil
 -- Helper function to evaluate the color at a specific percentage (0 to 1)
@@ -240,6 +241,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.HoldingWeapon = false
 	PlayerContext.IsCharging = false
 	PlayerContext.Legless = false
+	PlayerContext.IsBusy = false
 	PlayerContext.ActiveGUIs = {}
 
 	PlayerContext.ColorCorrector = Lighting:WaitForChild("ColorCorrection", 10) :: ColorCorrectionEffect
@@ -292,6 +294,10 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 
 	-- Sync legless state attribute that changes from server
 	PlayerContext:SyncLeglessState()
+
+	if PlayerContext.CameraShaker then
+		PlayerContext.CameraShaker:StopSustained(0)
+	end
 end
 
 local function ConnectGUIConnections(character: Model)

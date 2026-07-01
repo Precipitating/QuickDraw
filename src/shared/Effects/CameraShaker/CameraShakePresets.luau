@@ -20,18 +20,19 @@
     CameraShakePresets.HeavyThud
     CameraShakePresets.Flashbang
     CameraShakePresets.AircraftTurbulence
+    CameraShakePresets.BearTrapInjury
+	 CameraShakePresets.CannonballHit
 --]]
 
 local CameraShakeInstance = require(script.Parent.CameraShakeInstance)
 
 local CameraShakePresets = {
 
-	-- A high-magnitude, short, yet smooth shake.
-	-- Should happen once.
+	-- Meant to resemble a strong, shoulder barge
 	Bump = function()
-		local c = CameraShakeInstance.new(2.5, 4, 0.1, 0.75)
-		c.PositionInfluence = Vector3.new(0.15, 0.15, 0.15)
-		c.RotationInfluence = Vector3.new(1, 1, 1)
+		local c = CameraShakeInstance.new(4, 7, 0.03, 0.9)
+		c.PositionInfluence = Vector3.new(0.25, 0.2, 0.3)
+		c.RotationInfluence = Vector3.new(2, 1.5, 3)
 		return c
 	end,
 
@@ -105,9 +106,9 @@ local CameraShakePresets = {
 	-- Sharp vertical and backwards kick for guns.
 	-- Snaps up rapidly, settles smoothly. One-shot.
 	GunRecoil = function()
-		local c = CameraShakeInstance.new(4.5, 18, 0, 0.25)
-		c.PositionInfluence = Vector3.new(0, 0, 0.2) -- Pushes cam back slightly
-		c.RotationInfluence = Vector3.new(3, 0.5, 0.5) -- High pitch (upward) kick
+		local c = CameraShakeInstance.new(7, 22, 0, 0.3)
+		c.PositionInfluence = Vector3.new(0, 0, 0.35)
+		c.RotationInfluence = Vector3.new(4.5, 0.7, 0.7)
 		return c
 	end,
 
@@ -153,6 +154,20 @@ local CameraShakePresets = {
 		local c = CameraShakeInstance.new(1.5, 4.5, 2, 2)
 		c.PositionInfluence = Vector3.new(0.2, 0.3, 0.2)
 		c.RotationInfluence = Vector3.new(1, 2, 1.5)
+		return c
+	end,
+
+	BearTrapInjury = function()
+		local c = CameraShakeInstance.new(6, 15, 0, 2.0)
+		c.PositionInfluence = Vector3.new(0.1, 0.3, 0.05) -- sharp vertical jolt (leg buckling)
+		c.RotationInfluence = Vector3.new(2.5, 0.5, 3) -- pitch dip + roll stagger
+		return c
+	end,
+	-- Devastating full-body impact from cannon fire. Max intensity one-shot.
+	CannonballHit = function()
+		local c = CameraShakeInstance.new(9, 20, 0, 2.5)
+		c.PositionInfluence = Vector3.new(0.4, 0.35, 0.5) -- huge shove in all axes
+		c.RotationInfluence = Vector3.new(3, 4, 5) -- violent tumble/spin
 		return c
 	end,
 }

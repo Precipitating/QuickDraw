@@ -31,6 +31,7 @@ function MercenaryGUIHandler:CloseGUI(gui: ScreenGui, bg: Frame, linkedPrompt: P
 		CoreGUIHandler.ToggleBackpackVisibility(true)
 		self.networker:fire("OnGUIClose")
 		linkedPrompt.Enabled = true
+		PlayerContext.IsBusy = false
 	end)
 end
 

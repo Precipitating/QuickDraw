@@ -3,6 +3,7 @@ local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
+local ServerScreenEffects = require(script.Parent.ServerScreenEffects)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
@@ -145,6 +146,9 @@ local function ApplyHumanRepercussionsAfterShot(human: Human, cosmeticBullet: Ba
 		human:Ragdoll(5)
 		task.defer(function()
 			human:ApplyImpulse(dir)
+			if human.Player then
+				ServerScreenEffects:ApplyOneShotEffect(human.Player, "CannonballHit")
+			end
 		end)
 	end
 end

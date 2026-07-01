@@ -325,6 +325,7 @@ function ShopGUIHandler:Disconnect(gui: ScreenGui, exitAudioName: string, linked
 		self.networker:fire("OnGUIClose")
 		linkedPrompt.Enabled = true
 		PlayerContext.ActiveGUIs[gui] = nil
+		PlayerContext.IsBusy = false
 	end)
 end
 

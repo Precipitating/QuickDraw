@@ -1,13 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local CameraShaker = require(ReplicatedStorage.Shared.Effects.CameraShaker)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
-
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
 
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local Inputs = {}

@@ -49,6 +49,7 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 		if currentStamina <= 0 then
 			if humanoid and humanoid.Health > 0 then
 				Inputs:ToggleSprint(player, false)
+				Inputs.networker:fire(player, "StaminaDepleted")
 			end
 		end
 

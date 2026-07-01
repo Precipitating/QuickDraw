@@ -52,9 +52,11 @@ local function InitNPC(npcModel: Model?, prompt: ProximityPrompt?, config: NPCCo
 		if PlayerContext.Humanoid then
 			PlayerContext.Humanoid:UnequipTools()
 		end
+		PlayerContext.IsBusy = true
 	end)
 	dialogObject.closed:Connect(function()
 		CoreGUIHandler.ToggleBackpackVisibility(true, false)
+		PlayerContext.IsBusy = false
 	end)
 
 	dialogObject.responded:Connect(function(responseNum: number, dialogNum: number)

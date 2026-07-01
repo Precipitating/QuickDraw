@@ -25,7 +25,7 @@ local GunData = {
 		ReloadSoundName = "RevolverReload",
 		MaxSimulationDistance = 1250,
 		GunRecoil = 50,
-		CameraRecoil = 20,
+		CameraRecoil = 100,
 		ProjectileData = Vetra.BehaviorBuilder
 			.new()
 			:Physics()
@@ -145,8 +145,8 @@ local GunData = {
 		ShootSoundName = "CoachShot",
 		ShootNoAmmoName = "CoachClick",
 		ReloadSoundName = "CoachReload",
-		GunRecoil = 100,
-		CameraRecoil = 80,
+		GunRecoil = 160,
+		CameraRecoil = 300,
 		ProjectileData = Vetra.BehaviorBuilder
 			.new()
 			:Physics()
@@ -213,7 +213,7 @@ local GunData = {
 		ShootNoAmmoName = "CoachClick",
 		ReloadSoundName = "CoachReload",
 		GunRecoil = 75,
-		CameraRecoil = 60,
+		CameraRecoil = 200,
 		ProjectileData = Vetra.BehaviorBuilder
 			.new()
 			:Physics()
@@ -277,7 +277,7 @@ local GunData = {
 		ShootSoundName = "CannonShot",
 		ShootNoAmmoName = "CoachClick",
 		ReloadSoundName = "CannonReload",
-		GunRecoil = 500,
+		GunRecoil = 700,
 		CameraRecoil = 500,
 		ProjectileData = Vetra
 			.BehaviorBuilder

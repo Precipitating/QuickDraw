@@ -63,7 +63,7 @@ function HumanPlayer:InitializeWeaponLoadout()
 	self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
 	self.Inventory:EquipWeapon("Gun")
 
-	self.Inventory:AddWeaponToInventory(savedThrowableData or "Molotov", 9)
+	self.Inventory:AddWeaponToInventory(savedThrowableData.Name or "Molotov", savedThrowableData.Ammo or 9)
 	self.Inventory:EquipWeapon("Throwable")
 
 	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
@@ -181,6 +181,7 @@ function HumanPlayer:Die(killer: Player?)
 			if CollectionService:HasTag(killer, "Sheriff") then
 				warn("SHERIFF KILLED PLAYAH")
 				CollectionService:AddTag(self.Player, "Jailed")
+				ServerData:SetJailed(self.Player, true)
 			end
 		end
 	end

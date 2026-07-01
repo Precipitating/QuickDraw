@@ -16,11 +16,12 @@ function ServerData.Initialize()
 			equippedThrowable = nil,
 			equippedTrap = nil,
 			combatLogged = false,
+			jailed = false,
 			quests = {},
 			completedQuests = {},
 		},
 		profileStoreIndex = "Main",
-		useMock = true,
+		useMock = false,
 		resetData = false,
 	})
 end
@@ -150,6 +151,12 @@ function ServerData:UpdateQuestProgress(player: Player, name: string, value: num
 		local progress = currentProgress or 0
 		return progress + value
 	end)
+end
+function ServerData:IsJailed(player: Player)
+	return DataService:get(player, { "jailed" })
+end
+function ServerData:SetJailed(player: Player, jailed: boolean)
+	DataService:set(player, { "jailed" }, jailed)
 end
 
 function ServerData:GetCompletedQuests(player: Player)

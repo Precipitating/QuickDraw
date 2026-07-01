@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="ScreenGui" referent="RBX53ED1F42E5BA468DBB849A364E2E34A2">
+	<Item class="ScreenGui" referent="RBX875A1471DFD644FE90C5159E3DC96E5F">
 		<Properties>
 			<bool name="ClipToDeviceSafeArea">true</bool>
 			<int name="DisplayOrder">0</int>
@@ -23,9 +23,9 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">BuyConfirmationGUI</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags"></BinaryString>
+			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Frame" referent="RBXC2038CFAC3CC422A95831A1F0EA0FA58">
+		<Item class="Frame" referent="RBX65A5B36BEE694F53B67D65FD993B70EE">
 			<Properties>
 				<token name="Style">0</token>
 				<bool name="Active">false</bool>
@@ -87,9 +87,9 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ConfirmFrame</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="UIGradient" referent="RBX9316A7B53D6140348998636746CD6433">
+			<Item class="UIGradient" referent="RBXDEE330C3F43847E38735A4E1BD6EFD03">
 				<Properties>
 					<ColorSequence name="Color">0 0.67451 0.67451 0.00784314 0 1 0.929412 1 0.305882 0 </ColorSequence>
 					<bool name="Enabled">true</bool>
@@ -98,16 +98,19 @@
 						<Y>0</Y>
 					</Vector2>
 					<float name="Rotation">-90</float>
+					<float name="Scale">1</float>
+					<token name="TileMode">0</token>
 					<NumberSequence name="Transparency">0 0 0 1 0 0 </NumberSequence>
+					<token name="Type">0</token>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
 					<string name="Name">UIGradient</string>
 					<int64 name="SourceAssetId">-1</int64>
-					<BinaryString name="Tags"></BinaryString>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="TextButton" referent="RBXF38467205E5B4869A9A3013F2954507D">
+			<Item class="TextButton" referent="RBX501265F6C215459AA85F45DB60592CCB">
 				<Properties>
 					<Font name="FontFace">
 						<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -205,10 +208,10 @@
 					<bool name="DefinesCapabilities">false</bool>
 					<string name="Name">NoButton</string>
 					<int64 name="SourceAssetId">-1</int64>
-					<BinaryString name="Tags"></BinaryString>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="TextLabel" referent="RBXD09B883284B041E29EBC98E7D0486D58">
+			<Item class="TextLabel" referent="RBX980181627AEB488F9460058F595D91C9">
 				<Properties>
 					<Font name="FontFace">
 						<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -300,10 +303,10 @@
 					<bool name="DefinesCapabilities">false</bool>
 					<string name="Name">ConfirmLabel</string>
 					<int64 name="SourceAssetId">-1</int64>
-					<BinaryString name="Tags"></BinaryString>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="UIStroke" referent="RBX38DB765991DE4010B9909F511A2F5F3E">
+			<Item class="UIStroke" referent="RBX6C234D65E720412188FC658FE455BE7E">
 				<Properties>
 					<token name="ApplyStrokeMode">1</token>
 					<UDim name="BorderOffset">
@@ -327,12 +330,24 @@
 					<bool name="DefinesCapabilities">false</bool>
 					<string name="Name">UIStroke</string>
 					<int64 name="SourceAssetId">-1</int64>
-					<BinaryString name="Tags"></BinaryString>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="UICorner" referent="RBX5E72AC9617044CABA26D4004FBF76799">
+			<Item class="UICorner" referent="RBXCA16E34CDC2C49E69BB181A405BE9930">
 				<Properties>
-					<UDim name="CornerRadius">
+					<UDim name="BottomLeftRadius">
+						<S>0.300000012</S>
+						<O>0</O>
+					</UDim>
+					<UDim name="BottomRightRadius">
+						<S>0.300000012</S>
+						<O>0</O>
+					</UDim>
+					<UDim name="TopLeftRadius">
+						<S>0.300000012</S>
+						<O>0</O>
+					</UDim>
+					<UDim name="TopRightRadius">
 						<S>0.300000012</S>
 						<O>0</O>
 					</UDim>
@@ -341,10 +356,10 @@
 					<bool name="DefinesCapabilities">false</bool>
 					<string name="Name">UICorner</string>
 					<int64 name="SourceAssetId">-1</int64>
-					<BinaryString name="Tags"></BinaryString>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="TextButton" referent="RBX80F41D34BAE24DE3AAB1FA0E3599EF35">
+			<Item class="TextButton" referent="RBXBA12EA655CEC48D998ECC68135ADBA52">
 				<Properties>
 					<Font name="FontFace">
 						<Family><url>rbxasset://fonts/families/RomanAntique.json</url></Family>
@@ -442,11 +457,22 @@
 					<bool name="DefinesCapabilities">false</bool>
 					<string name="Name">YesButton</string>
 					<int64 name="SourceAssetId">-1</int64>
-					<BinaryString name="Tags"></BinaryString>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+				</Properties>
+			</Item>
+			<Item class="UIScale" referent="RBX3464F33DB36F427EB733FC4378A06F44">
+				<Properties>
+					<float name="Scale">1.00000001e-07</float>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+					<bool name="DefinesCapabilities">false</bool>
+					<string name="Name">UIScale</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="Frame" referent="RBX53D58A6B3C4D41B38FCFA1B63B0DA2A4">
+		<Item class="Frame" referent="RBX5D4BA8767B8B45CBA34CD758E20ED2AA">
 			<Properties>
 				<token name="Style">0</token>
 				<bool name="Active">true</bool>
@@ -508,8 +534,11 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Background</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
 	</Item>
+	<SharedStrings>
+		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+	</SharedStrings>
 </roblox>

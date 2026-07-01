@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
+local ServerData = require(ServerScriptService.Server.ServerData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local SpawnLocations = ReplicatedStorage.Shared.Templates.SpawnLocations
 local SpawnHandler = {}
@@ -65,7 +66,7 @@ local function ToggleJailedGUI(player: Player?, active: boolean)
 	-- Disable GUI
 	if not active then
 		jailedGUI.Enabled = active
-		HumanNetwork:ToggleBackpackVisibility(player, not active)
+		HumanNetwork:ToggleBackpackVisibility(player, not active, true)
 		return
 	end
 
@@ -76,7 +77,7 @@ local function ToggleJailedGUI(player: Player?, active: boolean)
 	end
 
 	jailedGUI.Enabled = active
-	HumanNetwork:ToggleBackpackVisibility(player, not active)
+	HumanNetwork:ToggleBackpackVisibility(player, not active, false)
 end
 
 function SpawnHandler:ResetTimerIfJailed(player: Player?)
@@ -125,6 +126,7 @@ local function JailSpawn(player: Player?, characterModel: Model?)
 			return
 		end
 		CollectionService:RemoveTag(player, "Jailed")
+		ServerData:SetJailed(player, false)
 		ToggleJailedGUI(player, false)
 		ActiveJailCountdowns[player] = nil
 		characterModel:PivotTo(exitPos.CFrame)
@@ -146,6 +148,11 @@ function SpawnHandler:SpawnPlayer(player: Player, loadCharacter: boolean?)
 	if not characterModel then
 		warn("Can't teleport player to spawn, missing model")
 		return
+	end
+
+	local jailed = CollectionService:HasTag(player, "Jailed")
+	if not jailed and ServerData:IsJailed(player) then
+		CollectionService:AddTag(player, "Jailed")
 	end
 
 	if CollectionService:HasTag(player, "Jailed") then

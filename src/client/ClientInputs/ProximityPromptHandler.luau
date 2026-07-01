@@ -1,8 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
-local GUIEffects = require(StarterPlayer.StarterPlayerScripts.Client.GUI.GUIEffects)
+local GUIEffects = require(script.Parent.Parent.GUI.GUIEffects)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
@@ -23,6 +22,7 @@ local PROMPT_HANDLERS = {
 			shopGUI = GUI.ShopGUI:Clone()
 			shopGUI.Parent = player.PlayerGui
 			shopGUI.Enabled = true
+			PlayerContext.IsBusy = true
 			SoundManager.PlayKeyed("Voiceline", "ShopGreeting")
 			ShopGUIHandler:ConnectShopGUI(shopGUI, prompt, "ShopExit")
 		else
@@ -32,6 +32,7 @@ local PROMPT_HANDLERS = {
 			shopGUI = GUI.SpecialShopGUI:Clone()
 			shopGUI.Parent = player.PlayerGui
 			shopGUI.Enabled = true
+			PlayerContext.IsBusy = true
 			SoundManager.PlayKeyed("Voiceline", "SpecialShopGreeting")
 			ShopGUIHandler:ConnectShopGUI(shopGUI, prompt, "SpecialShopExit")
 		end
@@ -50,6 +51,7 @@ local PROMPT_HANDLERS = {
 		--
 		bank.Parent = player.PlayerGui
 		bank.Enabled = true
+		PlayerContext.IsBusy = true
 
 		GUIEffects:PopIn(bg, 1, function()
 			SoundManager.PlayKeyed("Voiceline", "BankGreeting")
@@ -73,6 +75,7 @@ local PROMPT_HANDLERS = {
 		--
 		mercGUI.Parent = player.PlayerGui
 		mercGUI.Enabled = true
+		PlayerContext.IsBusy = true
 		GUIEffects:PopIn(bg, 1, function()
 			SoundManager.PlayKeyed("Voiceline", "MercGreeting")
 			MercenaryGUIHandler:ConnectMercenaryGUI(mercGUI, prompt)
@@ -93,9 +96,11 @@ local PROMPT_HANDLERS = {
 	end,
 	["TombstonePrompt"] = function(_: Player, prompt: ProximityPrompt)
 		prompt.Enabled = false
+		PlayerContext.IsBusy = true
 		ClientDigHandler:StartDigging()
 
 		task.delay(5, function()
+			PlayerContext.IsBusy = false
 			ClientDigHandler:StopDigging()
 			ProximityPromptHandler.networker:fire("LootPickup", "Tombstone", prompt)
 		end)

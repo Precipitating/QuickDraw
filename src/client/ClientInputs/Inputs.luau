@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
+local ScreenEffects = require(script.Parent.Parent.Screen.ScreenEffects)
 local QuestGUIHandler = require(script.Parent.Parent.GUI.QuestGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -190,16 +191,19 @@ function Inputs:StopBarge(hitType: string)
 	ResetBarge()
 
 	-- Hit a wall, play a custom stagger animation
-	if hitType and hitType == "Environment" then
-		SoundManager.PlayKeyed("SFX", "ImpactHit")
-		local bargeHitEnvAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("BargeHitEnvironment")
+	if hitType then
+		if hitType == "Environment" or hitType == "Human" then
+			SoundManager.PlayKeyed("SFX", "ImpactHit")
+			local bargeHitEnvAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("BargeHitEnvironment")
+			ScreenEffects:ApplyOneShotEffect("Bump")
 
-		bargeHitEnvAnim.Ended:Once(function()
-			ResetBarge()
-			CoreGUIHandler.ToggleBackpackVisibility(true, false)
-			ClientUtility.ToggleControls(true)
-		end)
-		return
+			bargeHitEnvAnim.Ended:Once(function()
+				ResetBarge()
+				CoreGUIHandler.ToggleBackpackVisibility(true, false)
+				ClientUtility.ToggleControls(true)
+			end)
+			return
+		end
 	end
 
 	CoreGUIHandler.ToggleBackpackVisibility(true, false)
@@ -217,6 +221,8 @@ function Inputs:ConnectBarge(input: InputObject)
 			or PlayerContext.IsMoving
 			or PlayerContext.Legless
 			or PlayerContext.IsCharging
+			or PlayerContext.IsBusy
+			or CollectionService:HasTag(PlayerContext.Player, "Jailed")
 		then
 			return
 		end

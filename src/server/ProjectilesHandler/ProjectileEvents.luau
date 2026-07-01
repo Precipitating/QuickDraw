@@ -3,6 +3,7 @@ local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local WebSocketService = game:GetService("WebSocketService")
 local GeneralProjectilesData = require(ReplicatedStorage.Shared.GeneralProjectilesData)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -14,6 +15,7 @@ local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
 local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Effects = ReplicatedStorage.Shared.Effects
 local ProjectileEvents = {}
@@ -399,6 +401,25 @@ function ProjectileEvents:ApplyThrowableRadiusDamage(origin: Vector3, radius: nu
 	end)
 end
 
+function ProjectileEvents:ApplyThrowableScreenEffect(position: Vector3, radius: number)
+	local playersInRadius = workspace:GetPartBoundsInRadius(position, radius)
+
+	task.spawn(function()
+		for _, obj in playersInRadius do
+			if not obj.Parent then
+				continue
+			end
+			local isPlayer = Players:GetPlayerFromCharacter(obj.Parent)
+
+			if not isPlayer then
+				continue
+			end
+
+			ServerScreenEffects:ApplyOneShotEffect(isPlayer, "Explosion")
+		end
+	end)
+end
+
 -- For throwables
 function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, throwableData)
 	if not raycastResult then
@@ -408,6 +429,9 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 
 	local center = raycastResult.Position
 	local blastRadius = throwableData.BlastRadius
+
+	-- explosion screen shake effect
+	self:ApplyThrowableScreenEffect(raycastResult.Position, 40)
 
 	-- apply radius damage first, for guaranteed damage within it
 	self:ApplyThrowableRadiusDamage(center, 20, throwableData, owner)

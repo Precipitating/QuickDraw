@@ -5,6 +5,7 @@ local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableDa
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
+local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
@@ -65,6 +66,9 @@ local TrapActivatedLogic = {
 
 		DamageModule.DamageHuman(data)
 
+		if hitHuman and hitHuman.Player then
+			ServerScreenEffects:ApplyOneShotEffect(hitHuman.Player, "BearTrapInjury")
+		end
 		hitHuman:Ragdoll(5)
 
 		if trapModel then
