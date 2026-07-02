@@ -200,6 +200,8 @@ function Human:SetupMovementDetector()
 			self.Moving = false
 		end
 	end))
+
+	humanoid.MaxSlopeAngle = 40
 end
 function Human:SetupAttributes()
 	if not self.Character then
