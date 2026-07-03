@@ -63,22 +63,25 @@ function ServerEffectsDisplayer:DisplayMuzzleFlashToOthers(player: Player?, gunT
 	end
 end
 
-function ServerEffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
-	if not gunTool then
+-- Second parameter is used for compatibility with turrets, as they dont use tools
+function ServerEffectsDisplayer:DisplayMuzzleFlash(gun: Tool? | Model?, gunName: string?)
+	if not gun then
 		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
-	local shotPos = gunTool:FindFirstChild("Frame", true)
+	local shotPos = gun:FindFirstChild("Frame", true) or gun
 	if not shotPos then
 		warn("[ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
 		return
 	end
 
+	local gunData = GunData[gunName or gun.Name]
+
 	-- its an NPC, so fire all
-	self.networker:fireAll("DisplayMuzzleFlash", gunTool)
+	self.networker:fireAll("DisplayMuzzleFlash", gun)
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
-		GunData[gunTool.Name].ShootSoundName,
+		gunData.ShootSoundName,
 		shotPos:GetPivot(),
 		{ Pitch = 1 + (math.random() - 0.5) * 0.1, MaxDistance = 300 }
 	)

@@ -1,8 +1,6 @@
-local CollectionService = game:GetService("CollectionService")
 local RunService = game:GetService("RunService")
 local Turret = require(script.Parent.Turret)
 local TurretManager = {}
-
 local ActiveTurrets = {}
 local Active = true
 local LoopConnection = nil
@@ -11,9 +9,10 @@ function TurretManager:Register(turret)
 	table.insert(ActiveTurrets, turret)
 end
 
-function TurretManager.Unregister(turret)
+function TurretManager:Unregister(turret)
 	local index = table.find(ActiveTurrets, turret)
 	if index then
+		ActiveTurrets[index]:Destroy()
 		table.remove(ActiveTurrets, index)
 	end
 end
@@ -29,14 +28,14 @@ function TurretManager:SetActive(active: boolean)
 end
 
 function TurretManager:InitializeExistingTurrets()
-	local existingInstances = CollectionService:GetTagged("Turret")
-
+	local existingInstances = workspace:QueryDescendants(".Turret")
 	for _, turret in existingInstances do
 		local newTurret = Turret.new(turret)
 		self:Register(newTurret)
 	end
 end
 
+-- (TagAssigner module handles dynamically added turrets and class removal if turret destroyed)
 function TurretManager:Initialize()
 	self:InitializeExistingTurrets()
 

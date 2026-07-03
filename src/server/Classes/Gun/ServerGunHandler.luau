@@ -45,7 +45,7 @@ end
 
 function ServerGunHandler:GunJamIfRolled(player: Player)
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
-	local gun = humanClass.Inventory and humanClass.Inventory:GetGun()
+	local gun = humanClass and humanClass.Inventory and humanClass.Inventory:GetGun()
 	if not gun or not humanClass then
 		warn("Attempt gun jam failure, missing references")
 		return

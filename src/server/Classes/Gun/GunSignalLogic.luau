@@ -35,24 +35,19 @@ return {
 			end
 			local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
 
-			-- if model, NPC shot
+			-- if model, NPC or turret shot
 			-- if player, player shot
 			local shooterCharacter = if shooter and shooter:IsA("Player") then shooter.Character else shooter
 
-			local hrp = if shooterCharacter
-				then Utility.GetInstance(shooterCharacter, true, "HumanoidRootPart")
-				else nil
+			local shotPos = shooterCharacter:GetPivot().Position
 
-			if not hrp then
-				return
-			end
 			local gunShotData: ClassTypes.GunShotDamage = {
 				Type = "Shot",
 				CosmeticBulletObject = cosmeticBullet,
 				RaycastResult = hitObj,
 				TargetHuman = humanClass,
 				Damage = damageInflicted,
-				ShotPosition = hrp.Position,
+				ShotPosition = shotPos,
 				Shooter = shooter,
 				CanAffectShooter = canAffectShooter,
 			}
