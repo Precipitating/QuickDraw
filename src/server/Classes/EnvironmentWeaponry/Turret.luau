@@ -42,11 +42,11 @@ function Turret.new(modelRef: Model?)
 	self.State = "Idle"
 	self.Active = true
 	self.LastShot = 0
-	self.MaxSpreadDeg = 10
+	self.MaxSpreadStuds = 3
 	self.LastScanned = 0
 	self.TargetTags = { "Player", "NPC" }
-	self.CurrentTarget = nil
-	self.ShootPoint = modelRef:FindFirstChild("ShootPoint")
+	self.IKControl = modelRef:FindFirstChild("IKControl", true)
+	self.ShootPoint = modelRef:FindFirstChild("ShootPoint", true)
 	self.MuzzleFlash = modelRef:FindFirstChild("MuzzleFlash")
 	self.MuzzleFlashEffects = self.MuzzleFlash and self.MuzzleFlash:FindFirstChildOfClass("Attachment")
 	self.TurnSpeed = 5
@@ -74,46 +74,27 @@ function Turret:AddEnemyTag(tag: string)
 	table.insert(self.TargetTags, tag)
 end
 
-function Turret:ApplySpread(origin, targetPosition, maxSpreadDegrees)
-	local distance = (targetPosition - origin).Magnitude
+function Turret:GetRandomSpreadVector()
+	local randomX = RandomModule.GetRandomDecimalBetween(-1, 1) * self.MaxSpreadStuds
+	local randomY = RandomModule.GetRandomDecimalBetween(-1, 1) * self.MaxSpreadStuds
 
-	-- 1. Create a CFrame pointing straight at the target
-	local flatLook = CFrame.lookAt(origin, targetPosition)
-
-	-- 2. Generate a random offset using degrees converted to radians
-	local spreadRad = math.rad(maxSpreadDegrees)
-	local randomX = RandomModule.GetRandomIntBetween(-100, 100) / 100 * spreadRad
-	local randomY = RandomModule.GetRandomIntBetween(-100, 100) / 100 * spreadRad
-
-	-- 3. Use the lookCFrame's RightVector and UpVector to apply the spread
-	local spreadDirection = (flatLook.LookVector + (flatLook.RightVector * randomX) + (flatLook.UpVector * randomY)).Unit
-
-	-- 4. Shoot the vector out to the original distance
-	return origin + (spreadDirection * distance)
+	return Vector3.new(randomX, randomY, 0)
 end
 
-function Turret:PredictTargetPosition()
-	if not self.CurrentTarget then
+function Turret:GetTargetOffset()
+	if not self.IKControl.Target then
 		return
 	end
-	local target = self.CurrentTarget
-	local primaryPart = target.PrimaryPart
-		or target:FindFirstChild("UpperTorso")
-		or target:FindFirstChildWhichIsA("BasePart")
+	local target = self.IKControl.Target
 
-	if not primaryPart then
-		warn("Target model has no valid BasePart to track!")
-		return nil
-	end
-
-	local targetPos = primaryPart.Position
+	local targetPos = target.Position
 	local muzzlePos = self.MuzzleFlash.Position
 	local distance = (targetPos - muzzlePos).Magnitude
 	local timeToTarget = distance / self.WeaponData.Velocity
 
-	local predictedPos = targetPos + (primaryPart.Velocity * timeToTarget)
+	local predictedOffset = (target.Velocity * timeToTarget)
 
-	return predictedPos
+	return predictedOffset
 end
 function Turret:Update(dt: number)
 	self.LastScanned += dt
@@ -132,92 +113,103 @@ function Turret:Update(dt: number)
 
 	-- 2. SCAN FOR ENEMIES & SHOOT
 	if self.LastScanned >= self.ScanInterval then
-		-- We scan and cache the target on the turret object itself (self.CurrentTarget)
-		self.CurrentTarget = self:ScanForEnemies()
-		if self.CurrentTarget then
+		self:ScanForEnemies()
+		if self.IKControl.Target then
 			self:FireTurret()
 			self.LastScanned = 0
 		end
 	end
-
-	-- 3. SMOOTH ROTATION
-	-- We check if our cached target is still valid and point turret towards the target
-	if self.CurrentTarget and self.CurrentTarget.Parent then
-		local pos = self:PredictTargetPosition()
-
-		local randomOffset = Vector3.new(
-			RandomModule.GetRandomIntBetween(-100, 100) / 100 * self.MaxSpreadDeg,
-			RandomModule.GetRandomIntBetween(-100, 100) / 100 * self.MaxSpreadDeg,
-			RandomModule.GetRandomIntBetween(-100, 100) / 100 * self.MaxSpreadDeg
-		)
-		self:PointTurretTowards(pos + randomOffset, dt)
-	else
-		-- Reset target if they died or despawned
-		self.CurrentTarget = nil
-	end
 end
-function Turret:PointTurretTowards(position: Vector3, dt: number)
-	local currentPivot = self.Model:GetPivot()
 
-	-- 1. Create a CFrame that stays at the current position but faces the target
-	local targetCFrame = CFrame.lookAt(currentPivot.Position, position)
+function Turret:isValidTarget(model)
+	if not model or not model.Parent then
+		return false
+	end
+	if CollectionService:HasTag(model, "Dead") then
+		return false
+	end
 
-	-- 2. Calculate the interpolation step
-	local alpha = math.clamp(self.TurnSpeed * dt, 0, 1)
+	local targetPosition = model:GetPivot().Position
 
-	-- 3. Interpolate the actual CFrames (smoothly blending the rotation)
-	local newPivot = currentPivot:Lerp(targetCFrame, alpha)
+	-- cheap box check: convert to RadiusPart's local space and compare against half-size
+	local localPos = self.RadiusPart.CFrame:PointToObjectSpace(targetPosition)
+	local halfSize = self.RadiusPart.Size * 0.5
+	if math.abs(localPos.X) > halfSize.X or math.abs(localPos.Y) > halfSize.Y or math.abs(localPos.Z) > halfSize.Z then
+		return false
+	end
 
-	-- 4. Apply the updated CFrame back to the model
-	self.Model:PivotTo(newPivot)
+	local origin = self.ShootPoint.WorldPosition
+	local dir = (targetPosition - origin).Unit * 1000
+	local canSee = workspace:Raycast(origin, dir)
+	if not canSee or not canSee.Instance:IsDescendantOf(model) then
+		return false
+	end
+
+	return true
 end
 
 function Turret:ScanForEnemies()
+	local origin = self.ShootPoint.WorldPosition
+
+	-- 1. Stick with the current target if it's still good -- skip the scan entirely
+	if self.CurrentTargetModel and self:isValidTarget(self.CurrentTargetModel) then
+		self.IKControl.Target = self.CurrentTargetModel:FindFirstChild("UpperTorso")
+			or self.CurrentTargetModel:FindFirstChildWhichIsA("BasePart")
+		self.State = "Attacking"
+		return
+	end
+
+	-- 2. Current target lost -- fall back to the full scan for a new one
+	self.CurrentTargetModel = nil
 	local partsInRadius = workspace:GetPartsInPart(self.RadiusPart, self.OverlapParams)
+	local bestTargetPart = nil
 
 	for _, part in partsInRadius do
 		if not part:IsA("BasePart") then
-			return
+			continue
 		end
-
 		local hasParent = part.Parent
 		if not hasParent then
 			continue
 		end
-
 		for _, tag in self.TargetTags do
 			if not CollectionService:HasTag(hasParent, tag) then
 				continue
 			end
-
 			if CollectionService:HasTag(hasParent, "Dead") then
 				continue
 			end
 
-			-- Check if field of view
-			local dir = (hasParent:GetPivot().Position - self.ShootPoint.WorldPosition).Unit * 1000
-			local canSee = workspace:Raycast(self.ShootPoint.WorldPosition, dir)
-
+			local targetPosition = hasParent:GetPivot().Position
+			local dir = (targetPosition - origin).Unit * 1000
+			local canSee = workspace:Raycast(origin, dir)
 			if not canSee or not canSee.Instance:IsDescendantOf(hasParent) then
 				continue
 			end
 
-			-- Means target found, should return character model of target
-			self.CurrentTarget = hasParent
-			self.State = "Attacking"
-			return hasParent
+			bestTargetPart = hasParent:FindFirstChild("UpperTorso")
+				or hasParent:FindFirstChildWhichIsA("BasePart")
+				or part
+			self.CurrentTargetModel = hasParent
+			break
+		end
+		if bestTargetPart then
+			break
 		end
 	end
 
-	-- NOTHING FOUND IN RADIUS
-	self.CurrentTarget = nil
-	self.State = "Idle"
-	return
+	if bestTargetPart then
+		self.IKControl.Target = bestTargetPart
+		self.State = "Attacking"
+	else
+		self.IKControl.Target = nil
+		self.State = "Idle"
+	end
 end
 
 function Turret:StopLoop()
 	self.Janitor:Remove("TurretLoop")
-	self.CurrentTarget = nil
+	self.IKControl.Target = nil
 	self.State = "Idle"
 end
 function Turret:RemoveEnemyTag(tag: string)
@@ -250,6 +242,11 @@ function Turret:FireTurret(dt: number)
 		return
 	end
 	self.LastShot = 0
+
+	local getOffset = self:GetTargetOffset()
+	local spreadVector = self:GetRandomSpreadVector()
+
+	self.IKControl.Offset = CFrame.new(getOffset + spreadVector)
 
 	if self.GunType == "Shotgun" then
 		self:SpreadShot()

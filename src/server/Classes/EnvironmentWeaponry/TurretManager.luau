@@ -5,15 +5,18 @@ local ActiveTurrets = {}
 local Active = true
 local LoopConnection = nil
 
-function TurretManager:Register(turret)
-	table.insert(ActiveTurrets, turret)
+function TurretManager:Register(model)
+	local newTurret = Turret.new(model)
+	ActiveTurrets[model] = newTurret
 end
 
-function TurretManager:Unregister(turret)
-	local index = table.find(ActiveTurrets, turret)
-	if index then
-		ActiveTurrets[index]:Destroy()
-		table.remove(ActiveTurrets, index)
+function TurretManager:Unregister(turretModel)
+	local exists = ActiveTurrets[turretModel]
+
+	if exists then
+		warn("Removing turret...")
+		ActiveTurrets[turretModel]:Destroy()
+		ActiveTurrets[turretModel] = nil
 	end
 end
 
@@ -29,9 +32,8 @@ end
 
 function TurretManager:InitializeExistingTurrets()
 	local existingInstances = workspace:QueryDescendants(".Turret")
-	for _, turret in existingInstances do
-		local newTurret = Turret.new(turret)
-		self:Register(newTurret)
+	for _, turretModel in existingInstances do
+		self:Register(turretModel)
 	end
 end
 

@@ -138,15 +138,15 @@ return {
 					responses = { "Anything here?", "Thank ya" },
 				},
 				{
-					text = "The town name says it all.<br/>It's a ghost town, abandoned after the gold miners dipped after milking this place dry.",
+					text = "The town name says it all.<br/>It's a ghost town, abandoned after the gold miners dipped - having milking this place dry.",
 					responses = { "So why are you here?", "Don't care, bye." },
 				},
 				{
-					text = "Heard rumours of the 'Ghost of Wilson' haunting this place.<br/>Shots and explosions were heard at night sometimes, but all I see are abandoned homes.",
+					text = "Heard rumours of the 'Ghost of Wilson' haunting this place.<br/> Shots were being heard randomly throughout the days, very weird.",
 					responses = { "Shots?", "I'm scared now, bye." },
 				},
 				{
-					text = "They say the 'Ghost of Wilson' was once a mad tinkerer, creating peculiar weaponry that always ends up explodin' the wielder.<br/>The shots and explosions are the sounds that occured before their inevitable death.",
+					text = "They say the 'Ghost of Wilson' was once a mad tinkerer, creating peculiar weaponry that always ends up backfirin' the wielder.<br/>They say the shots were the last sounds before their unfortunate deaths.",
 					responses = { "Scary!", "I'm outta here now!" },
 				},
 				{

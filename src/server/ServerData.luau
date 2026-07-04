@@ -21,8 +21,8 @@ function ServerData.Initialize()
 			completedQuests = {},
 		},
 		profileStoreIndex = "Main",
-		useMock = false,
-		resetData = false,
+		useMock = true,
+		resetData = true,
 	})
 end
 
