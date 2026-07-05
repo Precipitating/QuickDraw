@@ -41,7 +41,9 @@ function RangeAI.new(human: Human, classType: string, optionalData: any?)
 	self.DefaultState = (classData and classData.DefaultStateName)
 			and {
 				Name = classData.DefaultStateName,
-				Data = (classData and classData.DefaultStateData) or (optionalData and optionalData.DefaultStateData),
+				Data = human.Character:GetAttribute("DefaultStateData")
+					or (classData and classData.DefaultStateData)
+					or (optionalData and optionalData.DefaultStateData),
 			}
 		or nil
 	self.AttackCooldown = classData.AttackCooldown

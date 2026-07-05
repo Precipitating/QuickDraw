@@ -155,6 +155,10 @@ local function SpawnLoop(spawnerModel, spawnLocation)
 		CollectionService:AddTag(npcModel, spawnerType)
 		CollectionService:AddTag(npcModel, "NPC")
 
+		if spawnerModel:GetAttribute("DefaultStateData") then
+			npcModel:SetAttribute("DefaultStateData", spawnerModel:GetAttribute("DefaultStateData"))
+		end
+
 		npcModel:PivotTo(spawnLocation.WorldCFrame)
 		npcModel.Parent = workspace.NPCs
 		NPCEvents.CurrentSpawnedNPCS = math.max(0, math.min(NPCEvents.CurrentSpawnedNPCS + 1, NPCEvents.MaxNPCSAllowed))

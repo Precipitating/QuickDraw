@@ -35,10 +35,15 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 
+	if self.Character:GetAttribute("DefaultStateData") then
+	end
+
 	self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
+
 	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
 end
+
 function HumanNPC:InitializeWeaponLoadout()
 	if self.AI.WeaponName then
 		self.Inventory:AddWeaponToInventory(self.AI.WeaponName)
