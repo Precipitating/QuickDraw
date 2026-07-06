@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local LootPickupGUIHandler = require(script.Parent.Parent.GUI.LootPickupGUIHandler)
 local GUIEffects = require(script.Parent.Parent.GUI.GUIEffects)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -14,6 +15,9 @@ ProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", Proxi
 
 local PROMPT_HANDLERS = {
 	["ShopPrompt"] = function(player: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
 		local shopGUI = nil
 		if not CollectionService:HasTag(prompt, "Special") then
 			if player.PlayerGui:FindFirstChild("ShopGUI") then
@@ -38,6 +42,9 @@ local PROMPT_HANDLERS = {
 		end
 	end,
 	["BankPrompt"] = function(player: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
 		if player.PlayerGui:FindFirstChild("BankGUI") then
 			return
 		end
@@ -62,6 +69,9 @@ local PROMPT_HANDLERS = {
 		end)
 	end,
 	["MercenaryPrompt"] = function(player: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
 		if player.PlayerGui:FindFirstChild("MercenaryGUI") then
 			return
 		end
@@ -86,26 +96,41 @@ local PROMPT_HANDLERS = {
 		end)
 	end,
 	["CashPickupPrompt"] = function(_: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
 		ProximityPromptHandler.networker:fire("CashPickedUp", prompt)
 	end,
 	["MedicPrompt"] = function(_: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
 		ProximityPromptHandler.networker:fire("HealPlayer", prompt)
 	end,
 	["LootPrompt"] = function(_: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
 		ProximityPromptHandler.networker:fire("LootPickup", "TumbleWeed", prompt)
 	end,
 	["TombstonePrompt"] = function(_: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
 		prompt.Enabled = false
 		PlayerContext.IsBusy = true
 		ClientDigHandler:StartDigging()
 
 		task.delay(5, function()
-			PlayerContext.IsBusy = false
 			ClientDigHandler:StopDigging()
 			ProximityPromptHandler.networker:fire("LootPickup", "Tombstone", prompt)
 		end)
 	end,
 }
+
+function ProximityPromptHandler:ConnectLootPickupGUI(pickupType: string, chosenLoot: string)
+	LootPickupGUIHandler:ConnectGUI(pickupType, chosenLoot)
+end
 
 function ProximityPromptHandler.Initialize()
 	local function connectPrompt(tag, handler, prompt)

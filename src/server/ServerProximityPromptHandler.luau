@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ShopGUI = require(ServerScriptService.Server.GUI.ShopGUI)
 local PurchasePrices = require(ReplicatedStorage.Shared.PurchasePrices)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -80,7 +79,9 @@ function ServerProximityPromptHandler:LootPickup(player: Player, lootType: strin
 		if prompt and prompt.Parent then
 			prompt.Parent:Destroy()
 		end
-		ShopGUI:BuyItem(player, RandomModule.WeightedRandom(TumbleWeedLootPool), 0, "TumbleWeedPickup")
+		local chosenLoot = RandomModule.WeightedRandom(TumbleWeedLootPool)
+		self.networker:fire(player, "ConnectLootPickupGUI", lootType, chosenLoot)
+		--ShopGUI:BuyItem(player, chosenLoot, 0, "TumbleWeedPickup")
 	elseif lootType == "Tombstone" then
 		local tombstone: MeshPart? = prompt and prompt.Parent :: MeshPart?
 
@@ -93,7 +94,9 @@ function ServerProximityPromptHandler:LootPickup(player: Player, lootType: strin
 			if cashReward then
 				ServerData.UpdateMoney(player, RandomModule.GetRandomIntBetween(1, TOMBSTONE_CASH_REWARD_MAX))
 			else
-				ShopGUI:BuyItem(player, RandomModule.WeightedRandom(TombStoneLootPool), 0, "SandPickup")
+				local chosenLoot = RandomModule.WeightedRandom(TombStoneLootPool)
+				self.networker:fire(player, "ConnectLootPickupGUI", lootType, chosenLoot)
+				--ShopGUI:BuyItem(player, RandomModule.WeightedRandom(TombStoneLootPool), 0, "SandPickup")
 			end
 
 			task.delay(TOMBSTONE_RESPAWN_TIME + RandomModule.GetRandomIntBetween(1, TOMBSTONE_RESPAWN_TIME), function()
