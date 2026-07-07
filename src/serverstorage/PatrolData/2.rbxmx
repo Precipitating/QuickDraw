@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Folder" referent="RBXEF8CB5AB77D84F12B0B7716DD9F5DDCB">
+	<Item class="Folder" referent="RBX3C34128E947842E38855A57489E08A14">
 		<Properties>
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -11,7 +11,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Part" referent="RBX78BD8D96D23343A3854002C86047612E">
+		<Item class="Part" referent="RBXDFFD808DAD2848BCAEA1761D0FBE6119">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -26,18 +26,18 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>-911.657043</X>
-					<Y>2.5</Y>
-					<Z>851.765015</Z>
-					<R00>-1</R00>
+					<X>-848.347046</X>
+					<Y>2.49999237</Y>
+					<Z>792.260315</Z>
+					<R00>0</R00>
 					<R01>0</R01>
-					<R02>0</R02>
+					<R02>1</R02>
 					<R10>0</R10>
 					<R11>1</R11>
 					<R12>0</R12>
-					<R20>0</R20>
+					<R20>-1</R20>
 					<R21>0</R21>
-					<R22>-1</R22>
+					<R22>0</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">true</bool>
 				<bool name="CanQuery">true</bool>
@@ -91,7 +91,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -110,106 +110,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBX7F2C4D627CDC4D978AFACA8DD84100DB">
-			<Properties>
-				<token name="shape">1</token>
-				<token name="formFactorRaw">0</token>
-				<bool name="Anchored">true</bool>
-				<bool name="AudioCanCollide">true</bool>
-				<float name="BackParamA">-0.5</float>
-				<float name="BackParamB">0.5</float>
-				<token name="BackSurface">0</token>
-				<token name="BackSurfaceInput">0</token>
-				<float name="BottomParamA">-0.5</float>
-				<float name="BottomParamB">0.5</float>
-				<token name="BottomSurface">4</token>
-				<token name="BottomSurfaceInput">0</token>
-				<CoordinateFrame name="CFrame">
-					<X>-847.750061</X>
-					<Y>2.5</Y>
-					<Z>905.832886</Z>
-					<R00>-0.342020094</R00>
-					<R01>0</R01>
-					<R02>-0.939692616</R02>
-					<R10>0</R10>
-					<R11>1</R11>
-					<R12>0</R12>
-					<R20>0.939692616</R20>
-					<R21>0</R21>
-					<R22>-0.342020094</R22>
-				</CoordinateFrame>
-				<bool name="CanCollide">true</bool>
-				<bool name="CanQuery">true</bool>
-				<bool name="CanTouch">true</bool>
-				<bool name="CastShadow">true</bool>
-				<string name="CollisionGroup">Default</string>
-				<int name="CollisionGroupId">0</int>
-				<Color3uint8 name="Color3uint8">4288914085</Color3uint8>
-				<PhysicalProperties name="CustomPhysicalProperties">
-					<CustomPhysics>false</CustomPhysics>
-				</PhysicalProperties>
-				<bool name="EnableFluidForces">true</bool>
-				<float name="FrontParamA">-0.5</float>
-				<float name="FrontParamB">0.5</float>
-				<token name="FrontSurface">0</token>
-				<token name="FrontSurfaceInput">0</token>
-				<float name="LeftParamA">-0.5</float>
-				<float name="LeftParamB">0.5</float>
-				<token name="LeftSurface">0</token>
-				<token name="LeftSurfaceInput">0</token>
-				<bool name="Locked">false</bool>
-				<bool name="Massless">false</bool>
-				<token name="Material">256</token>
-				<string name="MaterialVariantSerialized"></string>
-				<CoordinateFrame name="PivotOffset">
-					<X>0</X>
-					<Y>0</Y>
-					<Z>0</Z>
-					<R00>1</R00>
-					<R01>0</R01>
-					<R02>0</R02>
-					<R10>0</R10>
-					<R11>1</R11>
-					<R12>0</R12>
-					<R20>0</R20>
-					<R21>0</R21>
-					<R22>1</R22>
-				</CoordinateFrame>
-				<float name="Reflectance">0</float>
-				<float name="RightParamA">-0.5</float>
-				<float name="RightParamB">0.5</float>
-				<token name="RightSurface">0</token>
-				<token name="RightSurfaceInput">0</token>
-				<int name="RootPriority">0</int>
-				<Vector3 name="RotVelocity">
-					<X>0</X>
-					<Y>0</Y>
-					<Z>0</Z>
-				</Vector3>
-				<float name="TopParamA">-0.5</float>
-				<float name="TopParamB">0.5</float>
-				<token name="TopSurface">3</token>
-				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
-				<Vector3 name="Velocity">
-					<X>0</X>
-					<Y>0</Y>
-					<Z>0</Z>
-				</Vector3>
-				<Vector3 name="size">
-					<X>4</X>
-					<Y>1</Y>
-					<Z>2</Z>
-				</Vector3>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">Waypoint2</string>
-				<int64 name="SourceAssetId">409525648</int64>
-				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
-			</Properties>
-		</Item>
-		<Item class="Part" referent="RBXA339DF8D8BED488A90BECE836971B964">
+		<Item class="Part" referent="RBX687F857A532943818ECB1BD5BCAD76D2">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -289,7 +190,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -308,7 +209,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBX1EBC147FDE824E6A9DB08E80D4C76DAE">
+		<Item class="Part" referent="RBXCDAD844A1D5244AE801AC773F2332759">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -323,18 +224,18 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>-681.147095</X>
+					<X>-714.589844</X>
 					<Y>2.5</Y>
-					<Z>877.03833</Z>
-					<R00>1</R00>
+					<Z>852.330566</Z>
+					<R00>-0.642787814</R00>
 					<R01>0</R01>
-					<R02>0</R02>
+					<R02>-0.766044736</R02>
 					<R10>0</R10>
 					<R11>1</R11>
 					<R12>0</R12>
-					<R20>0</R20>
+					<R20>0.766044736</R20>
 					<R21>0</R21>
-					<R22>1</R22>
+					<R22>-0.642787814</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">true</bool>
 				<bool name="CanQuery">true</bool>
@@ -388,7 +289,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -407,7 +308,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBX5741E56E73114C069AFA108C100DC47F">
+		<Item class="Part" referent="RBX42E7955601774E5283C90EDF51FEFE01">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -487,7 +388,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -506,7 +407,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBX4AF8671EAC3D4A8DAA548CF200358A84">
+		<Item class="Part" referent="RBX436E2F41275C44FFB7D1D88C3DB312E9">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -586,7 +487,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -605,7 +506,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBXEC47D06DC06C40598DB916E8A0CDA697">
+		<Item class="Part" referent="RBXF7EBB2BB8CE243FDBEB749F7F242B6A0">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -685,7 +586,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -704,7 +605,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBXAB26A39DB40B4BB385A5C3D5449E5E2B">
+		<Item class="Part" referent="RBX82F3D038E16C446D823FA90FC0BE8BDE">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -784,7 +685,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -803,7 +704,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBX47F08CDEA97D4A2CAB1377DCCCB30943">
+		<Item class="Part" referent="RBXAA2CE50E98D44F05B8BB0C5C45F3CD8F">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -883,7 +784,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -902,7 +803,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBXEB800A2F50B34324853BFFFE617AC64C">
+		<Item class="Part" referent="RBX2CC87B03C339441F9DB15677B20B4C39">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -982,7 +883,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
@@ -1001,7 +902,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Part" referent="RBX8C03FA8155DA48ACBB37A1B70CF024FE">
+		<Item class="Part" referent="RBX7FEBC5FE20854C2C97868A82CA68101A">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">0</token>
@@ -1016,18 +917,18 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>-882.072876</X>
+					<X>-910.364319</X>
 					<Y>2.5</Y>
-					<Z>707.692749</Z>
-					<R00>-0.642787814</R00>
+					<Z>685.732788</Z>
+					<R00>-1</R00>
 					<R01>0</R01>
-					<R02>0.766046345</R02>
+					<R02>0</R02>
 					<R10>0</R10>
 					<R11>1</R11>
 					<R12>0</R12>
-					<R20>-0.766044617</R20>
+					<R20>0</R20>
 					<R21>0</R21>
-					<R22>-0.642788768</R22>
+					<R22>-1</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">true</bool>
 				<bool name="CanQuery">true</bool>
@@ -1081,7 +982,7 @@
 				<float name="TopParamB">0.5</float>
 				<token name="TopSurface">3</token>
 				<token name="TopSurfaceInput">0</token>
-				<float name="Transparency">1</float>
+				<float name="Transparency">0</float>
 				<Vector3 name="Velocity">
 					<X>0</X>
 					<Y>0</Y>
