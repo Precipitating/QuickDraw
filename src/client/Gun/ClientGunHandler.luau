@@ -336,6 +336,14 @@ function ClientGunHandler:DisplayGunEffects(gunTool: Tool)
 	SoundManager.PlayKeyed("SFX", gunData.ShootSoundName, {
 		Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1,
 	})
+
+	if gunData.RevolveAngle then
+		local motor: Motor6D? = gunTool:FindFirstChildWhichIsA("Motor6D", true)
+
+		if motor then
+			motor.DesiredAngle = motor.DesiredAngle + math.rad(gunData.RevolveAngle)
+		end
+	end
 	if gunData.LoadNextRoundName then
 		SoundManager.Play(gunData.LoadNextRoundName)
 	end

@@ -20,6 +20,7 @@ local GunData = {
 		DragCoefficient = 0.0008,
 		ReloadTimePerBullet = 0.5,
 		GunType = "Revolver",
+		RevolveAngle = 40,
 		ShootSoundName = "RevolverShot",
 		ShootNoAmmoName = "RevolverClick",
 		ReloadSoundName = "RevolverReload",
@@ -62,6 +63,7 @@ local GunData = {
 			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)
 			:Container(workspace.ProjectilesFolder)
 			:Done()
+			:BatchTravel(true)
 			:Build(),
 	},
 	Winchester = {
@@ -125,6 +127,7 @@ local GunData = {
 			:Debug()
 			:Visualize(true)
 			:Done()
+			:BatchTravel(true)
 			:Build(),
 	},
 	Coach = {
@@ -322,6 +325,7 @@ local GunData = {
 			:SegmentSize(0.8) -- finer than original for accurate bounce resolution
 			:FrameBudget(3) -- single shot weapon, can afford the budget
 			:Done()
+			:BatchTravel(true)
 			:Build(),
 	},
 	Gatling = {
@@ -336,6 +340,7 @@ local GunData = {
 		RefillCost = 300,
 		MaxSimulationDistance = 600,
 		ReloadTime = 3,
+		RevolveAngle = 30,
 		EquipWalkspeedMultiplier = 0.5,
 		GunType = "Automatic",
 		DragCoefficient = 0.0015,

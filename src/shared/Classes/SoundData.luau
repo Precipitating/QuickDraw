@@ -25,6 +25,13 @@ SoundData.Sounds = {
 		Group = "SFX",
 		PoolSize = 6,
 	},
+	BulletMiss = {
+		SoundId = "rbxassetid://125069334192045",
+		Volume = 3,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+		PoolSize = 6,
+	},
 	UnjamWeapon = {
 		SoundId = "rbxassetid://96208385832784",
 		Volume = 1,

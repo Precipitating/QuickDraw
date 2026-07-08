@@ -15,7 +15,6 @@ function PlayerManager:AddHumanClass(player: Player)
 	local character = player.Character
 	local humanoid = character:WaitForChild("Humanoid")
 	local humanClass = HumanPlayer.new(humanoid, player)
-
 	return HumanRegistry:Add(humanoid, humanClass)
 end
 

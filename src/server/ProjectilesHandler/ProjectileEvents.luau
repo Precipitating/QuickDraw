@@ -695,6 +695,68 @@ function ProjectileEvents:Initialize()
 		self:OnProjectileHitReceiveServer(context, result)
 	end)
 
+	ProjectileContext.VetraSignals.OnTravelBatch:Connect(function(contexts)
+		for _, context in contexts do
+			local innerContext = context.Context
+			local bulletDirection = innerContext.Direction -- Pre-calculated unit vector
+			local currentPosition = context.Position
+
+			-- Derive lastPosition by backing up one frame step using Velocity and DeltaTime
+			local lastPosition = currentPosition - (context.Velocity * innerContext.SimulationTime)
+			local displacement = currentPosition - lastPosition
+			local segmentLength = displacement.Magnitude
+
+			if segmentLength <= 0 then
+				continue
+			end
+
+			-- Initialize a table in UserData to remember who we already whistled for
+			if not innerContext.UserData.WhistledPlayers then
+				innerContext.UserData.WhistledPlayers = {}
+			end
+			local whistled = innerContext.UserData.WhistledPlayers
+
+			for _, player in Players:GetPlayers() do
+				-- Skip if this specific bullet already whistled for this player
+				if whistled[player.UserId] then
+					continue
+				end
+
+				local head = player.Character and player.Character:FindFirstChild("Head")
+				if not head then
+					continue
+				end
+
+				local headPos = head.Position
+				local relativeVector = headPos - lastPosition
+
+				-- BOUNDARY CHECK: Project the head onto the bullet path segment
+				local dotProjection = relativeVector:Dot(bulletDirection)
+
+				-- If the closest approach point falls exactly within this frame's segment length...
+				if dotProjection >= 0 and dotProjection <= segmentLength then
+					-- Calculate the exact perpendicular miss distance (perpendicular line)
+					local closestPathPoint = lastPosition + (bulletDirection * dotProjection)
+					local exactMissDistance = (closestPathPoint - headPos).Magnitude
+
+					-- Trigger condition
+					if exactMissDistance >= 1 and exactMissDistance <= 3 then
+						-- Mark as whistled instantly so it never spams again for this bullet
+						whistled[player.UserId] = true
+
+						ServerSoundHandler:Play3DOneShotToOthers(
+							nil,
+							"BulletMiss",
+							CFrame.new(closestPathPoint),
+							{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+						)
+						warn("Whizzed past " .. player.Name .. " once!")
+					end
+				end
+			end
+		end
+	end)
+
 	-- players firing from client
 	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
 		if not result or not result.Instance then
