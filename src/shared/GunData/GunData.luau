@@ -57,7 +57,7 @@ local GunData = {
 			:FrameBudget(1)
 			:Done()
 			:Debug()
-			:Visualize(false)
+			:Visualize(true)
 			:Done()
 			:Cosmetic()
 			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)
@@ -139,7 +139,7 @@ local GunData = {
 		Description = "A double barreled shotgun, doing devastating damage up close (8 pellets a shot) (20 damage per pellet)",
 		Cost = 500,
 		RefillCost = 100,
-		MaxSimulationDistance = 107,
+		MaxSimulationDistance = 500,
 		PelletsPerShot = 8,
 		MaxSpreadAngle = 8,
 		ReloadTimePerBullet = 2,
@@ -153,7 +153,7 @@ local GunData = {
 		ProjectileData = Vetra.BehaviorBuilder
 			.new()
 			:Physics()
-			:MaxDistance(107)
+			:MaxDistance(500)
 			:MinSpeed(36)
 			:Done()
 			:Drag()

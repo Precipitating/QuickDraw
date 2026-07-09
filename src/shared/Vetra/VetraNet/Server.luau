@@ -377,6 +377,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 				Direction = Payload.Direction,
 				Speed = Payload.Speed,
 				RaycastParams = GlobalRaycastParams,
+				UserData = { Owner = Player },
 				SolverData = { OwnerId = Player.UserId, ServerCastId = CastId },
 			})
 			local Context = Solver:Fire(FireContext, Behavior)

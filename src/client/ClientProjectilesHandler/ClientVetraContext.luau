@@ -1,13 +1,11 @@
 local CollectionService = game:GetService("CollectionService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --  ────── Vetra Variables ──────
 local EffectsDisplayer = require(script.Parent.Parent.VisualEffectsHandler.EffectsDisplayer)
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
 local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
 local VetraRegistry = require(ReplicatedStorage.Shared.VetraRegistry)
-
-local ClientSolver = Vetra.new()
+local ClientSolver = Vetra.newParallel()
 local Net = VetraNet.new(ClientSolver, VetraRegistry)
 local Signals = ClientSolver:GetSignals()
 local NoProjectileDecalList = { "Destroyable", "Player", "NPC", "Barrier" }
@@ -26,6 +24,9 @@ local function CanDisplayBulletHole(instance: Instance)
 end
 local function TryDisplayProjectileMark(context, result: RaycastResult?)
 	if not result then
+		return
+	end
+	if not result.Instance then
 		return
 	end
 

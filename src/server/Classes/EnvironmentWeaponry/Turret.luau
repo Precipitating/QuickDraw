@@ -44,7 +44,7 @@ function Turret.new(modelRef: Model?)
 	self.LastShot = 0
 	self.MaxSpreadStuds = 3
 	self.LastScanned = 0
-	self.TargetTags = { "Player", "NPC" }
+	self.TargetTags = { "Player" }
 	self.IKControl = modelRef:FindFirstChild("IKControl", true)
 	self.ShootPoint = modelRef:FindFirstChild("ShootPoint", true)
 	self.MuzzleFlash = modelRef:FindFirstChild("MuzzleFlash")

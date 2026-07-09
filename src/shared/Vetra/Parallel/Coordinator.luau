@@ -47,26 +47,26 @@
 
 ]]
 
-local Identity     = "Coordinator"
-local Coordinator  = {}
+local Identity = "Coordinator"
+local Coordinator = {}
 Coordinator.__type = Identity
 
 -- ─── References ──────────────────────────────────────────────────────────────
 
-local RunService          = game:GetService("RunService")
+local RunService = game:GetService("RunService")
 local SharedTableRegistry = game:GetService("SharedTableRegistry")
 
 local Parallel = script.Parent
-local Vetra    = script.Parent.Parent
-local Core     = Vetra.Core
-local Signals  = Vetra.Signals
+local Vetra = script.Parent.Parent
+local Core = Vetra.Core
+local Signals = Vetra.Signals
 
 -- ─── Module References ───────────────────────────────────────────────────────
 
-local LogService     = require(Core.Logger)
-local Constants      = require(Core.Constants)
-local FireHelpers    = require(Signals.FireHelpers)
-local EventHandlers  = require(Parallel.Physics.EventHandlers)
+local LogService = require(Core.Logger)
+local Constants = require(Core.Constants)
+local FireHelpers = require(Signals.FireHelpers)
+local EventHandlers = require(Parallel.Physics.EventHandlers)
 local TypeDefinition = require(Core.TypeDefinition)
 
 -- ─── Logger ──────────────────────────────────────────────────────────────────
@@ -75,22 +75,22 @@ local Logger = LogService.new(Identity, false)
 
 -- ─── Cached Globals ──────────────────────────────────────────────────────────
 
-local ZERO_VECTOR               = Constants.ZERO_VECTOR
+local ZERO_VECTOR = Constants.ZERO_VECTOR
 local PROVIDER_VELOCITY_EPSILON = Constants.PROVIDER_VELOCITY_EPSILON
 
 -- ─── Constants ───────────────────────────────────────────────────────────────
 
-local DEFAULT_SHARD_COUNT  = 4
+local DEFAULT_SHARD_COUNT = 4
 local CoordinatorMetatable = table.freeze({ __index = Coordinator })
 
 local ActorWorker_Client = Parallel.ActorTemplate.ActorWorker_Client
 local ActorWorker_Server = Parallel.ActorTemplate.ActorWorker_Server
-local WorkerTemplate     = RunService:IsClient() and ActorWorker_Client or ActorWorker_Server
+local WorkerTemplate = RunService:IsClient() and ActorWorker_Client or ActorWorker_Server
 
 -- ─── Types ───────────────────────────────────────────────────────────────────
 
-type CastSnapshot   = TypeDefinition.CastSnapshot
-type VetraCast      = TypeDefinition.VetraCast
+type CastSnapshot = TypeDefinition.CastSnapshot
+type VetraCast = TypeDefinition.VetraCast
 type ResumeSyncData = TypeDefinition.ResumeSyncData
 
 -- ─── Module ──────────────────────────────────────────────────────────────────
@@ -98,7 +98,7 @@ type ResumeSyncData = TypeDefinition.ResumeSyncData
 function Coordinator.new(Solver: any, Config: any?)
 	Config = Config or {}
 
-	local ShardCount  = Config.ShardCount or DEFAULT_SHARD_COUNT
+	local ShardCount = Config.ShardCount or DEFAULT_SHARD_COUNT
 	local ActorParent = Config.ActorParent or Parallel
 
 	if not WorkerTemplate then
@@ -106,9 +106,9 @@ function Coordinator.new(Solver: any, Config: any?)
 		return nil
 	end
 
-	local Actors:       { Actor }            = {}
-	local ShardBuffers: { { SharedTable } }  = {}
-	local FFBuffers:    { SharedTable }      = {}  -- one per shard, polled in Phase 1
+	local Actors: { Actor } = {}
+	local ShardBuffers: { { SharedTable } } = {}
+	local FFBuffers: { SharedTable } = {} -- one per shard, polled in Phase 1
 
 	local ShardSyncCount: { [number]: number } = {}
 	for Index = 1, ShardCount do
@@ -131,49 +131,44 @@ function Coordinator.new(Solver: any, Config: any?)
 		-- before Heartbeat, so the write is always complete by read time.
 		-- Slot SharedTables are reused by WriteEventToBuffer in the Actor;
 		-- the Coordinator only needs to reset ["count"] after draining.
-		local FFBuffer        = SharedTable.new()
-		FFBuffer["count"]     = 0
-		FFBuffers[Index]      = FFBuffer
+		local FFBuffer = SharedTable.new()
+		FFBuffer["count"] = 0
+		FFBuffers[Index] = FFBuffer
 
-		local Actor  = Instance.new("Actor")
-		Actor.Name   = "VetraShard_" .. Index
+		local Actor = Instance.new("Actor")
+		Actor.Name = "VetraShard_" .. Index
 
-		local Reference  = Instance.new("ObjectValue")
-		Reference.Name   = "ParallelReference"
-		Reference.Value  = Parallel
+		local Reference = Instance.new("ObjectValue")
+		Reference.Name = "ParallelReference"
+		Reference.Value = Parallel
 		Reference.Parent = Actor
 
-		local Worker   = WorkerTemplate:Clone()
-		Worker.Parent  = Actor
+		local Worker = WorkerTemplate:Clone()
+		Worker.Parent = Actor
 		Worker.Enabled = true
-		Actor.Parent   = ActorParent
+		Actor.Parent = ActorParent
 
 		-- Defer Init so the worker script has registered its BindToMessage
 		-- handlers before the message arrives. Pass all three SharedTables
 		-- directly so the Actor never needs a registry lookup.
 		local ShardIndex = Index
 		task.defer(function()
-			Actor:SendMessage(
-				"Init",
-				ShardBuffers[ShardIndex][1],
-				ShardBuffers[ShardIndex][2],
-				FFBuffers[ShardIndex]
-			)
+			Actor:SendMessage("Init", ShardBuffers[ShardIndex][1], ShardBuffers[ShardIndex][2], FFBuffers[ShardIndex])
 		end)
 
 		Actors[Index] = Actor
 	end
 
 	return setmetatable({
-		_Solver       = Solver,
-		_ShardCount   = ShardCount,
-		_Actors       = Actors,
+		_Solver = Solver,
+		_ShardCount = ShardCount,
+		_Actors = Actors,
 		_ShardBuffers = ShardBuffers,
-		_FFBuffers    = FFBuffers,
+		_FFBuffers = FFBuffers,
 
 		-- CastId → ShardIndex
 		_CastToShard = {} :: { [number]: number },
-		_NextShard   = 1,
+		_NextShard = 1,
 
 		-- CastId → Cast
 		_CastById = {} :: { [number]: VetraCast },
@@ -185,8 +180,8 @@ function Coordinator.new(Solver: any, Config: any?)
 		_FrameIndex = 0,
 
 		-- Change-detection for broadcast messages
-		_LastBroadcastWind      = ZERO_VECTOR :: Vector3,
-		_LastBroadcastLODOrigin = nil         :: Vector3?,
+		_LastBroadcastWind = ZERO_VECTOR :: Vector3,
+		_LastBroadcastLODOrigin = nil :: Vector3?,
 
 		-- Per-cast sync flag
 		_CastNeedsSync = {} :: { [number]: boolean },
@@ -202,104 +197,104 @@ function Coordinator.new(Solver: any, Config: any?)
 		_AddCastMessage = {
 			Id = 0,
 
-			TrajectoryOrigin          = Vector3.zero,
+			TrajectoryOrigin = Vector3.zero,
 			TrajectoryInitialVelocity = Vector3.zero,
-			TrajectoryAcceleration    = Vector3.zero,
-			TrajectoryStartTime       = 0,
+			TrajectoryAcceleration = Vector3.zero,
+			TrajectoryStartTime = 0,
 
-			TotalRuntime       = 0,
-			DistanceCovered    = 0,
-			IsSupersonic       = false,
+			TotalRuntime = 0,
+			DistanceCovered = 0,
+			IsSupersonic = false,
 			LastDragRecalculateTime = 0,
-			SpinVector         = Vector3.zero,
-			HomingElapsed      = 0,
-			HomingDisengaged   = false,
-			HomingAcquired     = false,
+			SpinVector = Vector3.zero,
+			HomingElapsed = 0,
+			HomingDisengaged = false,
+			HomingAcquired = false,
 			CurrentSegmentSize = 0,
-			BounceCount        = 0,
-			BouncesThisFrame   = 0,
-			PierceCount        = 0,
-			LastBounceTime     = 0,
+			BounceCount = 0,
+			BouncesThisFrame = 0,
+			PierceCount = 0,
+			LastBounceTime = 0,
 
-			IsLOD                   = false,
-			LODDistance             = 0,
-			LODFrameAccumulator     = 0,
-			LODDeltaAccumulator     = 0,
+			IsLOD = false,
+			LODDistance = 0,
+			LODFrameAccumulator = 0,
+			LODDeltaAccumulator = 0,
 			SpatialFrameAccumulator = 0,
 			SpatialDeltaAccumulator = 0,
-			SpatialTier             = 1,
-			LODOrigin               = nil,
+			SpatialTier = 1,
+			LODOrigin = nil,
 
 			BouncePositionHistory = nil,
-			BouncePositionHead    = 0,
-			VelocityDirectionEMA  = Vector3.zero,
-			FirstBouncePosition   = nil,
-			CornerBounceCount     = 0,
+			BouncePositionHead = 0,
+			VelocityDirectionEMA = Vector3.zero,
+			FirstBouncePosition = nil,
+			CornerBounceCount = 0,
 
-			MaxDistance        = 0,
-			MinSpeed           = 0,
-			MaxSpeed           = math.huge,
-			MaxBounces         = 0,
+			MaxDistance = 0,
+			MinSpeed = 0,
+			MaxSpeed = math.huge,
+			MaxBounces = 0,
 			MaxBouncesPerFrame = 0,
-			MaxPierceCount     = 0,
+			MaxPierceCount = 0,
 
-			DragCoefficient     = 0,
-			DragModel           = 0,
+			DragCoefficient = 0,
+			DragModel = 0,
 			DragSegmentInterval = 0,
-			CustomMachTable     = nil,
+			CustomMachTable = nil,
 
 			BounceSpeedThreshold = 0,
-			Restitution          = 0,
-			NormalPerturbation   = 0,
-			MaterialRestitution  = nil,
+			Restitution = 0,
+			NormalPerturbation = 0,
+			MaterialRestitution = nil,
 
-			PierceSpeedThreshold      = 0,
-			PierceSpeedRetention      = 0,
-			PierceNormalBias          = 0,
+			PierceSpeedThreshold = 0,
+			PierceSpeedRetention = 0,
+			PierceNormalBias = 0,
 
 			MagnusCoefficient = 0,
-			SpinDecayRate     = 0,
+			SpinDecayRate = 0,
 
-			HomingStrength    = 0,
+			HomingStrength = 0,
 			HomingMaxDuration = 0,
-			HomingTarget      = nil,
+			HomingTarget = nil,
 
 			HighFidelitySegmentSize = 0,
-			AdaptiveScaleFactor     = 0,
-			MinSegmentSize          = 0,
+			AdaptiveScaleFactor = 0,
+			MinSegmentSize = 0,
 			HighFidelityFrameBudget = 0,
 
-			CornerTimeThreshold         = 0,
+			CornerTimeThreshold = 0,
 			CornerDisplacementThreshold = 0,
-			CornerEMAAlpha              = 0,
-			CornerEMAThreshold          = 0,
-			CornerMinProgressPerBounce  = 0,
+			CornerEMAAlpha = 0,
+			CornerEMAThreshold = 0,
+			CornerMinProgressPerBounce = 0,
 
 			HasCanPierceCallback = false,
 			HasCanBounceCallback = false,
-			HasCanHomeCallback   = false,
+			HasCanHomeCallback = false,
 
 			SupersonicDragCoefficient = nil,
-			SupersonicDragModel       = nil,
-			SubsonicDragCoefficient   = nil,
-			SubsonicDragModel         = nil,
+			SupersonicDragModel = nil,
+			SubsonicDragCoefficient = nil,
+			SubsonicDragModel = nil,
 
 			BaseAcceleration = Vector3.zero,
-			Wind             = Vector3.zero,
-			WindResponse     = 0,
+			Wind = Vector3.zero,
+			WindResponse = 0,
 
-			GyroDriftRate  = nil,
-			GyroDriftAxis  = nil,
+			GyroDriftRate = nil,
+			GyroDriftAxis = nil,
 
-			IsTumbling             = false,
-			TumbleRandom           = nil,
-			TumbleSpeedThreshold   = nil,
-			TumbleDragMultiplier   = nil,
-			TumbleLateralStrength  = nil,
-			TumbleOnPierce         = false,
-			TumbleRecoverySpeed    = nil,
+			IsTumbling = false,
+			TumbleRandom = nil,
+			TumbleSpeedThreshold = nil,
+			TumbleDragMultiplier = nil,
+			TumbleLateralStrength = nil,
+			TumbleOnPierce = false,
+			TumbleRecoverySpeed = nil,
 
-			RaycastParams  = nil,
+			RaycastParams = nil,
 			VisualizeCasts = false,
 
 			CoriolisOmega = Vector3.zero,
@@ -312,27 +307,27 @@ end
 -- ─── AddCast ─────────────────────────────────────────────────────────────────
 
 function Coordinator:AddCast(Cast: VetraCast)
-	local ShardIndex           = self._NextShard
-	self._NextShard            = (ShardIndex % self._ShardCount) + 1
+	local ShardIndex = self._NextShard
+	self._NextShard = (ShardIndex % self._ShardCount) + 1
 	self._CastToShard[Cast.Id] = ShardIndex
-	self._CastById[Cast.Id]    = Cast
+	self._CastById[Cast.Id] = Cast
 
-	local Solver           = self._Solver
-	local Runtime          = Cast.Runtime
-	local Behavior         = Cast.Behavior
+	local Solver = self._Solver
+	local Runtime = Cast.Runtime
+	local Behavior = Cast.Behavior
 	local ActiveTrajectory = Runtime.ActiveTrajectory
-	local RaycastParams    = Behavior.RaycastParams
+	local RaycastParams = Behavior.RaycastParams
 
-	local HasCallbacks = Behavior.CanBounceFunction          ~= nil
-		or Behavior.CanPierceFunction          ~= nil
-		or Behavior.CanHomeFunction            ~= nil
-		or Behavior.HomingPositionProvider     ~= nil
+	local HasCallbacks = Behavior.CanBounceFunction ~= nil
+		or Behavior.CanPierceFunction ~= nil
+		or Behavior.CanHomeFunction ~= nil
+		or Behavior.HomingPositionProvider ~= nil
 		or Behavior.TrajectoryPositionProvider ~= nil
 
 	local NeedsSync = Behavior.FireTravelEvents == true or HasCallbacks
 	self._CastNeedsSync[Cast.Id] = NeedsSync
 	if NeedsSync then
-		self._SyncCastCount             += 1
+		self._SyncCastCount += 1
 		self._ShardSyncCount[ShardIndex] = (self._ShardSyncCount[ShardIndex] or 0) + 1
 	end
 
@@ -348,108 +343,108 @@ function Coordinator:AddCast(Cast: VetraCast)
 
 	Message.Id = Cast.Id
 
-	Message.TrajectoryOrigin          = ActiveTrajectory.Origin
+	Message.TrajectoryOrigin = ActiveTrajectory.Origin
 	Message.TrajectoryInitialVelocity = ActiveTrajectory.InitialVelocity
-	Message.TrajectoryAcceleration    = ActiveTrajectory.Acceleration
-	Message.TrajectoryStartTime       = ActiveTrajectory.StartTime
+	Message.TrajectoryAcceleration = ActiveTrajectory.Acceleration
+	Message.TrajectoryStartTime = ActiveTrajectory.StartTime
 
-	Message.TotalRuntime            = Runtime.TotalRuntime
-	Message.DistanceCovered         = Runtime.DistanceCovered
-	Message.IsSupersonic            = Runtime.IsSupersonic
+	Message.TotalRuntime = Runtime.TotalRuntime
+	Message.DistanceCovered = Runtime.DistanceCovered
+	Message.IsSupersonic = Runtime.IsSupersonic
 	Message.LastDragRecalculateTime = Runtime.LastDragRecalculateTime
-	Message.SpinVector              = Behavior.SpinVector
-	Message.HomingElapsed           = Runtime.HomingElapsed
-	Message.HomingDisengaged        = Runtime.HomingDisengaged
-	Message.HomingAcquired          = Runtime.HomingAcquired
-	Message.CurrentSegmentSize      = Runtime.CurrentSegmentSize
-	Message.BounceCount             = Runtime.BounceCount
-	Message.BouncesThisFrame        = Runtime.BouncesThisFrame
-	Message.PierceCount             = Runtime.PierceCount
-	Message.LastBounceTime          = Runtime.LastBounceTime
+	Message.SpinVector = Behavior.SpinVector
+	Message.HomingElapsed = Runtime.HomingElapsed
+	Message.HomingDisengaged = Runtime.HomingDisengaged
+	Message.HomingAcquired = Runtime.HomingAcquired
+	Message.CurrentSegmentSize = Runtime.CurrentSegmentSize
+	Message.BounceCount = Runtime.BounceCount
+	Message.BouncesThisFrame = Runtime.BouncesThisFrame
+	Message.PierceCount = Runtime.PierceCount
+	Message.LastBounceTime = Runtime.LastBounceTime
 
-	Message.IsLOD                   = Runtime.IsLOD
-	Message.LODDistance             = Behavior.LODDistance
-	Message.LODFrameAccumulator     = Runtime.LODFrameAccumulator
-	Message.LODDeltaAccumulator     = Runtime.LODDeltaAccumulator
+	Message.IsLOD = Runtime.IsLOD
+	Message.LODDistance = Behavior.LODDistance
+	Message.LODFrameAccumulator = Runtime.LODFrameAccumulator
+	Message.LODDeltaAccumulator = Runtime.LODDeltaAccumulator
 	Message.SpatialFrameAccumulator = Runtime.SpatialFrameAccumulator
 	Message.SpatialDeltaAccumulator = Runtime.SpatialDeltaAccumulator
-	Message.SpatialTier             = 1
-	Message.LODOrigin               = Solver._LODOrigin
+	Message.SpatialTier = 1
+	Message.LODOrigin = Solver._LODOrigin
 
 	Message.BouncePositionHistory = Runtime.BouncePositionHistory
-	Message.BouncePositionHead    = Runtime.BouncePositionHead
-	Message.VelocityDirectionEMA  = Runtime.VelocityDirectionEMA
-	Message.FirstBouncePosition   = Runtime.FirstBouncePosition
-	Message.CornerBounceCount     = Runtime.CornerBounceCount
+	Message.BouncePositionHead = Runtime.BouncePositionHead
+	Message.VelocityDirectionEMA = Runtime.VelocityDirectionEMA
+	Message.FirstBouncePosition = Runtime.FirstBouncePosition
+	Message.CornerBounceCount = Runtime.CornerBounceCount
 
-	Message.MaxDistance        = Behavior.MaxDistance
-	Message.MinSpeed           = Behavior.MinSpeed
-	Message.MaxSpeed           = Behavior.MaxSpeed
-	Message.MaxBounces         = Behavior.MaxBounces
+	Message.MaxDistance = Behavior.MaxDistance
+	Message.MinSpeed = Behavior.MinSpeed
+	Message.MaxSpeed = Behavior.MaxSpeed
+	Message.MaxBounces = Behavior.MaxBounces
 	Message.MaxBouncesPerFrame = Behavior.MaxBouncesPerFrame
-	Message.MaxPierceCount     = Behavior.MaxPierceCount
+	Message.MaxPierceCount = Behavior.MaxPierceCount
 
-	Message.DragCoefficient     = Behavior.DragCoefficient
-	Message.DragModel           = Behavior.DragModel
+	Message.DragCoefficient = Behavior.DragCoefficient
+	Message.DragModel = Behavior.DragModel
 	Message.DragSegmentInterval = Behavior.DragSegmentInterval
-	Message.CustomMachTable     = Behavior.CustomMachTable
+	Message.CustomMachTable = Behavior.CustomMachTable
 
 	Message.BounceSpeedThreshold = Behavior.BounceSpeedThreshold
-	Message.Restitution          = Behavior.Restitution
-	Message.NormalPerturbation   = Behavior.NormalPerturbation
-	Message.MaterialRestitution  = SerializedMaterialRestitution
+	Message.Restitution = Behavior.Restitution
+	Message.NormalPerturbation = Behavior.NormalPerturbation
+	Message.MaterialRestitution = SerializedMaterialRestitution
 
 	Message.PierceSpeedThreshold = Behavior.PierceSpeedThreshold
 	Message.PierceSpeedRetention = Behavior.PierceSpeedRetention
-	Message.PierceNormalBias     = Behavior.PierceNormalBias
+	Message.PierceNormalBias = Behavior.PierceNormalBias
 
 	Message.MagnusCoefficient = Behavior.MagnusCoefficient
-	Message.SpinDecayRate     = Behavior.SpinDecayRate
+	Message.SpinDecayRate = Behavior.SpinDecayRate
 
-	Message.HomingStrength    = Behavior.HomingStrength
+	Message.HomingStrength = Behavior.HomingStrength
 	Message.HomingMaxDuration = Behavior.HomingMaxDuration
-	Message.HomingTarget      = nil
+	Message.HomingTarget = nil
 
 	Message.HighFidelitySegmentSize = Behavior.HighFidelitySegmentSize
-	Message.AdaptiveScaleFactor     = Behavior.AdaptiveScaleFactor
-	Message.MinSegmentSize          = Behavior.MinSegmentSize
+	Message.AdaptiveScaleFactor = Behavior.AdaptiveScaleFactor
+	Message.MinSegmentSize = Behavior.MinSegmentSize
 	Message.HighFidelityFrameBudget = Behavior.HighFidelityFrameBudget
 
-	Message.CornerTimeThreshold         = Behavior.CornerTimeThreshold
+	Message.CornerTimeThreshold = Behavior.CornerTimeThreshold
 	Message.CornerDisplacementThreshold = Behavior.CornerDisplacementThreshold
-	Message.CornerEMAAlpha              = Behavior.CornerEMAAlpha  or 0.4
-	Message.CornerEMAThreshold          = Behavior.CornerEMAThreshold or 0.15
-	Message.CornerMinProgressPerBounce  = Behavior.CornerMinProgressPerBounce
+	Message.CornerEMAAlpha = Behavior.CornerEMAAlpha or 0.4
+	Message.CornerEMAThreshold = Behavior.CornerEMAThreshold or 0.15
+	Message.CornerMinProgressPerBounce = Behavior.CornerMinProgressPerBounce
 
 	Message.HasCanPierceCallback = Behavior.CanPierceFunction ~= nil
 	Message.HasCanBounceCallback = Behavior.CanBounceFunction ~= nil
-	Message.HasCanHomeCallback   = Behavior.CanHomeFunction   ~= nil
+	Message.HasCanHomeCallback = Behavior.CanHomeFunction ~= nil
 
 	Message.SupersonicDragCoefficient = Behavior.SupersonicProfile and Behavior.SupersonicProfile.DragCoefficient or nil
-	Message.SupersonicDragModel       = Behavior.SupersonicProfile and Behavior.SupersonicProfile.DragModel       or nil
-	Message.SubsonicDragCoefficient   = Behavior.SubsonicProfile   and Behavior.SubsonicProfile.DragCoefficient  or nil
-	Message.SubsonicDragModel         = Behavior.SubsonicProfile   and Behavior.SubsonicProfile.DragModel        or nil
+	Message.SupersonicDragModel = Behavior.SupersonicProfile and Behavior.SupersonicProfile.DragModel or nil
+	Message.SubsonicDragCoefficient = Behavior.SubsonicProfile and Behavior.SubsonicProfile.DragCoefficient or nil
+	Message.SubsonicDragModel = Behavior.SubsonicProfile and Behavior.SubsonicProfile.DragModel or nil
 
 	Message.BaseAcceleration = Solver._BaseAccelerationCache[Cast] or ZERO_VECTOR
-	Message.Wind             = Solver._Wind
-	Message.WindResponse     = Behavior.WindResponse
+	Message.Wind = Solver._Wind
+	Message.WindResponse = Behavior.WindResponse
 
 	Message.GyroDriftRate = Behavior.GyroDriftRate
 	Message.GyroDriftAxis = Behavior.GyroDriftAxis
 
-	Message.IsTumbling            = Cast.Runtime.IsTumbling
-	Message.TumbleRandom          = Cast.Runtime.TumbleRandom
-	Message.TumbleSpeedThreshold  = Behavior.TumbleSpeedThreshold
-	Message.TumbleDragMultiplier  = Behavior.TumbleDragMultiplier
+	Message.IsTumbling = Cast.Runtime.IsTumbling
+	Message.TumbleRandom = Cast.Runtime.TumbleRandom
+	Message.TumbleSpeedThreshold = Behavior.TumbleSpeedThreshold
+	Message.TumbleDragMultiplier = Behavior.TumbleDragMultiplier
 	Message.TumbleLateralStrength = Behavior.TumbleLateralStrength
-	Message.TumbleOnPierce        = Behavior.TumbleOnPierce
-	Message.TumbleRecoverySpeed   = Behavior.TumbleRecoverySpeed
+	Message.TumbleOnPierce = Behavior.TumbleOnPierce
+	Message.TumbleRecoverySpeed = Behavior.TumbleRecoverySpeed
 
-	Message.RaycastParams  = RaycastParams
+	Message.RaycastParams = RaycastParams
 	Message.VisualizeCasts = Behavior.VisualizeCasts
 
 	Message.CoriolisOmega = Solver._CoriolisOmega or Vector3.zero
-	Message.NeedsSync     = NeedsSync
+	Message.NeedsSync = NeedsSync
 
 	self._Actors[ShardIndex]:SendMessage("AddCast", Message)
 end
@@ -458,12 +453,14 @@ end
 
 function Coordinator:RemoveCast(CastId: number)
 	local ShardIndex = self._CastToShard[CastId]
-	if not ShardIndex then return end
-	self._CastToShard[CastId]    = nil
+	if not ShardIndex then
+		return
+	end
+	self._CastToShard[CastId] = nil
 	self._SuspendedCasts[CastId] = nil
-	self._CastById[CastId]       = nil
+	self._CastById[CastId] = nil
 	if self._CastNeedsSync[CastId] then
-		self._SyncCastCount             -= 1
+		self._SyncCastCount -= 1
 		self._ShardSyncCount[ShardIndex] -= 1
 	end
 	self._CastNeedsSync[CastId] = nil
@@ -474,7 +471,9 @@ end
 
 function Coordinator:_UpdateFilter(Cast: VetraCast)
 	local ShardIndex = self._CastToShard[Cast.Id]
-	if not ShardIndex then return end
+	if not ShardIndex then
+		return
+	end
 	self._Actors[ShardIndex]:SendMessage(
 		"UpdateFilter",
 		Cast.Id,
@@ -487,26 +486,29 @@ end
 function Coordinator:_ResumeCast(Cast: VetraCast, SyncData: ResumeSyncData)
 	self._SuspendedCasts[Cast.Id] = nil
 	local ShardIndex = self._CastToShard[Cast.Id]
-	if not ShardIndex then return end
+	if not ShardIndex then
+		return
+	end
 	self._Actors[ShardIndex]:SendMessage("ResumeCast", Cast.Id, SyncData)
 end
 
 -- ─── Step ────────────────────────────────────────────────────────────────────
 
 function Coordinator:Step(FrameDelta: number)
-
 	-- ── 0. Early exit ─────────────────────────────────────────────────────────
 	local ActiveCasts = self._Solver._ActiveCasts
-	if #ActiveCasts == 0 then return end
+	if #ActiveCasts == 0 then
+		return
+	end
 
-	local Solver    = self._Solver
+	local Solver = self._Solver
 	local Terminate = Solver._Terminate
 
 	self._FrameIndex += 1
-	local FrameIndex  = self._FrameIndex
+	local FrameIndex = self._FrameIndex
 
-	local CosmeticParts:   { BasePart } = {}
-	local CosmeticCFrames: { CFrame }   = {}
+	local CosmeticParts: { BasePart } = {}
+	local CosmeticCFrames: { CFrame } = {}
 	local Suspended = self._SuspendedCasts
 
 	-- ── 1. Apply results ──────────────────────────────────────────────────────
@@ -521,20 +523,21 @@ function Coordinator:Step(FrameDelta: number)
 	-- After draining, reset ["count"] to 0 so the Actor starts fresh next
 	-- PreSimulation (slot SharedTables are retained for reuse).
 	local ReadBufferIndex = (FrameIndex - 1) % 2 + 1
-	local CastById        = self._CastById
-	local CosmeticCtx     = { CosmeticParts = CosmeticParts, CosmeticCFrames = CosmeticCFrames }
+	local CastById = self._CastById
+	local CosmeticCtx = { CosmeticParts = CosmeticParts, CosmeticCFrames = CosmeticCFrames }
 
 	for ShardIndex = 1, self._ShardCount do
-
 		-- ── Sync cast results (double-buffered) ───────────────────────────
-		local ShardTable  = self._ShardBuffers[ShardIndex][ReadBufferIndex]
-		local EventCount  = ShardTable["count"]
+		local ShardTable = self._ShardBuffers[ShardIndex][ReadBufferIndex]
+		local EventCount = ShardTable["count"]
 
 		if EventCount > 0 then
 			for EventIndex = 1, EventCount do
 				local EventData = ShardTable[EventIndex]
-				local Cast      = CastById[EventData["Id"]]
-				if not Cast or not Cast.Alive then continue end
+				local Cast = CastById[EventData["Id"]]
+				if not Cast or not Cast.Alive then
+					continue
+				end
 				local Handler = EventHandlers[EventData["Event"]]
 				if Handler then
 					Handler(self, Solver, Cast, EventData, Terminate, CosmeticCtx)
@@ -543,14 +546,16 @@ function Coordinator:Step(FrameDelta: number)
 		end
 
 		-- ── FF cast results (single buffer, polled) ───────────────────────
-		local FFTable    = self._FFBuffers[ShardIndex]
-		local FFCount    = FFTable["count"]
+		local FFTable = self._FFBuffers[ShardIndex]
+		local FFCount = FFTable["count"]
 
 		if FFCount > 0 then
 			for EventIndex = 1, FFCount do
 				local EventData = FFTable[EventIndex]
-				local Cast      = CastById[EventData["Id"]]
-				if not Cast or not Cast.Alive then continue end
+				local Cast = CastById[EventData["Id"]]
+				if not Cast or not Cast.Alive then
+					continue
+				end
 				local Handler = EventHandlers[EventData["Event"]]
 				if Handler then
 					Handler(self, Solver, Cast, EventData, Terminate, nil)
@@ -565,10 +570,7 @@ function Coordinator:Step(FrameDelta: number)
 
 	-- ── 2. BulkMoveTo cosmetics flush ─────────────────────────────────────────
 	if #CosmeticParts > 0 then
-		workspace:BulkMoveTo(
-			CosmeticParts, CosmeticCFrames,
-			Enum.BulkMoveMode.FireCFrameChanged
-		)
+		workspace:BulkMoveTo(CosmeticParts, CosmeticCFrames, Enum.BulkMoveMode.FireCFrameChanged)
 	end
 	FireHelpers.FlushTravelBatch(Solver)
 
@@ -578,7 +580,7 @@ function Coordinator:Step(FrameDelta: number)
 		Solver._SpatialFrameCounter = (Solver._SpatialFrameCounter or 0) + 1
 		if Solver._SpatialFrameCounter >= SpatialConfig.UpdateInterval then
 			Solver._SpatialFrameCounter = 0
-			local SpatialPartition      = require(Vetra.Simulation.SpatialPartition)
+			local SpatialPartition = require(Vetra.Simulation.SpatialPartition)
 			SpatialPartition.Rebuild(Solver)
 		end
 	end
@@ -604,63 +606,74 @@ function Coordinator:Step(FrameDelta: number)
 	-- Only runs when at least one active cast requires main-thread sync.
 	if self._SyncCastCount > 0 then
 		for _, Cast in ActiveCasts do
-			if not Cast.Alive or Cast.Paused    then continue end
-			if Suspended[Cast.Id]               then continue end
-			if not self._CastNeedsSync[Cast.Id] then continue end
+			if not Cast.Alive or Cast.Paused then
+				continue
+			end
+			if Suspended[Cast.Id] then
+				continue
+			end
+			if not self._CastNeedsSync[Cast.Id] then
+				continue
+			end
 
-			local NeedsHoming   = Cast.Behavior.HomingPositionProvider     ~= nil
+			local NeedsHoming = Cast.Behavior.HomingPositionProvider ~= nil
 			local NeedsProvider = Cast.Behavior.TrajectoryPositionProvider ~= nil
-			if not NeedsHoming and not NeedsProvider then continue end
+			if not NeedsHoming and not NeedsProvider then
+				continue
+			end
 
 			local ShardIndex = self._CastToShard[Cast.Id]
-			if not ShardIndex then continue end
+			if not ShardIndex then
+				continue
+			end
 
-			local Runtime          = Cast.Runtime
+			local Runtime = Cast.Runtime
 			local ActiveTrajectory = Runtime.ActiveTrajectory
-			local ElapsedTime      = Runtime.TotalRuntime - ActiveTrajectory.StartTime
-			local CurrentPosition  = ActiveTrajectory.Origin
+			local ElapsedTime = Runtime.TotalRuntime - ActiveTrajectory.StartTime
+			local CurrentPosition = ActiveTrajectory.Origin
 				+ ActiveTrajectory.InitialVelocity * ElapsedTime
-				+ ActiveTrajectory.Acceleration    * (ElapsedTime * ElapsedTime * 0.5)
-			local CurrentVelocity  = ActiveTrajectory.InitialVelocity
-				+ ActiveTrajectory.Acceleration * ElapsedTime
+				+ ActiveTrajectory.Acceleration * (ElapsedTime * ElapsedTime * 0.5)
+			local CurrentVelocity = ActiveTrajectory.InitialVelocity + ActiveTrajectory.Acceleration * ElapsedTime
 
 			if NeedsHoming then
 				local CanHome = true
 				if Cast.Behavior.CanHomeFunction then
-					local Context         = Solver._CastToBulletContext[Cast]
-					local Success, Result = pcall(Cast.Behavior.CanHomeFunction, Context, CurrentPosition, CurrentVelocity)
-					CanHome               = Success and Result == true
+					local Context = Solver._CastToBulletContext[Cast]
+					local Success, Result =
+						pcall(Cast.Behavior.CanHomeFunction, Context, CurrentPosition, CurrentVelocity)
+					CanHome = Success and Result == true
 				end
 
 				local ResolvedTarget: Vector3? = nil
 				if CanHome then
 					Runtime.HomingProviderThread = coroutine.running()
-					local Success, Target        = pcall(Cast.Behavior.HomingPositionProvider, CurrentPosition, CurrentVelocity)
+					local Success, Target =
+						pcall(Cast.Behavior.HomingPositionProvider, CurrentPosition, CurrentVelocity)
 					Runtime.HomingProviderThread = nil
-					ResolvedTarget               = (Success and typeof(Target) == "Vector3") and Target or nil
+					ResolvedTarget = (Success and typeof(Target) == "Vector3") and Target or nil
 				end
 
 				self._Actors[ShardIndex]:SendMessage("UpdateHoming", Cast.Id, ResolvedTarget)
 			end
 
 			if NeedsProvider then
-				local Provider    = Cast.Behavior.TrajectoryPositionProvider
-				local LastTime    = Runtime.TotalRuntime
+				local Provider = Cast.Behavior.TrajectoryPositionProvider
+				local LastTime = Runtime.TotalRuntime
 				local CurrentTime = Runtime.TotalRuntime + FrameDelta
 
-				Runtime.TrajectoryProviderThread    = coroutine.running()
-				local SuccessLast, LastPosition     = pcall(Provider, LastTime)
-				Runtime.TrajectoryProviderThread    = nil
+				Runtime.TrajectoryProviderThread = coroutine.running()
+				local SuccessLast, LastPosition = pcall(Provider, LastTime)
+				Runtime.TrajectoryProviderThread = nil
 
-				Runtime.TrajectoryProviderThread    = coroutine.running()
-				local SuccessCurrent, CurrentPos    = pcall(Provider, CurrentTime)
-				Runtime.TrajectoryProviderThread    = nil
+				Runtime.TrajectoryProviderThread = coroutine.running()
+				local SuccessCurrent, CurrentPos = pcall(Provider, CurrentTime)
+				Runtime.TrajectoryProviderThread = nil
 
 				local ProviderVelocity: Vector3? = nil
 				if SuccessCurrent and typeof(CurrentPos) == "Vector3" then
-					Runtime.TrajectoryProviderThread      = coroutine.running()
+					Runtime.TrajectoryProviderThread = coroutine.running()
 					local SuccessForward, ForwardPosition = pcall(Provider, CurrentTime + PROVIDER_VELOCITY_EPSILON)
-					Runtime.TrajectoryProviderThread      = nil
+					Runtime.TrajectoryProviderThread = nil
 					if SuccessForward and typeof(ForwardPosition) == "Vector3" then
 						ProviderVelocity = (ForwardPosition - CurrentPos) / PROVIDER_VELOCITY_EPSILON
 					end
@@ -669,8 +682,8 @@ function Coordinator:Step(FrameDelta: number)
 				self._Actors[ShardIndex]:SendMessage(
 					"UpdateProviderPositions",
 					Cast.Id,
-					(SuccessLast    and typeof(LastPosition) == "Vector3") and LastPosition or nil,
-					(SuccessCurrent and typeof(CurrentPos)   == "Vector3") and CurrentPos   or nil,
+					(SuccessLast and typeof(LastPosition) == "Vector3") and LastPosition or nil,
+					(SuccessCurrent and typeof(CurrentPos) == "Vector3") and CurrentPos or nil,
 					ProviderVelocity
 				)
 			end
@@ -695,17 +708,17 @@ function Coordinator:Destroy()
 	self._Destroyed = true
 	for Index, Actor in self._Actors do
 		Actor:Destroy()
-		SharedTableRegistry:SetSharedTable("VetraShard_" .. Index .. "_A",  SharedTable.new())
-		SharedTableRegistry:SetSharedTable("VetraShard_" .. Index .. "_B",  SharedTable.new())
+		SharedTableRegistry:SetSharedTable("VetraShard_" .. Index .. "_A", SharedTable.new())
+		SharedTableRegistry:SetSharedTable("VetraShard_" .. Index .. "_B", SharedTable.new())
 	end
-	self._Actors         = nil
-	self._ShardBuffers   = nil
-	self._FFBuffers      = nil
-	self._Solver         = nil
-	self._CastToShard    = nil
-	self._CastById       = nil
+	self._Actors = nil
+	self._ShardBuffers = nil
+	self._FFBuffers = nil
+	self._Solver = nil
+	self._CastToShard = nil
+	self._CastById = nil
 	self._SuspendedCasts = nil
-	self._CastNeedsSync  = nil
+	self._CastNeedsSync = nil
 	self._ShardSyncCount = nil
 end
 
@@ -716,11 +729,7 @@ local ModuleMetatable = table.freeze({
 		Logger:Warn(string.format("Coordinator: nil key '%s'", tostring(Key)))
 	end,
 	__newindex = function(_, Key, Value)
-		Logger:Error(string.format(
-			"Coordinator: write to protected key '%s' = '%s'",
-			tostring(Key),
-			tostring(Value)
-			))
+		Logger:Error(string.format("Coordinator: write to protected key '%s' = '%s'", tostring(Key), tostring(Value)))
 	end,
 })
 

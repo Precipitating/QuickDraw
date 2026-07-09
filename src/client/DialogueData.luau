@@ -289,7 +289,7 @@ return {
 			dialogs = {
 				{
 					text = "Hey, i'm the tutorial expert Mugi-Warah AKA Mugi.<br/> How may I help?",
-					responses = { "Roll", "Kick", "Charge", "Health System", "Gun System", "Thats all!" },
+					responses = { "Roll", "Kick", "Charge", "Health System", "Gun System", "Looting", "Thats all!" },
 				},
 				{
 					text = "Rolling?<br/>Press E on the keyboard to initiate a roll, assuming you have enough stamina.<br/> It's a directional roll, so holding a WASD key whilst pressing it will roll to that direction.",
@@ -300,15 +300,19 @@ return {
 					responses = { "Back" },
 				},
 				{
-					text = "Charge?<br/> Stand still and press C to initiate a charge, hit a human, and they'll go flying, applying damage to their torso.<br/> Note if the stamina drops to 0, it will stop, so make sure to use it with sufficient stamina!<br/>Don't hit a wall though, or you'll hurt yourself.",
+					text = "Charge?<br/> 1.Stand still and press C to initiate a charge 2. Hit a human 3. Let them fly, applying damage to their torso.<br/> Note if the stamina drops to 0, it will stop, so make sure to use it with sufficient stamina!<br/>Also don't hit a wall, or you'll hurt yourself.",
 					responses = { "Back" },
 				},
 				{
-					text = "Health system?<br/> Each limb has its own health bar and if its goes down enough, it will be disabled and then even lower? decapitated.<br/>Well, the right arm will be fine no matter what, so you can shoot.<br/>Theres also an overall health bar so don't sustain that much damage!",
+					text = "Health system?<br/> Each limb has its own health bar and if its goes down enough, it will be disabled. Even lower? decapitated.<br/>However, the right arm will be fine no matter what, so you can shoot.<br/>Theres also an overall health bar so don't take too much damage!",
 					responses = { "Back" },
 				},
 				{
 					text = "Gun system?<br/> Left mouse click to shoot<br/>Hold right mouse button to aim down sight<br/>R to reload which stops after it's full OR you get hit.<br/> Beware the gun can jam, so press R to unjam.",
+					responses = { "Back" },
+				},
+				{
+					text = "You may encounter objects that can be looted, hold Q and decide if you want to take the loot. Simple.",
 					responses = { "Back" },
 				},
 			},
@@ -330,6 +334,9 @@ return {
 						d:triggerDialog(PlayerContext.Player, 6)
 					end,
 					[6] = function(d)
+						d:triggerDialog(PlayerContext.Player, 7)
+					end,
+					[7] = function(d)
 						d:hideGui("Hope you learned something!")
 					end,
 				},
@@ -354,6 +361,11 @@ return {
 					end,
 				},
 				[6] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 1)
+					end,
+				},
+				[7] = {
 					[1] = function(d)
 						d:triggerDialog(PlayerContext.Player, 1)
 					end,

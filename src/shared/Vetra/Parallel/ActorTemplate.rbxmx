@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Actor" referent="RBXBA7BB328780140CAA3C36EE4D472C8FD">
+	<Item class="Actor" referent="RBX9DE4467C1DA64AAB924E0E56CA7701A3">
 		<Properties>
 			<token name="LevelOfDetail">0</token>
 			<CoordinateFrame name="ModelMeshCFrame">
@@ -51,16 +51,16 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">ActorTemplate</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags"></BinaryString>
+			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Script" referent="RBX9C05676B8BE14CAB90B334811C1D46C3">
+		<Item class="Script" referent="RBX69B786F83ADD4165AC135478A2005BEC">
 			<Properties>
 				<ProtectedString name="Source"><![CDATA[--!native
 --!optimize 2
 --!strict
 
 -- ─── ActorWorker ─────────────────────────────────────────────────────────────
-
+print("SERVER ActorWorker script started")
 local Actor = script:GetActor()
 if not Actor then
 	error("[ActorWorker] Must run inside an Actor instance.")
@@ -108,6 +108,7 @@ local PARALLEL_EVENT = Constants.PARALLEL_EVENT
 -- FF: SharedTable for terminal events from NeedsSync=false casts.
 -- All three are passed directly by the Coordinator — no registry lookup needed.
 Actor:BindToMessage("Init", function(BufferA: SharedTable, BufferB: SharedTable, FF: SharedTable)
+	print("SERVER Init received!")
 	Buffers[1] = BufferA
 	Buffers[2] = BufferB
 	FFBuffer   = FF
@@ -116,7 +117,6 @@ end)
 -- ─── AddCast ─────────────────────────────────────────────────────────────────
 
 Actor:BindToMessage("AddCast", function(InitData: CastSnapshot)
-
 	LocalCasts[InitData.Id] = {
 		Id = InitData.Id,
 
@@ -456,7 +456,6 @@ Actor:BindToMessageParallel("StepShard", function(FrameDelta: number, FrameIndex
 	for CastId, State in LocalCasts do
 		if not State.NeedsSync    then continue end  -- FF casts run via ConnectParallel
 		if SuspendedCasts[CastId] then continue end
-
 		State.BouncesThisFrame = 0
 
 		local SavedLastPosition    = State.ProvidedLastPosition
@@ -479,11 +478,17 @@ Actor:BindToMessageParallel("StepShard", function(FrameDelta: number, FrameIndex
 				+ State.TrajectoryInitialVelocity * ElapsedTime
 				+ State.TrajectoryAcceleration    * HalfElapsedSq
 
-			local ShouldSkip, StepDelta,
-			NewLODFrameAccumulator, NewLODDeltaAccumulator,
-			NewSpatialFrameAccumulator, NewSpatialDeltaAccumulator,
-			NewIsLOD, FiredAccumulatedDelta =
+			local SkipResult =
 				ParallelPhysics.ResolveLODAndSpatialSkip(State, EffectiveDelta, CurrentPositionForSkip)
+
+			local ShouldSkip                   = SkipResult.ShouldSkip
+			local StepDelta                    = SkipResult.StepDelta
+			local NewLODFrameAccumulator       = SkipResult.LODFrameAccumulator
+			local NewLODDeltaAccumulator       = SkipResult.LODDeltaAccumulator
+			local NewSpatialFrameAccumulator   = SkipResult.SpatialFrameAccumulator
+			local NewSpatialDeltaAccumulator   = SkipResult.SpatialDeltaAccumulator
+			local NewIsLOD                     = SkipResult.IsLOD
+			local FiredAccumulatedDelta        = SkipResult.FiredAccumulatedDelta
 
 			if ShouldSkip then
 				State.IsLOD                   = NewIsLOD
@@ -619,7 +624,6 @@ RunService.PreSimulation:ConnectParallel(function(FrameDelta: number)
 	for CastId, State in LocalCasts do
 		if State.NeedsSync        then continue end  -- handled by StepShard
 		if SuspendedCasts[CastId] then continue end
-
 		State.BouncesThisFrame = 0
 
 		local UseHighFidelity = State.HighFidelitySegmentSize > 0 and not State.IsLOD and State.SpatialTier == SPATIAL_HOT
@@ -659,9 +663,12 @@ RunService.PreSimulation:ConnectParallel(function(FrameDelta: number)
 				NewLODFrameAccumulator, NewLODDeltaAccumulator,
 				NewSpatialFrameAccumulator, NewSpatialDeltaAccumulator
 			)
+
 		else
 			State.RemainingResimDelta = nil
 			Result = ParallelPhysics.Step(State, FrameDelta)
+
+		
 		end
 
 		local EventType = Result.Event
@@ -711,16 +718,16 @@ end)]]></ProtectedString>
 				<bool name="Disabled">true</bool>
 				<Content name="LinkedSource"><null></null></Content>
 				<token name="RunContext">1</token>
-				<string name="ScriptGuid">{6D6A647E-A376-4347-A8A2-A2798F55CC26}</string>
+				<string name="ScriptGuid">{49E3CE4E-CFBE-4B2F-80FB-C0E950369CC2}</string>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ActorWorker_Server</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Script" referent="RBXD236A70124534A918F92DD25DF3DB518">
+		<Item class="Script" referent="RBX30D0C93C4BC6460BBD5AC0ED4BDD95EC">
 			<Properties>
 				<ProtectedString name="Source"><![CDATA[--!native
 --!optimize 2
@@ -1146,12 +1153,16 @@ Actor:BindToMessageParallel("StepShard", function(FrameDelta: number, FrameIndex
 				+ State.TrajectoryInitialVelocity * ElapsedTime
 				+ State.TrajectoryAcceleration    * HalfElapsedSq
 
-			local ShouldSkip, StepDelta,
-			NewLODFrameAccumulator, NewLODDeltaAccumulator,
-			NewSpatialFrameAccumulator, NewSpatialDeltaAccumulator,
-			NewIsLOD, FiredAccumulatedDelta =
-				ParallelPhysics.ResolveLODAndSpatialSkip(State, EffectiveDelta, CurrentPositionForSkip)
-
+			local SkipResult = ParallelPhysics.ResolveLODAndSpatialSkip(State, EffectiveDelta, CurrentPositionForSkip)
+			local ShouldSkip                   = SkipResult.ShouldSkip
+			local StepDelta                    = SkipResult.StepDelta
+			local NewLODFrameAccumulator       = SkipResult.LODFrameAccumulator
+			local NewLODDeltaAccumulator       = SkipResult.LODDeltaAccumulator
+			local NewSpatialFrameAccumulator   = SkipResult.SpatialFrameAccumulator
+			local NewSpatialDeltaAccumulator   = SkipResult.SpatialDeltaAccumulator
+			local NewIsLOD                     = SkipResult.IsLOD
+			local FiredAccumulatedDelta        = SkipResult.FiredAccumulatedDelta
+			
 			if ShouldSkip then
 				State.IsLOD                   = NewIsLOD
 				State.LODFrameAccumulator     = NewLODFrameAccumulator
@@ -1302,11 +1313,17 @@ RunService.PreSimulation:ConnectParallel(function(FrameDelta: number)
 				+ State.TrajectoryInitialVelocity * ElapsedTime
 				+ State.TrajectoryAcceleration    * HalfElapsedSq
 
-			local ShouldSkip, StepDelta,
-			NewLODFrameAccumulator, NewLODDeltaAccumulator,
-			NewSpatialFrameAccumulator, NewSpatialDeltaAccumulator,
-			NewIsLOD, FiredAccumulatedDelta =
+			local SkipResult =
 				ParallelPhysics.ResolveLODAndSpatialSkip(State, EffectiveDelta, CurrentPositionForSkip)
+			
+			local ShouldSkip                   = SkipResult.ShouldSkip
+			local StepDelta                    = SkipResult.StepDelta
+			local NewLODFrameAccumulator       = SkipResult.LODFrameAccumulator
+			local NewLODDeltaAccumulator       = SkipResult.LODDeltaAccumulator
+			local NewSpatialFrameAccumulator   = SkipResult.SpatialFrameAccumulator
+			local NewSpatialDeltaAccumulator   = SkipResult.SpatialDeltaAccumulator
+			local NewIsLOD                     = SkipResult.IsLOD
+			local FiredAccumulatedDelta        = SkipResult.FiredAccumulatedDelta
 
 			State.IsLOD                   = NewIsLOD
 			State.LODFrameAccumulator     = NewLODFrameAccumulator
@@ -1378,16 +1395,16 @@ end)]]></ProtectedString>
 				<bool name="Disabled">true</bool>
 				<Content name="LinkedSource"><null></null></Content>
 				<token name="RunContext">2</token>
-				<string name="ScriptGuid">{6EBE87DE-B9ED-4DF5-84CC-AC3910B0C7E5}</string>
+				<string name="ScriptGuid">{B694D473-02E6-45D3-B5D5-4D88EFBDF88E}</string>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ActorWorker_Client</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="ObjectValue" referent="RBXA3309993750E42EFB0F8E9CF7B24A872">
+		<Item class="ObjectValue" referent="RBX1951CA58261440559BD5900625127DA0">
 			<Properties>
 				<Ref name="Value">null</Ref>
 				<BinaryString name="AttributesSerialize"></BinaryString>
@@ -1395,7 +1412,7 @@ end)]]></ProtectedString>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ParallelReference</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
 	</Item>
