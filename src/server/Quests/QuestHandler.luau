@@ -3,11 +3,10 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ServerData = require(ServerScriptService.Server.ServerData)
 local QuestData = require(ReplicatedStorage.Shared.Quests.QuestData)
-local Server = require(ReplicatedStorage.Shared.Vetra.VetraNet.Server)
 local QUEST_GIVER_DISTANCE_REQUIREMENT = 10
 local QuestHandler = {}
 
-function QuestHandler:ProgressQuests(player: Player)
+function QuestHandler:ProgressQuest(player: Player, questTypeToProgress: string, progressNum: number)
 	local activeQuests = ServerData.GetActiveQuests(player)
 
 	if not activeQuests then
@@ -16,28 +15,31 @@ function QuestHandler:ProgressQuests(player: Player)
 
 	for questName, data in activeQuests do
 		local questBaseName = string.match(questName, "%a+")
+
 		local questNumber = tonumber(string.match(questName, "%d+"))
 
 		if not questBaseName or not questNumber then
-			return
+			continue
 		end
 
 		local questData = QuestData[questBaseName][questNumber]
 
 		if not questData then
 			warn(`Cannot progress {questName}, data doesn't exist in table`)
-			return
+			continue
 		end
 
 		local questType = questData.QuestType
 		if not questType then
 			warn(`Cannot progress {questName}, quest type missing from table`)
-			return
+			continue
 		end
 
-		if questType == "Kill" then
-			ServerData:UpdateQuestProgress(player, questName, 1)
+		if questTypeToProgress ~= questType then
+			continue
 		end
+
+		ServerData:UpdateQuestProgress(player, questName, 1)
 	end
 end
 

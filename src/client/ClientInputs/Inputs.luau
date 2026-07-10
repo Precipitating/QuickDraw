@@ -286,6 +286,10 @@ function Inputs:ConnectQuests(input: InputObject)
 		return
 	end
 
+	if PlayerContext.IsBusy then
+		return
+	end
+
 	local gui = Utility.GetInstance(PlayerContext.PlayerGui, true, "QuestsGUI")
 	if not gui then
 		warn("Cannot get QuestGUI reference!")

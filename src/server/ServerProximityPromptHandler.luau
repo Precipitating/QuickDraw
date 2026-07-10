@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local PurchasePrices = require(ReplicatedStorage.Shared.PurchasePrices)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local QuestHandler = require(ServerScriptService.Server.Quests.QuestHandler)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ServerData = require(script.Parent.ServerData)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
@@ -108,6 +109,8 @@ function ServerProximityPromptHandler:LootPickup(player: Player, lootType: strin
 			end)
 		end
 	end
+
+	QuestHandler:ProgressQuest(player, "Loot", 1)
 end
 
 ServerProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", ServerProximityPromptHandler, {

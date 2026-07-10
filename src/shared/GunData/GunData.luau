@@ -57,7 +57,7 @@ local GunData = {
 			:FrameBudget(1)
 			:Done()
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:Cosmetic()
 			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.PistolBulletCosmetic)
@@ -125,7 +125,7 @@ local GunData = {
 			:Container(workspace.ProjectilesFolder)
 			:Done()
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:BatchTravel(true)
 			:Build(),
@@ -315,7 +315,7 @@ local GunData = {
 			:Response(0.15) -- nearly immune to wind, it's a dense iron ball
 			:Done()
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:Cosmetic()
 			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.CannonBallCosmetic)
@@ -392,7 +392,7 @@ local GunData = {
 			:Done()
 			:BatchTravel(true) -- batch OnTravel events since many rounds are in-flight simultaneously
 			:Debug()
-			:Visualize(true)
+			:Visualize(false)
 			:Done()
 			:Build(),
 	},

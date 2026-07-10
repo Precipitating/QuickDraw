@@ -33,4 +33,39 @@ return {
 			QuestRequirement = 40,
 		},
 	},
+
+	LootGoblin = {
+		[1] = {
+			Title = "El Goblino I",
+			Description = "Loot one item",
+			Reward = "Cash",
+			RewardValue = 50,
+			QuestType = "Loot",
+			QuestRequirement = 1,
+		},
+		[2] = {
+			Title = "El Goblino II",
+			Description = "Loot 5 items",
+			Reward = "Cash",
+			RewardValue = 250,
+			QuestType = "Loot",
+			QuestRequirement = 5,
+		},
+		[3] = {
+			Title = "El Goblino III",
+			Description = "Loot 10 items",
+			Reward = "Cash",
+			RewardValue = 500,
+			QuestType = "Loot",
+			QuestRequirement = 10,
+		},
+		[4] = {
+			Title = "El Goblino IV",
+			Description = "Loot 20 i tems",
+			Reward = "Cash",
+			RewardValue = 1000,
+			QuestType = "Loot",
+			QuestRequirement = 20,
+		},
+	},
 }

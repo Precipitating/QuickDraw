@@ -33,7 +33,7 @@ function AwardHandler.AwardNPCKill(killer: Player)
 	PopupGUI:NewPopup(killer, 2, `NPC killed: ${awardAmount}`)
 	PopupGUI:NewPopup(killer, 2, `Bounty: +${bounty}`)
 
-	QuestHandler:ProgressQuests(killer)
+	QuestHandler:ProgressQuest(killer, "Kill", 1)
 end
 
 function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
@@ -67,6 +67,6 @@ function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
 		ServerSoundHandler:PlaySoundTo(killer, "BountyClaimed", nil)
 	end
 
-	QuestHandler:ProgressQuests(killer)
+	QuestHandler:ProgressQuest(killer, "Kill", 1)
 end
 return AwardHandler

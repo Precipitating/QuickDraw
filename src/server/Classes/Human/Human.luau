@@ -485,7 +485,7 @@ function Human:AssignBodyParts(tagName: string)
 				accessory.CanCollide = false
 				accessory.CanQuery = false
 				accessory.CanTouch = false
-				accessory.CollisionGroup = tagName
+				accessory.CollisionGroup = "Accessory"
 			end
 			continue
 		end

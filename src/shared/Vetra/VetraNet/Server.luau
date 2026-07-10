@@ -371,6 +371,7 @@ function Server.new(Solver: any, BehaviorRegistry_: any, NetworkConfig_: any?): 
 			-- Assign a server-authoritative cast ID.
 			local CastId = NextCastId()
 
+			GlobalRaycastParams.FilterDescendantsInstances = { Player.Character }
 			-- Fire the authoritative server bullet.
 			local FireContext = BulletContext.new({
 				Origin = Payload.Origin,

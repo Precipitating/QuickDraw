@@ -206,10 +206,18 @@ function DamageModule.DamageHuman(
 	end
 
 	local limbName = nil
-	if hitObj.Name then
-		limbName = hitObj.Name
-	elseif hitObj.Instance then
-		limbName = hitObj.Instance.Name
+
+	local hitType = typeof(hitObj)
+	local instanceRef
+
+	if hitType == "Instance" then
+		instanceRef = hitObj
+	elseif hitType == "RaycastResult" or hitType == "table" then
+		instanceRef = hitObj.Instance
+	end
+
+	if instanceRef then
+		limbName = instanceRef.Name
 	end
 
 	if not limbHealth[limbName] then

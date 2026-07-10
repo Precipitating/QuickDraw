@@ -1,9 +1,11 @@
+local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local PoolHandler = require(script.Parent.Parent.Pools.PoolHandler)
 local Particles = ReplicatedStorage.Shared.Effects
 local EffectsDisplayer = {}
+local NoProjectileDecalList = { "Destroyable", "Player", "NPC", "Barrier" }
 
 EffectsDisplayer.networker = Networker.new("EffectsDisplayerNetwork", EffectsDisplayer)
 
@@ -32,9 +34,50 @@ local function TeleportAndWeld(part: Part, targetCFrame: CFrame, weldTarget: Bas
 	part.Anchored = false
 end
 
+function EffectsDisplayer:CanDisplayProjectileMark(instance: Instance)
+	for _, tag in NoProjectileDecalList do
+		if CollectionService:HasTag(instance.Parent, tag) then
+			return false
+		end
+		if CollectionService:HasTag(instance, tag) then
+			return false
+		end
+	end
+
+	return true
+end
+function EffectsDisplayer:TryDisplayProjectileMark(context, result: RaycastResult?)
+	if not result then
+		return
+	end
+	if not result.Instance then
+		return
+	end
+
+	if result.Instance.Parent and result.Instance.Parent:IsA("Tool") then
+		return
+	end
+
+	if context.CosmeticBulletObject then
+		if CollectionService:HasTag(context.CosmeticBulletObject, "CannonBall") then
+			EffectsDisplayer:DisplayProjectileMark("CannonBall", result)
+		elseif CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
+			EffectsDisplayer:DisplayProjectileMark("Bullet", result)
+		end
+	end
+end
+
 function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastResult)
 	if not result then
 		warn("Client received an invalid RaycastResult when showing a projectile mark!")
+		return
+	end
+
+	if not result.Instance then
+		return
+	end
+
+	if not self:CanDisplayProjectileMark(result.Instance) then
 		return
 	end
 

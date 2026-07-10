@@ -1,6 +1,4 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -39,7 +37,7 @@ return {
 			-- if player, player shot
 			local shooterCharacter = if shooter and shooter:IsA("Player") then shooter.Character else shooter
 
-			local shotPos = shooterCharacter:GetPivot().Position
+			local shotPos = shooterCharacter and shooterCharacter:GetPivot().Position
 
 			local gunShotData: ClassTypes.GunShotDamage = {
 				Type = "Shot",

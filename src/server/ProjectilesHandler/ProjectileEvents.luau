@@ -3,7 +3,6 @@ local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local WebSocketService = game:GetService("WebSocketService")
 local GeneralProjectilesData = require(ReplicatedStorage.Shared.GeneralProjectilesData)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -773,6 +772,7 @@ function ProjectileEvents:Initialize()
 	-- players firing from client
 	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
 		if not result or not result.Instance then
+			warn(`Didnt hit a player`)
 			return
 		end
 		self:OnProjectileHitReceivePlayer(context, result)

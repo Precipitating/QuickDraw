@@ -97,7 +97,17 @@ return {
 				},
 				{
 					text = "You think you're funny, cowboy?",
-					responses = { "Yeah, what you gonna do about it?", "No sir I was joking please forgive me." },
+					responses = {
+						"Yeah, what you gonna do about it?",
+						"No sir I was joking please forgive me.",
+						"Lootally-Loot-Loot!",
+					},
+				},
+				{
+					text = "No idea how you knew the password, but take the quest and SCRAM.",
+					responses = {
+						"Shhhhhhhhhh!",
+					},
 				},
 			},
 			responses = {
@@ -118,10 +128,18 @@ return {
 						if PlayerContext.Humanoid and PlayerContext.Humanoid.Health then
 							PlayerContext.Humanoid.Health = 0
 						end
-						-- d.fireClosed:Fire()
 					end,
 					[2] = function(d)
 						d:hideGui("Exactly, trot off little piggy...")
+					end,
+					[3] = function(d)
+						d:triggerDialog(PlayerContext.Player, 3)
+					end,
+				},
+				[3] = {
+					[1] = function(d)
+						QuestGUIHandler:AttemptToGiveQuest("LootGoblin", npcModel)
+						d:hideGui("Pick first option next time I dare ya.")
 					end,
 				},
 			},

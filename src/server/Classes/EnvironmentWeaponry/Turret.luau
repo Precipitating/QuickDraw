@@ -52,7 +52,7 @@ function Turret.new(modelRef: Model?)
 	self.TurnSpeed = 5
 	self.OverlapParams = OverlapParams.new()
 	self.ShootRaycastParams = RaycastParams.new()
-	self.ShootRaycastParams.ExcludeInstances = { modelRef }
+	self.ShootRaycastParams.FilterDescendantsInstances = { modelRef }
 	return self
 end
 
