@@ -20,7 +20,7 @@ Inventory.__index = Inventory
 function Inventory.new(owner: Human): Inventory
 	local self = setmetatable({}, Inventory)
 	self.Owner = owner
-	self.Items = {} -- Name - Quantity
+	self.Items = {} -- Name - {Quantity, BaseWeight}
 	self.MaxSlots = 10
 	self.OccupiedSlots = 0
 
@@ -212,6 +212,68 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?, maxQuan
 	return true
 end
 
+function Inventory:AddItem(name: string, amount: number, weight: number?)
+	local items = self.Items
+	if not items then
+		warn("Cannot add item to inventory, items table missing")
+		return false
+	end
+
+	if self:IsFull() then
+		warn("Inventory full, can't pickup")
+		return false
+	end
+
+	amount = amount or 1
+	local actualWeight = weight or 1
+	weight = amount * actualWeight
+
+	if self:GetAvailableSlotCount() < weight then
+		warn("Not enough available slots, can't pickup")
+		return false
+	end
+
+	-- Add quantity if already exists
+	if items[name] then
+		items[name].Quantity += amount
+		self.OccupiedSlots = math.min(self.OccupiedSlots + weight, self.MaxSlots)
+		return true
+	end
+
+	-- Add new item
+	items[name] = { Quantity = amount, BaseWeight = weight }
+	self.OccupiedSlots = math.min(self.OccupiedSlots + weight, self.MaxSlots)
+
+	return true
+end
+
+function Inventory:RemoveItem(name: string, amount: number?)
+	local items = self.Items
+	if not items then
+		warn("Cannot remove item from inventory, items table missing")
+		return false
+	end
+
+	if not items[name] then
+		return false
+	end
+
+	if amount then
+		self.OccupiedSlots =
+			math.min(math.max(0, self.OccupiedSlots - (amount * items[name].BaseWeight)), self.MaxSlots)
+		items[name].Quantity -= amount
+		if items[name] <= 0 then
+			items[name] = nil
+		end
+
+		return true
+	end
+
+	self.OccupiedSlots = math.min(math.max(0, self.OccupiedSlots - items[name].BaseWeight), self.MaxSlots)
+	items[name] = nil
+
+	return true
+end
 function Inventory:GetAvailableSlotCount()
 	return self.MaxSlots - self.OccupiedSlots
 end

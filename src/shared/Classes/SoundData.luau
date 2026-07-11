@@ -625,6 +625,12 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+	GenericPickup = {
+		SoundId = "rbxassetid://106586585181583",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 
 	-- Material SFX
 	GlassSmash = {
@@ -648,6 +654,7 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+
 	--
 	ImpactHit = {
 		SoundId = "rbxassetid://140626490819228",

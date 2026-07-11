@@ -126,6 +126,12 @@ local PROMPT_HANDLERS = {
 			ProximityPromptHandler.networker:fire("LootPickup", "Tombstone", prompt)
 		end)
 	end,
+	["OrePrompt"] = function(_: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
+		ProximityPromptHandler.networker:fire("LootPickup", "Ore", prompt)
+	end,
 }
 
 function ProximityPromptHandler:ConnectLootPickupGUI(pickupType: string, chosenLoot: string)
