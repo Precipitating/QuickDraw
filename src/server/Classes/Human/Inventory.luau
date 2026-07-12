@@ -10,6 +10,7 @@ local Throwable = require(ServerScriptService.Server.Classes.Throwable.Throwable
 local ThrowableSignals = require(ServerScriptService.Server.Classes.Throwable.ThrowableSignals)
 local Trap = require(ServerScriptService.Server.Classes.Trap.Trap)
 local TrapSignals = require(ServerScriptService.Server.Classes.Trap.TrapSignals)
+local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local WeaponTools = ReplicatedStorage.Shared.Templates
 type Human = ClassTypes.Human
 type Inventory = ClassTypes.Inventory
@@ -212,65 +213,73 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?, maxQuan
 	return true
 end
 
-function Inventory:AddItem(name: string, amount: number, weight: number?)
+function Inventory:AddItem(name: string, amount: number?, itemWeight: number?): boolean
 	local items = self.Items
 	if not items then
 		warn("Cannot add item to inventory, items table missing")
 		return false
 	end
 
-	if self:IsFull() then
-		warn("Inventory full, can't pickup")
-		return false
-	end
+	-- Safeguard inputs
+	local amountToAdd = amount or 1
+	local singleItemWeight = itemWeight or 1
 
-	amount = amount or 1
-	local actualWeight = weight or 1
-	weight = amount * actualWeight
-
-	if self:GetAvailableSlotCount() < weight then
-		warn("Not enough available slots, can't pickup")
-		return false
-	end
-
-	-- Add quantity if already exists
+	-- If the item already exists, we should rely on its established BaseWeight
 	if items[name] then
-		items[name].Quantity += amount
-		self.OccupiedSlots = math.min(self.OccupiedSlots + weight, self.MaxSlots)
-		return true
+		singleItemWeight = items[name].BaseWeight
 	end
 
-	-- Add new item
-	items[name] = { Quantity = amount, BaseWeight = weight }
-	self.OccupiedSlots = math.min(self.OccupiedSlots + weight, self.MaxSlots)
+	local totalTransactionWeight = amountToAdd * singleItemWeight
+
+	-- Capacity Check
+	if self:IsFull() or self:GetAvailableSlotCount() < totalTransactionWeight then
+		warn("Not enough available slots, can't pickup")
+		-- Make sure PopupGUI exists on the server or use a RemoteEvent here!
+		if PopupGUI and self.Owner and self.Owner.Player then
+			PopupGUI:NewPopup(self.Owner.Player, 2, "Not enough inventory space to pickup!")
+		end
+		return false
+	end
+
+	if items[name] then
+		-- Update existing stack
+		items[name].Quantity += amountToAdd
+	else
+		items[name] = {
+			Quantity = amountToAdd,
+			BaseWeight = singleItemWeight,
+		}
+	end
+
+	self.OccupiedSlots = math.clamp(self.OccupiedSlots + totalTransactionWeight, 0, self.MaxSlots)
 
 	return true
 end
 
-function Inventory:RemoveItem(name: string, amount: number?)
+function Inventory:RemoveItem(name: string, amount: number?): boolean
 	local items = self.Items
-	if not items then
-		warn("Cannot remove item from inventory, items table missing")
+	if not items or not items[name] then
 		return false
 	end
 
-	if not items[name] then
-		return false
+	local itemData = items[name]
+
+	-- If amount is provided
+	local amountToRemove = amount and math.min(amount, itemData.Quantity) or itemData.Quantity
+
+	-- Calculate total weight/slots to remove for this transaction
+	local weightToRemove = amountToRemove * itemData.BaseWeight
+
+	-- Update OccupiedSlots cleanly (clamped between 0 and MaxSlots)
+	self.OccupiedSlots = math.clamp(self.OccupiedSlots - weightToRemove, 0, self.MaxSlots)
+
+	-- Update item quantities
+	itemData.Quantity -= amountToRemove
+
+	-- Completely wipe the item from the dictionary if the stack is empty
+	if itemData.Quantity <= 0 then
+		items[name] = nil
 	end
-
-	if amount then
-		self.OccupiedSlots =
-			math.min(math.max(0, self.OccupiedSlots - (amount * items[name].BaseWeight)), self.MaxSlots)
-		items[name].Quantity -= amount
-		if items[name] <= 0 then
-			items[name] = nil
-		end
-
-		return true
-	end
-
-	self.OccupiedSlots = math.min(math.max(0, self.OccupiedSlots - items[name].BaseWeight), self.MaxSlots)
-	items[name] = nil
 
 	return true
 end
@@ -279,6 +288,10 @@ function Inventory:GetAvailableSlotCount()
 end
 function Inventory:GetMaxSlotCount()
 	return self.MaxSlots
+end
+
+function Inventory:GetStoredItems()
+	return self.Items
 end
 function Inventory:GetGun()
 	return self.StoredWeapons["Gun"]

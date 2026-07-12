@@ -7,6 +7,7 @@ return {
 	Kick = 72567578152465,
 	PlaceDownTrap = 137725023820205,
 	CrouchDig = 102516227298407,
+	Drill = 130956333547976,
 	BargeRun = 119665275935251,
 	BargeWindup = 131054778807822,
 	BargeHitEnvironment = 139755214511454,

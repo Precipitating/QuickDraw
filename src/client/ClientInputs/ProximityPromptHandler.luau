@@ -119,7 +119,7 @@ local PROMPT_HANDLERS = {
 		end
 		prompt.Enabled = false
 		PlayerContext.IsBusy = true
-		ClientDigHandler:StartDigging()
+		ClientDigHandler:StartDigging("CrouchDig", "SandDig")
 
 		task.delay(5, function()
 			ClientDigHandler:StopDigging()
@@ -130,7 +130,18 @@ local PROMPT_HANDLERS = {
 		if PlayerContext.IsBusy then
 			return
 		end
-		ProximityPromptHandler.networker:fire("LootPickup", "Ore", prompt)
+		prompt.Enabled = false
+		PlayerContext.IsBusy = true
+		ClientDigHandler:StartDigging("Drill", "OreDrill")
+
+		task.delay(5, function()
+			if not PlayerContext.Character or CollectionService:HasTag(PlayerContext.Character, "Dead") then
+				return
+			end
+			ClientDigHandler:StopDigging()
+			ProximityPromptHandler.networker:fire("LootPickup", "Ore", prompt)
+			PlayerContext.IsBusy = false
+		end)
 	end,
 }
 

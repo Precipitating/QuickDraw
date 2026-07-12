@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
+local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
@@ -10,7 +12,7 @@ local LoopStartConn = nil
 local LoopEndConn = nil
 local DigSoundLoop = nil
 
-function ClientDigHandler:StartDigging()
+function ClientDigHandler:StartDigging(animName: string, soundName: string)
 	local humanoid: Humanoid? = PlayerContext.Humanoid
 	if not humanoid then
 		warn("Can't dig, missing humanoid ref")
@@ -27,16 +29,22 @@ function ClientDigHandler:StartDigging()
 	humanoid.WalkSpeed = 0
 
 	ClientUtility.ToggleControls(false)
-	local digAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("CrouchDig")
+	CoreGUIHandler.ToggleBackpackVisibility(false, true)
+	local digAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation(animName)
 	local loopStartTimePos = digAnim:GetTimeOfKeyframe("LoopBegin")
 	LoopEndConn = digAnim:GetMarkerReachedSignal("LoopEnd"):Connect(function()
 		digAnim.TimePosition = loopStartTimePos
 	end)
 
-	DigSoundLoop = SoundManager.PlayKeyed("SFX", "SandDig")
+	DigSoundLoop = SoundManager.PlayKeyed("SFX", soundName)
 end
 
 function ClientDigHandler:StopDigging()
+	if DigSoundLoop then
+		SoundManager.StopSound(DigSoundLoop)
+		DigSoundLoop = nil
+	end
+
 	if not PlayerContext.Character then
 		return
 	end
@@ -50,10 +58,6 @@ function ClientDigHandler:StopDigging()
 	end
 	humanoid.WalkSpeed = HumanConstants.WALKSPEED
 	ClientUtility.ToggleControls(true)
-
-	if DigSoundLoop then
-		SoundManager.StopSound(DigSoundLoop)
-		DigSoundLoop = nil
-	end
+	CoreGUIHandler.ToggleBackpackVisibility(true, false)
 end
 return ClientDigHandler

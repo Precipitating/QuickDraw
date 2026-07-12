@@ -52,6 +52,10 @@ function Inputs:ConnectSprint(input: InputObject)
 end
 
 function Inputs:ConnectRoll(input: InputObject)
+	if PlayerContext.IsBusy then
+		return
+	end
+
 	if not input then
 		return
 	end
@@ -89,6 +93,9 @@ end
 
 function Inputs:ConnectKick(input: InputObject)
 	if not input then
+		return
+	end
+	if PlayerContext.IsBusy then
 		return
 	end
 

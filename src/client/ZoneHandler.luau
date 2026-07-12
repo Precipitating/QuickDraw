@@ -8,7 +8,13 @@ local WindShake = require(ReplicatedStorage.Shared.Wind.WindShake)
 local Zone, Group, Observer = QuickZone.Zone, QuickZone.Group, QuickZone.Observer
 
 local ZoneHandler = {}
-local function SetupZone(tagName: string, musicName: string, zoneType: {}?)
+local function SetupZone(
+	tagName: string,
+	musicName: string,
+	zoneType: {}?,
+	onEnterLogic: () -> ()?,
+	onExitLogic: () -> ()?
+)
 	local observer = Observer.new({
 
 		zones = {
@@ -28,6 +34,10 @@ local function SetupZone(tagName: string, musicName: string, zoneType: {}?)
 			PlayerContext.StayOnMovingPlatform(zone["reference"])
 		end
 
+		if onEnterLogic then
+			onEnterLogic()
+		end
+
 		WindLines:Cleanup()
 		WindShake:Pause()
 	end)
@@ -45,6 +55,10 @@ local function SetupZone(tagName: string, musicName: string, zoneType: {}?)
 			SpawnRate = WindConstants.WindSpawnRate,
 		})
 		WindShake:Resume()
+
+		if onExitLogic then
+			onExitLogic()
+		end
 		print(entity.Name .. " exited " .. zone:getId())
 	end)
 end
@@ -55,6 +69,17 @@ function ZoneHandler:InitializeMusicZones()
 	SetupZone("MercenaryAudioZone", "MercenaryTheme")
 	SetupZone("BankAudioZone", "BankTheme")
 	SetupZone("TrainAudioZone", "BankTheme", { MovingPlatform = true })
+	SetupZone("CaveAudioZone", "CaveTheme", nil, function()
+		local humanoid: Humanoid? = PlayerContext and PlayerContext.Humanoid
+		if humanoid then
+			humanoid.MaxSlopeAngle = 89
+		end
+	end, function()
+		local humanoid: Humanoid? = PlayerContext and PlayerContext.Humanoid
+		if humanoid then
+			humanoid.MaxSlopeAngle = 50
+		end
+	end)
 end
 
 function ZoneHandler:Initialize()

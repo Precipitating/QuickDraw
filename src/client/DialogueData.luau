@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
+local ClientLootHandler = require(StarterPlayer.StarterPlayerScripts.Client.Loot.ClientLootHandler)
 local QuestGUIHandler = require(script.Parent.GUI.QuestGUIHandler)
 local ClientSoundHandler = require(script.Parent.Sound.ClientSoundHandler)
 local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
@@ -384,6 +386,64 @@ return {
 					end,
 				},
 				[7] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 1)
+					end,
+				},
+			},
+		})
+	end,
+	MinerNPC = function(npcModel: Model?, prompt: ProximityPrompt?)
+		InitNPC(npcModel, prompt, {
+			name = "Miner Overseer",
+			font = "RomanAntique",
+			dialogs = {
+				{
+					text = "Got any ores?",
+					responses = { "What's this place?", "I want sell all my ores", "Bye" },
+				},
+				{
+					text = "This is a mining area. Go in, mine some ores, and come back and sell it to me for pretty penny.<br/>Simple.",
+					responses = { "Back" },
+				},
+				{
+					text = "Calculated and sent you the money.",
+					responses = { "Back" },
+				},
+				{
+					text = "There's nothing worthwhile for me to buy...",
+					responses = { "Back" },
+				},
+			},
+			responses = {
+				[1] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 2)
+					end,
+					[2] = function(d)
+						local success = ClientLootHandler:SellAllOres()
+
+						if success then
+							d:triggerDialog(PlayerContext.Player, 3)
+						else
+							d:triggerDialog(PlayerContext.Player, 4)
+						end
+					end,
+					[3] = function(d)
+						d:hideGui("Lots of money to be made here, bub.")
+					end,
+				},
+				[2] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 1)
+					end,
+				},
+				[3] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 1)
+					end,
+				},
+				[4] = {
 					[1] = function(d)
 						d:triggerDialog(PlayerContext.Player, 1)
 					end,

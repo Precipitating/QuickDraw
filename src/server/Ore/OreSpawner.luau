@@ -6,7 +6,7 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local OreSpawner = {}
 local OrePoints = ServerStorage.OreSpawnSweepPoints:GetChildren()
 local OreTable = OreData
-local SpawnDelay = 300
+local SpawnDelay = 10
 local MaxSpawnNumber = 20
 local SpawnerLoop = true
 

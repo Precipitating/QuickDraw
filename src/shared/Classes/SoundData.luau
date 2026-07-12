@@ -83,6 +83,13 @@ SoundData.Sounds = {
 		Group = "Music",
 		Looped = true,
 	},
+	CaveTheme = {
+		SoundId = "rbxassetid://137658646948907",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
 
 	--Human
 	LimbDismember = {
@@ -652,6 +659,15 @@ SoundData.Sounds = {
 		SoundId = "rbxassetid://122165369916243",
 		Volume = 1,
 		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+
+	-- Ore
+	OreDrill = {
+		SoundId = "rbxassetid://199754867",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Looped = true,
 		Group = "SFX",
 	},
 

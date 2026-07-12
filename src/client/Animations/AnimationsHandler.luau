@@ -12,6 +12,7 @@ local LoadedAnimations = {
 	Kick = true,
 	PlaceDownTrap = true,
 	CrouchDig = true,
+	Drill = true,
 	BargeRun = true,
 	BargeWindup = true,
 	BargeHitEnvironment = true,

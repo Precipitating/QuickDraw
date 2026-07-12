@@ -1,8 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Networker = require(ReplicatedStorage.Packages.Networker).server
+local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local ServerData = require(script.Parent.ServerData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
+local OreData = require(ServerScriptService.Server.Ore.OreData)
 local QuestHandler = require(ServerScriptService.Server.Quests.QuestHandler)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 
@@ -92,13 +95,14 @@ function LootHandler:PickupLoot(player: Player, lootType: string, prompt: Proxim
 			warn("Ore looting: Missing ore name (check if prompt has Attribute called Type)")
 			return false
 		end
-		local success = inventory:AddItem(prompt:GetAttribute("Type"), 1)
+		local success = inventory:AddItem(oreName, 1)
 
 		if success then
 			-- Destroy ore
 			if prompt.Parent then
 				prompt.Parent:Destroy()
 			end
+			PopupGUI:NewPopup(player, 2, `Added {oreName} to inventory!`)
 			QuestHandler:ProgressQuest(player, "Loot", 1)
 			ServerSoundHandler:PlaySoundTo(player, "GenericPickup")
 			return true
@@ -107,4 +111,39 @@ function LootHandler:PickupLoot(player: Player, lootType: string, prompt: Proxim
 	return false
 end
 
+function LootHandler:SellAllOres(player: Player)
+	local human = PlayerManager:GetHumanClassFromPlayer(player)
+	local moneyMade = 0
+	if not human then
+		warn("Cannot sell ore, human class missing")
+		return false
+	end
+
+	local inventory = human.Inventory
+	if not inventory then
+		warn("Cannot sell ore, inventory class missing")
+		return false
+	end
+
+	local itemsStored = inventory:GetStoredItems()
+
+	for key, table in itemsStored do
+		local oreData = OreData[key]
+		if not oreData then
+			continue
+		end
+
+		moneyMade += oreData.worth * table.Quantity
+		inventory:RemoveItem(key)
+	end
+
+	if moneyMade <= 0 then
+		return false
+	end
+
+	ServerData.UpdateMoney(player, moneyMade)
+	PopupGUI:NewPopup(player, 2, `Earned ${moneyMade} from selling ores!`)
+	return true
+end
+LootHandler.networker = Networker.new("LootNetwork", LootHandler, { LootHandler.SellAllOres })
 return LootHandler
