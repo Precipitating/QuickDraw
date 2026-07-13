@@ -90,6 +90,13 @@ SoundData.Sounds = {
 		Group = "Music",
 		Looped = true,
 	},
+	AbandonedTownTheme = {
+		SoundId = "rbxassetid://133631639970771",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
 
 	--Human
 	LimbDismember = {

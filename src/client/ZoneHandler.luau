@@ -80,6 +80,8 @@ function ZoneHandler:InitializeMusicZones()
 			humanoid.MaxSlopeAngle = 50
 		end
 	end)
+
+	SetupZone("AbandonedTownAudioZone", "AbandonedTownTheme")
 end
 
 function ZoneHandler:Initialize()

@@ -32,9 +32,38 @@ local TOMBSTONE_CASH_REWARD_CHANCE = 0.05
 local TOMBSTONE_CASH_REWARD_MAX = 500
 local LootHandler = {}
 
+-- Anti exploit checks
+local function CanPickup(player: Player, prompt: ProximityPrompt?)
+	if not prompt then
+		return false
+	end
+	local promptParent = prompt.Parent
+
+	if not promptParent then
+		return false
+	end
+	local character = player.Character
+
+	if not promptParent:IsA("BasePart") then
+		return
+	end
+
+	local dist = (promptParent.Position - character:GetPivot().Position).Magnitude
+
+	if dist > 30 then
+		return false
+	end
+
+	return true
+end
+
 function LootHandler:PickupLoot(player: Player, lootType: string, prompt: ProximityPrompt?)
 	local human = PlayerManager:GetHumanClassFromPlayer(player)
 	if not human then
+		return false
+	end
+
+	if not CanPickup(player, prompt) then
 		return false
 	end
 

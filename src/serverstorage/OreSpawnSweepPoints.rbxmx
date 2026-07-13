@@ -2,20 +2,45 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Folder" referent="RBX0E908547818B46C1A0E4CAE293867DDE">
+	<Item class="Folder" referent="RBXB792F866700B446992C0352422EE8396">
 		<Properties>
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 			<bool name="DefinesCapabilities">false</bool>
-			<string name="Name">OreSpawners</string>
+			<string name="Name">OreSpawnSweepPoints</string>
 			<int64 name="SourceAssetId">-1</int64>
 			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Attachment" referent="RBXE8DCD66499594F84A41D4CD595AA9BAF">
+		<Item class="Attachment" referent="RBX01E3025E9E65404A9DFB2CC6F32E299B">
+			<Properties>
+				<CoordinateFrame name="CFrame">
+					<X>913.899536</X>
+					<Y>-85.3325806</Y>
+					<Z>907.54895</Z>
+					<R00>-0.642787755</R00>
+					<R01>0</R01>
+					<R02>-0.766044319</R02>
+					<R10>0</R10>
+					<R11>1</R11>
+					<R12>0</R12>
+					<R20>0.766044319</R20>
+					<R21>0</R21>
+					<R22>-0.642787755</R22>
+				</CoordinateFrame>
+				<bool name="Visible">false</bool>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Attachment32</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+			</Properties>
+		</Item>
+		<Item class="Attachment" referent="RBX5CF82DA6CB064B4E9F81441FD7BEF0DC">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>763.901062</X>
-					<Y>-87.9030762</Y>
+					<Y>-91.6208572</Y>
 					<Z>805.7547</Z>
 					<R00>0.642787635</R00>
 					<R01>0</R01>
@@ -36,11 +61,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX81E740B4416B4164A3E2F99293FBD031">
+		<Item class="Attachment" referent="RBX74758B51C69C4A57B1790659E83C248C">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>763.901062</X>
-					<Y>-87.9030762</Y>
+					<Y>-92.0451355</Y>
 					<Z>779.16748</Z>
 					<R00>0.642787635</R00>
 					<R01>0</R01>
@@ -61,11 +86,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX83469AEE0FAB40BBB4004A8AB32895DA">
+		<Item class="Attachment" referent="RBX2275FE03111B4CBDB78E8B31F76E0F64">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>773.167053</X>
-					<Y>-87.9030762</Y>
+					<Y>-92.4244843</Y>
 					<Z>764.711426</Z>
 					<R00>-0.984807789</R00>
 					<R01>0</R01>
@@ -86,11 +111,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX885F0FCBC6D641F395B36A9F205C699C">
+		<Item class="Attachment" referent="RBXF9389EACD8C24CD48445A44B7F35E472">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>786.925049</X>
-					<Y>-75.8934631</Y>
+					<Y>-78.7288971</Y>
 					<Z>761.635742</Z>
 					<R00>-0.984807789</R00>
 					<R01>0</R01>
@@ -111,11 +136,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX9986E96BE0814A22BE6608538EEDACDE">
+		<Item class="Attachment" referent="RBXE684C09E450242AC8CCB67B664727219">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>808.790771</X>
-					<Y>-60.9558792</Y>
+					<Y>-63.7913094</Y>
 					<Z>758.680847</Z>
 					<R00>-0.984807789</R00>
 					<R01>0</R01>
@@ -136,11 +161,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX0B04977AA3C74BCCAFC8166D0D6CDE18">
+		<Item class="Attachment" referent="RBX271BABC86BCF4A6F90A32E498C81EE93">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>831.682922</X>
-					<Y>-55.7178993</Y>
+					<Y>-58.5533295</Y>
 					<Z>786.481201</Z>
 					<R00>-0.642787576</R00>
 					<R01>0</R01>
@@ -161,11 +186,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXDB30A4887CD440398CDF9DD21B8CBDAE">
+		<Item class="Attachment" referent="RBX4760D59B368943018C5AC817D512206D">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>844.689697</X>
-					<Y>-55.7178993</Y>
+					<Y>-58.5533295</Y>
 					<Z>801.376587</Z>
 					<R00>-0.642787576</R00>
 					<R01>0</R01>
@@ -186,11 +211,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX04BDB597C1C144AFB88277C0856C7269">
+		<Item class="Attachment" referent="RBX133DF26534D2435EA7DBD6DA53EB4AEA">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>929.516113</X>
-					<Y>-51.690155</Y>
+					<Y>-54.5255852</Y>
 					<Z>767.708984</Z>
 					<R00>-0.642787576</R00>
 					<R01>0</R01>
@@ -211,11 +236,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXD3A17DC316C648F0B3067AC4854D56FB">
+		<Item class="Attachment" referent="RBX81008145594042B88B7237B9BBC9C912">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>923.907349</X>
-					<Y>-67.9579544</Y>
+					<Y>-70.7933884</Y>
 					<Z>747.920654</Z>
 					<R00>-0.642787576</R00>
 					<R01>0</R01>
@@ -236,11 +261,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXA3F11112E90541B9BFF515CEC03E2A59">
+		<Item class="Attachment" referent="RBX9007D59852604F109814E338D4C861F7">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>893.369019</X>
-					<Y>-67.9579544</Y>
+					<Y>-70.7933884</Y>
 					<Z>747.920654</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -261,11 +286,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXBFF076935D0F431AB585F041211D89E3">
+		<Item class="Attachment" referent="RBX3D603EE642F24F6EA9C38A2DEE40F709">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>891.235168</X>
-					<Y>-67.9579544</Y>
+					<Y>-70.1635513</Y>
 					<Z>713.420837</Z>
 					<R00>-0.642787576</R00>
 					<R01>0</R01>
@@ -286,12 +311,12 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXBAAC97CF92DA47EA89D6EFBE71FD5AA5">
+		<Item class="Attachment" referent="RBXC299A0FB65B949DEB057CA3D6CB6B9D4">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>871.674316</X>
-					<Y>-76.3413391</Y>
-					<Z>775.462952</Z>
+					<Y>-85.6399307</Y>
+					<Z>773.705811</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
 					<R02>1.49011598e-07</R02>
@@ -311,11 +336,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX21F3CD35FAA54C6FAA5D58D12FAD6AA8">
+		<Item class="Attachment" referent="RBX4FA7FC4562E243F794C711FBAB19B4DE">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>855.375977</X>
-					<Y>-84.6164398</Y>
+					<Y>-91.5661392</Y>
 					<Z>777.492371</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -336,11 +361,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX2EEA5F3A885244E2B273BD1EBD5E6AD7">
+		<Item class="Attachment" referent="RBX067296BE2BAA4FBD9A0802651F34723A">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>827.281006</X>
-					<Y>-91.0120239</Y>
+					<Y>-93.469429</Y>
 					<Z>749.656128</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -361,11 +386,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX12F818DD90CE450FAC9A4237D1019A87">
+		<Item class="Attachment" referent="RBXF5687DB7B9974BAB8BECF05421ACA75B">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>844.929382</X>
-					<Y>-84.6164398</Y>
+					<Y>-92.6871643</Y>
 					<Z>814.085144</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -386,11 +411,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXC9FB083248A748E3B3D411F8F25DF0CC">
+		<Item class="Attachment" referent="RBXE83206F5916D442F85E51E6C2562E6E0">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>815.805725</X>
-					<Y>-84.6164398</Y>
+					<Y>-89.9251175</Y>
 					<Z>819.208984</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -411,11 +436,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX9C10BBA103F1464C9CEFFAD2D1E2631C">
+		<Item class="Attachment" referent="RBX7C1059F99CE546679A12B4B36215844D">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>786.48938</X>
-					<Y>-107.849556</Y>
+					<Y>-113.006683</Y>
 					<Z>838.725952</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -436,7 +461,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXF90420C1CBA1436A98C3D0FD9B05D8B5">
+		<Item class="Attachment" referent="RBXDF56BF3D3BDB4BABB03D5E8B17DB4A19">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>793.740967</X>
@@ -461,11 +486,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXD14E8AC71B0B433CA391520E2247196B">
+		<Item class="Attachment" referent="RBX3342E95FF21C45C3971D4CF37437263C">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>769.28302</X>
-					<Y>-152.989838</Y>
+					<Y>-160.706085</Y>
 					<Z>946.742249</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -486,32 +511,32 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXE16D0C432DF94065BA862DE35DDC2CD2">
+		<Item class="Attachment" referent="RBX35102CA3F32A45E4B4A03D7386E13CD1">
 			<Properties>
 				<CoordinateFrame name="CFrame">
-					<X>744.544678</X>
-					<Y>-171.252686</Y>
-					<Z>954.263062</Z>
-					<R00>-1</R00>
-					<R01>0</R01>
-					<R02>1.49011598e-07</R02>
-					<R10>0</R10>
-					<R11>1</R11>
-					<R12>0</R12>
-					<R20>-1.49011598e-07</R20>
-					<R21>0</R21>
-					<R22>-1</R22>
+					<X>827.088257</X>
+					<Y>-84.186203</Y>
+					<Z>867.635193</Z>
+					<R00>-0.635308921</R00>
+					<R01>-0.739959717</R01>
+					<R02>-0.221003056</R02>
+					<R10>-0.762359142</R10>
+					<R11>0.646609187</R11>
+					<R12>0.0265552849</R12>
+					<R20>0.123252757</R20>
+					<R21>0.185354486</R21>
+					<R22>-0.97491163</R22>
 				</CoordinateFrame>
 				<bool name="Visible">false</bool>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">Attachment19</string>
+				<string name="Name">Attachment33</string>
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX37C01CC0B44C47888B91BA345FEE45B3">
+		<Item class="Attachment" referent="RBXED8C517A4ECF47EDBCB73B38FAF0EA0F">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>720.426636</X>
@@ -536,12 +561,12 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXF986A851D8E248F3931967DE180D0757">
+		<Item class="Attachment" referent="RBXE51C5FF6C0C44F24B2001900E0395B04">
 			<Properties>
 				<CoordinateFrame name="CFrame">
-					<X>689.48114</X>
+					<X>687.961243</X>
 					<Y>-190.483917</Y>
-					<Z>996.754028</Z>
+					<Z>987.032227</Z>
 					<R00>-0.766044557</R00>
 					<R01>0</R01>
 					<R02>-0.642787457</R02>
@@ -561,11 +586,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXC27A0FB41F274D3592261B82E65D7002">
+		<Item class="Attachment" referent="RBXD60D26645D294F1E829E5858F0455A23">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>744.544678</X>
-					<Y>-171.252686</Y>
+					<Y>-174.425629</Y>
 					<Z>954.263062</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -586,11 +611,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXAABE298123F64F379954D83A77CA8A37">
+		<Item class="Attachment" referent="RBXE6BD7F112C9E4ED9890700AEF949E7EF">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>878.756592</X>
-					<Y>-129.967102</Y>
+					<Y>-138.078918</Y>
 					<Z>1004.04266</Z>
 					<R00>-1</R00>
 					<R01>0</R01>
@@ -611,11 +636,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX41A85E73D02A48449AA0953E7BACEF5D">
+		<Item class="Attachment" referent="RBXFB5CA6A3D3A44799B9D4C9DB98DA0AB9">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>911.164917</X>
-					<Y>-103.059982</Y>
+					<Y>-109.701309</Y>
 					<Z>952.702026</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -636,11 +661,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXB7C08FBE20C1499ABDEE9D6CC091C0E0">
+		<Item class="Attachment" referent="RBXC3E26C7BF9EE4FB69AB1DE6000800971">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>930.449951</X>
-					<Y>-97.3921967</Y>
+					<Y>-100.227631</Y>
 					<Z>929.718994</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -661,11 +686,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX4761EAD68FFD4CD3B2AEE21F3966B7CB">
+		<Item class="Attachment" referent="RBX2EA9871474834A3A8D2F64DA7C63AF52">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>930.449951</X>
-					<Y>-97.3921967</Y>
+					<Y>-100.227631</Y>
 					<Z>929.718994</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -686,11 +711,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXCB74F36EC45D44D6A035A8598BA5BC90">
+		<Item class="Attachment" referent="RBX495FBD1BE7A6459C8B8B376E6179C83B">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>975.570801</X>
-					<Y>-116.714218</Y>
+					<Y>-119.549652</Y>
 					<Z>951.492371</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -711,11 +736,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBXF4E4E9BE067C456CB1B1DFE37183E7D3">
+		<Item class="Attachment" referent="RBX62C8C171192C4DDC9F1FE0B891A23856">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>975.570801</X>
-					<Y>-116.714218</Y>
+					<Y>-119.549652</Y>
 					<Z>951.492371</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -736,11 +761,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX7E71A81FC0A548A89A54997CDA4913A4">
+		<Item class="Attachment" referent="RBX47351B481B8243CE8FF155A687998F00">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>986.417664</X>
-					<Y>-116.005386</Y>
+					<Y>-118.84082</Y>
 					<Z>936.299927</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -761,11 +786,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX64C6324195F54780A012C4E15FF2E467">
+		<Item class="Attachment" referent="RBXD4B05574AC564720A86D11B6B51C2EC8">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>986.417664</X>
-					<Y>-116.005386</Y>
+					<Y>-118.84082</Y>
 					<Z>936.299927</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -786,11 +811,11 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX851518FA58B34A13B3063FDFE1773084">
+		<Item class="Attachment" referent="RBX7DD60B67DAB14E148413930A1ED7FDFA">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>913.899536</X>
-					<Y>-82.4971466</Y>
+					<Y>-85.3325806</Y>
 					<Z>907.54895</Z>
 					<R00>-0.642787755</R00>
 					<R01>0</R01>
@@ -807,56 +832,6 @@
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Attachment31</string>
-				<int64 name="SourceAssetId">-1</int64>
-				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
-			</Properties>
-		</Item>
-		<Item class="Attachment" referent="RBX3623BCA77BBE47BE91E4C461BE9A39B9">
-			<Properties>
-				<CoordinateFrame name="CFrame">
-					<X>913.899536</X>
-					<Y>-82.4971466</Y>
-					<Z>907.54895</Z>
-					<R00>-0.642787755</R00>
-					<R01>0</R01>
-					<R02>-0.766044319</R02>
-					<R10>0</R10>
-					<R11>1</R11>
-					<R12>0</R12>
-					<R20>0.766044319</R20>
-					<R21>0</R21>
-					<R22>-0.642787755</R22>
-				</CoordinateFrame>
-				<bool name="Visible">false</bool>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">Attachment32</string>
-				<int64 name="SourceAssetId">-1</int64>
-				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
-			</Properties>
-		</Item>
-		<Item class="Attachment" referent="RBX02C7088E1E7A4C8E9BACCE70E80D1D1B">
-			<Properties>
-				<CoordinateFrame name="CFrame">
-					<X>827.088257</X>
-					<Y>-81.350769</Y>
-					<Z>867.635193</Z>
-					<R00>-0.635308921</R00>
-					<R01>-0.739959657</R01>
-					<R02>-0.221003056</R02>
-					<R10>-0.762359142</R10>
-					<R11>0.646609247</R11>
-					<R12>0.0265552923</R12>
-					<R20>0.123252757</R20>
-					<R21>0.185354486</R21>
-					<R22>-0.974911571</R22>
-				</CoordinateFrame>
-				<bool name="Visible">false</bool>
-				<BinaryString name="AttributesSerialize"></BinaryString>
-				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
-				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">Attachment33</string>
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>

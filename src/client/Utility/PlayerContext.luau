@@ -11,6 +11,7 @@ local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local CameraShaker = require(ReplicatedStorage.Shared.Effects.CameraShaker)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local WindConstants = require(ReplicatedStorage.Shared.Wind.WindConstants)
@@ -298,6 +299,9 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	if PlayerContext.CameraShaker then
 		PlayerContext.CameraShaker:StopSustained(0)
 	end
+
+	-- Stop SFX
+	SoundManager.StopGroup("SFX", 0.5)
 end
 
 local function ConnectGUIConnections(character: Model)

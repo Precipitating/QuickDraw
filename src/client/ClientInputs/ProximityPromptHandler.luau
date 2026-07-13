@@ -135,9 +135,6 @@ local PROMPT_HANDLERS = {
 		ClientDigHandler:StartDigging("Drill", "OreDrill")
 
 		task.delay(5, function()
-			if not PlayerContext.Character or CollectionService:HasTag(PlayerContext.Character, "Dead") then
-				return
-			end
 			ClientDigHandler:StopDigging()
 			ProximityPromptHandler.networker:fire("LootPickup", "Ore", prompt)
 			PlayerContext.IsBusy = false
