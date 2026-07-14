@@ -6,7 +6,7 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local OreSpawner = {}
 local OrePoints = ServerStorage.OreSpawnSweepPoints:GetChildren()
 local OreTable = OreData
-local SpawnDelay = 10
+local SpawnDelay = 300
 local MaxSpawnNumber = 20
 local SpawnerLoop = true
 
@@ -102,23 +102,25 @@ end
 
 function OreSpawner:Initialize()
 	InitializeOreTable()
-	while SpawnerLoop and task.wait(SpawnDelay) do
-		if not self:CanSpawn() then
-			continue
-		end
-		-- Note that theres an extra key used called worth, WeightRandom only touches weight & value so it works fine
-		local chosenOre = self:GetRandomOre()
-		local chosenPoint = OrePoints[RandomModule.GetRandomIntBetween(1, #OrePoints)]
-		local spawnPos, _ = GetOreSpawnPoint(chosenPoint)
+	task.spawn(function()
+		while SpawnerLoop and task.wait(SpawnDelay) do
+			if not self:CanSpawn() then
+				continue
+			end
+			-- Note that theres an extra key used called worth, WeightRandom only touches weight & value so it works fine
+			local chosenOre = self:GetRandomOre()
+			local chosenPoint = OrePoints[RandomModule.GetRandomIntBetween(1, #OrePoints)]
+			local spawnPos, _ = GetOreSpawnPoint(chosenPoint)
 
-		if not spawnPos then
-			continue
-		end
+			if not spawnPos then
+				continue
+			end
 
-		chosenOre = chosenOre:Clone()
-		chosenOre:PivotTo(CFrame.new(spawnPos))
-		chosenOre.Parent = Utility.GetInstance(workspace, false, "CaveTown", "SpawnedOres")
-	end
+			chosenOre = chosenOre:Clone()
+			chosenOre:PivotTo(CFrame.new(spawnPos))
+			chosenOre.Parent = Utility.GetInstance(workspace, false, "CaveTown", "SpawnedOres")
+		end
+	end)
 end
 
 return OreSpawner
