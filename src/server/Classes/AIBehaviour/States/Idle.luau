@@ -10,7 +10,7 @@ function Idle.new(machine, ai)
 end
 
 function Idle:Enter(previous)
-	warn(`[SERVER] {self.Human.Character.Name} Entered Idle from {previous}`)
+	warn(`[SERVER] {self.Owner.Character.Name} Entered Idle from {previous}`)
 end
 
 function Idle:Update(dt) end

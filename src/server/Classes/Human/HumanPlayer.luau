@@ -37,6 +37,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	Human.AssignBodyParts(self, "Player")
 	self:SetupBloodEmitters()
 	self.Player = player
+	self.ClassType = "HumanPlayer"
 	self.HumanType = "Player"
 	self:InitializeWeaponLoadout()
 

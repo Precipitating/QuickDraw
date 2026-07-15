@@ -19,6 +19,7 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
 	self:SetupBloodEmitters()
+	self.ClassType = "HumanNPC"
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
 	self.TorsoAimer = self:InitializeTorsoAimer()

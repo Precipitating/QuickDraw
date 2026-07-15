@@ -10,6 +10,7 @@ local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundH
 local BaseState = require(script.Parent.BaseState)
 
 type HumanNPC = ClassTypes.HumanNPC
+type Animal = ClassTypes.Animal
 
 local Fallback = setmetatable({}, BaseState)
 Fallback.__index = Fallback
@@ -39,9 +40,14 @@ function Fallback:MoveToFallbackPosition(fallbackPos: Vector3)
 	if not fallbackPos then
 		return false
 	end
+	local classType = self.Owner.ClassType
 
-	if not self.Human:IsLegless() then
-		self.AI:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
+	if classType == "HumanNPC" then
+		if not self.Owner:IsLegless() then
+			self.AI:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
+		end
+	elseif classType == "Animal" then
+		self.AI:ChangeWalkSpeed(self.Owner.AttackRunSpeed)
 	end
 	self.AI:PathFindTo(fallbackPos)
 
@@ -70,7 +76,7 @@ function Fallback:AimNPCTowards(human: HumanNPC, targetPos: Vector3, target, NPC
 	return true
 end
 
-function Fallback:PathFindToFallbackPosition(human: HumanNPC, target, targetPos: Vector3?)
+function Fallback:PathFindToFallbackPosition(human: HumanNPC | Animal, target, targetPos: Vector3?)
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		warn("arrived fallback pos")
 		-- get updated target position
@@ -80,24 +86,28 @@ function Fallback:PathFindToFallbackPosition(human: HumanNPC, target, targetPos:
 			return
 		end
 
-		-- 3.1 Aim and shoot
-		local NPCAimArm = if human
-				and human.BodyParts
-				and human.BodyParts["RightUpperArm"]
-			then human.BodyParts["RightUpperArm"]
-			else nil
+		-- 3.1 Aim at target
+		if self.Owner.ClassType == "HumanNPC" then
+			local NPCAimArm = if human
+					and human.BodyParts
+					and human.BodyParts["RightUpperArm"]
+				then human.BodyParts["RightUpperArm"]
+				else nil
 
-		if not NPCAimArm then
-			warn("Right arm missing, NPC probably dead")
-			return
-		end
-		-- 3.1. Aim arm & torso towards last seen pos and wait until finished rotating
-		targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-		local aimedAt = self:AimNPCTowards(human, targetPos, target, NPCAimArm)
+			if not NPCAimArm then
+				warn("Right arm missing, NPC probably dead")
+				return
+			end
+			-- 3.1. Aim arm & torso towards last seen pos and wait until finished rotating
+			targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
+			local aimedAt = self:AimNPCTowards(human, targetPos, target, NPCAimArm)
 
-		if not aimedAt then
-			self.Machine:Transition("Seek", { Target = target })
-			return
+			if not aimedAt then
+				self.Machine:Transition("Seek", { Target = target })
+				return
+			end
+		elseif self.Owner.ClassType == "Animal" then
+			self.AI:OrientTowards(target:GetPivot().Position)
 		end
 	end))
 
@@ -122,13 +132,13 @@ end
 
 function Fallback:Enter(previous, fallbackData)
 	warn("Entered Fallback from", previous)
-	while self.Human.IsRagdolled do
+	while self.Owner.IsRagdolled do
 		task.wait(1)
 	end
 	self.AI:StateChangeReset()
 
 	-- Variables
-	local human = self.Human
+	local owner = self.Owner
 	local target = fallbackData.Target
 
 	if not target then
@@ -136,17 +146,19 @@ function Fallback:Enter(previous, fallbackData)
 	end
 	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
 
-	self:StopReloading(human)
+	if owner.ClassType == "HumanNPC" then
+		self:StopReloading(owner)
 
-	ServerSoundHandler:Play3DNPCVoiceline(
-		nil,
-		`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
-		self.Human.VoicelineSound,
-		{ MaxDistance = 100 }
-	)
+		ServerSoundHandler:Play3DNPCVoiceline(
+			nil,
+			`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
+			self.Owner.VoicelineSound,
+			{ MaxDistance = 100 }
+		)
+	end
 
 	-- 1. Find a suitable position around player to go to
-	local hasFallbackPos = self:FindFallbackPosition(human, target)
+	local hasFallbackPos = self:FindFallbackPosition(owner, target)
 
 	if not hasFallbackPos then
 		return
@@ -156,7 +168,7 @@ function Fallback:Enter(previous, fallbackData)
 	self:MoveToFallbackPosition(hasFallbackPos)
 
 	-- 3. Wait for NPC to arrive at destination
-	self:PathFindToFallbackPosition(human, target, targetPos)
+	self:PathFindToFallbackPosition(owner, target, targetPos)
 end
 
 function Fallback:CanTransition(toStateName: string)

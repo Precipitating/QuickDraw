@@ -20,11 +20,12 @@ raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 type Human = ClassTypes.Human
 type AgentParams = Path.AgentParams
+type Animal = ClassTypes.Animal
 
 local AI = {}
 AI.__index = AI
 
-function AI.new(owner: Human, classType: string)
+function AI.new(owner: Human | Animal, classType: string)
 	local self = setmetatable({}, AI)
 	assert(owner, "Owner incorrect for AI class initialization")
 	self.Type = nil
@@ -91,10 +92,7 @@ function AI:Destroy()
 end
 
 function AI:StateChangeReset()
-	self.Owner:ToggleRightArmAimer(false)
-	self.Owner:ToggleTorsoAimer(false)
-	self:ChangeWalkSpeed(HumanConstants.WALKSPEED)
-	self:StopPathfind()
+	warn("AI base class called StateChangeReset")
 end
 
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV: boolean)
@@ -221,7 +219,7 @@ function AI:AlignOrientLookAround()
 
 	return false
 end
-function AI:OrientTowardsSeekDir(seekDir: Vector3)
+function AI:OrientTowards(seekDir: Vector3)
 	local torsoAimer: AlignOrientation = self.Owner.TorsoAimer
 
 	if not torsoAimer then
@@ -235,12 +233,6 @@ function AI:OrientTowardsSeekDir(seekDir: Vector3)
 	repeat
 		task.wait()
 	until not self.HRP or Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
-	task.wait(2)
-	local foundTargetModel = self:CheckSurroundingsForEnemy()
-	if foundTargetModel then
-		return foundTargetModel
-	end
-	return false
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
@@ -263,6 +255,10 @@ function AI:LookAround()
 	return targetFound
 end
 
+function AI:Attack()
+	warn("Base class AI Attack() Called!")
+end
+
 -- Check if target has a tag that is considered an enemy to the AI
 function AI:TargetIsEnemy(target)
 	local targetTags = CollectionService:GetTags(target)
@@ -276,46 +272,117 @@ function AI:TargetIsEnemy(target)
 	return false
 end
 
--- Get angle required for object to hit a position (if possible)
-function AI:GetThrowAngle(origin, target, velocity)
-	local diff = target - origin
-	local horizontalDist = Vector3.new(diff.X, 0, diff.Z).Magnitude
-	local verticalDist = diff.Y
-	local v2 = velocity * velocity
-	local g = workspace.Gravity
-
-	local discriminant = v2 * v2 - g * (g * horizontalDist * horizontalDist + 2 * verticalDist * v2)
-	if discriminant < 0 then
-		return nil, nil -- target out of range for this velocity
+-- Helper: raycast downward to snap candidate to ground level
+function AI:GetGroundY(pos: Vector3): number?
+	local origin = Vector3.new(pos.X, pos.Y + 50, pos.Z)
+	local direction = Vector3.new(0, -200, 0)
+	local result = workspace:Raycast(origin, direction, self.RaycastParams)
+	if result then
+		return result.Position.Y
 	end
-
-	-- two solutions, low arc and high arc
-	local lowArc = math.atan((v2 - math.sqrt(discriminant)) / (g * horizontalDist))
-	local highArc = math.atan((v2 + math.sqrt(discriminant)) / (g * horizontalDist))
-
-	return lowArc, highArc -- in radians
+	return nil
 end
-function AI:ThrowThrowable(targetPos)
-	local throwable = self.Owner.Inventory:GetThrowable()
-	if not throwable then
-		return false
+
+-- Find a valid position around target (circular around)
+-- It only returns positions that the the AI will have a line of sight to
+function AI:FindAnglePosition(
+	originPos: Vector3,
+	target: Model | BasePart,
+	customPosition: Vector3?,
+	radius: number,
+	recursing: boolean
+): Vector3?
+	local targetPos: Vector3
+
+	if customPosition then
+		targetPos = customPosition
+	else
+		if typeof(target) == "Instance" then
+			if target:IsA("Model") then
+				targetPos = target:GetPivot().Position
+			elseif target:IsA("BasePart") then
+				targetPos = (target :: BasePart).Position
+			else
+				return nil
+			end
+		end
 	end
-	if throwable.CurrentAmmo <= 0 then
-		return false
+
+	local baseDir = (originPos - targetPos)
+	-- Flatten to XZ for rotation, but preserve a reference Y
+	local baseDirFlat = Vector3.new(baseDir.X, 0, baseDir.Z)
+	if baseDirFlat.Magnitude < 0.001 then
+		baseDirFlat = Vector3.new(1, 0, 0) -- fallback if directly above/below
+	end
+	baseDirFlat = baseDirFlat.Unit
+
+	local bestCandidate: Vector3? = nil
+	local bestScore = math.huge
+
+	-- Two-pass: coarse then fine around best coarse hit
+	local function evaluateCandidates(angleList: { number })
+		for _, angle in ipairs(angleList) do
+			local radians = math.rad(angle)
+			local cos, sin = math.cos(radians), math.sin(radians)
+			local rotated =
+				Vector3.new(baseDirFlat.X * cos - baseDirFlat.Z * sin, 0, baseDirFlat.X * sin + baseDirFlat.Z * cos)
+
+			-- Raycast downward to find ground Y so the candidate sits on terrain
+			local candidateXZ = targetPos + rotated * radius
+			local groundY = self:GetGroundY(candidateXZ) or targetPos.Y
+			local candidate = Vector3.new(candidateXZ.X, groundY, candidateXZ.Z)
+
+			if self:IsTargetInView(candidate, target, false) then
+				-- Score: weighted sum of distance to origin + distance to target (prefer mid-range)
+				local distToOrigin = (originPos - candidate).Magnitude
+				local distToTarget = (targetPos - candidate).Magnitude
+				-- Penalise straying far from the requested radius
+				local radiusDrift = math.abs(distToTarget - radius)
+				local score = distToOrigin + radiusDrift * 0.5
+
+				if score < bestScore then
+					bestScore = score
+					bestCandidate = candidate
+				end
+			end
+		end
 	end
 
-	local origin = self.Owner.BodyParts["RightHand"].Position
+	-- Pass 1: coarse sweep every 15°
+	local coarseAngles = {}
+	for angle = 0, 359, 15 do
+		table.insert(coarseAngles, angle)
+	end
+	evaluateCandidates(coarseAngles)
 
-	local lowArc, _ = self:GetThrowAngle(origin, targetPos, throwable.Velocity)
-	if not lowArc then
-		return false
+	-- Pass 2: fine sweep 15° around best coarse result in 3° steps
+	if bestCandidate then
+		local bestAngle = math.deg(math.atan2(bestCandidate.Z - targetPos.Z, bestCandidate.X - targetPos.X))
+		local fineAngles = {}
+		for offset = -15, 15, 3 do
+			table.insert(fineAngles, bestAngle + offset)
+		end
+		evaluateCandidates(fineAngles)
 	end
 
-	local toTargetDir = (targetPos - origin).Unit
-	local throwDirection = (CFrame.new(Vector3.zero, toTargetDir) * CFrame.Angles(lowArc, 0, 0)).LookVector
+	if bestCandidate then
+		return bestCandidate
+	end
 
-	local thrown = throwable:Throw(throwDirection)
-	return thrown
+	-- Radius expansion with early-out
+	if recursing then
+		return nil
+	end
+
+	for _ = 1, 6 do
+		radius *= 1.25
+		local candidate = self:FindAnglePosition(originPos, target, customPosition, radius, true)
+		if candidate then
+			return candidate
+		end
+	end
+
+	return nil
 end
 
 function AI:CheckSurroundingsForEnemy()

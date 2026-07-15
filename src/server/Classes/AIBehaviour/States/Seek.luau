@@ -38,13 +38,25 @@ end
 function Seek:MoveToLastSeenLocation(target: Model | BasePart)
 	local ai = self.AI
 	local predictedTargetLocation = self:PredictTarget(target)
-	local safeSeekPos = ai:FindAnglePosition(
-		self.Human.BodyParts["RightUpperArm"].Position,
-		target,
-		predictedTargetLocation,
-		self.AI.MinAttackDistance,
-		false
-	)
+	local safeSeekPos = nil
+	if self.Owner.ClassType == "HumanNPC" then
+		safeSeekPos = ai:FindAnglePosition(
+			self.Owner.BodyParts["RightUpperArm"].Position,
+			target,
+			predictedTargetLocation,
+			self.AI.MinAttackDistance,
+			false
+		)
+	elseif self.Owner.ClassType == "Animal" then
+		safeSeekPos = ai:FindAnglePosition(
+			self.Owner.BodyParts["Head"].Position,
+			target,
+			predictedTargetLocation,
+			self.AI.MinAttackDistance,
+			false
+		)
+	end
+
 	ai:PathFindTo(safeSeekPos)
 end
 
@@ -75,19 +87,21 @@ function Seek:LookAroundAndReact(ai)
 		-- inRange is true, distance is valid
 		self.Machine:Transition(self.AI.AttackState.Name, { Target = foundEnemy })
 	else
-		ServerSoundHandler:Play3DNPCVoiceline(
-			nil,
-			`RangedAILostSight1{self.AI.Type}`,
-			self.Human.VoicelineSound,
-			{ MaxDistance = 200 }
-		)
+		if self.Owner.ClassType == "HumanNPC" then
+			ServerSoundHandler:Play3DNPCVoiceline(
+				nil,
+				`RangedAILostSight1{self.AI.Type}`,
+				self.Owner.VoicelineSound,
+				{ MaxDistance = 200 }
+			)
+		end
 
 		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 	end
 end
 
 function Seek:Enter(previous, seekData)
-	warn(`[SERVER] {self.Human.Character.Name} Entered Seek from {previous}`)
+	warn(`[SERVER] {self.Owner.Character.Name} Entered Seek from {previous}`)
 
 	if not seekData then
 		warn("No last seen target, back to default state")
@@ -102,18 +116,23 @@ function Seek:Enter(previous, seekData)
 	self.Machine:Start()
 
 	local ai = self.AI
-	local legless = self.Human:IsLegless()
+	local classType = self.Owner.ClassType
+	if classType == "HumanNPC" then
+		local legless = self.Owner:IsLegless()
 
-	if not legless then
-		ai:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
+		if not legless then
+			ai:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
+		end
+
+		ServerSoundHandler:Play3DNPCVoiceline(
+			nil,
+			`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
+			self.Owner.VoicelineSound,
+			{ MaxDistance = 200 }
+		)
+	elseif classType == "Animal" then
+		ai:ChangeWalkSpeed(self.Owner.AttackRunSpeed)
 	end
-
-	ServerSoundHandler:Play3DNPCVoiceline(
-		nil,
-		`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
-		self.Human.VoicelineSound,
-		{ MaxDistance = 200 }
-	)
 
 	-- 1. Move to last seen position OR a valid position around the last seen position (respecting radius and vision)
 	self:MoveToLastSeenLocation(target)
@@ -125,7 +144,7 @@ function Seek:Enter(previous, seekData)
 	end
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
-		if not success or not self.Human then
+		if not success or not self.Owner then
 			warn("Seek pathfind failed, returning to default state")
 			self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 			return
@@ -158,7 +177,7 @@ function Seek:Update(dt)
 		return
 	end
 
-	if self.Human.IsRagdolled then
+	if self.Owner.IsRagdolled then
 		return
 	end
 

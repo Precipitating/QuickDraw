@@ -9,7 +9,7 @@ function BaseState.new(machine, ai)
 	self.Machine = machine
 	self.Name = "Unnamed"
 	self.AI = ai
-	self.Human = ai.Owner
+	self.Owner = ai.Owner
 	self.Janitor = Janitor.new()
 	return self
 end
@@ -32,7 +32,7 @@ function BaseState:CanTransition(toStateName)
 	if currentState == "Dead" then
 		return false
 	end
-	if not self.AI or not self.AI.NoobPath or not self.Human then
+	if not self.AI or not self.AI.NoobPath or not self.Owner then
 		return false
 	end
 

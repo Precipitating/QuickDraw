@@ -19,7 +19,7 @@ function Stalk:MoveToTarget(target)
 	local ai = self.AI
 
 	local safeStalkPos = ai:FindAnglePosition(
-		self.Human.BodyParts["RightUpperArm"].Position,
+		self.Owner.BodyParts["RightUpperArm"].Position,
 		target,
 		if target:IsA("Model") then target:GetPivot().Position else target.Position,
 		self.AI.MinAttackDistance,
@@ -36,11 +36,11 @@ function Stalk:MoveToTarget(target)
 end
 
 function Stalk:Enter(previous, StalkData)
-	warn(`[SERVER] {self.Human.Character.Name} Entered Stalk from {previous}`)
+	warn(`[SERVER] {self.Owner.Character.Name} Entered Stalk from {previous}`)
 	self.AI:StateChangeReset()
 	if not StalkData then
 		warn("No target data, dying")
-		self.Human:Die(nil)
+		self.Owner:Die(nil)
 		return
 	end
 
@@ -49,13 +49,13 @@ function Stalk:Enter(previous, StalkData)
 	assert(target, "NPC Stalk state cannot proceed, target is nil")
 
 	if not target or CollectionService:HasTag(target, "Dead") then
-		self.Human:Die()
+		self.Owner:Die()
 	end
 
 	self.Machine:Start()
 
 	local ai = self.AI
-	local legless = self.Human:IsLegless()
+	local legless = self.Owner:IsLegless()
 
 	if not legless then
 		ai:ChangeWalkSpeed(HumanConstants.SPRINT_SPEED)
@@ -69,7 +69,7 @@ function Stalk:Enter(previous, StalkData)
 	end
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
-		if not self.Human then
+		if not self.Owner then
 			return
 		end
 		if not success then
@@ -88,7 +88,7 @@ function Stalk:Enter(previous, StalkData)
 				return
 			end
 		else
-			self.Human:Die(nil)
+			self.Owner:Die(nil)
 		end
 	end))
 end
@@ -102,7 +102,7 @@ function Stalk:Update(dt)
 		return
 	end
 
-	if self.Human.IsRagdolled then
+	if self.Owner.IsRagdolled then
 		return
 	end
 

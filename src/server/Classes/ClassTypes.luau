@@ -13,6 +13,17 @@ export type Gun = {
 	MuzzleFlash: Attachment?,
 	HumanClassRef: Human?,
 }
+export type Animal = {
+	Character: Model,
+	Name: string,
+	Janitor: any,
+	Health: number,
+	Target: any,
+	Type: string,
+	Humanoid: Humanoid,
+	HRP: BasePart,
+	BodyParts: { [string]: BasePart | boolean },
+}
 
 export type Throwable = {
 	Name: string,

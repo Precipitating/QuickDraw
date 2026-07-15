@@ -1,184 +1,79 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
+local ServerScriptService = game:GetService("ServerScriptService")
+local AnimalAI = require(ServerScriptService.Server.Classes.AIBehaviour.AnimalAI)
+local AnimalData = require(script.Parent.AnimalData)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local ProceduralModule = require(ReplicatedStorage.Shared.ProceduralModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Animal = {}
 Animal.__index = Animal
 
 function Animal.new(model: Model?, type: string)
+	local self = setmetatable({}, Animal)
 	assert(model, "Missing animal model")
 	assert(type, "Missing animal type")
-	local self = setmetatable({}, Animal)
-	self.Model = model
+	local animalData = AnimalData[type]
+	if not animalData then
+		warn("Animal type does not exist!")
+		return
+	end
+
+	self.Character = model
 	self.Name = model.Name
 	self.Janitor = Janitor.new()
-	self.Health = 100
+	self.IsRagdolled = false
+	self.Health = animalData.Health
 	self.Target = workspace:FindFirstChild("Target")
-	self.RaycastParams = nil
+	self.ClassType = "Animal"
 	self.Type = type
 	self.Humanoid = model:FindFirstChildOfClass("Humanoid")
-	self.AlignOrientation = nil
 	self.HRP = model:FindFirstChild("HumanoidRootPart")
-	self.IKTargets = {}
-	self.RaycastParts = {}
-	self.IKControls = {}
+	self.BodyParts = {
+		Head = Utility.GetInstance(model, false, "Head"),
+		Body = Utility.GetInstance(model, false, "Body"),
+	}
+	self.TorsoAimer = self:InitializeTorsoAimer()
+	self.AttackRunSpeed = animalData.AttackRunSpeed
 
+	self.AI = AnimalAI.new(self, type)
+	self.VoicelineSound = self:SetupVoicelineSound()
 	self:Initialize()
 
 	return self
 end
+function Animal:SetupVoicelineSound()
+	local sound = Instance.new("Sound")
+	sound.Name = "VoicelineSound"
+	sound.Parent = self.HRP
+	return sound
+end
+function Animal:InitializeTorsoAimer()
+	local aimer: AlignOrientation = Instance.new("AlignOrientation")
+	aimer.Mode = Enum.OrientationAlignmentMode.OneAttachment
+	aimer.Attachment0 = self.HRP.RootRigAttachment
+	aimer.RigidityEnabled = true
+	aimer.AlignType = Enum.AlignType.AllAxes
+	aimer.Name = "TorsoAimer"
+	aimer.Responsiveness = 150
+	aimer.Enabled = false
+	aimer.Parent = self.HRP
+	return aimer
+end
 
-function Animal:SetupPoles()
-	if not self.HRP then
-		warn("Missing HRP reference of animation class")
+function Animal:ToggleTorsoAimer(enable: boolean)
+	local torsoAimer = self.TorsoAimer
+	assert(torsoAimer, "[Animal:ToggleTorsoAimer] torsoAimer is nil")
+	if torsoAimer.Enabled == enable then
 		return
 	end
 
-	local ikControls = self.IKControls
+	torsoAimer.Enabled = enable
+	torsoAimer.CFrame = CFrame.identity
 
-	if
-		not ikControls
-		or not ikControls.LeftFront
-		or not ikControls.LeftBack
-		or not ikControls.RightFront
-		or not ikControls.RightBack
-	then
-		warn("IKControls references not all valid or is missing")
-		return
-	end
-
-	ikControls.LeftFront.Pole = Utility.GetInstance(self.HRP, false, "LeftFrontPole")
-	ikControls.LeftBack.Pole = Utility.GetInstance(self.HRP, false, "LeftBackPole")
-	ikControls.RightFront.Pole = Utility.GetInstance(self.HRP, false, "RightFrontPole")
-	ikControls.RightBack.Pole = Utility.GetInstance(self.HRP, false, "RightBackPole")
+	--warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 
-function Animal:ObtainIKReferences()
-	if not self.Model then
-		warn("Cannot get IK references, missing model")
-		return
-	end
-	local model = self.Model
-
-	-- Uses recursive option so we don't have to specifically supply the exact path
-	self.IKTargets = {
-		Folder = Utility.GetInstance(model, false, "IKTargets"),
-		LeftFront = Utility.GetInstance(model, false, "LeftFrontIKTarget"),
-		LeftBack = Utility.GetInstance(model, false, "LeftBackIKTarget"),
-		RightFront = Utility.GetInstance(model, false, "RightFrontIKTarget"),
-		RightBack = Utility.GetInstance(model, false, "RightBackIKTarget"),
-	}
-	self.RaycastParts = {
-		Folder = Utility.GetInstance(model, false, "RaycastParts"),
-		LeftFront = Utility.GetInstance(model, false, "LeftFrontRaycastPart"),
-		LeftBack = Utility.GetInstance(model, false, "LeftBackRaycastPart"),
-		RightFront = Utility.GetInstance(model, false, "RightFrontRaycastPart"),
-		RightBack = Utility.GetInstance(model, false, "RightBackRaycastPart"),
-	}
-	self.IKControls = {
-		LeftFront = Utility.GetInstance(model, false, "LeftFrontIK"),
-		LeftBack = Utility.GetInstance(model, false, "LeftBackIK"),
-		RightFront = Utility.GetInstance(model, false, "RightFrontIK"),
-		RightBack = Utility.GetInstance(model, false, "RightBackIK"),
-	}
-	self.AlignOrientation = Utility.GetInstance(model, false, "AlignOrientation")
-end
-
-function Animal:RaycastExclude()
-	if not self.Model then
-		warn("Animal class cannot exclude. Empty model reference")
-		return
-	end
-	self.RaycastParams = RaycastParams.new()
-	self.RaycastParams.FilterDescendantsInstances = { self.Model }
-	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-end
-
-function Animal:Activate()
-	local root = self.HRP
-	if not root then
-		warn("Cannot start animal class, missing HRP ref")
-		return
-	end
-
-	-- Alignment fix when traversing at an angle
-	self.Janitor:Add(
-		RunService.Heartbeat:Connect(function()
-			if not self.Target or not self.AlignOrientation then
-				return
-			end
-			local raycast = workspace:Raycast(root.Position, -1000 * root.CFrame.UpVector, self.RaycastParams)
-
-			if not raycast then
-				return
-			end
-			local rotateToFloorCFrame = ProceduralModule:getRotationBetween(root.CFrame.UpVector, raycast.Normal)
-			local floorOrientedCFrame = rotateToFloorCFrame * CFrame.new(root.Position)
-
-			local dz = (root.Position.Z - self.Target.Position.Z)
-			local dx = (root.Position.X - self.Target.Position.X)
-			local horizontalAngle = math.atan2(dx, dz)
-
-			self.AlignOrientation.CFrame = floorOrientedCFrame.Rotation * CFrame.fromOrientation(0, horizontalAngle, 0)
-		end),
-		"Disconnect",
-		"AnimalOrientationConn"
-	)
-
-	task.spawn(function()
-		while self and self.Model do
-			ProceduralModule:IkLegStep(
-				self.IKTargets.LeftFront,
-				self.RaycastParts.LeftFront,
-				self.Target,
-				2,
-				2,
-				1,
-				0.05,
-				self.RayCastParams
-			)
-			ProceduralModule:IkLegStep(
-				self.IKTargets.RightBack,
-				self.RaycastParts.RightBack,
-				self.Target,
-				2,
-				2,
-				1,
-				0.05,
-				self.RayCastParams
-			)
-			task.wait(0.1)
-			ProceduralModule:IkLegStep(
-				self.IKTargets.RightFront,
-				self.RaycastParts.RightFront,
-				self.Target,
-				2,
-				2,
-				1,
-				0.05,
-				self.RayCastParams
-			)
-			ProceduralModule:IkLegStep(
-				self.IKTargets.LeftBack,
-				self.RaycastParts.LeftBack,
-				self.Target,
-				2,
-				2,
-				1,
-				0.05,
-				self.RayCastParams
-			)
-		end
-	end)
-end
-
-function Animal:Initialize()
-	self:ObtainIKReferences()
-	self:SetupPoles()
-	self:RaycastExclude()
-	self:Activate()
-end
+--
+function Animal:Initialize() end
 
 function Animal:Destroy()
 	self.Janitor:Destroy()

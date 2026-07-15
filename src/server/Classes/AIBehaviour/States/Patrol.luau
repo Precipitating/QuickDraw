@@ -17,7 +17,7 @@ function Patrol.new(machine, ai)
 end
 
 function Patrol:Enter(previous, patrolData)
-	warn(`[SERVER] {self.Human.Character.Name} Entered Patrol from {previous}`)
+	warn(`[SERVER] {self.Owner.Character.Name} Entered Patrol from {previous}`)
 	self.PatrolData = PatrolData[patrolData]
 	self.AI:StateChangeReset()
 	self.Machine:Start()
@@ -29,11 +29,15 @@ function Patrol:Update(dt)
 	local seenEnemyModel = self.AI:CheckSurroundingsForEnemy()
 
 	if seenEnemyModel then
-		self.Machine:Transition("RangeAttack", { Target = seenEnemyModel })
+		if self.Owner.ClassType == "HumanNPC" then
+			self.Machine:Transition("RangeAttack", { Target = seenEnemyModel })
+		elseif self.Owner.ClassType == "Animal" then
+			self.Machine:Transition("AnimalAttack", { Target = seenEnemyModel })
+		end
 		return
 	end
 
-	if self.Human.IsRagdolled then
+	if self.Owner.IsRagdolled then
 		return
 	end
 

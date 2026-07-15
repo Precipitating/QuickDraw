@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Stack = require(ReplicatedStorage.Shared.Classes.Stack)
@@ -63,119 +64,6 @@ function RangeAI:RangeInitialize()
 	end)
 end
 
--- Helper: raycast downward to snap candidate to ground level
-function RangeAI:GetGroundY(pos: Vector3): number?
-	local origin = Vector3.new(pos.X, pos.Y + 50, pos.Z)
-	local direction = Vector3.new(0, -200, 0)
-	local result = workspace:Raycast(origin, direction, self.RaycastParams)
-	if result then
-		return result.Position.Y
-	end
-	return nil
-end
-
--- Find a valid position around target (circular around)
--- It only returns positions that the the AI will have a line of sight to
-function RangeAI:FindAnglePosition(
-	originPos: Vector3,
-	target: Model | BasePart,
-	customPosition: Vector3?,
-	radius: number,
-	recursing: boolean
-): Vector3?
-	local targetPos: Vector3
-
-	if customPosition then
-		targetPos = customPosition
-	else
-		if typeof(target) == "Instance" then
-			if target:IsA("Model") then
-				targetPos = target:GetPivot().Position
-			elseif target:IsA("BasePart") then
-				targetPos = (target :: BasePart).Position
-			else
-				return nil
-			end
-		end
-	end
-
-	local baseDir = (originPos - targetPos)
-	-- Flatten to XZ for rotation, but preserve a reference Y
-	local baseDirFlat = Vector3.new(baseDir.X, 0, baseDir.Z)
-	if baseDirFlat.Magnitude < 0.001 then
-		baseDirFlat = Vector3.new(1, 0, 0) -- fallback if directly above/below
-	end
-	baseDirFlat = baseDirFlat.Unit
-
-	local bestCandidate: Vector3? = nil
-	local bestScore = math.huge
-
-	-- Two-pass: coarse then fine around best coarse hit
-	local function evaluateCandidates(angleList: { number })
-		for _, angle in ipairs(angleList) do
-			local radians = math.rad(angle)
-			local cos, sin = math.cos(radians), math.sin(radians)
-			local rotated =
-				Vector3.new(baseDirFlat.X * cos - baseDirFlat.Z * sin, 0, baseDirFlat.X * sin + baseDirFlat.Z * cos)
-
-			-- Raycast downward to find ground Y so the candidate sits on terrain
-			local candidateXZ = targetPos + rotated * radius
-			local groundY = self:GetGroundY(candidateXZ) or targetPos.Y
-			local candidate = Vector3.new(candidateXZ.X, groundY, candidateXZ.Z)
-
-			if self:IsTargetInView(candidate, target, false) then
-				-- Score: weighted sum of distance to origin + distance to target (prefer mid-range)
-				local distToOrigin = (originPos - candidate).Magnitude
-				local distToTarget = (targetPos - candidate).Magnitude
-				-- Penalise straying far from the requested radius
-				local radiusDrift = math.abs(distToTarget - radius)
-				local score = distToOrigin + radiusDrift * 0.5
-
-				if score < bestScore then
-					bestScore = score
-					bestCandidate = candidate
-				end
-			end
-		end
-	end
-
-	-- Pass 1: coarse sweep every 15°
-	local coarseAngles = {}
-	for angle = 0, 359, 15 do
-		table.insert(coarseAngles, angle)
-	end
-	evaluateCandidates(coarseAngles)
-
-	-- Pass 2: fine sweep 15° around best coarse result in 3° steps
-	if bestCandidate then
-		local bestAngle = math.deg(math.atan2(bestCandidate.Z - targetPos.Z, bestCandidate.X - targetPos.X))
-		local fineAngles = {}
-		for offset = -15, 15, 3 do
-			table.insert(fineAngles, bestAngle + offset)
-		end
-		evaluateCandidates(fineAngles)
-	end
-
-	if bestCandidate then
-		return bestCandidate
-	end
-
-	-- Radius expansion with early-out
-	if recursing then
-		return nil
-	end
-
-	for _ = 1, 6 do
-		radius *= 1.25
-		local candidate = self:FindAnglePosition(originPos, target, customPosition, radius, true)
-		if candidate then
-			return candidate
-		end
-	end
-
-	return nil
-end
-
 -- Ensure the AI is within the shooting position
 function RangeAI:CorrectRangePosition(targetPos: Vector3): string | boolean
 	local currentPos = self.Owner.Character:GetPivot().Position
@@ -226,6 +114,55 @@ function RangeAI:Attack()
 		local recoil = GunData[self.WeaponName].GunRecoil
 		handle:ApplyImpulseAtPosition(handle.AssemblyMass * UP * recoil, shootPoint.WorldPosition)
 	end
+end
+
+function RangeAI:StateChangeReset()
+	self.Owner:ToggleRightArmAimer(false)
+	self.Owner:ToggleTorsoAimer(false)
+	self:ChangeWalkSpeed(HumanConstants.WALKSPEED)
+	self:StopPathfind()
+end
+
+-- Get angle required for object to hit a position (if possible)
+function RangeAI:GetThrowAngle(origin, target, velocity)
+	local diff = target - origin
+	local horizontalDist = Vector3.new(diff.X, 0, diff.Z).Magnitude
+	local verticalDist = diff.Y
+	local v2 = velocity * velocity
+	local g = workspace.Gravity
+
+	local discriminant = v2 * v2 - g * (g * horizontalDist * horizontalDist + 2 * verticalDist * v2)
+	if discriminant < 0 then
+		return nil, nil -- target out of range for this velocity
+	end
+
+	-- two solutions, low arc and high arc
+	local lowArc = math.atan((v2 - math.sqrt(discriminant)) / (g * horizontalDist))
+	local highArc = math.atan((v2 + math.sqrt(discriminant)) / (g * horizontalDist))
+
+	return lowArc, highArc -- in radians
+end
+function RangeAI:ThrowThrowable(targetPos)
+	local throwable = self.Owner.Inventory:GetThrowable()
+	if not throwable then
+		return false
+	end
+	if throwable.CurrentAmmo <= 0 then
+		return false
+	end
+
+	local origin = self.Owner.BodyParts["RightHand"].Position
+
+	local lowArc, _ = self:GetThrowAngle(origin, targetPos, throwable.Velocity)
+	if not lowArc then
+		return false
+	end
+
+	local toTargetDir = (targetPos - origin).Unit
+	local throwDirection = (CFrame.new(Vector3.zero, toTargetDir) * CFrame.Angles(lowArc, 0, 0)).LookVector
+
+	local thrown = throwable:Throw(throwDirection)
+	return thrown
 end
 
 return RangeAI

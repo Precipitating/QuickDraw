@@ -48,4 +48,15 @@ return {
 		DefaultStateName = "Stalk",
 		AttackStateName = "RangeAttack",
 	},
+
+	Buffalo = {
+		MinAttackDistance = 50,
+		EnemyList = { Player = true, Bandit = true, Sheriff = true },
+		MaxAttackDistance = 150,
+		AttackCooldown = 3,
+		EyeRange = 120,
+		PatrolStayTime = 5,
+		DefaultStateName = "Patrol",
+		AttackStateName = "AnimalAttack",
+	},
 }
