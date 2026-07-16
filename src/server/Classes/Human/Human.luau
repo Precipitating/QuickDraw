@@ -159,6 +159,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Humanoid = humanoid
 	self.HRP = rootPart
 	self.Dead = false
+	self.Name = humanoid.Parent and humanoid.Parent.Name
 	self.Animator = humanoid:FindFirstChildOfClass("Animator")
 	self.Stamina = 100
 	self.Inventory = Inventory.new(self)

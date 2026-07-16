@@ -153,7 +153,9 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV:
 	local checkPoints = { targetPos }
 
 	if targetAncestor then
-		for _, partName in { "Head", "UpperTorso", "Torso", "HumanoidRootPart", "RightUpperArm", "LeftUpperArm" } do
+		for _, partName in
+			{ "Head", "UpperTorso", "Torso", "HumanoidRootPart", "RightUpperArm", "LeftUpperArm", "Body" }
+		do
 			local part = targetAncestor:FindFirstChild(partName)
 			if part and part:IsA("BasePart") then
 				-- Avoid duplicates when targetPos already matches one of these
@@ -224,15 +226,22 @@ function AI:OrientTowards(seekDir: Vector3)
 
 	if not torsoAimer then
 		warn("[AI:TweenTowardsSeekDir] Torso aimer missing!")
+		return false
 	end
+
 	local flat = Vector3.new(seekDir.X, 0, seekDir.Z).Unit
 	local hrp = self.Owner.HRP
 	local goal = CFrame.lookAt(hrp.Position, hrp.Position + flat)
 
 	torsoAimer.CFrame = goal
+
+	torsoAimer.Enabled = true
 	repeat
 		task.wait()
 	until not self.HRP or Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
+	torsoAimer.Enabled = false
+
+	return true
 end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.

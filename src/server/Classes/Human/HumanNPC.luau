@@ -212,7 +212,10 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 	end
 
 	torsoAimer.Enabled = enable
-	torsoAimer.CFrame = CFrame.identity
+
+	if not enable then
+		torsoAimer.CFrame = CFrame.identity
+	end
 
 	--warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end

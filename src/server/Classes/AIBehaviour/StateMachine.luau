@@ -55,7 +55,7 @@ function StateMachine:Transition(toStateName, data)
 
 	if self.CurrentState then
 		if self.CurrentState.Name == toStateName then
-			warn("Attempting to go to same state, denied")
+			warn(`Attempting to go to same state {toStateName}, denied`)
 			return false
 		end
 		if not self.CurrentState:CanTransition(toStateName) then

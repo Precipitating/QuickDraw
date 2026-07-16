@@ -15,13 +15,12 @@ function AnimalAttack.new(machine, ai)
 	self.Target = nil
 	self.Cornered = false
 	self.LOSLostTime = nil
-
 	setmetatable(self, AnimalAttack)
 	return self
 end
 
 function AnimalAttack:Enter(previous, targetData: any)
-	warn(`[SERVER] {self.Owner.Character.Name} Entered AnimalAttack from {previous}`)
+	warn(`[SERVER] {self.Owner.Name} Entered AnimalAttack from {previous}`)
 	while self.Owner.IsRagdolled do
 		task.wait(1)
 	end
@@ -37,70 +36,31 @@ function AnimalAttack:Enter(previous, targetData: any)
 	-- 	{ MaxDistance = 100 }
 	-- )
 
-	self.Machine:Start()
+	local target = self.Target
+	local ai = self.AI
+
+	self.Owner:SetFlattenedTorsoAimer(target:GetPivot())
+
+	local success = ai:Attack()
+
+	if success then
+		task.wait(3)
+	end
+
+	if self:IsTargetDead(target) then
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+		return
+	end
+
+	self.Machine:Transition("Seek", { Target = target })
 end
 
 function AnimalAttack:IsTargetDead(target)
 	return CollectionService:HasTag(target, "Dead")
 end
 
-function AnimalAttack:Update(dt)
-	local now = os.clock()
-	local lastAttacked = now - self.LastAttacked
-	local animal = self.Owner
-	local ai = self.AI
-
-	if self.Owner.IsRagdolled then
-		self.Owner:ToggleTorsoAimer(false)
-		return
-	end
-
-	local target = self.Target
-	local animalPos = animal.Character:GetPivot().Position
-	if self:IsTargetDead(target) then
-		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
-		return
-	end
-	local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-
-	local inRange = ai:CorrectRangePosition(targetPos)
-	if inRange and typeof(inRange) == "string" then
-		if inRange == "Seek" then
-			self.Machine:Transition("Seek", { Target = target })
-			return
-		elseif inRange == "Fallback" and not self.Cornered then
-			self.Machine:Transition("Fallback", { Target = target })
-			return
-		end
-	end
-
-	if lastAttacked <= self.AI.AttackCooldown then
-		return
-	end
-	if not ai.NoobPath.Idle then
-		return
-	end
-
-	local isInLineOfSight = AI.IsTargetInView(ai, animalPos, target, true)
-
-	-- 2. Seek state if not in LOS (with patience timer)
-	if not isInLineOfSight then
-		self.LOSLostTime = self.LOSLostTime or os.clock()
-		if os.clock() - self.LOSLostTime > 2 then
-			self.LOSLostTime = nil
-			self.Machine:Transition("Seek", { Target = target })
-		end
-		return
-	else
-		self.LOSLostTime = nil
-	end
-
-	ai:OrientTowards(self.Target:GetPivot().Position)
-	self.LastAttacked = now
-	ai:Attack()
-end
-
 function AnimalAttack:Exit(nextState)
+	self.Owner.TorsoAimer.Enabled = false
 	self.Machine:Stop()
 end
 

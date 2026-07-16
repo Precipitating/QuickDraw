@@ -17,7 +17,7 @@ function Patrol.new(machine, ai)
 end
 
 function Patrol:Enter(previous, patrolData)
-	warn(`[SERVER] {self.Owner.Character.Name} Entered Patrol from {previous}`)
+	warn(`[SERVER] {self.Owner.Name} Entered Patrol from {previous}`)
 	self.PatrolData = PatrolData[patrolData]
 	self.AI:StateChangeReset()
 	self.Machine:Start()

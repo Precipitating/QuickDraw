@@ -54,15 +54,23 @@ function Fallback:MoveToFallbackPosition(fallbackPos: Vector3)
 	return true
 end
 
-function Fallback:AimNPCTowards(human: HumanNPC, targetPos: Vector3, target, NPCAimArm: MeshPart?)
-	if not targetPos or not human or not target or not NPCAimArm then
+function Fallback:AimNPCTowards(ownerClass, targetPos: Vector3, target, eyeTarget: MeshPart?)
+	if not targetPos or not ownerClass or not target or not eyeTarget then
 		return false
 	end
-	local done = human:AimRightArmTowards(targetPos)
+
+	local done = nil
+	local classType = self.Owner.ClassType
+
+	if classType == "HumanNPC" then
+		done = ownerClass:AimRightArmTowards(targetPos)
+	elseif classType == "Animal" then
+		done = ownerClass:SetFlattenedTorsoAimer(CFrame.new(targetPos))
+	end
 
 	if done then
 		-- 3.2. Can we see the target?
-		local isInLineOfSight = AI.IsTargetInView(self.AI, NPCAimArm.Position, target, true)
+		local isInLineOfSight = AI.IsTargetInView(self.AI, eyeTarget.Position, target, true)
 
 		-- 4. If so, transition to attack state, else seek
 		if isInLineOfSight and not CollectionService:HasTag(target, "Dead") then
@@ -107,7 +115,13 @@ function Fallback:PathFindToFallbackPosition(human: HumanNPC | Animal, target, t
 				return
 			end
 		elseif self.Owner.ClassType == "Animal" then
-			self.AI:OrientTowards(target:GetPivot().Position)
+			local aimedAt = self:AimNPCTowards(human, targetPos, target, self.Owner.BodyParts["Head"])
+
+			if not aimedAt then
+				self.Machine:Transition("Seek", { Target = target })
+				return
+			end
+			--self.AI:OrientTowards(target:GetPivot().Position)
 		end
 	end))
 
@@ -131,7 +145,7 @@ function Fallback:StopReloading(human: HumanNPC)
 end
 
 function Fallback:Enter(previous, fallbackData)
-	warn("Entered Fallback from", previous)
+	warn(`{self.Owner.Name} Entered Fallback from {previous}`)
 	while self.Owner.IsRagdolled do
 		task.wait(1)
 	end

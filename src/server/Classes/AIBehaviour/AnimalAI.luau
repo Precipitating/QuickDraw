@@ -1,7 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
+local AnimalAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.AnimalAttack)
 local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
+local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local AI = require(script.Parent.AI)
@@ -41,7 +42,8 @@ end
 
 function AnimalAI:AnimalInitialize()
 	self.StateMachine:AddState("Patrol", Patrol.new(self.StateMachine, self))
-	self.StateMachine:AddState("AnimalAttack", Fallback.new(self.StateMachine, self))
+	self.StateMachine:AddState("AnimalAttack", AnimalAttack.new(self.StateMachine, self))
+	self.StateMachine:AddState("Fallback", Fallback.new(self.StateMachine, self))
 
 	task.defer(function()
 		self.StateMachine:Transition(self.DefaultState.Name, self.DefaultState.Data)
@@ -174,9 +176,14 @@ end
 function AnimalAI:Attack()
 	local human = self.Owner
 	if not human then
-		return
+		return false
 	end
-	warn("Animal attack called")
+
+	if self.Owner.Attack then
+		warn("Animal attack called")
+		return self.Owner:Attack()
+	end
+	return false
 end
 
 return AnimalAI

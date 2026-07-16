@@ -110,7 +110,7 @@ function RangeAI:Attack()
 		currentGun:Reload()
 	else
 		currentGun:ShootGun()
-		warn(`{self.Owner.Character.Name} should shoot!`)
+		warn(`{self.Owner.Name} should shoot!`)
 		local recoil = GunData[self.WeaponName].GunRecoil
 		handle:ApplyImpulseAtPosition(handle.AssemblyMass * UP * recoil, shootPoint.WorldPosition)
 	end

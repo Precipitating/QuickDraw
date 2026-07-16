@@ -101,7 +101,7 @@ function Seek:LookAroundAndReact(ai)
 end
 
 function Seek:Enter(previous, seekData)
-	warn(`[SERVER] {self.Owner.Character.Name} Entered Seek from {previous}`)
+	warn(`[SERVER] {self.Owner.Name} Entered Seek from {previous}`)
 
 	if not seekData then
 		warn("No last seen target, back to default state")

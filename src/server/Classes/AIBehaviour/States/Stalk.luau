@@ -36,7 +36,7 @@ function Stalk:MoveToTarget(target)
 end
 
 function Stalk:Enter(previous, StalkData)
-	warn(`[SERVER] {self.Owner.Character.Name} Entered Stalk from {previous}`)
+	warn(`[SERVER] {self.Owner.Name} Entered Stalk from {previous}`)
 	self.AI:StateChangeReset()
 	if not StalkData then
 		warn("No target data, dying")
