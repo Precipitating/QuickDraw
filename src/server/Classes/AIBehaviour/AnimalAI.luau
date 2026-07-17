@@ -50,11 +50,6 @@ function AnimalAI:AnimalInitialize()
 	end)
 end
 
-function AnimalAI:StateChangeReset()
-	self.Owner:ToggleTorsoAimer(false)
-	self:ChangeWalkSpeed(16)
-	self:StopPathfind()
-end
 -- Find a valid position around target (circular around)
 -- It only returns positions that the the AI will have a line of sight to
 function AnimalAI:FindAnglePosition(
@@ -173,17 +168,16 @@ function AnimalAI:CorrectRangePosition(targetPos: Vector3): string | boolean
 	return true
 end
 
-function AnimalAI:Attack()
+function AnimalAI:Attack(target: Model? | BasePart?, onComplete: () -> ())
 	local human = self.Owner
 	if not human then
-		return false
+		return
 	end
 
 	if self.Owner.Attack then
 		warn("Animal attack called")
-		return self.Owner:Attack()
+		self.Owner:Attack(target, onComplete)
 	end
-	return false
 end
 
 return AnimalAI

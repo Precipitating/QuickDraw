@@ -12,7 +12,6 @@ end
 function Dead:Enter(previous)
 	warn("Entered Dead from", previous)
 	if self.AI then
-		self.AI:StateChangeReset()
 		self.AI:Destroy()
 	end
 end

@@ -1,4 +1,5 @@
 local ServerScriptService = game:GetService("ServerScriptService")
+local AnimalHandler = require(ServerScriptService.Server.Classes.Animal.AnimalHandler)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -11,6 +12,32 @@ return {
 	GunSignals.ConnectGunSignal:Connect(function(player: Player, gun: Tool)
 		print("Gun connect signal fired!")
 		ServerGunHandler.networker:fire(player, "ConnectGun", gun)
+	end),
+
+	GunSignals.AnimalHit:Connect(function(gunData, hitObj: RaycastResult?, shooter: Player? | Model?)
+		local hitInstance = hitObj and hitObj.Instance
+		local animalParent = hitInstance and hitInstance.Parent
+		local animalHumanoid = animalParent and animalParent:FindFirstChildOfClass("Humanoid")
+
+		if not animalHumanoid then
+			return
+		end
+
+		local animalClass = AnimalHandler:GetAnimal(animalHumanoid)
+		if not animalClass then
+			return
+		end
+
+		local gunShotData: ClassTypes.GunShotDamage = {
+			Type = "Shot",
+			RaycastResult = hitObj,
+			TargetHuman = animalClass,
+			Damage = gunData.Damage,
+			ShotPosition = hitObj and hitObj.Instance and hitObj.Instance.Position,
+			Shooter = shooter,
+		}
+
+		DamageModule.DamageAnimal(gunShotData)
 	end),
 
 	GunSignals.PlayerHit:Connect(

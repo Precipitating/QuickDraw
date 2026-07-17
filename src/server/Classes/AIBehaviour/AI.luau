@@ -91,10 +91,6 @@ function AI:Destroy()
 	self.NoobPath:Destroy()
 end
 
-function AI:StateChangeReset()
-	warn("AI base class called StateChangeReset")
-end
-
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV: boolean)
 	local targetPos: Vector3
 	local targetAncestor: Instance? = nil
@@ -221,28 +217,6 @@ function AI:AlignOrientLookAround()
 
 	return false
 end
-function AI:OrientTowards(seekDir: Vector3)
-	local torsoAimer: AlignOrientation = self.Owner.TorsoAimer
-
-	if not torsoAimer then
-		warn("[AI:TweenTowardsSeekDir] Torso aimer missing!")
-		return false
-	end
-
-	local flat = Vector3.new(seekDir.X, 0, seekDir.Z).Unit
-	local hrp = self.Owner.HRP
-	local goal = CFrame.lookAt(hrp.Position, hrp.Position + flat)
-
-	torsoAimer.CFrame = goal
-
-	torsoAimer.Enabled = true
-	repeat
-		task.wait()
-	until not self.HRP or Utility.IsVectorNear(self.HRP.AssemblyAngularVelocity, 0.05)
-	torsoAimer.Enabled = false
-
-	return true
-end
 
 -- look in 4 directions and attempt to find an enemy, prompting 'Attack' state if so.
 function AI:LookAround()
@@ -251,7 +225,6 @@ function AI:LookAround()
 	end
 	local targetFound = nil
 
-	self:StateChangeReset()
 	self.Owner:ToggleTorsoAimer(true)
 	warn("Toggled torso")
 
@@ -264,7 +237,7 @@ function AI:LookAround()
 	return targetFound
 end
 
-function AI:Attack()
+function AI:Attack(target: Model? | BasePart?)
 	warn("Base class AI Attack() Called!")
 end
 

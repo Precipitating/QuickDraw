@@ -116,13 +116,6 @@ function RangeAI:Attack()
 	end
 end
 
-function RangeAI:StateChangeReset()
-	self.Owner:ToggleRightArmAimer(false)
-	self.Owner:ToggleTorsoAimer(false)
-	self:ChangeWalkSpeed(HumanConstants.WALKSPEED)
-	self:StopPathfind()
-end
-
 -- Get angle required for object to hit a position (if possible)
 function RangeAI:GetThrowAngle(origin, target, velocity)
 	local diff = target - origin

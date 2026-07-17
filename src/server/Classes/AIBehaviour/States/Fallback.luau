@@ -149,7 +149,6 @@ function Fallback:Enter(previous, fallbackData)
 	while self.Owner.IsRagdolled do
 		task.wait(1)
 	end
-	self.AI:StateChangeReset()
 
 	-- Variables
 	local owner = self.Owner

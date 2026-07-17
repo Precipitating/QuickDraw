@@ -616,6 +616,20 @@ SoundData.Sounds = {
 		Group = "Voiceline",
 	},
 
+	-- Buffalos
+	AnimalAIAttackBuffalo = {
+		SoundId = "rbxassetid://106573922556824",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	BuffaloHit = {
+		SoundId = "rbxassetid://74149238738530",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+
 	-- Medic
 	MedicBuy = {
 		SoundId = "rbxassetid://103766849742433",

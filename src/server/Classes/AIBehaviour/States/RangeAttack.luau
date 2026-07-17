@@ -26,7 +26,6 @@ function RangeAttack:Enter(previous, targetData: any)
 		task.wait(1)
 	end
 	assert(targetData.Target, "[RangeAttack:Enter] Missing target ")
-	self.AI:StateChangeReset()
 	self.Target = targetData.Target
 	self.Cornered = targetData.Cornered
 
@@ -113,8 +112,6 @@ function RangeAttack:Update(dt)
 	ai:Attack()
 end
 
-function RangeAttack:Exit(nextState)
-	self.Machine:Stop()
-end
+function RangeAttack:Exit(nextState) end
 
 return RangeAttack

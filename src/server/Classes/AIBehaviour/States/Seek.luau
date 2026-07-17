@@ -12,7 +12,7 @@ Seek.__index = Seek
 function Seek.new(machine, ai)
 	local self = BaseState.new(machine, ai)
 	setmetatable(self, Seek)
-	self.LastChecked = os.clock()
+
 	self.PredictionAheadTime = 1
 	return self
 end
@@ -86,6 +86,7 @@ function Seek:LookAroundAndReact(ai)
 
 		-- inRange is true, distance is valid
 		self.Machine:Transition(self.AI.AttackState.Name, { Target = foundEnemy })
+		return
 	else
 		if self.Owner.ClassType == "HumanNPC" then
 			ServerSoundHandler:Play3DNPCVoiceline(
@@ -112,7 +113,7 @@ function Seek:Enter(previous, seekData)
 	local target: Model | BasePart = seekData.Target
 	assert(target, "NPC Seek state cannot proceed, target is nil")
 
-	self.AI:StateChangeReset()
+	self.LastChecked = os.clock()
 	self.Machine:Start()
 
 	local ai = self.AI
@@ -189,9 +190,6 @@ function Seek:Update(dt)
 	end
 end
 
-function Seek:Exit(nextState)
-	self.Machine:Stop()
-	self.AI.NoobPath:Stop()
-end
+function Seek:Exit(nextState) end
 
 return Seek

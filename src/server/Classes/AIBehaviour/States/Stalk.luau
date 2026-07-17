@@ -37,7 +37,6 @@ end
 
 function Stalk:Enter(previous, StalkData)
 	warn(`[SERVER] {self.Owner.Name} Entered Stalk from {previous}`)
-	self.AI:StateChangeReset()
 	if not StalkData then
 		warn("No target data, dying")
 		self.Owner:Die(nil)
@@ -114,9 +113,6 @@ function Stalk:Update(dt)
 	end
 end
 
-function Stalk:Exit(nextState)
-	self.Machine:Stop()
-	self.AI.NoobPath:Stop()
-end
+function Stalk:Exit(nextState) end
 
 return Stalk

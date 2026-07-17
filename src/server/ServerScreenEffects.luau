@@ -3,6 +3,9 @@ local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ServerScreenEffects = {}
 
 function ServerScreenEffects:ApplyOneShotEffect(player: Player, effectName: string)
+	if not player then
+		return
+	end
 	self.networker:fire(player, "ApplyOneShotEffect", effectName)
 end
 function ServerScreenEffects:StartSustainEffect(player: Player, effectName: string)

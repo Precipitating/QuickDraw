@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local BaseState = {}
 BaseState.__index = BaseState
 
@@ -42,6 +43,16 @@ end
 -- Cleanup helper
 function BaseState:Cleanup()
 	self.Janitor:Cleanup()
+	self.Machine:Stop()
+	self.AI:StopPathfind()
+	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
+
+	if self.Owner.TorsoAimer then
+		self.Owner:ToggleTorsoAimer(false)
+	end
+	if self.Owner.ToggleRightArmAimer then
+		self.Owner:ToggleRightArmAimer(false)
+	end
 end
 
 return BaseState

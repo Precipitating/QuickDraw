@@ -104,7 +104,6 @@ export type AI = {
 	-- Methods
 	new: (owner: Human) -> AI,
 	Initialize: (self: AI) -> (),
-	StateChangeReset: (self: AI) -> (),
 	IsTargetInView: (self: AI, originPos: Vector3, target: BasePart | Model, useFOV: boolean) -> boolean,
 	TweenLookAround: (self: AI, hrp: BasePart, remaining: number) -> boolean | Model,
 	LookAround: (self: AI, seekDir: Vector3?) -> boolean | Model,

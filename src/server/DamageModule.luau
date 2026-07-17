@@ -167,7 +167,22 @@ local function CheckAndHandleDeadHuman(human: Human, shooter: Player?)
 		human:Die(shooter)
 	end
 end
+function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage)
+	if not damageData then
+		return
+	end
+	local animalClass = damageData.TargetHuman
 
+	if not animalClass then
+		warn("Missing animal class.")
+		return
+	end
+
+	local damage = damageData.Damage
+	animalClass:UpdateHealth(-damage)
+
+	warn(`DAMAGED ANIMAL`)
+end
 function DamageModule.DamageHuman(
 	damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
 )

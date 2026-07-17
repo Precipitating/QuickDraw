@@ -25,43 +25,33 @@ function AnimalAttack:Enter(previous, targetData: any)
 		task.wait(1)
 	end
 	assert(targetData.Target, "[AnimalAttack:Enter] Missing target ")
-	self.AI:StateChangeReset()
 	self.Target = targetData.Target
 	self.Cornered = targetData.Cornered
 
-	-- ServerSoundHandler:Play3DNPCVoiceline(
-	-- 	nil,
-	-- 	`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
-	-- 	self.Owner.VoicelineSound,
-	-- 	{ MaxDistance = 100 }
-	-- )
+	ServerSoundHandler:Play3DNPCVoiceline(
+		nil,
+		`AnimalAIAttack{self.AI.Type}`,
+		self.Owner.VoicelineSound,
+		{ MaxDistance = 100, Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+	)
 
 	local target = self.Target
 	local ai = self.AI
 
-	self.Owner:SetFlattenedTorsoAimer(target:GetPivot())
+	ai:Attack(target, function()
+		if self:IsTargetDead(target) then
+			self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+			return
+		end
 
-	local success = ai:Attack()
-
-	if success then
-		task.wait(3)
-	end
-
-	if self:IsTargetDead(target) then
-		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
-		return
-	end
-
-	self.Machine:Transition("Seek", { Target = target })
+		self.Machine:Transition("Seek", { Target = target })
+	end)
 end
 
 function AnimalAttack:IsTargetDead(target)
 	return CollectionService:HasTag(target, "Dead")
 end
 
-function AnimalAttack:Exit(nextState)
-	self.Owner.TorsoAimer.Enabled = false
-	self.Machine:Stop()
-end
+function AnimalAttack:Exit(nextState) end
 
 return AnimalAttack

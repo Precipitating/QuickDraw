@@ -1,13 +1,8 @@
-local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimalAI = require(ServerScriptService.Server.Classes.AIBehaviour.AnimalAI)
-local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local DamageModule = require(ServerScriptService.Server.DamageModule)
-local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local AnimalData = require(script.Parent.AnimalData)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Animal = {}
 Animal.__index = Animal
@@ -83,73 +78,14 @@ function Animal:UpdateHealth(value: number)
 end
 
 function Animal:Die()
-	self:Destroy()
+	self.AI.StateMachine:Transition("Dead")
+	task.delay(30, function()
+		self:Destroy()
+	end)
 end
 
-function Animal:Attack()
-	if self.Attacking then
-		return false
-	end
-	self.Attacking = true
-	if self.Name == "Buffalo" then
-		local collider: BasePart = self.Character:FindFirstChild("HeadbuttCollider", true)
-		if not collider then
-			return false
-		end
-
-		self.Janitor:Add(
-			self.Humanoid.MoveToFinished:Connect(function(reached)
-				self.Attacking = false
-				self.Janitor:Remove("AttackConn")
-			end),
-			"Disconnect"
-		)
-
-		-- connect charge hitbox
-		self.Janitor:Add(
-			collider.Touched:Once(function(hitPart: BasePart)
-				local parent = hitPart.Parent
-				local humanoid = parent:FindFirstChildOfClass("Humanoid")
-				if
-					parent
-					and humanoid
-					and (CollectionService:HasTag(parent, "NPC") or CollectionService:HasTag(parent, "Player"))
-				then
-					local humanClass = PlayerManager:GetHumanClass(humanoid)
-
-					if not humanClass then
-						return
-					end
-					local dir: Vector3 = (hitPart.Position - collider.Position).Unit
-						* humanClass.HRP.AssemblyMass
-						* 1000
-					humanClass:ApplyImpulse(dir)
-
-					local data = {
-						Damage = HumanConstants.BUFFALO_DAMAGE,
-						LimbHit = hitPart,
-						TargetHuman = humanClass,
-						CanAffectShooter = false,
-						Shooter = self.Character,
-					} :: ClassTypes.BargeDamage
-
-					DamageModule.DamageHuman(data)
-				else
-					self.Health -= HumanConstants.BUFFALO_DAMAGE
-				end
-				self.Humanoid:MoveTo(self.HRP.Position)
-			end),
-			"Disconnect",
-			"AttackConn"
-		)
-
-		-- charge
-		local chargeDistance = 250
-		local finalDest = self.HRP.Position + self.HRP.CFrame.LookVector * chargeDistance
-		self.Humanoid.WalkSpeed = 100
-		self.Humanoid:MoveTo(finalDest)
-	end
-	return true
+function Animal:Attack(target: Model? | BasePart)
+	warn("Animal Attack base class function called. You should not see this")
 end
 
 function Animal:ToggleTorsoAimer(enable: boolean)

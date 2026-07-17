@@ -73,6 +73,25 @@ function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, ow
 	return true
 end
 
+function ProjectileEvents:GunHitAnimal(gunData, raycastResult: RaycastResult, owner: Player? | Model?)
+	if not gunData or not raycastResult then
+		return false
+	end
+	local hitInstance = raycastResult.Instance
+	local parent = hitInstance.Parent
+
+	if not parent then
+		return false
+	end
+
+	if not CollectionService:HasTag(parent, "Animal") then
+		return false
+	end
+	GunSignals.AnimalHit:Fire(gunData, raycastResult, owner)
+
+	return true
+end
+
 function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResult, owner: Player?)
 	local instance = raycastResult.Instance
 	local destroyableClass: Destroyable = DestroyableManager.Destroyables[instance]
@@ -505,13 +524,18 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	local projectileType = data.ProjectileType
 	local cosmeticBullet = context.CosmeticBulletObject
 
-	-- Assign bullet owner
 	-- ON BULLET HIT
 	if projectileType == "Bullet" then
 		self:ProjectileHitMaterial(result)
 		local bulletCosmetic = cosmeticBullet
 		local hitPlayer = ProjectileEvents:GunHitPlayer(data, result, nil, bulletCosmetic)
 		if hitPlayer then
+			return
+		end
+
+		local hitAnimal = ProjectileEvents:GunHitAnimal(data, result)
+
+		if hitAnimal then
 			return
 		end
 
@@ -604,6 +628,12 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 
 		-- Custom logic if it hits a specified material
 		self:ProjectileHitMaterial(result)
+
+		local hitAnimal = ProjectileEvents:GunHitAnimal(gunData, result, context.UserData.Owner)
+
+		if hitAnimal then
+			return
+		end
 
 		-- Hit Human class
 		local bulletCosmetic = context.CosmeticBulletObject

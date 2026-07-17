@@ -19,7 +19,6 @@ end
 function Patrol:Enter(previous, patrolData)
 	warn(`[SERVER] {self.Owner.Name} Entered Patrol from {previous}`)
 	self.PatrolData = PatrolData[patrolData]
-	self.AI:StateChangeReset()
 	self.Machine:Start()
 end
 
@@ -58,8 +57,6 @@ function Patrol:Update(dt)
 	ai:PathFindTo(wayPointPos)
 end
 
-function Patrol:Exit(nextState)
-	self.Machine:Stop()
-end
+function Patrol:Exit(nextState) end
 
 return Patrol
