@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBX45D884BC57C7488DA9259C0219080866">
+	<Item class="MeshPart" referent="RBX9B9BC729E87A4E958FF8445C7AADC752">
 		<Properties>
 			<bool name="DoubleSided">true</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -70,7 +70,7 @@
 			<bool name="CanQuery">false</bool>
 			<bool name="CanTouch">false</bool>
 			<bool name="CastShadow">false</bool>
-			<string name="CollisionGroup">Default</string>
+			<string name="CollisionGroup">Projectile</string>
 			<int name="CollisionGroupId">0</int>
 			<Color3uint8 name="Color3uint8">4290336256</Color3uint8>
 			<PhysicalProperties name="CustomPhysicalProperties">
@@ -134,9 +134,9 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">PistolBulletCosmetic</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags">QnVsbGV0</BinaryString>
+			<SharedString name="Tags">rxSJjjLCQAAdGdljiGlvSg==</SharedString>
 		</Properties>
-		<Item class="SurfaceAppearance" referent="RBX2F41929351EA4B6BAB776C0895CF0445">
+		<Item class="SurfaceAppearance" referent="RBX5B1A0D48AAC14C2F83F7C90E1EC083B3">
 			<Properties>
 				<token name="AlphaMode">0</token>
 				<Color3 name="Color">
@@ -164,10 +164,10 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">SurfaceAppearance</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX2771DC9CF9E64DE997260A2175F7BE4A">
+		<Item class="Attachment" referent="RBX6D808F2AF80641F8845965409B02D1E4">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>-0.0808002055</X>
@@ -189,10 +189,10 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Att2</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Attachment" referent="RBX8806AEC369A74F9080D5D3F12D6E4F4D">
+		<Item class="Attachment" referent="RBX08D479BE6C7846179D21BCC3B9D1D6E9">
 			<Properties>
 				<CoordinateFrame name="CFrame">
 					<X>-0.080102928</X>
@@ -214,13 +214,13 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Att1</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Trail" referent="RBXFDC9AD417EEE493C83A326AB040057CD">
+		<Item class="Trail" referent="RBXE0EB782F395D4AADB80A7324C78BFE3C">
 			<Properties>
-				<Ref name="Attachment0">RBX2771DC9CF9E64DE997260A2175F7BE4A</Ref>
-				<Ref name="Attachment1">RBX8806AEC369A74F9080D5D3F12D6E4F4D</Ref>
+				<Ref name="Attachment0">RBX6D808F2AF80641F8845965409B02D1E4</Ref>
+				<Ref name="Attachment1">RBX08D479BE6C7846179D21BCC3B9D1D6E9</Ref>
 				<float name="Brightness">1</float>
 				<ColorSequence name="Color">0 1 0.764706 0.215686 0 1 1 0.764706 0.215686 0 </ColorSequence>
 				<bool name="Enabled">true</bool>
@@ -240,11 +240,12 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Trail</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
 	</Item>
 	<SharedStrings>
+		<SharedString md5="rxSJjjLCQAAdGdljiGlvSg==">QnVsbGV0</SharedString>
 		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
 		<SharedString md5="0RkDUNvY99CHka/1BJPxoQ==">Q1NHUEhTCAAAAAIAKLUv/WD0DcVJAMpw1Bo8IKJSB4esCRoIEIF3/KDXjCathH9rsrhn30lq
 oSm/fWKySyHfqPhmKAzyJ+AADT2ypNpJACMQhNzcGxR3oQGcAZcBcriMPOaOOy+Ew/xpZE8K

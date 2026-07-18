@@ -73,7 +73,7 @@ local function AddNPCClass(taggedNPC: Model, classType: string)
 	else
 		-- else Bandit
 		humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
-		humanNPC.AI.EnemyList = { Player = true, Sheriff = true }
+		humanNPC.AI.EnemyList = { Player = true, Sheriff = true, Animal = true }
 	end
 
 	print(`[SERVER] NPCs spawned: {NPCEvents.CurrentSpawnedNPCS}`)

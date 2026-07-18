@@ -630,6 +630,13 @@ SoundData.Sounds = {
 		Group = "SFX",
 	},
 
+	BuffaloDead = {
+		SoundId = "rbxassetid://9113626404",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+
 	-- Medic
 	MedicBuy = {
 		SoundId = "rbxassetid://103766849742433",

@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AnimalAI = require(ServerScriptService.Server.Classes.AIBehaviour.AnimalAI)
@@ -72,6 +73,7 @@ end
 function Animal:UpdateHealth(value: number)
 	self.Health += value
 
+	warn("Buffalo HP =" .. self.Health)
 	if self.Health <= 0 then
 		self:Die()
 	end
@@ -79,6 +81,11 @@ end
 
 function Animal:Die()
 	self.AI.StateMachine:Transition("Dead")
+
+	if self.DeathRagdoll then
+		self:DeathRagdoll()
+	end
+	CollectionService:AddTag(self.Character, "Dead")
 	task.delay(30, function()
 		self:Destroy()
 	end)
@@ -122,10 +129,14 @@ function Animal:SetFlattenedTorsoAimer(targetCFrame: CFrame)
 	return true
 end
 --
-function Animal:Initialize() end
+function Animal:Initialize()
+	self.Janitor:Add(self.Character)
+end
 
+-- Note: AnimalHandler automatically removes this animal from ActiveAnimals when the model is destroyed thanks to InstanceRemoved connection
 function Animal:Destroy()
 	self.Janitor:Destroy()
+
 	table.clear(self)
 	setmetatable(self, nil)
 end

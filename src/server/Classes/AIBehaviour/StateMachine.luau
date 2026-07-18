@@ -80,6 +80,16 @@ function StateMachine:GetState()
 	return self.CurrentStateName
 end
 
+function StateMachine:Destroy()
+	self:Stop()
+
+	if self.CurrentState and self.CurrentState.Cleanup then
+		self.CurrentState:Cleanup()
+	end
+	table.clear(self)
+	setmetatable(self, nil)
+end
+
 function StateMachine:GetPreviousState()
 	return self.PreviousState and self.PreviousState.Name
 end

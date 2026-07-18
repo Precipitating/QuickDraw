@@ -11,8 +11,12 @@ end
 
 function Dead:Enter(previous)
 	warn("Entered Dead from", previous)
-	if self.AI then
+	if self.AI and self.AI.Destroy then
 		self.AI:Destroy()
+	end
+
+	if self.Owner and self.Owner.Humanoid then
+		self.Owner.Humanoid.EvaluateStateMachine = false
 	end
 end
 

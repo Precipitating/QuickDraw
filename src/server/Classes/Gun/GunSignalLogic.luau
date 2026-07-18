@@ -14,7 +14,7 @@ return {
 		ServerGunHandler.networker:fire(player, "ConnectGun", gun)
 	end),
 
-	GunSignals.AnimalHit:Connect(function(gunData, hitObj: RaycastResult?, shooter: Player? | Model?)
+	GunSignals.AnimalHit:Connect(function(hitData, hitObj: RaycastResult?, shooter: Player? | Model?)
 		local hitInstance = hitObj and hitObj.Instance
 		local animalParent = hitInstance and hitInstance.Parent
 		local animalHumanoid = animalParent and animalParent:FindFirstChildOfClass("Humanoid")
@@ -32,7 +32,7 @@ return {
 			Type = "Shot",
 			RaycastResult = hitObj,
 			TargetHuman = animalClass,
-			Damage = gunData.Damage,
+			Damage = hitData.Damage,
 			ShotPosition = hitObj and hitObj.Instance and hitObj.Instance.Position,
 			Shooter = shooter,
 		}
@@ -86,9 +86,10 @@ return {
 			spreadParticleName: string,
 			spreadDuration: number,
 			damageInflicted: number,
-			limb: MeshPart,
+			limb: MeshPart | BasePart,
 			humanoid: Humanoid,
 			shooter: Player?,
+			humanoidType: string,
 			canAffectShooter: boolean?
 		)
 			if not limb then
@@ -118,6 +119,7 @@ return {
 				SpreadDuration = spreadDuration,
 				Damage = damageInflicted,
 				TargetHuman = humanClass,
+				HumanoidType = humanoidType,
 				LimbHit = limb,
 				Shooter = shooter,
 				CanAffectShooter = canAffectShooter,

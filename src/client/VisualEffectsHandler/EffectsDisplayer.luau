@@ -5,7 +5,7 @@ local Networker = require(ReplicatedStorage.Packages.Networker).client
 local PoolHandler = require(script.Parent.Parent.Pools.PoolHandler)
 local Particles = ReplicatedStorage.Shared.Effects
 local EffectsDisplayer = {}
-local NoProjectileDecalList = { "Destroyable", "Player", "NPC", "Barrier" }
+local NoProjectileDecalList = { "Destroyable", "Player", "NPC", "Barrier", "Animal", "AnimalCollider" }
 
 EffectsDisplayer.networker = Networker.new("EffectsDisplayerNetwork", EffectsDisplayer)
 
@@ -34,12 +34,16 @@ local function TeleportAndWeld(part: Part, targetCFrame: CFrame, weldTarget: Bas
 	part.Anchored = false
 end
 
-function EffectsDisplayer:CanDisplayProjectileMark(instance: Instance)
+function EffectsDisplayer:CanDisplayProjectileMark(instance: BasePart)
 	for _, tag in NoProjectileDecalList do
 		if CollectionService:HasTag(instance.Parent, tag) then
 			return false
 		end
 		if CollectionService:HasTag(instance, tag) then
+			return false
+		end
+
+		if instance.CollisionGroup == tag then
 			return false
 		end
 	end

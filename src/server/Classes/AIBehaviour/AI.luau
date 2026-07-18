@@ -89,6 +89,12 @@ end
 
 function AI:Destroy()
 	self.NoobPath:Destroy()
+	self.StateMachine:Transition("Dead")
+	if self.StateMachine and self.StateMachine.Destroy then
+		self.StateMachine:Destroy()
+	end
+	table.clear(self)
+	setmetatable(self, nil)
 end
 
 function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV: boolean)

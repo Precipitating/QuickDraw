@@ -92,14 +92,28 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 	local spreadParticleName = inflictingDamageData.SpreadParticleName
 	local damagedLimb = inflictingDamageData.LimbHit
 	local spreadDuration = inflictingDamageData.SpreadDuration
+	local humanoidType = inflictingDamageData.HumanoidType
+
+	if not humanoidType then
+		warn("[ApplyInflictingDamage]: Missing humanoid type")
+		return
+	end
 
 	if spreadParticleName then
 		ServerEffectsDisplayer:DisplaySpreadParticle(spreadParticleName, spreadDuration, damagedLimb)
 	end
 
+	local damageFunction = function()
+		if humanoidType == "Human" then
+			self.DamageHuman(inflictingDamageData)
+		elseif humanoidType == "Animal" then
+			self.DamageAnimal(inflictingDamageData)
+		end
+	end
+
 	task.spawn(function()
 		for _ = 1, spreadDuration do
-			self.DamageHuman(inflictingDamageData)
+			damageFunction()
 			task.wait(1)
 		end
 	end)
@@ -167,12 +181,13 @@ local function CheckAndHandleDeadHuman(human: Human, shooter: Player?)
 		human:Die(shooter)
 	end
 end
-function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage)
+function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassTypes.InflictingDamage)
 	if not damageData then
 		return
 	end
-	local animalClass = damageData.TargetHuman
 
+	local animalClass = damageData.TargetHuman
+	local raycastResult = damageData.RaycastResult
 	if not animalClass then
 		warn("Missing animal class.")
 		return
@@ -180,7 +195,16 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage)
 
 	local damage = damageData.Damage
 	animalClass:UpdateHealth(-damage)
+	if raycastResult then
+		ServerEffectsDisplayer:DisplayBloodHit(raycastResult.Position, raycastResult.Normal)
+	end
 
+	ServerSoundHandler:Play3DOneShotToOthers(
+		nil,
+		`{animalClass.Type}Hit`,
+		animalClass.Character:GetPivot(),
+		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+	)
 	warn(`DAMAGED ANIMAL`)
 end
 function DamageModule.DamageHuman(

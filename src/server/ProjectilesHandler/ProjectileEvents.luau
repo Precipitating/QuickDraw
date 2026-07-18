@@ -39,7 +39,8 @@ local MaterialHitData = {
 }
 
 type Destroyable = ClassTypes.Destroyable
-
+local ProjectileRaycastParam = RaycastParams.new()
+ProjectileRaycastParam.CollisionGroup = "Projectile"
 local function GetHumanoidFromHit(instance: Instance): Humanoid?
 	local model = instance:FindFirstAncestorOfClass("Model")
 	if not model then
@@ -60,6 +61,16 @@ function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, ow
 	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
 
 	if not hitHumanoid then
+		return false
+	end
+
+	local parent = raycastResult.Instance.Parent
+
+	if not parent then
+		return false
+	end
+
+	if not CollectionService:HasTag(parent, "NPC") and not CollectionService:HasTag(parent, "Player") then
 		return false
 	end
 
@@ -236,35 +247,66 @@ function ProjectileEvents:HandleSubTypes(subtype: string, duration: number, hit:
 	end
 end
 
-function ProjectileEvents:FragmentHitPlayer(hit: RaycastResult, owner, throwableData, cosmeticBullet: BasePart?)
-	local isModel = hit.Instance:FindFirstAncestorOfClass("Model")
-	if isModel then
-		local humanoid = isModel:FindFirstChild("Humanoid")
-		local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
-		if humanoid then
-			if throwableData.Type == "Explosive" then
-				GunSignals.PlayerHit:Fire(hit, humanoid, throwableData.Damage, cosmeticBullet, isPlayer, true)
-			elseif throwableData.Type == "Spread" then
-				GunSignals.InflictLimbDamage:Fire(
-					throwableData.SpreadParticle,
-					throwableData.SpreadDuration,
-					throwableData.Damage,
-					hit.Instance,
-					humanoid,
-					isPlayer,
-					true
-				)
-			end
+-- Determine humanoid type, animal or human or any future humanoid types
+function ProjectileEvents:GetHumanoidType(parent)
+	local humanoidType = nil
+	if CollectionService:HasTag(parent, "Player") or CollectionService:HasTag(parent, "NPC") then
+		humanoidType = "Human"
+	elseif CollectionService:HasTag(parent, "Animal") then
+		humanoidType = "Animal"
+	end
 
-			-- special effects add-on
-			task.spawn(function()
-				if throwableData.Subtype and throwableData.SubtypeEffectDuration then
-					self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
-				end
-			end)
+	return humanoidType
+end
 
-			return true
+function ProjectileEvents:FragmentHitHumanoid(
+	raycastResult: RaycastResult,
+	owner,
+	throwableData,
+	cosmeticBullet: BasePart?
+)
+	local isModel = raycastResult.Instance:FindFirstAncestorOfClass("Model")
+	if not isModel then
+		return false
+	end
+	local humanoid = isModel:FindFirstChild("Humanoid")
+	if not humanoid then
+		return false
+	end
+
+	local humanoidType = self:GetHumanoidType(isModel)
+	if not humanoidType then
+		return false
+	end
+
+	local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
+
+	if throwableData.Type == "Explosive" then
+		if humanoidType == "Human" then
+			GunSignals.PlayerHit:Fire(raycastResult, humanoid, throwableData.Damage, cosmeticBullet, isPlayer, true)
+		elseif humanoidType == "Animal" then
+			GunSignals.AnimalHit:Fire(throwableData, raycastResult, isPlayer)
 		end
+	elseif throwableData.Type == "Spread" then
+		GunSignals.InflictLimbDamage:Fire(
+			throwableData.SpreadParticle,
+			throwableData.SpreadDuration,
+			throwableData.Damage,
+			raycastResult.Instance,
+			humanoid,
+			isPlayer,
+			humanoidType,
+			true
+		)
+
+		-- special effects add-on
+		task.spawn(function()
+			if throwableData.Subtype and throwableData.SubtypeEffectDuration then
+				self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, raycastResult)
+			end
+		end)
+
+		return true
 	end
 	return false
 end
@@ -334,6 +376,7 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 	local parent = damagedObject.Parent
 	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
 	local isBodyPart = damagedObject:IsA("MeshPart") and humanoid
+	local humanoidType = self:GetHumanoidType(parent)
 
 	local dmg = explosiveData.BaseDamage or explosiveData.Damage
 	local effectDuration = explosiveData.SpreadDuration or 0
@@ -346,11 +389,13 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 				dmg,
 				damagedObject,
 				humanoid,
-				initiator
+				initiator,
+				humanoidType,
+				true
 			)
 		else
 			if damageType == "Damage" then
-				GunSignals.InflictLimbDamage:Fire(nil, 1, dmg, damagedObject, humanoid, initiator)
+				GunSignals.InflictLimbDamage:Fire(nil, 1, dmg, damagedObject, humanoid, initiator, humanoidType, true)
 			end
 		end
 		return true
@@ -465,6 +510,7 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 			Origin = origin,
 			Direction = randomDir,
 			Speed = 200,
+			RaycastParams = ProjectileRaycastParam,
 		})
 		context.UserData.ProjectileType = "Shrapnel"
 		context.UserData.Data = throwableData
@@ -588,8 +634,8 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 
 	self:ProjectileHitMaterial(result)
 
-	-- handle hitting player
-	if self:FragmentHitPlayer(result, owner, throwableData, cosmeticBullet) then
+	-- handle hitting player/animal
+	if self:FragmentHitHumanoid(result, owner, throwableData, cosmeticBullet) then
 		return
 	end
 

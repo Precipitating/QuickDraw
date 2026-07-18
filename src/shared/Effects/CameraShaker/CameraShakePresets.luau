@@ -170,6 +170,16 @@ local CameraShakePresets = {
 		c.RotationInfluence = Vector3.new(3, 4, 5) -- violent tumble/spin
 		return c
 	end,
+
+	-- Getting rammed by a charging bull at high speed.
+	-- Near-instant, brutal forward-lateral slam followed by a hard upward toss
+	-- and disorienting spin as you get launched off your feet. One-shot.
+	BullRam = function()
+		local c = CameraShakeInstance.new(10, 18, 0, 1.8)
+		c.PositionInfluence = Vector3.new(0.5, 0.45, 0.6) -- big shove forward + thrown upward
+		c.RotationInfluence = Vector3.new(3.5, 4.5, 4) -- disorienting toss/spin off the horns
+		return c
+	end,
 }
 
 return setmetatable({}, {

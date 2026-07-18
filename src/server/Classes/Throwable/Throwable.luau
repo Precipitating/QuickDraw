@@ -10,8 +10,8 @@ local Throwable = {}
 type Human = ClassTypes.Human
 Throwable.__index = Throwable
 
-local fragmentParam = RaycastParams.new()
-fragmentParam.FilterType = Enum.RaycastFilterType.Exclude
+local ThrowableRaycastParam = RaycastParams.new()
+ThrowableRaycastParam.CollisionGroup = "Throwable"
 
 function Throwable.new(throwableName: string, humanRef: Human?, ammo: number?, maxAmmo: number?, tool: Tool?)
 	assert(ThrowableData[throwableName], "Throwable name missing, cannot initialize")
@@ -39,9 +39,6 @@ function Throwable.new(throwableName: string, humanRef: Human?, ammo: number?, m
 	self.CanThrow = true
 	self.Janitor = Janitor.new()
 	self.ProjectileData = ThrowableData[self.Name].ProjectileData
-
-	self.RaycastParams = RaycastParams.new()
-	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 
 	return self
 end
@@ -74,7 +71,7 @@ function Throwable:Throw(cameraLookVector: Vector3)
 		Origin = launchPos,
 		Direction = cameraLookVector,
 		Speed = self.ThrowVelocity,
-		RaycastParams = self.RaycastParams,
+		RaycastParams = ThrowableRaycastParam,
 	})
 
 	context.UserData.Class = self

@@ -10,6 +10,9 @@ local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundH
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
+local GunRaycastParam = RaycastParams.new()
+GunRaycastParam.CollisionGroup = "Projectile"
+
 type Human = ClassTypes.Human
 type Gun = ClassTypes.Gun
 
@@ -53,9 +56,6 @@ function Gun.new(gunName: string, humanClass: Human, player: Player | Model, too
 	local muzzleFlash = tool and tool:FindFirstChild("MuzzleFlash", true)
 	self.MuzzleFlash = if muzzleFlash then muzzleFlash:FindFirstChildOfClass("Attachment") else nil
 
-	self.RaycastParams = RaycastParams.new()
-	self.RaycastParams.FilterType = Enum.RaycastFilterType.Exclude
-
 	self:InitializeEvents()
 
 	return self
@@ -98,7 +98,7 @@ function Gun:SingleShot()
 		Origin = self.ShootPoint.WorldPosition,
 		Direction = self.ShootPoint.WorldAxis,
 		Speed = self.Speed,
-		RaycastParams = self.RaycastParams,
+		RaycastParams = GunRaycastParam,
 	})
 
 	context.UserData.Owner = self.PlayerRef
@@ -135,7 +135,7 @@ function Gun:SpreadShot()
 			Origin = self.ShootPoint.WorldPosition,
 			Direction = spreadDir,
 			Speed = self.Speed,
-			RaycastParams = self.RaycastParams,
+			RaycastParams = GunRaycastParam,
 		})
 
 		context.UserData.Owner = self.PlayerRef

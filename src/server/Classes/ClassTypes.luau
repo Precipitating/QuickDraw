@@ -211,6 +211,7 @@ export type DamageData = {
 export type InflictingDamage = DamageData & {
 	Type: "Inflict",
 	SpreadParticleName: string?,
+	HumanoidType: string,
 	SpreadDuration: number?,
 	LimbHit: BasePart,
 }

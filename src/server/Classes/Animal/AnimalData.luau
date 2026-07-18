@@ -1,6 +1,6 @@
 return {
 	Buffalo = {
-		Health = 500,
-		AttackRunSpeed = 50,
+		Health = 200,
+		AttackRunSpeed = 100,
 	},
 }

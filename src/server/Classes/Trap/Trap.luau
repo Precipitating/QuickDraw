@@ -95,7 +95,6 @@ local TrapActivatedLogic = {
 			Origin = trapModel:GetPivot().Position + Vector3.new(0, 1, 0),
 			Direction = -Vector3.yAxis,
 			Speed = explosiveData.Velocity,
-			RaycastParams = explosiveData.RaycastParams,
 		})
 
 		context.UserData.Class = { Owner = trapOwner }

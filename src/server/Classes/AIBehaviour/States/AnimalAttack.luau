@@ -44,7 +44,9 @@ function AnimalAttack:Enter(previous, targetData: any)
 			return
 		end
 
-		self.Machine:Transition("Seek", { Target = target })
+		if self.Machine and self.Machine.Transition then
+			self.Machine:Transition("Seek", { Target = target })
+		end
 	end)
 end
 

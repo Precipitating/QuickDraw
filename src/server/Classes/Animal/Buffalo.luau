@@ -16,11 +16,31 @@ Buffalo.__index = Buffalo
 function Buffalo.new(model: Model?, classType: string)
 	local self = setmetatable(Animal.new(model, classType), Buffalo)
 	self.ChargeDistance = 150
-	self.ChargeSpeed = 100
 	self.ChargeForce = 100
 	self.ChargeStartTime = 0
-	self.WaitTimeBeforeCharge = 3
+	self.WaitTimeBeforeCharge = 5
 	return self :: any
+end
+
+-- Allows the ball sockets to wander freely after disabling the AnimationConstraints
+-- Also enables collision on legs so legs dont go through ground
+function Buffalo:DeathRagdoll()
+	local character = self.Character
+	if not character then
+		return
+	end
+	-- Disable constraints
+	for _, instance in self.Character:GetDescendants() do
+		if instance:IsA("AnimationConstraint") then
+			instance.Enabled = false
+			if instance.Parent and instance.Parent:IsA("BasePart") then
+				local parent = instance.Parent
+				if not parent.CanCollide then
+					parent.CanCollide = true
+				end
+			end
+		end
+	end
 end
 
 function Buffalo:ChargeUpRun(target: Model? | BasePart?, onComplete: () -> ())
@@ -111,7 +131,7 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 					} :: ClassTypes.BargeDamage
 
 					DamageModule.DamageHuman(data)
-					ServerScreenEffects:ApplyOneShotEffect(humanClass.Player, "CannonballHit")
+					ServerScreenEffects:ApplyOneShotEffect(humanClass.Player, "BullRam")
 				else
 					self.Health -= HumanConstants.BUFFALO_DAMAGE
 				end
@@ -123,7 +143,7 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 
 		-- charge
 		local finalDest = self.HRP.Position + self.HRP.CFrame.LookVector * self.ChargeDistance
-		self.Humanoid.WalkSpeed = self.ChargeSpeed
+		self.Humanoid.WalkSpeed = self.AttackRunSpeed
 		self.Humanoid:MoveTo(finalDest)
 	end)
 end
