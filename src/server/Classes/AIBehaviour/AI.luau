@@ -6,7 +6,6 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local NoobPath = require(ReplicatedStorage.Shared.Pathfinding.NoobPath)
 local Path = require(ReplicatedStorage.Shared.Pathfinding.Path)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Dead = require(ServerScriptService.Server.Classes.AIBehaviour.States.Dead)
 local Idle = require(ServerScriptService.Server.Classes.AIBehaviour.States.Idle)
 local Seek = require(ServerScriptService.Server.Classes.AIBehaviour.States.Seek)
@@ -236,7 +235,7 @@ function AI:LookAround()
 
 	targetFound = self:AlignOrientLookAround()
 
-	if type(self.Owner.ToggleTorsoAimer) ~= "function" then
+	if not self.Owner or not self.Owner.ToggleTorsoAimer then
 		return nil
 	end
 	self.Owner:ToggleTorsoAimer(false)

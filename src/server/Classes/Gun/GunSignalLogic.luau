@@ -101,16 +101,26 @@ return {
 				return
 			end
 
-			local humanClass = PlayerManager:GetHumanClass(humanoid)
+			local targetClass = nil
 
-			if not humanClass then
-				warn("[InflictLimbDamage] humanClass invalid")
-				return
-			end
+			if humanoidType == "Human" then
+				targetClass = PlayerManager:GetHumanClass(humanoid)
 
-			if humanClass.Invincible then
-				warn(`Invincible, not inflicting limb damage`)
-				return
+				if not targetClass then
+					warn("[InflictLimbDamage] humanClass invalid")
+					return
+				end
+
+				if targetClass.Invincible then
+					warn(`Invincible, not inflicting limb damage`)
+					return
+				end
+			elseif humanoidType == "Animal" then
+				targetClass = AnimalHandler:GetAnimal(humanoid)
+				if not targetClass then
+					warn("[InflictLimbDamage] animalClass invalid")
+					return
+				end
 			end
 
 			local shotData: ClassTypes.InflictingDamage = {
@@ -118,7 +128,7 @@ return {
 				SpreadParticleName = spreadParticleName,
 				SpreadDuration = spreadDuration,
 				Damage = damageInflicted,
-				TargetHuman = humanClass,
+				TargetHuman = targetClass,
 				HumanoidType = humanoidType,
 				LimbHit = limb,
 				Shooter = shooter,

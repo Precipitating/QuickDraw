@@ -1,0 +1,73 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Folder" referent="RBXA6FC69B6C8A04DEFA56B1A3F97696848">
+		<Properties>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+			<bool name="DefinesCapabilities">false</bool>
+			<string name="Name">BuffaloAnimations</string>
+			<int64 name="SourceAssetId">-1</int64>
+			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+		</Properties>
+		<Item class="Animation" referent="RBX329EFD21EC7544D98AE533DFDB42B538">
+			<Properties>
+				<Content name="AnimationId"><url>rbxassetid://138563649397078</url></Content>
+				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Run</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+			</Properties>
+		</Item>
+		<Item class="Animation" referent="RBX876E8574292D4680B9E05BFD941E9F86">
+			<Properties>
+				<Content name="AnimationId"><url>rbxassetid://138563649397078</url></Content>
+				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Walk</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+			</Properties>
+		</Item>
+		<Item class="Animation" referent="RBXBE3A9C97662748D5B32FF0B5EEC411B1">
+			<Properties>
+				<Content name="AnimationId"><url>rbxassetid://77015613505617</url></Content>
+				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Idle</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+			</Properties>
+		</Item>
+		<Item class="Animation" referent="RBX0531BF7EB6734A5C9D8F879A4BEDF9E4">
+			<Properties>
+				<Content name="AnimationId"><url>rbxassetid://76905293724945</url></Content>
+				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Fall</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+			</Properties>
+		</Item>
+		<Item class="Animation" referent="RBX7524407E373245C58D8ACD45FEE7D31F">
+			<Properties>
+				<Content name="AnimationId"><url>rbxassetid://108399611653895</url></Content>
+				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
+				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+				<bool name="DefinesCapabilities">false</bool>
+				<string name="Name">Jump</string>
+				<int64 name="SourceAssetId">-1</int64>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+			</Properties>
+		</Item>
+	</Item>
+	<SharedStrings>
+		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+	</SharedStrings>
+</roblox>

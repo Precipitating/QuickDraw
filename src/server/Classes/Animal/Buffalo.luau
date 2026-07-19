@@ -31,6 +31,9 @@ function Buffalo:DeathRagdoll()
 	end
 	-- Disable constraints
 	for _, instance in self.Character:GetDescendants() do
+		if instance:IsA("BasePart") then
+			instance.CollisionGroup = "Dead"
+		end
 		if instance:IsA("AnimationConstraint") then
 			instance.Enabled = false
 			if instance.Parent and instance.Parent:IsA("BasePart") then
@@ -133,7 +136,7 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 					DamageModule.DamageHuman(data)
 					ServerScreenEffects:ApplyOneShotEffect(humanClass.Player, "BullRam")
 				else
-					self.Health -= HumanConstants.BUFFALO_DAMAGE
+					self:UpdateHealth(-HumanConstants.BUFFALO_DAMAGE)
 				end
 				self.Humanoid:MoveTo(self.HRP.Position)
 			end),

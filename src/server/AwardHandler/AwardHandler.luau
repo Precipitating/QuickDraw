@@ -36,6 +36,17 @@ function AwardHandler.AwardNPCKill(killer: Player)
 	QuestHandler:ProgressQuest(killer, "Kill", 1)
 end
 
+function AwardHandler.AwardAnimalKill(animalType: string, killer: Player)
+	local ownsDoubleMoney = AwardHandler.OwnsGamePass(killer, GamepassIds.DoubleMoney)
+	local awardAmount = if ownsDoubleMoney
+		then AwardConstants.ANIMAL_KILL_AWARD * 2
+		else AwardConstants.ANIMAL_KILL_AWARD
+
+	ServerData.UpdateMoney(killer, awardAmount)
+
+	PopupGUI:NewPopup(killer, 2, `{animalType} killed: ${awardAmount}`)
+end
+
 function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
 	local ownsDoubleMoney = AwardHandler.OwnsGamePass(killer, GamepassIds.DoubleMoney)
 

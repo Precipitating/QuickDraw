@@ -1,7 +1,9 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local AnimalAI = require(ServerScriptService.Server.Classes.AIBehaviour.AnimalAI)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local AnimalData = require(script.Parent.AnimalData)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -23,7 +25,9 @@ function Animal.new(model: Model?, type: string)
 	self.Janitor = Janitor.new()
 	self.IsRagdolled = false
 	self.Health = animalData.Health
+	self.MaxHP = animalData.Health
 	self.Attacking = false
+	self.Dead = false
 	self.Target = workspace:FindFirstChild("Target")
 	self.ClassType = "Animal"
 	self.Type = type
@@ -70,22 +74,36 @@ local function FlattenCFrameY(originalCFrame: CFrame): CFrame
 	return CFrame.new(originalCFrame.Position) * CFrame.Angles(0, yaw, 0)
 end
 
-function Animal:UpdateHealth(value: number)
-	self.Health += value
+function Animal:UpdateHealth(value: number, hitBy: Player?)
+	self.Health = math.clamp(self.Health + value, 0, self.MaxHP)
 
 	warn("Buffalo HP =" .. self.Health)
 	if self.Health <= 0 then
-		self:Die()
+		self:Die(hitBy)
 	end
 end
 
-function Animal:Die()
+function Animal:Die(killer: Player?)
+	if self.Dead then
+		return
+	end
+	if not self.AI or not self.AI.StateMachine or not self.AI.StateMachine.Transition then
+		return
+	end
+	self.Dead = true
 	self.AI.StateMachine:Transition("Dead")
 
 	if self.DeathRagdoll then
 		self:DeathRagdoll()
 	end
 	CollectionService:AddTag(self.Character, "Dead")
+
+	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.Type}Dead`, self.Character:GetPivot(), nil)
+
+	if killer then
+		AwardHandler.AwardAnimalKill(self.Type, killer)
+	end
+
 	task.delay(30, function()
 		self:Destroy()
 	end)

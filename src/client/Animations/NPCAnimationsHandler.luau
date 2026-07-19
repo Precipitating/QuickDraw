@@ -1,7 +1,5 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
-
 local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
 
 --
@@ -11,6 +9,7 @@ local RenderDistance = 300
 --
 local DefaultAnims = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
 local CrawlAnims = ReplicatedStorage.Shared.AnimationData.CrawlAnimations
+local BuffaloAnims = ReplicatedStorage.Shared.AnimationData.BuffaloAnimations
 --
 local DefaultAnimateParams = {
 	ApplyRigScale = true,
@@ -84,10 +83,18 @@ function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
 			return
 		end
 		local isLegless = character:GetAttribute("Legless")
+		local animalType = character:GetAttribute("Type")
+
 		if isLegless then
 			controller = AnimationController.new(character, CrawlAnims, DefaultAnimateParams)
 		else
-			controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)
+			if animalType then
+				if animalType == "Buffalo" then
+					controller = AnimationController.new(character, BuffaloAnims, DefaultAnimateParams)
+				end
+			else
+				controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)
+			end
 		end
 		AnimatedNPCS[character] = controller
 	end)

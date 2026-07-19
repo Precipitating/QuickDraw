@@ -67,9 +67,9 @@ function DamageModule:ApplyDamage(
 
 		-- if npc damaged on patrol, seek immediately the target
 		-- only applies to SHOT damage type
-		if ai and ai.StateMachine:GetState() == "Patrol" and shotPos then
+		if ai and ai.StateMachine:GetState() == "Patrol" then
 			ai.StateMachine:Transition("Seek", {
-				Target = if shooter:IsA("Player") then shooter.Character else shooter,
+				Target = if shooter and shooter:IsA("Player") then shooter.Character else shooter,
 			})
 		end
 	elseif human.HumanType == "Player" then
@@ -93,6 +93,7 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 	local damagedLimb = inflictingDamageData.LimbHit
 	local spreadDuration = inflictingDamageData.SpreadDuration
 	local humanoidType = inflictingDamageData.HumanoidType
+	local targetHuman = inflictingDamageData.TargetHuman
 
 	if not humanoidType then
 		warn("[ApplyInflictingDamage]: Missing humanoid type")
@@ -113,6 +114,9 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 
 	task.spawn(function()
 		for _ = 1, spreadDuration do
+			if targetHuman.Dead then
+				return
+			end
 			damageFunction()
 			task.wait(1)
 		end
@@ -187,16 +191,35 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 	end
 
 	local animalClass = damageData.TargetHuman
-	local raycastResult = damageData.RaycastResult
+	-- Inflicting Damage does not have RaycastResult, so it will only display blood if we do.
+	local raycastResult = (damageData :: any).RaycastResult
 	if not animalClass then
 		warn("Missing animal class.")
 		return
 	end
 
 	local damage = damageData.Damage
-	animalClass:UpdateHealth(-damage)
+	animalClass:UpdateHealth(-damage, damageData.Shooter)
 	if raycastResult then
 		ServerEffectsDisplayer:DisplayBloodHit(raycastResult.Position, raycastResult.Normal)
+	end
+
+	-- Set animal to seek state when shot, aggroing them.
+	local ai = animalClass.AI
+	if not ai then
+		warn("Animal missing AI reference")
+		return
+	end
+
+	if ai and ai.StateMachine and ai.StateMachine.Transition then
+		local currentAnimalState = ai.StateMachine:GetState()
+		local shooter = damageData.Shooter
+		if currentAnimalState == "Patrol" then
+			ai.StateMachine:Transition(
+				"Seek",
+				{ Target = if shooter:IsA("Player") then shooter.Character else shooter }
+			)
+		end
 	end
 
 	ServerSoundHandler:Play3DOneShotToOthers(

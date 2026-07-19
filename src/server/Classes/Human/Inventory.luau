@@ -151,7 +151,7 @@ function Inventory:EquipWeapon(weaponType: string)
 			GunSignals.ConnectGunSignal:Fire(self.Owner.Player, weapon.Tool)
 			weapon:InitializeAmmoValues()
 		elseif weaponType == "Throwable" then
-			weapon.RaycastParams.ExcludeInstances = { weapon.Tool }
+			--weapon.RaycastParams.ExcludeInstances = { weapon.Tool }
 			ThrowableSignals.ConnectThrowableSignal:Fire(self.Owner.Player, weapon.Tool)
 		elseif weaponType == "Trap" then
 			TrapSignals.ConnectTrapSignal:Fire(self.Owner.Player, weapon.Tool)
