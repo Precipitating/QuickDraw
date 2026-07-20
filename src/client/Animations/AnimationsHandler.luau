@@ -16,7 +16,6 @@ local LoadedAnimations = {
 	BargeRun = true,
 	BargeWindup = true,
 	BargeHitEnvironment = true,
-	BuffaloChargeUp = true,
 }
 
 function AnimationsHandler.LoadCustomAnimations(humanoid: Humanoid?)

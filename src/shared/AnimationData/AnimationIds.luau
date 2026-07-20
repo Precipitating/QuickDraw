@@ -11,6 +11,4 @@ return {
 	BargeRun = 119665275935251,
 	BargeWindup = 131054778807822,
 	BargeHitEnvironment = 139755214511454,
-
-	BuffaloChargeUp = 81136980805010,
 }

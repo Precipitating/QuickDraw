@@ -3,20 +3,22 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Animal class
+local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
-local Animal = require(script.Parent.Animal)
 
+local Animal = require(script.Parent.Animal)
 local Buffalo = setmetatable({}, Animal)
 Buffalo.__index = Buffalo
 
 function Buffalo.new(model: Model?, classType: string)
 	local self = setmetatable(Animal.new(model, classType), Buffalo)
 	self.ChargeDistance = 150
-	self.ChargeForce = 100
+	self.ChargeForce = 200
+
 	self.ChargeStartTime = 0
 	self.WaitTimeBeforeCharge = 5
 	return self :: any
@@ -81,6 +83,7 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 
 	self.Attacking = true
 	self.ChargeStartTime = os.clock()
+	AnimationHandler:SetAnimationFolder(nil, "BuffaloChargeUpAnimations", self.Character)
 
 	-- 1. Align Buffalo to look towards target for x seconds
 	self:ChargeUpRun(target, function()
@@ -114,16 +117,6 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 					if not humanClass or not hitPart then
 						return
 					end
-					local dir = (self.HRP.CFrame.LookVector + Vector3.new(0, 0.3, 0)).Unit
-						* hitPart.AssemblyMass
-						* self.ChargeForce
-
-					if humanClass.Ragdoll then
-						humanClass:Ragdoll(5)
-					end
-					task.defer(function()
-						humanClass:ApplyImpulse(dir)
-					end)
 
 					local data = {
 						Damage = HumanConstants.BUFFALO_DAMAGE,
@@ -135,9 +128,23 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 
 					DamageModule.DamageHuman(data)
 					ServerScreenEffects:ApplyOneShotEffect(humanClass.Player, "BullRam")
+
+					if humanClass.Ragdoll then
+						humanClass:Ragdoll(5)
+					end
+
+					local dir = (self.HRP.CFrame.LookVector + Vector3.new(0, 0.3, 0)).Unit
+						* self.HRP.AssemblyMass
+						* self.ChargeForce
+					task.defer(function()
+						humanClass:ApplyImpulse(dir)
+					end)
 				else
 					self:UpdateHealth(-HumanConstants.BUFFALO_DAMAGE)
 				end
+
+				AnimationHandler:ResetToDefaultAnimations(nil, self.Character)
+
 				self.Humanoid:MoveTo(self.HRP.Position)
 			end),
 			"Disconnect",

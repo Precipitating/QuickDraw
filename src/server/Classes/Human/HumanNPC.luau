@@ -319,6 +319,7 @@ end
 function HumanNPC:Ragdoll(duration: number)
 	local humanoid = self.Humanoid
 	self:UnEquipCurrentTool()
+
 	humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
 	humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
 

@@ -32,6 +32,8 @@ function Animal.new(model: Model?, type: string)
 	self.ClassType = "Animal"
 	self.Type = type
 	self.Humanoid = model:FindFirstChildOfClass("Humanoid")
+	self.Animator = self.Humanoid and self.Humanoid:FindFirstChildOfClass("Animator")
+
 	self.HRP = model:FindFirstChild("HumanoidRootPart")
 	self.BodyParts = {
 		Head = Utility.GetInstance(model, false, "Head"),
@@ -62,6 +64,7 @@ function Animal:InitializeTorsoAimer()
 	aimer.Responsiveness = 150
 	aimer.Enabled = false
 	aimer.Parent = self.HRP
+	warn()
 	return aimer
 end
 
@@ -77,7 +80,7 @@ end
 function Animal:UpdateHealth(value: number, hitBy: Player?)
 	self.Health = math.clamp(self.Health + value, 0, self.MaxHP)
 
-	warn("Buffalo HP =" .. self.Health)
+	warn("Animal HP =" .. self.Health)
 	if self.Health <= 0 then
 		self:Die(hitBy)
 	end
@@ -100,7 +103,7 @@ function Animal:Die(killer: Player?)
 
 	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.Type}Dead`, self.Character:GetPivot(), nil)
 
-	if killer then
+	if killer and killer:IsA("Player") then
 		AwardHandler.AwardAnimalKill(self.Type, killer)
 	end
 

@@ -214,11 +214,14 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 	if ai and ai.StateMachine and ai.StateMachine.Transition then
 		local currentAnimalState = ai.StateMachine:GetState()
 		local shooter = damageData.Shooter
-		if currentAnimalState == "Patrol" then
-			ai.StateMachine:Transition(
-				"Seek",
-				{ Target = if shooter:IsA("Player") then shooter.Character else shooter }
-			)
+
+		if shooter then
+			if currentAnimalState == "Patrol" then
+				ai.StateMachine:Transition(
+					"Seek",
+					{ Target = if shooter:IsA("Player") then shooter.Character else shooter }
+				)
+			end
 		end
 	end
 

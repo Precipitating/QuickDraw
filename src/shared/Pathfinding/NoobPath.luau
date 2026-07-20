@@ -44,7 +44,7 @@ local FREEFALL = Enum.HumanoidStateType.Freefall
 export type Location = Vector3 | BasePart | Model
 
 local function GetPrimaryPivot(Model: Model)
-	return if Model and Model.PrimaryPart then Model.PrimaryPart:GetPivot() else nil
+	return if Model and Model.PrimaryPart then Model.PrimaryPart:GetPivot() else if Model then Model:GetPivot() else nil
 end
 
 local function ToVector3(Location: Location)

@@ -34,7 +34,7 @@ return {
 			TargetHuman = animalClass,
 			Damage = hitData.Damage,
 			ShotPosition = hitObj and hitObj.Instance and hitObj.Instance.Position,
-			Shooter = shooter,
+			Shooter = shooter or hitData.Owner,
 		}
 
 		DamageModule.DamageAnimal(gunShotData)

@@ -379,7 +379,7 @@ function AI:CheckSurroundingsForEnemy()
 	end
 
 	for _, part in foundParts do
-		if not part or not part:IsA("MeshPart") then
+		if not part or not part:IsA("BasePart") then
 			continue
 		end
 

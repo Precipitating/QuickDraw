@@ -795,7 +795,7 @@ function Human:OnDeath()
 	self:Destroy()
 end
 
-function Human:Ragdoll(duration: number)
+function Human:Ragdoll(duration: number, force: Vector3?)
 	warn("Human:Ragdoll BASE CLASS, YOU SHOULD NOT SEE THIS")
 end
 
