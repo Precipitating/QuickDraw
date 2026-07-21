@@ -32,6 +32,7 @@ function Animal.new(model: Model?, type: string)
 	self.ClassType = "Animal"
 	self.Type = type
 	self.Humanoid = model:FindFirstChildOfClass("Humanoid")
+
 	self.Animator = self.Humanoid and self.Humanoid:FindFirstChildOfClass("Animator")
 
 	self.HRP = model:FindFirstChild("HumanoidRootPart")
@@ -41,7 +42,7 @@ function Animal.new(model: Model?, type: string)
 	}
 	self.TorsoAimer = self:InitializeTorsoAimer()
 	self.AttackRunSpeed = animalData.AttackRunSpeed
-
+	self.Humanoid.MaxSlopeAngle = 50
 	self.AI = AnimalAI.new(self, type)
 	self.VoicelineSound = self:SetupVoicelineSound()
 	self:Initialize()

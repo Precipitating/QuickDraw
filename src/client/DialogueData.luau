@@ -451,4 +451,66 @@ return {
 			},
 		})
 	end,
+	HunterNPC = function(npcModel: Model?, prompt: ProximityPrompt?)
+		InitNPC(npcModel, prompt, {
+			name = "Buffalo Bill",
+			font = "RomanAntique",
+			dialogs = {
+				{
+					text = "God, don't you just love huntin'?",
+					responses = { "...Yes?", "Need any help? I need some coin.", "Bye" },
+				},
+				{
+					text = "Earning serious coin with it too!<br/>The government issued out a nice contract, giving us hunters some good coin per buffalo kill.",
+					responses = { "Why only buffalos?" },
+				},
+				{
+					text = "No idea, the guy was talking about reservations and removing someone's food source, but all that matters is MONEY.",
+					responses = { "Explains the outrageous amounts of skulls stacked around the stall." },
+				},
+				{
+					text = "Yeah, only the hides and tongues were needed.<br/>The skulls are just for a picture i'm preparing for to showcase my accomplishments. ",
+					responses = { "Hmm. Right." },
+				},
+				{
+					text = "Start huntin' some animals and there will be some good money.<br/>Check your quests, there may be a contract available.",
+					responses = { "Let me check." },
+				},
+			},
+			responses = {
+				[1] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 2)
+					end,
+					[2] = function(d)
+						d:triggerDialog(PlayerContext.Player, 5)
+					end,
+					[3] = function(d)
+						d:hideGui("Lots of money to be made here, bub.")
+					end,
+				},
+				[2] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 3)
+					end,
+				},
+				[3] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 4)
+					end,
+				},
+				[4] = {
+					[1] = function(d)
+						d:hideGui("Anyways, the picture.")
+					end,
+				},
+				[5] = {
+					[1] = function(d)
+						QuestGUIHandler:AttemptToGiveQuest("AnimalCuller", npcModel)
+						d:hideGui("If not, you've completed it all.")
+					end,
+				},
+			},
+		})
+	end,
 }

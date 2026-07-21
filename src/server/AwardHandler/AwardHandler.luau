@@ -33,7 +33,7 @@ function AwardHandler.AwardNPCKill(killer: Player)
 	PopupGUI:NewPopup(killer, 2, `NPC killed: ${awardAmount}`)
 	PopupGUI:NewPopup(killer, 2, `Bounty: +${bounty}`)
 
-	QuestHandler:ProgressQuest(killer, "Kill", 1)
+	QuestHandler:ProgressQuest(killer, "Kill", { KillType = "Human" }, 1)
 end
 
 function AwardHandler.AwardAnimalKill(animalType: string, killer: Player)
@@ -45,6 +45,7 @@ function AwardHandler.AwardAnimalKill(animalType: string, killer: Player)
 	ServerData.UpdateMoney(killer, awardAmount)
 
 	PopupGUI:NewPopup(killer, 2, `{animalType} killed: ${awardAmount}`)
+	QuestHandler:ProgressQuest(killer, "Kill", { KillType = "Animal" }, 1)
 end
 
 function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
@@ -78,6 +79,6 @@ function AwardHandler.AwardPlayerKill(victim: Player, killer: Player)
 		ServerSoundHandler:PlaySoundTo(killer, "BountyClaimed", nil)
 	end
 
-	QuestHandler:ProgressQuest(killer, "Kill", 1)
+	QuestHandler:ProgressQuest(killer, "Kill", { KillType = "Human" }, 1)
 end
 return AwardHandler

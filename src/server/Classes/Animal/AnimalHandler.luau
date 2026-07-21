@@ -10,7 +10,7 @@ local AnimalLimit = 10
 local ActiveAnimalsCount = 0
 local AnimalsFolder = ServerStorage.NPCs.Animals.Models:GetChildren()
 local AnimalSpawns = ServerStorage.NPCs.Animals.SpawnAreas:GetChildren()
-local AnimalDelay = 300
+local AnimalDelay = 10
 local ActiveAnimals = {}
 
 function AnimalHandler:GetAnimal(key: Humanoid)

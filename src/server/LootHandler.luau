@@ -132,7 +132,7 @@ function LootHandler:PickupLoot(player: Player, lootType: string, prompt: Proxim
 				prompt.Parent:Destroy()
 			end
 			PopupGUI:NewPopup(player, 2, `Added {oreName} to inventory!`)
-			QuestHandler:ProgressQuest(player, "Loot", 1)
+			QuestHandler:ProgressQuest(player, "Loot", { LootedItem = oreName }, 1)
 			ServerSoundHandler:PlaySoundTo(player, "GenericPickup")
 			return true
 		end

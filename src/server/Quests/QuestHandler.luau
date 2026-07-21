@@ -6,7 +6,12 @@ local QuestData = require(ReplicatedStorage.Shared.Quests.QuestData)
 local QUEST_GIVER_DISTANCE_REQUIREMENT = 10
 local QuestHandler = {}
 
-function QuestHandler:ProgressQuest(player: Player, questTypeToProgress: string, progressNum: number)
+function QuestHandler:ProgressQuest(
+	player: Player,
+	questTypeToProgress: string,
+	extraData: { KillType: string?, LootedItem: string? }?,
+	progressNum: number
+)
 	local activeQuests = ServerData.GetActiveQuests(player)
 
 	if not activeQuests then
@@ -37,6 +42,13 @@ function QuestHandler:ProgressQuest(player: Player, questTypeToProgress: string,
 
 		if questTypeToProgress ~= questType then
 			continue
+		end
+
+		-- If kill type, only update quests that require specific NPC type death
+		if questTypeToProgress == "Kill" and extraData and extraData.KillType then
+			if questData.KillType ~= extraData.KillType then
+				continue
+			end
 		end
 
 		ServerData:UpdateQuestProgress(player, questName, 1)
