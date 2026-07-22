@@ -68,8 +68,21 @@ function DamageModule:ApplyDamage(
 		-- if npc damaged on patrol, seek immediately the target
 		-- only applies to SHOT damage type
 		if ai and ai.StateMachine:GetState() == "Patrol" then
+			local shooterCharacter = nil
+
+			-- If table, should be the Human class, so .Character should be its model.
+			-- Same with if it's Player instance
+
+			if
+				(typeof(shooter) == "table" and shooter.Character)
+				or typeof(shooter) == "Instance" and shooter:IsA("Player")
+			then
+				shooterCharacter = shooter.Character
+			else
+				shooterCharacter = shooter
+			end
 			ai.StateMachine:Transition("Seek", {
-				Target = if shooter and shooter:IsA("Player") then shooter.Character else shooter,
+				Target = shooterCharacter,
 			})
 		end
 	elseif human.HumanType == "Player" then
@@ -217,10 +230,16 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 
 		if shooter then
 			if currentAnimalState == "Patrol" then
-				ai.StateMachine:Transition(
-					"Seek",
-					{ Target = if shooter:IsA("Player") then shooter.Character else shooter }
-				)
+				local shooterCharacter = nil
+				if
+					(typeof(shooter) == "table" and shooter.Character)
+					or typeof(shooter) == "Instance" and shooter:IsA("Player")
+				then
+					shooterCharacter = shooter.Character
+				else
+					shooterCharacter = shooter
+				end
+				ai.StateMachine:Transition("Seek", { Target = shooterCharacter })
 			end
 		end
 	end

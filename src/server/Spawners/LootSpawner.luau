@@ -4,8 +4,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local LootSpawner = {}
 local MaxLootSpawnsAllowed = 10
-local ActiveLootCount = 0
-local LootSpawnTime = 600
+local LootSpawnTime = 10
 local LootSpawnAreas = ServerStorage.LootSpawnAreas:GetChildren()
 local LootItems = ServerStorage.LootItems:GetChildren()
 local CHECK_RADIUS = 5
@@ -16,20 +15,29 @@ local function GetRandomPositionInPart(part)
 	local TopRightFront = part.Position + part.Size / 2
 	local BottomLeftBack = part.Position - part.Size / 2
 
-	local x = math.lerp(TopRightFront.X, BottomLeftBack.X, math.random())
-	local y = math.lerp(TopRightFront.Y, BottomLeftBack.Y, math.random())
-	local z = math.lerp(TopRightFront.Z, BottomLeftBack.Z, math.random())
+	local x = math.lerp(TopRightFront.X, BottomLeftBack.X, RandomModule.GetRandom())
+	local y = math.lerp(TopRightFront.Y, BottomLeftBack.Y, RandomModule.GetRandom())
+	local z = math.lerp(TopRightFront.Z, BottomLeftBack.Z, RandomModule.GetRandom())
 
 	return Vector3.new(x, y, z)
 end
 
-function LootSpawner:IsPositionSafe(pos: Vector3)
+function LootSpawner:IsPointClear(partSize: Vector3, pos: Vector3)
+	local parts = workspace:GetPartBoundsInBox(CFrame.new(pos), partSize)
+	return #parts == 0
+end
+
+function LootSpawner:IsPositionSafe(partSize: Vector3, pos: Vector3)
 	local partsAroundPosition = workspace:GetPartBoundsInRadius(pos, CHECK_RADIUS)
 
 	for _, part in partsAroundPosition do
 		if CollectionService:HasTag(part, "Loot") or part.Parent and part.Parent.Name == "EnvironmentProps" then
 			return false
 		end
+	end
+
+	if not self:IsPointClear(partSize, pos) then
+		return false
 	end
 
 	return true
@@ -40,13 +48,10 @@ function LootSpawner:SpawnLoot()
 		warn("Loot spawning missing spawn or item template")
 		return
 	end
-	if ActiveLootCount >= MaxLootSpawnsAllowed then
-		return
-	end
 
 	-- folder to store active loot on workspace
 	local parentFolder = nil
-	local lootFolder = workspace:FindFirstChild("ActiveLoot")
+	local lootFolder: Folder? = workspace:FindFirstChild("ActiveLoot")
 	if not lootFolder then
 		local folder = Instance.new("Folder")
 		folder.Name = "ActiveLoot"
@@ -54,6 +59,11 @@ function LootSpawner:SpawnLoot()
 		folder.Parent = workspace
 	else
 		parentFolder = lootFolder
+	end
+
+	local activeLootCount = parentFolder and #parentFolder:GetChildren()
+	if activeLootCount and activeLootCount >= MaxLootSpawnsAllowed then
+		return
 	end
 
 	-- 1. Get random loot item mesh
@@ -71,7 +81,7 @@ function LootSpawner:SpawnLoot()
 		newPos = GetRandomPositionInPart(newPos)
 		lootPos = newPos
 		repeatCount += 1
-	until self:IsPositionSafe(newPos) or repeatCount >= REPEAT_LIMIT
+	until self:IsPositionSafe(lootItem.ExtentsSize, newPos) or repeatCount >= REPEAT_LIMIT
 
 	-- 3. Move to workspace and position
 	lootItem = lootItem:Clone()

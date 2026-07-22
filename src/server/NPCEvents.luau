@@ -15,10 +15,10 @@ local SheriffModels = { "SheriffNPC" }
 type HumanPlayer = ClassTypes.HumanPlayer
 
 local NPCEvents = {}
-NPCEvents.MaxNPCSAllowed = 20
+NPCEvents.MaxNPCSAllowed = 30
 NPCEvents.MaxNPCTypesAllowed = {
-	Sheriff = 10,
-	Bandit = 10,
+	Sheriff = 15,
+	Bandit = 15,
 }
 NPCEvents.NPCTypesSpawned = {
 	Sheriff = 0,

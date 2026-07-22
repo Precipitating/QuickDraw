@@ -560,68 +560,6 @@ function ProjectileEvents:ProjectileHitMaterial(result: RaycastResult)
 	end
 end
 
-function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastResult?)
-	-- Hit nothing, the raycast hit the air and the lifetime of the projectile ends, hence nil
-	if not result then
-		return
-	end
-	--warn(`OnHit fired by server {result.Instance.Name}`)
-	local data = context.UserData
-	local projectileType = data.ProjectileType
-	local cosmeticBullet = context.CosmeticBulletObject
-
-	-- ON BULLET HIT
-	if projectileType == "Bullet" then
-		self:ProjectileHitMaterial(result)
-		local bulletCosmetic = cosmeticBullet
-		local hitPlayer = ProjectileEvents:GunHitPlayer(data, result, nil, bulletCosmetic)
-		if hitPlayer then
-			return
-		end
-
-		local hitAnimal = ProjectileEvents:GunHitAnimal(data, result)
-
-		if hitAnimal then
-			return
-		end
-
-		local hitDestroyable = ProjectileEvents:GunHitDestroyable(data, result)
-		if hitDestroyable then
-			return
-		end
-
-		ProjectileEvents:GunHitEnvironment(data, result)
-
-		-- ON THROWABLE IMPACT LAND
-	elseif projectileType == "Throwable" then
-		local throwableData = data.Data
-		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
-		if cosmeticBullet then
-			Debris:AddItem(cosmeticBullet, throwableData.DetonationTime)
-		end
-		task.delay(throwableData.DetonationTime, function()
-			local hitPos = result.Position
-			ServerSoundHandler:Play3DOneShotToOthers(
-				nil,
-				throwableData.DetonationSound,
-				result.Instance.CFrame,
-				{ MaxDistance = 150 }
-			)
-			ServerEffectsDisplayer:DisplayDestroyParticle(throwableData.ImpactParticle, hitPos)
-			self:SpawnFragments(result, data.Class.Owner, throwableData)
-
-			if data.Class and data.Class.CurrentAmmo and data.Class.Destroy then
-				if data.Class.CurrentAmmo <= 0 and type(data.Class.Destroy) == "function" then
-					data.Class:Destroy()
-				end
-			end
-		end)
-		-- ON SHRAPNEL HIT
-	elseif projectileType == "Shrapnel" then
-		self:OnFragmentHit(context, result)
-	end
-end
-
 function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 	-- if fragment hits something damagable, it should apply damage and cease to exist
 	if not result then
@@ -647,106 +585,163 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 	-- else hit environment
 	self:FragmentHitEnvironment(result, throwableData)
 end
+-- Resolves the current gun's GunData for a player owner.
+function ProjectileEvents:GetGunDataForOwner(owner: Player)
+	local human = PlayerManager:GetHumanClassFromPlayer(owner)
+	if not human then
+		return nil
+	end
+
+	local gun = human.Inventory and human.Inventory:GetGun()
+	local gunName = gun and gun.Name
+	if not gunName then
+		return nil
+	end
+
+	local gunData = GunData[gunName]
+	if not gunData then
+		warn("GunData missing from OnProjectileHitReceivePlayer")
+		return nil
+	end
+
+	return gunData
+end
+
+-- Resolves the current throwable's ThrowableData/instance/human for a player owner.
+function ProjectileEvents:GetThrowableDataForOwner(owner: Player)
+	local human = PlayerManager:GetHumanClassFromPlayer(owner)
+	if not human then
+		return nil
+	end
+
+	local currentThrowable = human.Inventory and human.Inventory:GetThrowable()
+	if not currentThrowable then
+		warn("CurrentThrowable not valid")
+		return nil
+	end
+
+	local throwableData = ThrowableData[currentThrowable.Name]
+	if not throwableData then
+		warn("ThrowableData missing for: " .. tostring(currentThrowable.Name))
+		return nil
+	end
+
+	return throwableData, currentThrowable, human
+end
+
+-- Shared bullet resolution: material fx, then player/animal/destroyable (and optionally environment).
+function ProjectileEvents:ResolveBulletHit(
+	gunData,
+	result: RaycastResult,
+	owner: Player?,
+	cosmeticBullet: Instance?,
+	checkEnvironment: boolean?
+)
+	self:ProjectileHitMaterial(result)
+
+	if self:GunHitPlayer(gunData, result, owner, cosmeticBullet) then
+		return true
+	end
+	if self:GunHitAnimal(gunData, result, owner) then
+		return true
+	end
+	if self:GunHitDestroyable(gunData, result, owner) then
+		return true
+	end
+	if checkEnvironment then
+		self:GunHitEnvironment(gunData, result, owner)
+	end
+
+	return false
+end
+
+-- Shared "grenade lands, then detonates after DetonationTime" flow.
+-- onDetonate(hitPos) runs caller-specific cleanup right before fragments spawn.
+function ProjectileEvents:HandleThrowableLanding(
+	throwableData,
+	result: RaycastResult,
+	owner: Player?,
+	onDetonate: (Vector3) -> ()
+)
+	ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
+
+	task.delay(throwableData.DetonationTime, function()
+		local hitPos = result.Position
+		ServerSoundHandler:Play3DOneShotToOthers(
+			nil,
+			throwableData.DetonationSound,
+			result.Instance.CFrame,
+			{ MaxDistance = 150 }
+		)
+
+		if onDetonate then
+			onDetonate(hitPos)
+		end
+
+		self:SpawnFragments(result, owner, throwableData)
+	end)
+end
 
 function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastResult?)
 	if not result then
 		return
 	end
 	warn(`OnHit fired by player. Hit object: {result.Instance.Name}`)
-	-- GUN PROJECTILES
-	if CollectionService:HasTag(context.CosmeticBulletObject, "Bullet") then
-		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
-		if not human then
-			return
-		end
 
-		-- Ensure relevant data exists
-		local currentGunName = human.Inventory and human.Inventory:GetGun() and human.Inventory:GetGun().Name
-		if not currentGunName then
-			return
-		end
+	local owner = context.UserData.Owner
+	local cosmeticBullet = context.CosmeticBulletObject
 
-		local gunData = GunData[currentGunName]
+	if CollectionService:HasTag(cosmeticBullet, "Bullet") then
+		local gunData = self:GetGunDataForOwner(owner)
 		if not gunData then
-			warn("GunData missing from OnProjectileHitReceivePlayer")
 			return
 		end
-
-		-- Custom logic if it hits a specified material
-		self:ProjectileHitMaterial(result)
-
-		local hitAnimal = ProjectileEvents:GunHitAnimal(gunData, result, context.UserData.Owner)
-
-		if hitAnimal then
-			return
-		end
-
-		-- Hit Human class
-		local bulletCosmetic = context.CosmeticBulletObject
-
-		local hitPlayer = ProjectileEvents:GunHitPlayer(gunData, result, context.UserData.Owner, bulletCosmetic)
-		if hitPlayer then
-			return
-		end
-
-		-- Hit Destroyable class
-		local hitDestroyable = ProjectileEvents:GunHitDestroyable(gunData, result, context.UserData.Owner)
-		if hitDestroyable then
-			return
-		end
-
-	-- THROWABLE PROJECTILES
-	elseif CollectionService:HasTag(context.CosmeticBulletObject, "Throwable") then
-		local human = PlayerManager:GetHumanClassFromPlayer(context.UserData.Owner)
-
-		if not human then
-			return
-		end
-
-		local currentThrowable = human.Inventory and human.Inventory:GetThrowable()
-		if not currentThrowable then
-			warn("CurrentThrowable not valid")
-			return
-		end
-
-		local throwableName = currentThrowable.Name
-		if not throwableName then
-			return
-		end
-
-		local throwableData = ThrowableData[throwableName]
+		self:ResolveBulletHit(gunData, result, owner, cosmeticBullet)
+	elseif CollectionService:HasTag(cosmeticBullet, "Throwable") then
+		local throwableData, currentThrowable, human = self:GetThrowableDataForOwner(owner)
 		if not throwableData then
-			warn("ThrowableData missing for: " .. tostring(throwableName))
 			return
 		end
 
-		ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
-
-		-- Destroy visual grenade after x seconds
-		if context.CosmeticBulletObject then
-			Debris:AddItem(context.CosmeticBulletObject, throwableData.DetonationTime)
+		if cosmeticBullet then
+			Debris:AddItem(cosmeticBullet, throwableData.DetonationTime)
 		end
-
 		if currentThrowable.CurrentAmmo <= 0 then
 			human.Inventory:RemoveWeapon("Throwable")
 		end
 
-		-- Detonates grenade after specified detonation time and spawns visuals and fragments.
-		task.delay(throwableData.DetonationTime, function()
-			-- Re-validate after delay, player may have left by now
-			if not result then
-				return
-			end
-			local hitPos = result.Position
-			ServerSoundHandler:Play3DOneShotToOthers(
-				nil,
-				throwableData.DetonationSound,
-				result.Instance.CFrame,
-				{ MaxDistance = 150 }
-			)
+		self:HandleThrowableLanding(throwableData, result, owner, function(hitPos)
 			self:OnThrowImpact(throwableData.ImpactParticle, hitPos)
-			self:SpawnFragments(result, context.UserData.Owner, throwableData)
 		end)
+	end
+end
+
+function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastResult?)
+	if not result or not result.Instance then
+		return
+	end
+
+	local data = context.UserData
+	local cosmeticBullet = context.CosmeticBulletObject
+
+	if data.ProjectileType == "Bullet" then
+		self:ResolveBulletHit(data, result, nil, cosmeticBullet, true)
+	elseif data.ProjectileType == "Throwable" then
+		local throwableData = data.Data
+
+		self:HandleThrowableLanding(throwableData, result, data.Class.Owner, function(hitPos)
+			if cosmeticBullet then
+				cosmeticBullet:Destroy()
+			end
+			ServerEffectsDisplayer:DisplayDestroyParticle(throwableData.ImpactParticle, hitPos)
+
+			local class = data.Class
+			if class and class.CurrentAmmo and type(class.Destroy) == "function" and class.CurrentAmmo <= 0 then
+				class:Destroy()
+			end
+		end)
+	elseif data.ProjectileType == "Shrapnel" then
+		self:OnFragmentHit(context, result)
 	end
 end
 
@@ -848,7 +843,7 @@ function ProjectileEvents:Initialize()
 	-- players firing from client
 	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
 		if not result or not result.Instance then
-			warn(`Didnt hit a player`)
+			warn(`Client shot didn't hit anything`)
 			return
 		end
 		self:OnProjectileHitReceivePlayer(context, result)
