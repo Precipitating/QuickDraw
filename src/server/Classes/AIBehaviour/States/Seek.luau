@@ -111,7 +111,11 @@ function Seek:Enter(previous, seekData)
 	end
 	-- Either player model or a basepart
 	local target: Model | BasePart = seekData.Target
-	assert(target, "NPC Seek state cannot proceed, target is nil")
+
+	if not target then
+		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+		return
+	end
 
 	self.LastChecked = os.clock()
 	self.Machine:Start()
