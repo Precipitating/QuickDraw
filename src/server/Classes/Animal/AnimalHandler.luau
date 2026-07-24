@@ -82,7 +82,9 @@ function AnimalHandler:Initialize()
 		end
 	end)
 
-	self:StartSpawnLoop()
+	task.spawn(function()
+		self:StartSpawnLoop()
+	end)
 end
 
 return AnimalHandler

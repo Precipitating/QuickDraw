@@ -2,22 +2,22 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Model" referent="RBXD44EA3A442F7416AB1A29D32C0EAAB2B">
+	<Item class="Model" referent="RBX376B48C2F7D048209E1730DEEE2D9CDF">
 		<Properties>
 			<token name="LevelOfDetail">0</token>
 			<CoordinateFrame name="ModelMeshCFrame">
-				<X>-577.335693</X>
-				<Y>1.2916249</Y>
-				<Z>1190.51575</Z>
-				<R00>0.999643087</R00>
-				<R01>0.0291859154</R01>
-				<R02>2.02341453e-05</R02>
-				<R10>-0.0291686747</R10>
-				<R11>0.998856485</R11>
-				<R12>-0.0390948132</R12>
-				<R20>-0.00114218926</R20>
-				<R21>0.0390744992</R21>
-				<R22>0.999287188</R22>
+				<X>1433.32959</X>
+				<Y>-58.5869026</Y>
+				<Z>1189.93335</Z>
+				<R00>-3.27506859e-06</R00>
+				<R01>0.0302980933</R01>
+				<R02>0.999620199</R02>
+				<R10>0.0391081497</R10>
+				<R11>0.998845398</R11>
+				<R12>-0.0302719977</R12>
+				<R20>-0.999277234</R20>
+				<R21>0.0390947573</R21>
+				<R22>-0.00120176107</R22>
 			</CoordinateFrame>
 			<SharedString name="ModelMeshData">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			<Vector3 name="ModelMeshSize">
@@ -27,23 +27,23 @@
 			</Vector3>
 			<token name="ModelStreamingMode">0</token>
 			<bool name="NeedsPivotMigration">false</bool>
-			<Ref name="PrimaryPart">RBX4CCD250BBC374D5BB5AFA4A45B76C02E</Ref>
+			<Ref name="PrimaryPart">RBXD8BF12A3F8D04C4890B78FCC552860D1</Ref>
 			<float name="ScaleFactor">1</float>
 			<SharedString name="SlimHash">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			<OptionalCoordinateFrame name="WorldPivotData">
 				<CFrame>
-					<X>433.63739</X>
-					<Y>6.29153824</Y>
-					<Z>192.366714</Z>
-					<R00>0.99957186</R00>
-					<R01>0.0292620026</R01>
-					<R02>0</R02>
-					<R10>-0.0292397141</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390327387</R12>
-					<R20>-0.00114217657</R20>
-					<R21>0.0390160121</R21>
-					<R22>0.999238074</R22>
+					<X>436.039551</X>
+					<Y>6.67314529</Y>
+					<Z>180.198792</Z>
+					<R00>0</R00>
+					<R01>0.0302365385</R01>
+					<R02>0.999542892</R02>
+					<R10>0.03903272</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.030213492</R12>
+					<R20>-0.999237776</R20>
+					<R21>0.0390148796</R21>
+					<R22>-0.00118021446</R22>
 				</CFrame>
 			</OptionalCoordinateFrame>
 			<BinaryString name="AttributesSerialize"></BinaryString>
@@ -53,7 +53,7 @@
 			<int64 name="SourceAssetId">2630178789</int64>
 			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Part" referent="RBX4CCD250BBC374D5BB5AFA4A45B76C02E">
+		<Item class="Part" referent="RBXD8BF12A3F8D04C4890B78FCC552860D1">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">1</token>
@@ -68,18 +68,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.63739</X>
-					<Y>6.29153824</Y>
-					<Z>192.366714</Z>
-					<R00>0.999571741</R00>
-					<R01>0.0292622559</R01>
-					<R02>-2.68021938e-09</R02>
-					<R10>-0.0292399544</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390325338</R12>
-					<R20>-0.00114217727</R20>
-					<R21>0.0390158221</R21>
-					<R22>0.999237955</R22>
+					<X>436.039551</X>
+					<Y>6.67314529</Y>
+					<Z>180.198792</Z>
+					<R00>2.41999754e-11</R00>
+					<R01>0.0302365422</R01>
+					<R02>0.999542892</R02>
+					<R10>0.0390327163</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.0302134883</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390148796</R21>
+					<R22>-0.00118021434</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">false</bool>
@@ -151,7 +151,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="AnimationConstraint" referent="RBX18AA86419621431698F26B483525E477">
+			<Item class="AnimationConstraint" referent="RBX990100C398334182B04CF2EB42F99BE1">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -174,8 +174,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBXA48E3425EC5841C59994A0538DE682C6</Ref>
-					<Ref name="Attachment1">RBX82C62ACB5F07465EBA4E6069D9A97E69</Ref>
+					<Ref name="Attachment0">RBXAD41B2F40E164AF99DE7A2FB7C78F571</Ref>
+					<Ref name="Attachment1">RBX8FB24D067F124DCF85FE2F4DE65F0F6E</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -187,14 +187,14 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX82C62ACB5F07465EBA4E6069D9A97E69">
+			<Item class="Attachment" referent="RBX8FB24D067F124DCF85FE2F4DE65F0F6E">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0</X>
 						<Y>5.7220459e-06</Y>
 						<Z>3.05175781e-05</Z>
 						<R00>-1</R00>
-						<R01>0</R01>
+						<R01>-2.92661729e-17</R01>
 						<R02>2.37482638e-08</R02>
 						<R10>0</R10>
 						<R11>1</R11>
@@ -213,7 +213,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="Part" referent="RBX1CBF532546774064933BFE03B61926EA">
+		<Item class="Part" referent="RBX5CED32A10E764BA69565CC75D0BC27D9">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">3</token>
@@ -228,18 +228,18 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.542572</X>
-					<Y>5.41122961</Y>
-					<Z>188.516418</Z>
-					<R00>0.0292622261</R00>
-					<R01>0.700921059</R01>
-					<R02>0.712641776</R02>
-					<R10>0.998811722</R10>
-					<R11>-0.0483318493</R11>
-					<R12>0.00652382337</R12>
-					<R20>0.0390158184</R20>
-					<R21>0.711601198</R21>
-					<R22>-0.701499581</R22>
+					<X>432.197083</X>
+					<Y>5.75482607</Y>
+					<Z>180.227615</Z>
+					<R00>0.0302365255</R00>
+					<R01>0.712619483</R01>
+					<R02>-0.700899065</R02>
+					<R10>0.998782754</R10>
+					<R11>0.00582990609</R11>
+					<R12>0.0490145385</R12>
+					<R20>0.0390150212</R20>
+					<R21>-0.701528251</R21>
+					<R22>-0.711576045</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -311,7 +311,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="SpecialMesh" referent="RBXB7D8C6A561D646BFBC0A5BA1A8BADE44">
+			<Item class="SpecialMesh" referent="RBXBB8E3069288843AD8AEEE531A19047EF">
 				<Properties>
 					<token name="MeshType">5</token>
 					<Content name="MeshId"><url>http://www.roblox.com/asset/?id=335037790</url></Content>
@@ -339,7 +339,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX578234E8733C4A8D83BDE22939AA5010">
+			<Item class="Texture" referent="RBX0B92372BE0D24E659757B776B0D8C1BB">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -377,7 +377,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="WeldConstraint" referent="RBXD0242A64E948440BA2197550B829C842">
+			<Item class="WeldConstraint" referent="RBX79DD60028AC2440B8EB89C9D5DFEE05D">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>1.03225708</X>
@@ -393,8 +393,8 @@
 						<R21>-1.3038516e-08</R21>
 						<R22>-0.701219618</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX1CBF532546774064933BFE03B61926EA</Ref>
-					<Ref name="Part1Internal">RBXA22E0253E2A0474ABE1BDA54D7ADFDAD</Ref>
+					<Ref name="Part0Internal">RBX5CED32A10E764BA69565CC75D0BC27D9</Ref>
+					<Ref name="Part1Internal">RBX9A040FD1F43C4FDC83E0835B9380B7CB</Ref>
 					<int name="State">3</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -405,7 +405,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBX0FBA78D73942435EB094E1A7FFAE91AD">
+		<Item class="UnionOperation" referent="RBX75C47E4ACECF4198AC5E59A02B47AA00">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327985</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -457,18 +457,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.665527</X>
-					<Y>7.11676788</Y>
-					<Z>195.852417</Z>
-					<R00>0.999571741</R00>
-					<R01>0.029262254</R01>
-					<R02>-2.62198419e-09</R02>
-					<R10>-0.0292399526</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390325338</R12>
-					<R20>-0.00114217727</R20>
-					<R21>0.0390158221</R21>
-					<R22>0.999237955</R22>
+					<X>439.517883</X>
+					<Y>7.52878284</Y>
+					<Z>180.232208</Z>
+					<R00>-3.58421903e-11</R00>
+					<R01>0.0302365422</R01>
+					<R02>0.999542892</R02>
+					<R10>0.03903272</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.0302134883</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390148796</R21>
+					<R22>-0.00118021434</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">true</bool>
 				<bool name="CanQuery">true</bool>
@@ -540,7 +540,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX7BE97B61F0B04AF6A6A149FD61F91891">
+			<Item class="Texture" referent="RBXEC5F2A2C1EC14E0F9DDFBEE081A4BB9E">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -578,7 +578,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX17EB9AAE39F742AF97B1054DF382CD9F">
+			<Item class="Texture" referent="RBX77035E244A534990BBA31C533370CA82">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -616,7 +616,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXB2BC623BC43E4458B48E2D7C9F15DCD8">
+			<Item class="Texture" referent="RBXE09FA7D918D5487FBB3038DAFC99B857">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -654,7 +654,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXFB16A0D2E1A44FE9B3512F388A82CE44">
+			<Item class="Texture" referent="RBX12493DF4BF6A4F08A208B9C670AE997B">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -692,7 +692,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX112DC445944645EFA141F36A168C67B9">
+			<Item class="Texture" referent="RBXFB262266864A44C1818057E876868106">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -730,7 +730,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX26E86DB0470E4FCCBB7CC64627A99338">
+			<Item class="Texture" referent="RBX8BD36E5E69EE425499F829C17F52E959">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -768,7 +768,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX4A9F32C70EFD440D9725A39A95479397">
+			<Item class="BallSocketConstraint" referent="RBXEC8E292AE1954DAC91F514E20184C51F">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">3000</float>
@@ -778,8 +778,8 @@
 					<float name="TwistLowerAngle">-20</float>
 					<float name="TwistUpperAngle">20</float>
 					<float name="UpperAngle">40</float>
-					<Ref name="Attachment0">RBX3B81520A05B14E79BDA0E242E028EC04</Ref>
-					<Ref name="Attachment1">RBX8C13AAA71E9248AE9FA0E73B25001A99</Ref>
+					<Ref name="Attachment0">RBX82B094DC50BA48A39813DBB82FF47434</Ref>
+					<Ref name="Attachment1">RBX0BBCCA7348474832B2FB14DD1631E856</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -791,7 +791,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX3B81520A05B14E79BDA0E242E028EC04">
+			<Item class="Attachment" referent="RBX82B094DC50BA48A39813DBB82FF47434">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-1.52587891e-05</X>
@@ -817,7 +817,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXF8AD175C6A30497F9C967F18D662DB7A">
+		<Item class="UnionOperation" referent="RBX1D6F1C4934094E30ACA70C34999F85FE">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396328000</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -869,18 +869,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>432.592499</X>
-					<Y>2.55472612</Y>
-					<Z>193.541855</Z>
-					<R00>0.999571502</R00>
-					<R01>0.0292700883</R01>
-					<R02>-1.37942254e-06</R02>
-					<R10>-0.0292478371</R10>
-					<R11>0.998809874</R11>
-					<R12>-0.0390305966</R12>
-					<R20>-0.00114105118</R20>
-					<R21>0.0390139185</R21>
-					<R22>0.999238014</R22>
+					<X>437.246643</X>
+					<Y>2.88414383</Y>
+					<Z>180.988022</Z>
+					<R00>1.19532865e-06</R00>
+					<R01>0.0302346461</R01>
+					<R02>0.999542952</R02>
+					<R10>0.0390248448</R10>
+					<R11>0.998781443</R11>
+					<R12>-0.030211648</R12>
+					<R20>-0.999238014</R20>
+					<R21>0.0390070528</R21>
+					<R22>-0.00117870851</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -952,7 +952,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX2F6A82E2E60E4B39935A06477BDEFAE2">
+			<Item class="Texture" referent="RBX181BEDEB574A4400B8A5A409D418E7DB">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -990,7 +990,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXD0D2A086AC62431AA33C9C7838026BB2">
+			<Item class="Texture" referent="RBX3C3D8B6FBE2F494D980F14DA494EEC03">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1028,7 +1028,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXA48A6F6E30104F2BA2861D1649CFB14C">
+			<Item class="Texture" referent="RBXE445DC6A673040BEBC07A8AE360EF196">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1066,7 +1066,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX2E5A6DC8E06D45AA8D757C44086D182B">
+			<Item class="Texture" referent="RBXF4841C9514884D9290849D5F1D5BCE35">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1104,7 +1104,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXFB88A94D60324365A85500AE86C3BCC1">
+			<Item class="Texture" referent="RBX43A2CFB99557444580F67E860EB07B0C">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1142,7 +1142,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX2C533484D866437888E5D57365DE1332">
+			<Item class="Texture" referent="RBX1E11E98B0B5F4007B93CABEA04FEC5B5">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1180,7 +1180,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX5C558924F5BD40D7B86058877BA2C703">
+			<Item class="Attachment" referent="RBX4A0214F7D866493FB137F1F5087EC849">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.000152587891</X>
@@ -1205,7 +1205,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX809631F0267748169F10B65E2EF62570">
+			<Item class="Attachment" referent="RBXCEBEB091DFAA4A299AD14A8F077A0054">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-6.10351562e-05</X>
@@ -1230,7 +1230,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX020E009679964EFCBB40245C580F09B4">
+			<Item class="BallSocketConstraint" referent="RBXF81CCDC5C576437DA809F186AAD40860">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">3000</float>
@@ -1240,8 +1240,8 @@
 					<float name="TwistLowerAngle">-10</float>
 					<float name="TwistUpperAngle">10</float>
 					<float name="UpperAngle">60</float>
-					<Ref name="Attachment0">RBX635DF77C461D4C6896FC077A51345804</Ref>
-					<Ref name="Attachment1">RBX809631F0267748169F10B65E2EF62570</Ref>
+					<Ref name="Attachment0">RBXA8C371D1D0C74F7599EC2294DD28C838</Ref>
+					<Ref name="Attachment1">RBXCEBEB091DFAA4A299AD14A8F077A0054</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -1253,11 +1253,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBX82B223162D484E88878020C693E5CF8D">
+			<Item class="NoCollisionConstraint" referent="RBX0FD6B5F7550A4DE4BAE8D81102E559B5">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBXF8AD175C6A30497F9C967F18D662DB7A</Ref>
-					<Ref name="Part1">RBX87C2D547F2474E4C9D78E9FDF1BDD684</Ref>
+					<Ref name="Part0">RBX1D6F1C4934094E30ACA70C34999F85FE</Ref>
+					<Ref name="Part1">RBX440A8C881F334DE8A0AB8D16961C66F7</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -1266,7 +1266,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX9CBC90C086574D7282EE573D4637EF70">
+			<Item class="AnimationConstraint" referent="RBXDD0CD1B8A28D4DCDAFAEACAB47DA2407">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -1289,8 +1289,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX635DF77C461D4C6896FC077A51345804</Ref>
-					<Ref name="Attachment1">RBX809631F0267748169F10B65E2EF62570</Ref>
+					<Ref name="Attachment0">RBXA8C371D1D0C74F7599EC2294DD28C838</Ref>
+					<Ref name="Attachment1">RBXCEBEB091DFAA4A299AD14A8F077A0054</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -1303,7 +1303,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXFCC0EB64EDE44C51BBEBC125F0239470">
+		<Item class="UnionOperation" referent="RBX946A44F64CAA4541BFC58AE8EEE857FB">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396328007</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -1355,18 +1355,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>432.594513</X>
-					<Y>2.72618961</Y>
-					<Z>189.604477</Z>
-					<R00>0.999571502</R00>
-					<R01>0.02927039</R01>
-					<R02>-1.38260521e-06</R02>
-					<R10>-0.0292481389</R10>
-					<R11>0.998809874</R11>
-					<R12>-0.0390303396</R12>
-					<R20>-0.00114105211</R20>
-					<R21>0.0390136614</R21>
-					<R22>0.999238014</R22>
+					<X>433.307922</X>
+					<Y>3.02095222</Y>
+					<Z>180.991867</Z>
+					<R00>1.19696529e-06</R00>
+					<R01>0.0302343871</R01>
+					<R02>0.999542952</R02>
+					<R10>0.0390245467</R10>
+					<R11>0.998781443</R11>
+					<R12>-0.0302113909</R12>
+					<R20>-0.999238014</R20>
+					<R21>0.0390067548</R21>
+					<R22>-0.00117868767</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -1438,7 +1438,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX71B5016C4A5D42B8ABA530F1338121FC">
+			<Item class="Texture" referent="RBX09347858DC5E4F4398B99967877EAA97">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1476,7 +1476,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXA6AC3D67152247FDBBA76B5FBB2DF060">
+			<Item class="Texture" referent="RBXC33D806DBA13492193C91ADA51316EF4">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1514,7 +1514,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXCD1593D520D640CEBB23E40B1F505B02">
+			<Item class="Texture" referent="RBXF19613F51D66475ABF26894D59DA6B09">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1552,7 +1552,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXD7D707D3144149F29F68F8A6B9B6D26A">
+			<Item class="Texture" referent="RBX1530F88B062944BC9EE4871F10F55CDF">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1590,7 +1590,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX67BA51DC3908465DA95A9320D30EDAB8">
+			<Item class="Texture" referent="RBXC4E71F68A5CB47C68D9C9CBA4CE5A92A">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1628,7 +1628,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX097F163766B84427BDA54F789B49975A">
+			<Item class="Texture" referent="RBXC7117464243C4DB1B69F328C0B9B578A">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -1666,7 +1666,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX2660B4D76B624253946754C5AC8B4F07">
+			<Item class="Attachment" referent="RBX8F406CDC4AC546CFA657153142AD67CA">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.000427246094</X>
@@ -1691,7 +1691,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX67816CB79A514E4E82459A6D9C8EF5C1">
+			<Item class="Attachment" referent="RBXEF9226CDC8254B219EE75241979BE0F8">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>1.52587891e-05</X>
@@ -1716,7 +1716,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBXA6CE697F36104A6DA3F76A34EF17521E">
+			<Item class="BallSocketConstraint" referent="RBXF026D99109F24849915AB4041FFC4A25">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">3000</float>
@@ -1726,8 +1726,8 @@
 					<float name="TwistLowerAngle">-10</float>
 					<float name="TwistUpperAngle">10</float>
 					<float name="UpperAngle">60</float>
-					<Ref name="Attachment0">RBX20407D6151EB463B937C8DB1B2CE3D0E</Ref>
-					<Ref name="Attachment1">RBX67816CB79A514E4E82459A6D9C8EF5C1</Ref>
+					<Ref name="Attachment0">RBX25D9B05231934E68981A0068375038CE</Ref>
+					<Ref name="Attachment1">RBXEF9226CDC8254B219EE75241979BE0F8</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -1739,11 +1739,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBX81BEFC01F47447D2BA22D3D73BFDD791">
+			<Item class="NoCollisionConstraint" referent="RBX9D5CE5B3D1FC449FB7B99156F93C59E6">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBXFCC0EB64EDE44C51BBEBC125F0239470</Ref>
-					<Ref name="Part1">RBX445CE541C46B41879FD5092E2D25ADA7</Ref>
+					<Ref name="Part0">RBX946A44F64CAA4541BFC58AE8EEE857FB</Ref>
+					<Ref name="Part1">RBXA00A706212C044C886F0B62CEFD383C4</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -1752,7 +1752,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX18B69359B7B04676BC9C1DDFE4BC37E9">
+			<Item class="AnimationConstraint" referent="RBXD7B4DC3EA3234817AFAFE7F84C3E04D7">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -1775,8 +1775,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX20407D6151EB463B937C8DB1B2CE3D0E</Ref>
-					<Ref name="Attachment1">RBX67816CB79A514E4E82459A6D9C8EF5C1</Ref>
+					<Ref name="Attachment0">RBX25D9B05231934E68981A0068375038CE</Ref>
+					<Ref name="Attachment1">RBXEF9226CDC8254B219EE75241979BE0F8</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -1789,7 +1789,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXAD05C0EFDAA04850AFCDE50DBEC2296F">
+		<Item class="UnionOperation" referent="RBX84CCACAF78EC43F9B48CFCB099B92CAE">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327986</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -1841,18 +1841,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>432.567566</X>
-					<Y>1.69872069</Y>
-					<Z>193.753601</Z>
-					<R00>0.999571264</R00>
-					<R01>0.0292783119</R01>
-					<R02>-2.76473565e-06</R02>
-					<R10>-0.029256111</R10>
-					<R11>0.998809695</R11>
-					<R12>-0.0390283167</R12>
-					<R20>-0.00113992172</R20>
-					<R21>0.0390116684</R21>
-					<R22>0.999238074</R22>
+					<X>437.465912</X>
+					<Y>2.03031445</Y>
+					<Z>180.954803</Z>
+					<R00>2.39743804e-06</R00>
+					<R01>0.0302324072</R01>
+					<R02>0.999543011</R02>
+					<R10>0.0390165821</R10>
+					<R11>0.9987818</R11>
+					<R12>-0.0302094668</R12>
+					<R20>-0.999238312</R20>
+					<R21>0.0389988348</R21>
+					<R22>-0.00117717078</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -1924,7 +1924,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Attachment" referent="RBX630EF372DC394909969DEEA6069BF06C">
+			<Item class="Attachment" referent="RBX820FF830BF574FF7BC69CE00B9C77BED">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-3.05175781e-05</X>
@@ -1949,7 +1949,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX29024BA1720B4DDBA295EB31068E2707">
+			<Item class="BallSocketConstraint" referent="RBX83CAC689A39648C1867A050835608E79">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">5000</float>
@@ -1959,8 +1959,8 @@
 					<float name="TwistLowerAngle">-5</float>
 					<float name="TwistUpperAngle">5</float>
 					<float name="UpperAngle">15</float>
-					<Ref name="Attachment0">RBX5C558924F5BD40D7B86058877BA2C703</Ref>
-					<Ref name="Attachment1">RBX630EF372DC394909969DEEA6069BF06C</Ref>
+					<Ref name="Attachment0">RBX4A0214F7D866493FB137F1F5087EC849</Ref>
+					<Ref name="Attachment1">RBX820FF830BF574FF7BC69CE00B9C77BED</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -1972,11 +1972,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBXFA644CD676254ECC8AAD15C9EA6A0453">
+			<Item class="NoCollisionConstraint" referent="RBX27194F80C9004C98BE1637ED524AA32A">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBXAD05C0EFDAA04850AFCDE50DBEC2296F</Ref>
-					<Ref name="Part1">RBXF8AD175C6A30497F9C967F18D662DB7A</Ref>
+					<Ref name="Part0">RBX84CCACAF78EC43F9B48CFCB099B92CAE</Ref>
+					<Ref name="Part1">RBX1D6F1C4934094E30ACA70C34999F85FE</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -1985,7 +1985,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX4C21F93FA4CF473AA725B6C52DD3A920">
+			<Item class="AnimationConstraint" referent="RBX34A55A4ED1CC406BB38305A2081E355C">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -2008,8 +2008,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX5C558924F5BD40D7B86058877BA2C703</Ref>
-					<Ref name="Attachment1">RBX630EF372DC394909969DEEA6069BF06C</Ref>
+					<Ref name="Attachment0">RBX4A0214F7D866493FB137F1F5087EC849</Ref>
+					<Ref name="Attachment1">RBX820FF830BF574FF7BC69CE00B9C77BED</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -2022,7 +2022,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXF77D9E9E80584E88A69E375258584EE9">
+		<Item class="UnionOperation" referent="RBX05B4782E3C8A4416B003CF3BB3FD3EF0">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327989</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -2074,18 +2074,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>432.568726</X>
-					<Y>1.85286248</Y>
-					<Z>189.802139</Z>
-					<R00>0.999571264</R00>
-					<R01>0.0292785615</R01>
-					<R02>-2.76500532e-06</R02>
-					<R10>-0.0292563606</R10>
-					<R11>0.998809695</R11>
-					<R12>-0.0390281118</R12>
-					<R20>-0.00113992521</R20>
-					<R21>0.0390114672</R21>
-					<R22>0.999238074</R22>
+					<X>433.513245</X>
+					<Y>2.14966059</Y>
+					<Z>180.958298</Z>
+					<R00>2.39617248e-06</R00>
+					<R01>0.0302322023</R01>
+					<R02>0.999543011</R02>
+					<R10>0.0390163362</R10>
+					<R11>0.9987818</R11>
+					<R12>-0.0302092638</R12>
+					<R20>-0.999238312</R20>
+					<R21>0.0389985889</R21>
+					<R22>-0.00117715646</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -2157,7 +2157,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Attachment" referent="RBX5ACE86022E4540D3A29721F7858D3338">
+			<Item class="Attachment" referent="RBX314F5C54B5C84E22BAF2E910CCC2D267">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>3.05175781e-05</X>
@@ -2182,7 +2182,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX80F60EB034BA4E099CBE6863B7F2F17C">
+			<Item class="BallSocketConstraint" referent="RBX560228709D094AA9BC12D4146301A437">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">0</float>
@@ -2192,8 +2192,8 @@
 					<float name="TwistLowerAngle">-5</float>
 					<float name="TwistUpperAngle">5</float>
 					<float name="UpperAngle">15</float>
-					<Ref name="Attachment0">RBX2660B4D76B624253946754C5AC8B4F07</Ref>
-					<Ref name="Attachment1">RBX5ACE86022E4540D3A29721F7858D3338</Ref>
+					<Ref name="Attachment0">RBX8F406CDC4AC546CFA657153142AD67CA</Ref>
+					<Ref name="Attachment1">RBX314F5C54B5C84E22BAF2E910CCC2D267</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -2205,11 +2205,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBX31DAB4CE97BA4277AF9118E30F1F8887">
+			<Item class="NoCollisionConstraint" referent="RBXCA1E111F7D244FDB8B18C6D48CC3F56E">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBXF77D9E9E80584E88A69E375258584EE9</Ref>
-					<Ref name="Part1">RBXFCC0EB64EDE44C51BBEBC125F0239470</Ref>
+					<Ref name="Part0">RBX05B4782E3C8A4416B003CF3BB3FD3EF0</Ref>
+					<Ref name="Part1">RBX946A44F64CAA4541BFC58AE8EEE857FB</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -2218,7 +2218,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBXDBC4F6F3C0884F67A750298578781E69">
+			<Item class="AnimationConstraint" referent="RBX571676B5719F435EA905E674217AE901">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -2241,8 +2241,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX2660B4D76B624253946754C5AC8B4F07</Ref>
-					<Ref name="Attachment1">RBX5ACE86022E4540D3A29721F7858D3338</Ref>
+					<Ref name="Attachment0">RBX8F406CDC4AC546CFA657153142AD67CA</Ref>
+					<Ref name="Attachment1">RBX314F5C54B5C84E22BAF2E910CCC2D267</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -2255,7 +2255,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBX87C2D547F2474E4C9D78E9FDF1BDD684">
+		<Item class="UnionOperation" referent="RBX440A8C881F334DE8A0AB8D16961C66F7">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327993</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -2307,18 +2307,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>432.640778</X>
-					<Y>4.53361082</Y>
-					<Z>193.383957</Z>
-					<R00>0.999571741</R00>
-					<R01>0.029261943</R01>
-					<R02>4.03062739e-09</R02>
-					<R10>-0.0292396415</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390328094</R12>
-					<R20>-0.00114217983</R20>
-					<R21>0.0390160978</R21>
-					<R22>0.999237955</R22>
+					<X>437.07135</X>
+					<Y>4.8602562</Y>
+					<Z>181.074631</Z>
+					<R00>-5.28815836e-09</R00>
+					<R01>0.0302368179</R01>
+					<R02>0.999542892</R02>
+					<R10>0.0390330292</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.0302137621</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390151925</R21>
+					<R22>-0.00118023984</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -2390,7 +2390,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX81D53D1F5C1F47A5ADF6BB65941F8A0C">
+			<Item class="Texture" referent="RBX637EF374492247C28F1CD23A0214D892">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2428,7 +2428,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX6FB2FF129B4E418E9E03891114D286F9">
+			<Item class="Texture" referent="RBXCB7B72F5949F48F5980F8B9FD7317406">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2466,7 +2466,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX066C7DDB26754B6C9F8A0BA0183F803B">
+			<Item class="Texture" referent="RBX2DA458BE4AFE44549FCA2375278B0053">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2504,7 +2504,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXDE48F3D4AECE4C2BB6196D0DAE04637A">
+			<Item class="Texture" referent="RBX6E46FE2938204B19B68ECE0AA9DFBF75">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2542,7 +2542,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXE2BE0F05C1394560BAD587EDDF08BEEA">
+			<Item class="Texture" referent="RBXED10558DE643483DAF6D3B5FCBB64EEE">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2580,7 +2580,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXC583D14B7E6749D3A1298E2303B911E7">
+			<Item class="Texture" referent="RBXAF49FF837602495EA320A40E9B34666A">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2618,7 +2618,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX635DF77C461D4C6896FC077A51345804">
+			<Item class="Attachment" referent="RBXA8C371D1D0C74F7599EC2294DD28C838">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0.0093536377</X>
@@ -2643,7 +2643,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX8EE6BA650F3C449793A3870BA265D5E2">
+			<Item class="Attachment" referent="RBXEC87F064EFEA42448BB31F695C2B32DF">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0.00941467285</X>
@@ -2668,7 +2668,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX885D8990CD244DDA93234F7CE268D55E">
+			<Item class="BallSocketConstraint" referent="RBX15AD0B1F15B04A248FDEF64E6035819F">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">6000</float>
@@ -2678,8 +2678,8 @@
 					<float name="TwistLowerAngle">-45</float>
 					<float name="TwistUpperAngle">45</float>
 					<float name="UpperAngle">60</float>
-					<Ref name="Attachment0">RBX9D1AA0CC48C14E01ABF00E1A2973851F</Ref>
-					<Ref name="Attachment1">RBX8EE6BA650F3C449793A3870BA265D5E2</Ref>
+					<Ref name="Attachment0">RBXA4C232A5BAE04069ADCEB5CE4C3A9E9B</Ref>
+					<Ref name="Attachment1">RBXEC87F064EFEA42448BB31F695C2B32DF</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -2691,11 +2691,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBXE39273959BAE4B0C90280A0D057C633E">
+			<Item class="NoCollisionConstraint" referent="RBXDBA255013CBF428DAC459F47A828093B">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBX87C2D547F2474E4C9D78E9FDF1BDD684</Ref>
-					<Ref name="Part1">RBXA22E0253E2A0474ABE1BDA54D7ADFDAD</Ref>
+					<Ref name="Part0">RBX440A8C881F334DE8A0AB8D16961C66F7</Ref>
+					<Ref name="Part1">RBX9A040FD1F43C4FDC83E0835B9380B7CB</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -2704,7 +2704,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX58CB2541123B4D7AB53B1FAE86AC37E8">
+			<Item class="AnimationConstraint" referent="RBXC6281E7A0F11442F9E0D7C8BB86C4434">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -2727,8 +2727,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX9D1AA0CC48C14E01ABF00E1A2973851F</Ref>
-					<Ref name="Attachment1">RBX8EE6BA650F3C449793A3870BA265D5E2</Ref>
+					<Ref name="Attachment0">RBXA4C232A5BAE04069ADCEB5CE4C3A9E9B</Ref>
+					<Ref name="Attachment1">RBXEC87F064EFEA42448BB31F695C2B32DF</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -2741,7 +2741,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBX445CE541C46B41879FD5092E2D25ADA7">
+		<Item class="UnionOperation" referent="RBXA00A706212C044C886F0B62CEFD383C4">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327990</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -2793,18 +2793,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>432.797394</X>
-					<Y>4.87707996</Y>
-					<Z>189.795227</Z>
-					<R00>0.999571741</R00>
-					<R01>0.0292623993</R01>
-					<R02>-5.78464832e-09</R02>
-					<R10>-0.0292400979</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390324071</R12>
-					<R20>-0.00114217598</R20>
-					<R21>0.0390156955</R21>
-					<R22>0.999237955</R22>
+					<X>433.479889</X>
+					<Y>5.18225813</Y>
+					<Z>180.936493</Z>
+					<R00>2.55127386e-09</R00>
+					<R01>0.0302364137</R01>
+					<R02>0.999542892</R02>
+					<R10>0.0390325747</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.0302133597</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390147381</R21>
+					<R22>-0.00118020247</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -2876,7 +2876,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX478053D76FDF49F496F96DE259ED1F9C">
+			<Item class="Texture" referent="RBXBDF14F78101F41FE8641CA7D9C960936">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2914,7 +2914,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX7A8BEA2FBDBD431B8D801228873C488E">
+			<Item class="Texture" referent="RBX106B4B8C2C9E4D71B67BD2BA062E905A">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2952,7 +2952,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX29FD12BC15B04DE192589ECABA92C775">
+			<Item class="Texture" referent="RBXF58CBAC3C1E746F89D45DA82819CF673">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -2990,7 +2990,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX8889F86EAC6D478CB8A8CD0CBB66DF42">
+			<Item class="Texture" referent="RBX3B73B587BC624144B085BA3DDBF145EB">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3028,7 +3028,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXA604F7A9032C42D182E71FDB6AF406D0">
+			<Item class="Texture" referent="RBX365A70D088244612813B7466DAA728C4">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3066,7 +3066,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX324AAB909504405EA33242DF77655027">
+			<Item class="Texture" referent="RBX633D326B644647558EFE41F62F27F3A3">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3104,7 +3104,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX20407D6151EB463B937C8DB1B2CE3D0E">
+			<Item class="Attachment" referent="RBX25D9B05231934E68981A0068375038CE">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.139678955</X>
@@ -3129,7 +3129,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBXA8C815A613224FB39340B9E5AD86477E">
+			<Item class="Attachment" referent="RBX427D74BA209A460790D261C0B31E71D5">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.207397461</X>
@@ -3154,7 +3154,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX7953C610E72E43BB93DF672B84577E35">
+			<Item class="BallSocketConstraint" referent="RBXE71729DE39DC4D2D9BF4206257CC71BB">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">8000</float>
@@ -3164,8 +3164,8 @@
 					<float name="TwistLowerAngle">-45</float>
 					<float name="TwistUpperAngle">45</float>
 					<float name="UpperAngle">65</float>
-					<Ref name="Attachment0">RBXE0362F9ECD6949EF976174EBE8B90028</Ref>
-					<Ref name="Attachment1">RBXA8C815A613224FB39340B9E5AD86477E</Ref>
+					<Ref name="Attachment0">RBX1FB66BC902444C8887470AEC96AD95B0</Ref>
+					<Ref name="Attachment1">RBX427D74BA209A460790D261C0B31E71D5</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -3177,11 +3177,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBX81FB582A4B184A5EB8F45005E08B3D52">
+			<Item class="NoCollisionConstraint" referent="RBX410F7F5E92194F849456DF53D5414B41">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBX445CE541C46B41879FD5092E2D25ADA7</Ref>
-					<Ref name="Part1">RBXA22E0253E2A0474ABE1BDA54D7ADFDAD</Ref>
+					<Ref name="Part0">RBXA00A706212C044C886F0B62CEFD383C4</Ref>
+					<Ref name="Part1">RBX9A040FD1F43C4FDC83E0835B9380B7CB</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -3190,7 +3190,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX8A2AFBFA0CC644E797D18D771C5EEC98">
+			<Item class="AnimationConstraint" referent="RBX0B89929FAAE24CD98ABE68C234AB00DA">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -3213,8 +3213,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBXE0362F9ECD6949EF976174EBE8B90028</Ref>
-					<Ref name="Attachment1">RBXA8C815A613224FB39340B9E5AD86477E</Ref>
+					<Ref name="Attachment0">RBX1FB66BC902444C8887470AEC96AD95B0</Ref>
+					<Ref name="Attachment1">RBX427D74BA209A460790D261C0B31E71D5</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -3227,7 +3227,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXAE5BC5B8449C4B93889032C06DD297B7">
+		<Item class="UnionOperation" referent="RBX7AFD05F344984D1AAABE0348D8336BCA">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396328019</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -3279,18 +3279,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.637817</X>
-					<Y>6.3110919</Y>
-					<Z>191.866119</Z>
-					<R00>0.999571741</R00>
-					<R01>0.0292625893</R01>
-					<R02>-8.84661056e-09</R02>
-					<R10>-0.0292402878</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390322395</R12>
-					<R20>-0.00114217552</R20>
-					<R21>0.0390155278</R21>
-					<R22>0.999237955</R22>
+					<X>435.538818</X>
+					<Y>6.68830967</Y>
+					<Z>180.198959</Z>
+					<R00>-4.58447769e-09</R00>
+					<R01>0.0302368328</R01>
+					<R02>0.999542892</R02>
+					<R10>0.0390330516</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.030213777</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390152149</R21>
+					<R22>-0.00118024042</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -3362,7 +3362,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBXCA16D35DC58C4E0AB0C6EAB34046EFE1">
+			<Item class="Texture" referent="RBX642DCA4E19B84A319068F23CF4456AF3">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3400,7 +3400,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX3E66C4F258CA4158A68356C570A7145C">
+			<Item class="Texture" referent="RBXF60336CB32634C31B8AF08C104F4B560">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3438,7 +3438,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX77433974FF9246A8832B5670B734B329">
+			<Item class="Texture" referent="RBX60221D378F1E422FA22C81C815CB42AA">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3476,7 +3476,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXAA6C70F3601546EB8554B8280706828C">
+			<Item class="Texture" referent="RBX6E5B66ABA59746768BC390CE3BF45C31">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3514,7 +3514,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX0F9ECEF970FC4174A602941D0C3725C8">
+			<Item class="Texture" referent="RBX2172568C227142AEA189A6FA6B29EF64">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3552,7 +3552,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXFB77CA679C9A4885BA1E8F978B1A4F9C">
+			<Item class="Texture" referent="RBX42BB7F313442405B967FA51E2ADEE9D0">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3590,7 +3590,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="WeldConstraint" referent="RBX680AB667553946D19623DE31F8C88EA3">
+			<Item class="WeldConstraint" referent="RBX2E5A81C913B34BC885D600ABDDA3D7B8">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>-0.000427246094</X>
@@ -3606,8 +3606,8 @@
 						<R21>-2.9057054e-07</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBXAE5BC5B8449C4B93889032C06DD297B7</Ref>
-					<Ref name="Part1Internal">RBXA22E0253E2A0474ABE1BDA54D7ADFDAD</Ref>
+					<Ref name="Part0Internal">RBX7AFD05F344984D1AAABE0348D8336BCA</Ref>
+					<Ref name="Part1Internal">RBX9A040FD1F43C4FDC83E0835B9380B7CB</Ref>
 					<int name="State">3</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -3618,7 +3618,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXA22E0253E2A0474ABE1BDA54D7ADFDAD">
+		<Item class="UnionOperation" referent="RBX9A040FD1F43C4FDC83E0835B9380B7CB">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396328004</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -3670,18 +3670,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.63739</X>
-					<Y>6.29153824</Y>
-					<Z>192.366714</Z>
-					<R00>0.999571741</R00>
-					<R01>0.0292622559</R01>
-					<R02>-2.68021938e-09</R02>
-					<R10>-0.0292399544</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390325338</R12>
-					<R20>-0.00114217727</R20>
-					<R21>0.0390158221</R21>
-					<R22>0.999237955</R22>
+					<X>436.039551</X>
+					<Y>6.67314529</Y>
+					<Z>180.198792</Z>
+					<R00>2.41999754e-11</R00>
+					<R01>0.0302365422</R01>
+					<R02>0.999542892</R02>
+					<R10>0.0390327163</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.0302134883</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390148796</R21>
+					<R22>-0.00118021434</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">true</bool>
 				<bool name="CanQuery">true</bool>
@@ -3753,7 +3753,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBXF5A39F0D6543461D888AA0323EE5DA9E">
+			<Item class="Texture" referent="RBXB596B3AB01104492BD48C4A8840F1F20">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3791,7 +3791,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXE93132EA17A047F4B542DB649B5BC9ED">
+			<Item class="Texture" referent="RBXDB72BAD3BA9D4476A6ED39886FDFE87F">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3829,7 +3829,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXA5615A56EFB2477D9907E094813F2A3C">
+			<Item class="Texture" referent="RBXC13E1DCA2B7540F4A540830C63C8AD8B">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3867,7 +3867,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXB04A96C1BA004AC08D16BD5FC1E10682">
+			<Item class="Texture" referent="RBX1A1C1AF93B034C3FBC9E1AB9CD3695C5">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3905,7 +3905,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXC5DA6A9723AF4D65AF22DCC725CEFA8B">
+			<Item class="Texture" referent="RBXA18FC4D568FC46E4B4AF78CAB5B5B192">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3943,7 +3943,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX45316CD247D4451AAFA56B9BAFDA9ADB">
+			<Item class="Texture" referent="RBX743E70719EB34222A8D380DD4B6B153C">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -3981,7 +3981,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX9D1AA0CC48C14E01ABF00E1A2973851F">
+			<Item class="Attachment" referent="RBXA4C232A5BAE04069ADCEB5CE4C3A9E9B">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.936523438</X>
@@ -4006,7 +4006,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBXE0362F9ECD6949EF976174EBE8B90028">
+			<Item class="Attachment" referent="RBX1FB66BC902444C8887470AEC96AD95B0">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-1.00273132</X>
@@ -4031,7 +4031,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX7C9CFD9E0A32460A874801786793A87C">
+			<Item class="Attachment" referent="RBX98C0B0B6224344B2A7A60A056952AF62">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>1.00312805</X>
@@ -4056,7 +4056,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX41FB74A0F5BE49D79F0927335C48BA90">
+			<Item class="Attachment" referent="RBX9AE60E7FE21E4DEE89F3DC6D0274BC8A">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>1.00338745</X>
@@ -4081,7 +4081,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX8C13AAA71E9248AE9FA0E73B25001A99">
+			<Item class="Attachment" referent="RBX0BBCCA7348474832B2FB14DD1631E856">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.000137329102</X>
@@ -4106,7 +4106,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBXA48E3425EC5841C59994A0538DE682C6">
+			<Item class="Attachment" referent="RBXAD41B2F40E164AF99DE7A2FB7C78F571">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0</X>
@@ -4132,7 +4132,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="Part" referent="RBXFD0BD627123549E394A02FAC285C4BB5">
+		<Item class="Part" referent="RBX27116E121DDA4767A54B49580868D2B6">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">3</token>
@@ -4147,18 +4147,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.673492</X>
-					<Y>7.3673625</Y>
-					<Z>196.045563</Z>
-					<R00>-0.999574184</R00>
-					<R01>0.0173116475</R01>
-					<R02>0.0235945117</R02>
-					<R10>0.0292421393</R10>
-					<R11>0.559426963</R11>
-					<R12>0.828365803</R12>
-					<R20>0.00114097062</R20>
-					<R21>0.82869947</R21>
-					<R22>-0.559692621</R22>
+					<X>439.708832</X>
+					<Y>7.78101397</Y>
+					<Z>180.241653</Z>
+					<R00>-1.22796109e-06</R00>
+					<R01>0.823751509</R01>
+					<R02>-0.566951215</R02>
+					<R10>-0.0390307158</R10>
+					<R11>0.566520035</R11>
+					<R12>0.823125362</R12>
+					<R20>0.999240279</R20>
+					<R21>0.0221295916</R21>
+					<R22>0.0321510211</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -4236,7 +4236,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="SpecialMesh" referent="RBX15B1AC634CEC498AAD48B196FBECD37B">
+			<Item class="SpecialMesh" referent="RBXF29C7A292FD147269228057FED3550D8">
 				<Properties>
 					<token name="MeshType">3</token>
 					<Content name="MeshId"><null></null></Content>
@@ -4264,7 +4264,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="WeldConstraint" referent="RBX147A292C66C0452382C9D010D6B78219">
+			<Item class="WeldConstraint" referent="RBXD59B3B3D169048FF9CE31C4C4F53A580">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>0.000411987305</X>
@@ -4280,8 +4280,8 @@
 						<R21>0.806233644</R21>
 						<R22>-0.591599345</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBXFD0BD627123549E394A02FAC285C4BB5</Ref>
-					<Ref name="Part1Internal">RBX0FBA78D73942435EB094E1A7FFAE91AD</Ref>
+					<Ref name="Part0Internal">RBX27116E121DDA4767A54B49580868D2B6</Ref>
+					<Ref name="Part1Internal">RBX75C47E4ACECF4198AC5E59A02B47AA00</Ref>
 					<int name="State">3</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -4292,7 +4292,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="Part" referent="RBX3E26661741B449ECB22E91CA0011E987">
+		<Item class="Part" referent="RBXF6E65923134A45228DB76A81CEA507C7">
 			<Properties>
 				<token name="shape">1</token>
 				<token name="formFactorRaw">1</token>
@@ -4307,18 +4307,18 @@
 				<token name="BottomSurface">4</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.688904</X>
-					<Y>7.95108318</Y>
-					<Z>194.613113</Z>
-					<R00>0.999574244</R00>
-					<R01>0.0276430007</R01>
-					<R02>0.00959909335</R02>
-					<R10>-0.0292401034</R10>
-					<R11>0.956346691</R11>
-					<R12>0.290774584</R12>
-					<R20>-0.00114217948</R20>
-					<R21>-0.290930241</R21>
-					<R22>0.956743717</R22>
+					<X>438.271301</X>
+					<Y>8.35189438</Y>
+					<Z>180.263962</Z>
+					<R00>1.32230737e-09</R00>
+					<R01>-0.299323797</R01>
+					<R02>0.954151869</R02>
+					<R10>0.0390327387</R10>
+					<R11>0.953426301</R11>
+					<R12>0.299096107</R12>
+					<R20>-0.99924022</R20>
+					<R21>0.0372432843</R21>
+					<R22>0.0116834641</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -4390,7 +4390,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="SpecialMesh" referent="RBXA5E98264A9DF4B87BC8BD58D9D5D1A38">
+			<Item class="SpecialMesh" referent="RBX171C90F0D9674B9DA392EFCCBA81A8E0">
 				<Properties>
 					<token name="MeshType">5</token>
 					<Content name="MeshId"><url>http://www.roblox.com/asset/?id=11185882</url></Content>
@@ -4418,7 +4418,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX0661AAD881D7470BADF6EF840B136327">
+			<Item class="Texture" referent="RBX10AC09CD91954F4886BD4D5730C7B13B">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -4456,7 +4456,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="WeldConstraint" referent="RBXECE08BB63E83487DBD1594A1D1A616BA">
+			<Item class="WeldConstraint" referent="RBX74A8CBDB3EF6403FB55FF5E4F95CD5BB">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
 						<X>-0.000396728516</X>
@@ -4472,8 +4472,8 @@
 						<R21>0.32803759</R21>
 						<R22>0.944664955</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX3E26661741B449ECB22E91CA0011E987</Ref>
-					<Ref name="Part1Internal">RBX0FBA78D73942435EB094E1A7FFAE91AD</Ref>
+					<Ref name="Part0Internal">RBXF6E65923134A45228DB76A81CEA507C7</Ref>
+					<Ref name="Part1Internal">RBX75C47E4ACECF4198AC5E59A02B47AA00</Ref>
 					<int name="State">3</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -4484,7 +4484,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXF13FB9B33A5C4569802B7AB24C6F2E6C">
+		<Item class="UnionOperation" referent="RBX09161285FB00446F911E360ACDCDD6BD">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327993</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -4536,18 +4536,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>434.57962</X>
-					<Y>4.4768796</Y>
-					<Z>193.381714</Z>
-					<R00>0.999571741</R00>
-					<R01>0.0292620212</R01>
-					<R02>2.32621056e-09</R02>
-					<R10>-0.0292397197</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390327387</R12>
-					<R20>-0.00114217913</R20>
-					<R21>0.039016027</R21>
-					<R22>0.999237955</R22>
+					<X>437.07132</X>
+					<Y>4.9359498</Y>
+					<Z>179.136459</Z>
+					<R00>-3.93209465e-09</R00>
+					<R01>0.030236749</R01>
+					<R02>0.999542892</R02>
+					<R10>0.039032951</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.030213695</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390151143</R21>
+					<R22>-0.00118023343</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -4619,7 +4619,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBXA211ECE40058466C92ADF6C70E940337">
+			<Item class="Texture" referent="RBX2FF72339A80047B494051E4427819448">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -4657,7 +4657,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX28A40580DD504F07971CB4CF06CEB6D3">
+			<Item class="Texture" referent="RBX22CB5FBCE73249DCA1E8D739EAC5AE16">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -4695,7 +4695,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX08BD7CB1BABD44F49DD8C26E95BD0ACE">
+			<Item class="Texture" referent="RBXCF24A5AC8B1B48D09CFA236939FDB837">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -4733,7 +4733,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX75F9E8D80DFF4BEB8994875A27B14882">
+			<Item class="Texture" referent="RBXA4F3CC6F052843018CB472D052C796AD">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -4771,7 +4771,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX7987A27CA5484FA69121E06E208CF206">
+			<Item class="Texture" referent="RBX6921F2F114C8435092EF88750BEDA342">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -4809,7 +4809,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXBEDF08A1450E44EA8ADC26F0504BC151">
+			<Item class="Texture" referent="RBXFAF9444412FC404895CD670719062883">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -4847,7 +4847,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBXFD86CB62697048DAA8E50B83A3E6A965">
+			<Item class="Attachment" referent="RBX147AC04BB0F949199C9D6B7C058874B9">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0.0093536377</X>
@@ -4872,7 +4872,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBXB3B7A107F1D64D3CB9A9ECA751EB042C">
+			<Item class="Attachment" referent="RBXFDACBFFE0814401786C6175AA7DCBFDC">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0.00941467285</X>
@@ -4897,7 +4897,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX94B5343267124B3A865548029E220644">
+			<Item class="BallSocketConstraint" referent="RBX9ACB2686EF1D4A4993357D646AD5D21F">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">6000</float>
@@ -4907,8 +4907,8 @@
 					<float name="TwistLowerAngle">-45</float>
 					<float name="TwistUpperAngle">45</float>
 					<float name="UpperAngle">60</float>
-					<Ref name="Attachment0">RBX7C9CFD9E0A32460A874801786793A87C</Ref>
-					<Ref name="Attachment1">RBXB3B7A107F1D64D3CB9A9ECA751EB042C</Ref>
+					<Ref name="Attachment0">RBX98C0B0B6224344B2A7A60A056952AF62</Ref>
+					<Ref name="Attachment1">RBXFDACBFFE0814401786C6175AA7DCBFDC</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -4920,11 +4920,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBXA27261C75617469BA7A95B8A053DEDDD">
+			<Item class="NoCollisionConstraint" referent="RBXAD5146BAF85C4C2CA94D9F09C333E970">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBXF13FB9B33A5C4569802B7AB24C6F2E6C</Ref>
-					<Ref name="Part1">RBXA22E0253E2A0474ABE1BDA54D7ADFDAD</Ref>
+					<Ref name="Part0">RBX09161285FB00446F911E360ACDCDD6BD</Ref>
+					<Ref name="Part1">RBX9A040FD1F43C4FDC83E0835B9380B7CB</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -4933,7 +4933,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBXFD73CE4B7CDF4BDCAEE538CF143ADB8A">
+			<Item class="AnimationConstraint" referent="RBX06B102FDF2154CFA99A388F23EF672E9">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -4956,8 +4956,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX7C9CFD9E0A32460A874801786793A87C</Ref>
-					<Ref name="Attachment1">RBXB3B7A107F1D64D3CB9A9ECA751EB042C</Ref>
+					<Ref name="Attachment0">RBX98C0B0B6224344B2A7A60A056952AF62</Ref>
+					<Ref name="Attachment1">RBXFDACBFFE0814401786C6175AA7DCBFDC</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -4970,7 +4970,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBX0810E3806F7046F78E4093273560BB02">
+		<Item class="UnionOperation" referent="RBX6E0701FF7E754E1EB4BEA7F60DF274E6">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396328000</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -5022,18 +5022,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>434.531342</X>
-					<Y>2.4979949</Y>
-					<Z>193.539612</Z>
-					<R00>0.999571502</R00>
-					<R01>0.0292701665</R01>
-					<R02>-1.38112671e-06</R02>
-					<R10>-0.0292479154</R10>
-					<R11>0.998809874</R11>
-					<R12>-0.0390305258</R12>
-					<R20>-0.00114105048</R20>
-					<R21>0.0390138477</R21>
-					<R22>0.999238014</R22>
+					<X>437.246613</X>
+					<Y>2.95983744</Y>
+					<Z>179.04985</Z>
+					<R00>1.19668539e-06</R00>
+					<R01>0.0302345771</R01>
+					<R02>0.999542952</R02>
+					<R10>0.0390247665</R10>
+					<R11>0.998781443</R11>
+					<R12>-0.0302115809</R12>
+					<R20>-0.999238014</R20>
+					<R21>0.0390069745</R21>
+					<R22>-0.00117870211</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -5105,7 +5105,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX1AC545DB272F46E19B6345BB105A4B28">
+			<Item class="Texture" referent="RBX39B8DCDD928845E99C87E2C9E82F636B">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5143,7 +5143,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXDB4C06A75B284A65A436477849FE5314">
+			<Item class="Texture" referent="RBX11DE5C0F9F4941859B529AD20D559E03">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5181,7 +5181,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX950B8DC6F35C4C66911E63DD8C447719">
+			<Item class="Texture" referent="RBX28C9AFDC4C8848F2AA0B25E80104918E">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5219,7 +5219,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX8C2026528B034290A43237A97FF4C0CA">
+			<Item class="Texture" referent="RBXD36E945D26EB458EB8659122E650023D">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5257,7 +5257,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX47400C9B808F429C8A759D3058230126">
+			<Item class="Texture" referent="RBX82B05B2680034855B6CA2B1E22C1E7F0">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5295,7 +5295,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX08DB08B8D1F54E01AE2AAB0613CEAC7E">
+			<Item class="Texture" referent="RBX16BCDE05EF994E7FBEBC4AC3AB023120">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5333,7 +5333,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBXA6E1EABD0F5945AF8F9E4A80607CB72F">
+			<Item class="Attachment" referent="RBXC8174B905D224F4C905C4832C4396009">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.000152587891</X>
@@ -5358,7 +5358,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX6B636E60D386432AACDC38580DF23D74">
+			<Item class="Attachment" referent="RBX3EC2CA575A1F463B98FA71622BC86238">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-6.10351562e-05</X>
@@ -5383,7 +5383,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX1F1E00486D334345A71D6091DD5069AB">
+			<Item class="BallSocketConstraint" referent="RBXBE456FBFCC7E46C8B8E191C72A5D1DCE">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">3000</float>
@@ -5393,8 +5393,8 @@
 					<float name="TwistLowerAngle">-60</float>
 					<float name="TwistUpperAngle">10</float>
 					<float name="UpperAngle">25</float>
-					<Ref name="Attachment0">RBXFD86CB62697048DAA8E50B83A3E6A965</Ref>
-					<Ref name="Attachment1">RBX6B636E60D386432AACDC38580DF23D74</Ref>
+					<Ref name="Attachment0">RBX147AC04BB0F949199C9D6B7C058874B9</Ref>
+					<Ref name="Attachment1">RBX3EC2CA575A1F463B98FA71622BC86238</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -5406,11 +5406,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBX8076B75F797746199AA1F5ED387283C7">
+			<Item class="NoCollisionConstraint" referent="RBX83149498F606441EA58EB03856AEE0B1">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBX0810E3806F7046F78E4093273560BB02</Ref>
-					<Ref name="Part1">RBXF13FB9B33A5C4569802B7AB24C6F2E6C</Ref>
+					<Ref name="Part0">RBX6E0701FF7E754E1EB4BEA7F60DF274E6</Ref>
+					<Ref name="Part1">RBX09161285FB00446F911E360ACDCDD6BD</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -5419,7 +5419,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBXD6CA1EA687A249DBB8B6B50641EC10C3">
+			<Item class="AnimationConstraint" referent="RBX39D1EBE48AD348ED91D238F0B3F19F66">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -5442,8 +5442,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBXFD86CB62697048DAA8E50B83A3E6A965</Ref>
-					<Ref name="Attachment1">RBX6B636E60D386432AACDC38580DF23D74</Ref>
+					<Ref name="Attachment0">RBX147AC04BB0F949199C9D6B7C058874B9</Ref>
+					<Ref name="Attachment1">RBX3EC2CA575A1F463B98FA71622BC86238</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -5456,7 +5456,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBX8F47C7C84BD94BDC98A517CD377F655C">
+		<Item class="UnionOperation" referent="RBX0F31F1BF053E4432926F76D08ABC8256">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327986</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -5508,18 +5508,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>434.506409</X>
-					<Y>1.64198947</Y>
-					<Z>193.751358</Z>
-					<R00>0.999571264</R00>
-					<R01>0.0292783901</R01>
-					<R02>-2.76643959e-06</R02>
-					<R10>-0.0292561892</R10>
-					<R11>0.998809695</R11>
-					<R12>-0.039028246</R12>
-					<R20>-0.00113992102</R20>
-					<R21>0.0390115976</R21>
-					<R22>0.999238074</R22>
+					<X>437.465881</X>
+					<Y>2.10600805</Y>
+					<Z>179.016632</Z>
+					<R00>2.39879546e-06</R00>
+					<R01>0.0302323382</R01>
+					<R02>0.999543011</R02>
+					<R10>0.0390165038</R10>
+					<R11>0.9987818</R11>
+					<R12>-0.0302093998</R12>
+					<R20>-0.999238312</R20>
+					<R21>0.0389987566</R21>
+					<R22>-0.00117716438</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -5591,7 +5591,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Attachment" referent="RBXE3DBBE6997A3465DB25D84A66D5BB84E">
+			<Item class="Attachment" referent="RBX00D55955BD8D4FF2B9FD4C10C4E0D197">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-3.05175781e-05</X>
@@ -5616,7 +5616,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX6327314CBF7348BBB3DDAFB54ACE0F86">
+			<Item class="BallSocketConstraint" referent="RBXECD324B0234646E2B22E313F81CDD38C">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">5000</float>
@@ -5626,8 +5626,8 @@
 					<float name="TwistLowerAngle">-5</float>
 					<float name="TwistUpperAngle">5</float>
 					<float name="UpperAngle">15</float>
-					<Ref name="Attachment0">RBXA6E1EABD0F5945AF8F9E4A80607CB72F</Ref>
-					<Ref name="Attachment1">RBXE3DBBE6997A3465DB25D84A66D5BB84E</Ref>
+					<Ref name="Attachment0">RBXC8174B905D224F4C905C4832C4396009</Ref>
+					<Ref name="Attachment1">RBX00D55955BD8D4FF2B9FD4C10C4E0D197</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -5639,11 +5639,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBXF9FAE09CDF7B42F6AF38ADA54BC54070">
+			<Item class="NoCollisionConstraint" referent="RBX47C3AC452B324B2A9F2CFFA0BD9A29FB">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBX8F47C7C84BD94BDC98A517CD377F655C</Ref>
-					<Ref name="Part1">RBX0810E3806F7046F78E4093273560BB02</Ref>
+					<Ref name="Part0">RBX0F31F1BF053E4432926F76D08ABC8256</Ref>
+					<Ref name="Part1">RBX6E0701FF7E754E1EB4BEA7F60DF274E6</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -5652,7 +5652,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX60C77E796C8E423EA9760511F6BDF201">
+			<Item class="AnimationConstraint" referent="RBX8CCA609A7E4C49F58726464B6D3BB9E0">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -5675,8 +5675,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBXA6E1EABD0F5945AF8F9E4A80607CB72F</Ref>
-					<Ref name="Attachment1">RBXE3DBBE6997A3465DB25D84A66D5BB84E</Ref>
+					<Ref name="Attachment0">RBXC8174B905D224F4C905C4832C4396009</Ref>
+					<Ref name="Attachment1">RBX00D55955BD8D4FF2B9FD4C10C4E0D197</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -5689,7 +5689,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBX6576A5A4A0AB481A8EFAAB18437FFBE8">
+		<Item class="UnionOperation" referent="RBXB04C262836A548A895925A9C2906DE8C">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396328011</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -5741,18 +5741,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>434.372894</X>
-					<Y>4.83098793</Y>
-					<Z>189.793671</Z>
-					<R00>0.999571741</R00>
-					<R01>0.0292624775</R01>
-					<R02>-7.43387041e-09</R02>
-					<R10>-0.0292401761</R10>
-					<R11>0.998810053</R11>
-					<R12>-0.0390323363</R12>
-					<R20>-0.0011421754</R20>
-					<R21>0.0390156247</R21>
-					<R22>0.999237955</R22>
+					<X>433.480133</X>
+					<Y>5.24377632</Y>
+					<Z>179.361542</Z>
+					<R00>3.85055721e-09</R00>
+					<R01>0.0302363448</R01>
+					<R02>0.999542892</R02>
+					<R10>0.0390324965</R10>
+					<R11>0.998781085</R11>
+					<R12>-0.0302132908</R12>
+					<R20>-0.999237716</R20>
+					<R21>0.0390146598</R21>
+					<R22>-0.00118019606</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -5824,7 +5824,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX04664E693EED410C9E9CDB10FA2017CA">
+			<Item class="Texture" referent="RBXD397AC372B6A43A6BF0C0933758D690E">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5862,7 +5862,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXF51223408A1A463F8EA63714D163ABF4">
+			<Item class="Texture" referent="RBX52935A134F284CACB5CF1352EBC76063">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5900,7 +5900,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX7438CC24636843A899FCFE40FBDD73D6">
+			<Item class="Texture" referent="RBX957739B08C194628AE9425666766A690">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5938,7 +5938,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXFDD9E3DD60EB468EB96532A171D0760F">
+			<Item class="Texture" referent="RBX81FA1F28E6414D5BB59B6BB794204354">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -5976,7 +5976,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXD5B2666789984628B5BFFB5D3306DD1D">
+			<Item class="Texture" referent="RBXF2B91DF9E1DC442A98C0F99517447AB6">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6014,7 +6014,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX8D99AA324B354BAEB205EBE7AC1D3F5F">
+			<Item class="Texture" referent="RBX9F2F5E6D421D46429ED3F3C05B8FCF89">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6052,7 +6052,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX75F2068820B14509BE047A7ADC507290">
+			<Item class="Attachment" referent="RBXD4CB5E8027ED4CE2A8B697AE3099BFF0">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0.222564697</X>
@@ -6077,7 +6077,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX3B54522741D14121939A466AF0F06DB6">
+			<Item class="BallSocketConstraint" referent="RBX9BCBF4EF3B6A448A94F9ADE264696BFF">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">8000</float>
@@ -6087,8 +6087,8 @@
 					<float name="TwistLowerAngle">-45</float>
 					<float name="TwistUpperAngle">45</float>
 					<float name="UpperAngle">60</float>
-					<Ref name="Attachment0">RBX41FB74A0F5BE49D79F0927335C48BA90</Ref>
-					<Ref name="Attachment1">RBX75F2068820B14509BE047A7ADC507290</Ref>
+					<Ref name="Attachment0">RBX9AE60E7FE21E4DEE89F3DC6D0274BC8A</Ref>
+					<Ref name="Attachment1">RBXD4CB5E8027ED4CE2A8B697AE3099BFF0</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -6100,7 +6100,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX49667C79B7814532AECEAC12C796690D">
+			<Item class="Attachment" referent="RBXDC99DA9D61AB4536B3054EB30BBC13A0">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>0.12020874</X>
@@ -6125,11 +6125,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBXF4E0D3E16D184E2FAA1A35037BD8DF80">
+			<Item class="NoCollisionConstraint" referent="RBXF045DFB04C484356A9CD406AE4840563">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBX6576A5A4A0AB481A8EFAAB18437FFBE8</Ref>
-					<Ref name="Part1">RBXA22E0253E2A0474ABE1BDA54D7ADFDAD</Ref>
+					<Ref name="Part0">RBXB04C262836A548A895925A9C2906DE8C</Ref>
+					<Ref name="Part1">RBX9A040FD1F43C4FDC83E0835B9380B7CB</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -6138,7 +6138,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX696CAD7BF7F545AFB278F4FD62E0A6AC">
+			<Item class="AnimationConstraint" referent="RBX9C20BF7EBC1C4C97A6D8156E369FC247">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -6161,8 +6161,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX41FB74A0F5BE49D79F0927335C48BA90</Ref>
-					<Ref name="Attachment1">RBX75F2068820B14509BE047A7ADC507290</Ref>
+					<Ref name="Attachment0">RBX9AE60E7FE21E4DEE89F3DC6D0274BC8A</Ref>
+					<Ref name="Attachment1">RBXD4CB5E8027ED4CE2A8B697AE3099BFF0</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -6175,7 +6175,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBX93736F3942DA4B90B52BEBEC0246129D">
+		<Item class="UnionOperation" referent="RBXB6B47C267EB649C9914BF365694399F9">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396328007</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -6227,18 +6227,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>434.429779</X>
-					<Y>2.6725328</Y>
-					<Z>189.602615</Z>
-					<R00>0.999571502</R00>
-					<R01>0.0292704683</R01>
-					<R02>-1.38425423e-06</R02>
-					<R10>-0.0292482171</R10>
-					<R11>0.998809874</R11>
-					<R12>-0.0390302688</R12>
-					<R20>-0.00114105153</R20>
-					<R21>0.0390135907</R21>
-					<R22>0.999238014</R22>
+					<X>433.308167</X>
+					<Y>3.09264898</Y>
+					<Z>179.157227</Z>
+					<R00>1.19826518e-06</R00>
+					<R01>0.0302343182</R01>
+					<R02>0.999542952</R02>
+					<R10>0.0390244685</R10>
+					<R11>0.998781443</R11>
+					<R12>-0.030211322</R12>
+					<R20>-0.999238014</R20>
+					<R21>0.0390066765</R21>
+					<R22>-0.00117868127</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -6310,7 +6310,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Texture" referent="RBX1612BA0B09D84570AE9D1AABE1D6A3E0">
+			<Item class="Texture" referent="RBX2C1438589B3145ED8212E002FF284E3B">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6348,7 +6348,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX657F8A6016814CEF87D82289BF7D6EEE">
+			<Item class="Texture" referent="RBX9787AF13109F47ACAA316B2EECED3858">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6386,7 +6386,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXFFC52A221FC847348A39E7108EC058A8">
+			<Item class="Texture" referent="RBXA45806486DD145DFA37A92FC0B6EF326">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6424,7 +6424,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX68215D0E867C4F2698550745AE41EADD">
+			<Item class="Texture" referent="RBXFF0B723811A145C0BF4250BC3F708D15">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6462,7 +6462,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBXE62A42E6679A417A91F94D7B2BEF3819">
+			<Item class="Texture" referent="RBXC12F3392EA9F4F0DA06C70ACE6EE092E">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6500,7 +6500,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Texture" referent="RBX23637D4267B14777A24466E3C12D1B04">
+			<Item class="Texture" referent="RBXDC1F31B2B75C4589A13C3909E335B3D5">
 				<Properties>
 					<float name="OffsetStudsU">0</float>
 					<float name="OffsetStudsV">0</float>
@@ -6538,7 +6538,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBX432C8BC9357D46339F7D97FE3EFB2343">
+			<Item class="Attachment" referent="RBX399D5D573DB44C459D564CBC44026A49">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>-0.000427246094</X>
@@ -6563,7 +6563,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="Attachment" referent="RBXD83594253F5042B0A09628419EC975B7">
+			<Item class="Attachment" referent="RBX17784F6AFBD24BC0B0D3B566C00B2647">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>1.52587891e-05</X>
@@ -6588,7 +6588,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBXA5E3940AFC7444888776CB00ABCF6481">
+			<Item class="BallSocketConstraint" referent="RBX902C27D3B56B4D0EBA509DE5BFF5D642">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">3000</float>
@@ -6598,8 +6598,8 @@
 					<float name="TwistLowerAngle">0</float>
 					<float name="TwistUpperAngle">10</float>
 					<float name="UpperAngle">60</float>
-					<Ref name="Attachment0">RBX49667C79B7814532AECEAC12C796690D</Ref>
-					<Ref name="Attachment1">RBXD83594253F5042B0A09628419EC975B7</Ref>
+					<Ref name="Attachment0">RBXDC99DA9D61AB4536B3054EB30BBC13A0</Ref>
+					<Ref name="Attachment1">RBX17784F6AFBD24BC0B0D3B566C00B2647</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -6611,11 +6611,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBX0097215833CF4B4F92899536D1E149E5">
+			<Item class="NoCollisionConstraint" referent="RBXDE3E6D68A7D342A285AD0CF955515C70">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBX93736F3942DA4B90B52BEBEC0246129D</Ref>
-					<Ref name="Part1">RBX6576A5A4A0AB481A8EFAAB18437FFBE8</Ref>
+					<Ref name="Part0">RBXB6B47C267EB649C9914BF365694399F9</Ref>
+					<Ref name="Part1">RBXB04C262836A548A895925A9C2906DE8C</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -6624,7 +6624,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBX72B1A1330E424DD8B11E7E0B01B305E2">
+			<Item class="AnimationConstraint" referent="RBXF5C561D3988A4D0689C64CF7CBA27C95">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -6647,8 +6647,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX49667C79B7814532AECEAC12C796690D</Ref>
-					<Ref name="Attachment1">RBXD83594253F5042B0A09628419EC975B7</Ref>
+					<Ref name="Attachment0">RBXDC99DA9D61AB4536B3054EB30BBC13A0</Ref>
+					<Ref name="Attachment1">RBX17784F6AFBD24BC0B0D3B566C00B2647</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -6661,7 +6661,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="UnionOperation" referent="RBXA1D2C64C9F7346D3AE71D08D214B30C3">
+		<Item class="UnionOperation" referent="RBXC4DBB8FDA6BF4099B9B5063A033922C4">
 			<Properties>
 				<Content name="AssetId"><url>http://www.roblox.com//asset/?id=396327989</url></Content>
 				<BinaryString name="ChildData"></BinaryString>
@@ -6713,18 +6713,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>434.403992</X>
-					<Y>1.79920566</Y>
-					<Z>189.800278</Z>
-					<R00>0.999571264</R00>
-					<R01>0.0292786397</R01>
-					<R02>-2.76665423e-06</R02>
-					<R10>-0.0292564388</R10>
-					<R11>0.998809695</R11>
-					<R12>-0.0390280411</R12>
-					<R20>-0.00113992463</R20>
-					<R21>0.0390113965</R21>
-					<R22>0.999238074</R22>
+					<X>433.513489</X>
+					<Y>2.22135758</Y>
+					<Z>179.123657</Z>
+					<R00>2.39747305e-06</R00>
+					<R01>0.0302321333</R01>
+					<R02>0.999543011</R02>
+					<R10>0.039016258</R10>
+					<R11>0.9987818</R11>
+					<R12>-0.0302091949</R12>
+					<R20>-0.999238312</R20>
+					<R21>0.0389985107</R21>
+					<R22>-0.00117715006</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">false</bool>
 				<bool name="CanQuery">true</bool>
@@ -6796,7 +6796,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Attachment" referent="RBX7D4946FBA0D6404AA552D3731CF60799">
+			<Item class="Attachment" referent="RBX958A81843BF94953A110F4A78B96CC3D">
 				<Properties>
 					<CoordinateFrame name="CFrame">
 						<X>3.05175781e-05</X>
@@ -6821,7 +6821,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="BallSocketConstraint" referent="RBX988356BECA6D429DB1889044F8116635">
+			<Item class="BallSocketConstraint" referent="RBXA68AB0BB76794E458028A0F068831909">
 				<Properties>
 					<bool name="LimitsEnabled">true</bool>
 					<float name="MaxFrictionTorqueXml">0</float>
@@ -6831,8 +6831,8 @@
 					<float name="TwistLowerAngle">-5</float>
 					<float name="TwistUpperAngle">5</float>
 					<float name="UpperAngle">15</float>
-					<Ref name="Attachment0">RBX432C8BC9357D46339F7D97FE3EFB2343</Ref>
-					<Ref name="Attachment1">RBX7D4946FBA0D6404AA552D3731CF60799</Ref>
+					<Ref name="Attachment0">RBX399D5D573DB44C459D564CBC44026A49</Ref>
+					<Ref name="Attachment1">RBX958A81843BF94953A110F4A78B96CC3D</Ref>
 					<int name="Color">1009</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -6844,11 +6844,11 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="NoCollisionConstraint" referent="RBX5975BCB9F6D64D3FA371BCA371C413C7">
+			<Item class="NoCollisionConstraint" referent="RBX77C4E96A75FA45C4848BBF1C129784C1">
 				<Properties>
 					<bool name="Enabled">true</bool>
-					<Ref name="Part0">RBXA1D2C64C9F7346D3AE71D08D214B30C3</Ref>
-					<Ref name="Part1">RBX93736F3942DA4B90B52BEBEC0246129D</Ref>
+					<Ref name="Part0">RBXC4DBB8FDA6BF4099B9B5063A033922C4</Ref>
+					<Ref name="Part1">RBXB6B47C267EB649C9914BF365694399F9</Ref>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 					<bool name="DefinesCapabilities">false</bool>
@@ -6857,7 +6857,7 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
-			<Item class="AnimationConstraint" referent="RBXB353D818FB0E4B4E8DF4023A19AD6669">
+			<Item class="AnimationConstraint" referent="RBXF370FDF10AA64CE9873C4EE4177FD862">
 				<Properties>
 					<float name="AngularDamping">1</float>
 					<float name="AngularStrength">1</float>
@@ -6880,8 +6880,8 @@
 						<R21>0</R21>
 						<R22>1</R22>
 					</CoordinateFrame>
-					<Ref name="Attachment0">RBX432C8BC9357D46339F7D97FE3EFB2343</Ref>
-					<Ref name="Attachment1">RBX7D4946FBA0D6404AA552D3731CF60799</Ref>
+					<Ref name="Attachment0">RBX399D5D573DB44C459D564CBC44026A49</Ref>
+					<Ref name="Attachment1">RBX958A81843BF94953A110F4A78B96CC3D</Ref>
 					<int name="Color">23</int>
 					<bool name="Enabled">true</bool>
 					<bool name="Visible">false</bool>
@@ -6894,7 +6894,7 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="Humanoid" referent="RBXCA185B3021E24F0D96175ECBEFD7142A">
+		<Item class="Humanoid" referent="RBX4AA3D1DC9606441DB505F3E3B76F85F5">
 			<Properties>
 				<bool name="AutoJumpEnabled">true</bool>
 				<bool name="AutoRotate">true</bool>
@@ -6931,7 +6931,7 @@
 				<int64 name="SourceAssetId">-1</int64>
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
-			<Item class="Animator" referent="RBXC575F5D6A7654FDBB9CE06283FF94C00">
+			<Item class="Animator" referent="RBX7EEE789871EE45ACA053BC15C45A63CC">
 				<Properties>
 					<bool name="PreferLodEnabled">true</bool>
 					<BinaryString name="AttributesSerialize"></BinaryString>
@@ -6943,9 +6943,9 @@
 				</Properties>
 			</Item>
 		</Item>
-		<Item class="ObjectValue" referent="RBXBF2019E8CDEC4D359F720796720E9716">
+		<Item class="ObjectValue" referent="RBX46C9FB009A3E4792A49EC0402C20C815">
 			<Properties>
-				<Ref name="Value">RBXB946C8DCAD7B48F4A83502A9FF15F455</Ref>
+				<Ref name="Value">RBX9B02C3E9A72B4308AC791FCA005D0501</Ref>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
@@ -6954,7 +6954,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="LinearVelocity" referent="RBXFE12506847C54243A18E7E3389C93614">
+		<Item class="LinearVelocity" referent="RBX69F5DA19720D494FA022C5352F905032">
 			<Properties>
 				<token name="ForceLimitMode">0</token>
 				<bool name="ForceLimitsEnabled">true</bool>
@@ -6969,7 +6969,7 @@
 					<Y>1000</Y>
 					<Z>1000</Z>
 				</Vector3>
-				<float name="MaxForce">1000</float>
+				<float name="MaxForce">9.99999987e+14</float>
 				<Vector2 name="MaxPlanarAxesForce">
 					<X>1000</X>
 					<Y>1000</Y>
@@ -6984,7 +6984,7 @@
 					<Z>0</Z>
 				</Vector3>
 				<bool name="ReactionForceEnabled">true</bool>
-				<token name="RelativeTo">2</token>
+				<token name="RelativeTo">0</token>
 				<Vector3 name="SecondaryTangentAxis">
 					<X>0</X>
 					<Y>1</Y>
@@ -6996,7 +6996,7 @@
 					<Z>0</Z>
 				</Vector3>
 				<token name="VelocityConstraintMode">2</token>
-				<Ref name="Attachment0">null</Ref>
+				<Ref name="Attachment0">RBX7038F7BD92E64808AA3235C6B3FBD2F8</Ref>
 				<Ref name="Attachment1">null</Ref>
 				<int name="Color">26</int>
 				<bool name="Enabled">true</bool>
@@ -7009,17 +7009,17 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="AngularVelocity" referent="RBX35C76BC3C543459CB22B14E866A5A67A">
+		<Item class="AngularVelocity" referent="RBX5833BF938A4D4191B7B55BFD257BCEEC">
 			<Properties>
 				<Vector3 name="AngularVelocity">
 					<X>0</X>
 					<Y>0</Y>
 					<Z>0</Z>
 				</Vector3>
-				<float name="MaxTorque">0</float>
+				<float name="MaxTorque">50000</float>
 				<bool name="ReactionTorqueEnabled">false</bool>
-				<token name="RelativeTo">2</token>
-				<Ref name="Attachment0">null</Ref>
+				<token name="RelativeTo">0</token>
+				<Ref name="Attachment0">RBX7038F7BD92E64808AA3235C6B3FBD2F8</Ref>
 				<Ref name="Attachment1">null</Ref>
 				<int name="Color">23</int>
 				<bool name="Enabled">true</bool>
@@ -7032,11 +7032,17 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Seat" referent="RBX1227A2F476A74A298C2D7746EB2A97B4">
+		<Item class="VehicleSeat" referent="RBXCEE4983DA0264FC0BA370A72B2C1E615">
 			<Properties>
 				<bool name="Disabled">false</bool>
-				<token name="shape">1</token>
-				<token name="formFactorRaw">1</token>
+				<bool name="HeadsUpDisplay">true</bool>
+				<float name="MaxSpeed">25</float>
+				<int name="Steer">0</int>
+				<float name="SteerFloat">0</float>
+				<int name="Throttle">0</int>
+				<float name="ThrottleFloat">0</float>
+				<float name="Torque">10</float>
+				<float name="TurnSpeed">1</float>
 				<bool name="Anchored">false</bool>
 				<bool name="AudioCanCollide">true</bool>
 				<float name="BackParamA">-0.5</float>
@@ -7048,18 +7054,18 @@
 				<token name="BottomSurface">0</token>
 				<token name="BottomSurfaceInput">0</token>
 				<CoordinateFrame name="CFrame">
-					<X>433.720123</X>
-					<Y>6.89405727</Y>
-					<Z>191.96019</Z>
-					<R00>-0.999913871</R00>
-					<R01>-0.0131002553</R01>
-					<R02>-0.00085618766</R02>
-					<R10>-0.0131080234</R10>
-					<R11>0.999866247</R11>
-					<R12>0.00979064405</R12>
-					<R20>0.000727812643</R20>
-					<R21>0.00980102457</R21>
-					<R22>-0.99995178</R22>
+					<X>435.573883</X>
+					<Y>7.56516504</Y>
+					<Z>180.270966</Z>
+					<R00>-0.000884803361</R00>
+					<R01>0.0101685598</R01>
+					<R02>-0.99994874</R02>
+					<R10>-0.0682425126</R10>
+					<R11>0.997617006</R11>
+					<R12>0.0102051478</R12>
+					<R20>0.997666895</R20>
+					<R21>0.0682479665</R21>
+					<R22>-0.000188766629</R22>
 				</CoordinateFrame>
 				<bool name="CanCollide">true</bool>
 				<bool name="CanQuery">true</bool>
@@ -7120,35 +7126,35 @@
 					<Z>0</Z>
 				</Vector3>
 				<Vector3 name="size">
-					<X>1.26860929</X>
-					<Y>0.429943919</Y>
-					<Z>2</Z>
+					<X>1.20682049</X>
+					<Y>0.65298903</Y>
+					<Z>2.10944676</Z>
 				</Vector3>
 				<BinaryString name="AttributesSerialize"></BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
-				<string name="Name">Seat</string>
+				<string name="Name">VehicleSeat</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+				<SharedString name="Tags">0D0tat9aD6gFKSXBEgS1RQ==</SharedString>
 			</Properties>
-			<Item class="WeldConstraint" referent="RBXE254E5F30DE14E619A8397910F58A9D9">
+			<Item class="WeldConstraint" referent="RBX08B7E7A43B884E0D8D8387DB6B4F16D3">
 				<Properties>
 					<CoordinateFrame name="CFrame0">
-						<X>0.0898742676</X>
-						<Y>-0.582731009</Y>
-						<Z>0.0884246826</Z>
-						<R00>-0.999103248</R00>
-						<R01>-0.042324096</R01>
-						<R02>0.00123890245</R02>
-						<R10>-0.0423422195</R10>
-						<R11>0.998675466</R11>
-						<R12>-0.029233465</R12>
-						<R20>1.82772055e-08</R20>
-						<R21>-0.0292597059</R21>
-						<R22>-0.999571919</R22>
+						<X>-0.0119628906</X>
+						<Y>-0.8800354</Y>
+						<Z>0.0261230469</Z>
+						<R00>-0.999570549</R00>
+						<R01>-0.0292618908</R01>
+						<R02>-2.10711733e-08</R02>
+						<R10>-0.0292559229</R10>
+						<R11>0.999371052</R11>
+						<R12>-0.0200584233</R12>
+						<R20>0.00058696582</R20>
+						<R21>-0.0200499222</R21>
+						<R22>-0.99979949</R22>
 					</CoordinateFrame>
-					<Ref name="Part0Internal">RBX1227A2F476A74A298C2D7746EB2A97B4</Ref>
-					<Ref name="Part1Internal">RBXAE5BC5B8449C4B93889032C06DD297B7</Ref>
+					<Ref name="Part0Internal">RBXCEE4983DA0264FC0BA370A72B2C1E615</Ref>
+					<Ref name="Part1Internal">RBX7AFD05F344984D1AAABE0348D8336BCA</Ref>
 					<int name="State">3</int>
 					<BinaryString name="AttributesSerialize"></BinaryString>
 					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -7158,10 +7164,36 @@
 					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 				</Properties>
 			</Item>
+			<Item class="Attachment" referent="RBX7038F7BD92E64808AA3235C6B3FBD2F8">
+				<Properties>
+					<CoordinateFrame name="CFrame">
+						<X>0</X>
+						<Y>0</Y>
+						<Z>0</Z>
+						<R00>1</R00>
+						<R01>0</R01>
+						<R02>0</R02>
+						<R10>0</R10>
+						<R11>1</R11>
+						<R12>0</R12>
+						<R20>0</R20>
+						<R21>0</R21>
+						<R22>1</R22>
+					</CoordinateFrame>
+					<bool name="Visible">false</bool>
+					<BinaryString name="AttributesSerialize"></BinaryString>
+					<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+					<bool name="DefinesCapabilities">false</bool>
+					<string name="Name">SeatAttachment</string>
+					<int64 name="SourceAssetId">-1</int64>
+					<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+				</Properties>
+			</Item>
 		</Item>
 	</Item>
 	<SharedStrings>
 		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+		<SharedString md5="0D0tat9aD6gFKSXBEgS1RQ==">SG9yc2VTZWF0</SharedString>
 		<SharedString md5="+qv2o0HSW+htH+ALwYQpiw==">Q1NHUEhTAAAAAEJMT0NL</SharedString>
 	</SharedStrings>
 </roblox>

@@ -14,6 +14,8 @@ require(script.Throwable.ClientThrowableHandler)
 require(script.Trap.ClientTrapHandler)
 require(script.Train.TrainHandler):Initialize()
 require(script.GUI.PopupHandler)
+require(script.OnSeatedClientHandler)
+
 local function WaitForPlayerLoad()
 	ClientUtility.ToggleControls(false)
 	CoreGUIHandler.ToggleBackpackVisibility(false)

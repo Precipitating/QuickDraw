@@ -16,9 +16,7 @@ local ClientInputs = require(script.Parent.Parent.ClientInputs.ProximityPromptHa
 local NPCHandler = require(script.Parent.Parent.NPCs.NPCHandler)
 local ClientData = require(script.Parent.Parent.ClientData)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
-
 local HumanNetwork = require(script.Parent.Parent.HumanNetwork)
-local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 
 local Player = Players.LocalPlayer
 

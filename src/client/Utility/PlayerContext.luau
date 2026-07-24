@@ -51,7 +51,6 @@ PlayerContext.Character = nil
 PlayerContext.PlayerGui = nil
 PlayerContext.HRP = nil
 PlayerContext.Humanoid = nil
-PlayerContext.Camera = nil
 PlayerContext.RightArmYaw = nil
 PlayerContext.janitor = Janitor.new()
 PlayerContext.HRPOrientation = nil

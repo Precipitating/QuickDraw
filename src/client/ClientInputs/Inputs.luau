@@ -163,6 +163,14 @@ function Inputs:ConnectInputEnd()
 	end)
 end
 
+function Inputs:ConnectOnSit()
+	local humanoid: Humanoid? = PlayerContext.Humanoid
+
+	if not humanoid then
+		return
+	end
+end
+
 function Inputs:ConnectInputBegin()
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 		if processed then
@@ -174,6 +182,7 @@ function Inputs:ConnectInputBegin()
 		self:ConnectKick(input)
 		self:ConnectBarge(input)
 		self:ConnectQuests(input)
+		self:ConnectOnSit()
 	end)
 end
 
