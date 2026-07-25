@@ -10,6 +10,7 @@ local RenderDistance = 300
 local DefaultAnims = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
 local CrawlAnims = ReplicatedStorage.Shared.AnimationData.CrawlAnimations
 local BuffaloAnims = ReplicatedStorage.Shared.AnimationData.BuffaloAnimations
+local HorseAnims = ReplicatedStorage.Shared.AnimationData.HorseAnimations
 --
 local DefaultAnimateParams = {
 	ApplyRigScale = true,
@@ -91,6 +92,8 @@ function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
 			if animalType then
 				if animalType == "Buffalo" then
 					controller = AnimationController.new(character, BuffaloAnims, DefaultAnimateParams)
+				elseif animalType == "Horse" then
+					controller = AnimationController.new(character, HorseAnims, DefaultAnimateParams)
 				end
 			else
 				controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)

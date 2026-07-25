@@ -5,7 +5,10 @@ return {
 	},
 
 	Horse = {
-		ForwardSpeed = 40,
-		ReverseSpeed = 20,
+		Health = 100,
+		MaxForwardSpeed = 40,
+		MaxReverseSpeed = 20,
+		Acceleration = 20,
+		Deceleration = 20,
 	},
 }

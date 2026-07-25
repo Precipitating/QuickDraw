@@ -623,6 +623,7 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
+
 	BuffaloHit = {
 		SoundId = "rbxassetid://74149238738530",
 		Volume = 5,
@@ -636,7 +637,19 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "SFX",
 	},
-
+	-- Horse
+	HorseHit = {
+		SoundId = "rbxassetid://128804140247250",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
+	HorseDead = {
+		SoundId = "rbxassetid://101782231020414",
+		Volume = 2,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 	-- Medic
 	MedicBuy = {
 		SoundId = "rbxassetid://103766849742433",

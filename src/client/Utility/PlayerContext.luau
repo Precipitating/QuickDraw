@@ -282,6 +282,14 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 		end)
 	)
 
+	PlayerContext.janitor:Add(humanoid.Seated:Connect(function(active: boolean, seatPart: Seat)
+		if active then
+			PlayerContext.IsBusy = true
+		else
+			PlayerContext.IsBusy = false
+		end
+	end))
+
 	PlayerContext.janitor:Add(humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
 		if humanoid.MoveDirection.Magnitude > 0 then
 			PlayerContext.IsMoving = true

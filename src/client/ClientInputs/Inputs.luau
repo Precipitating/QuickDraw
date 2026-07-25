@@ -41,7 +41,8 @@ function Inputs:ConnectSprint(input: InputObject)
 		if PlayerContext.IsCharging then
 			return
 		end
-		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
+
+		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and not PlayerContext.Humanoid.Sit then
 			if PlayerContext.IsMoving then
 				self.networker:fire("ToggleSprint", true)
 			else

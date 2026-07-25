@@ -7,6 +7,7 @@ local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationH
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
 
@@ -15,37 +16,22 @@ local Buffalo = setmetatable({}, Animal)
 Buffalo.__index = Buffalo
 
 function Buffalo.new(model: Model?, classType: string)
-	local self = setmetatable(Animal.new(model, classType), Buffalo)
+	local self = setmetatable(Animal.new(model, classType, true), Buffalo)
+	if not model then
+		warn("Buffalo missing model")
+		return
+	end
 	self.ChargeDistance = 150
 	self.ChargeForce = 200
+
+	self.BodyParts = {
+		Head = Utility.GetInstance(model, false, "Head"),
+		Body = Utility.GetInstance(model, false, "Body"),
+	}
 
 	self.ChargeStartTime = 0
 	self.WaitTimeBeforeCharge = 5
 	return self :: any
-end
-
--- Allows the ball sockets to wander freely after disabling the AnimationConstraints
--- Also enables collision on legs so legs dont go through ground
-function Buffalo:DeathRagdoll()
-	local character = self.Character
-	if not character then
-		return
-	end
-	-- Disable constraints
-	for _, instance in self.Character:GetDescendants() do
-		if instance:IsA("BasePart") then
-			instance.CollisionGroup = "Dead"
-		end
-		if instance:IsA("AnimationConstraint") then
-			instance.Enabled = false
-			if instance.Parent and instance.Parent:IsA("BasePart") then
-				local parent = instance.Parent
-				if not parent.CanCollide then
-					parent.CanCollide = true
-				end
-			end
-		end
-	end
 end
 
 function Buffalo:ChargeUpRun(target: Model? | BasePart?, onComplete: () -> ())

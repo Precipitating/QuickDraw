@@ -10,7 +10,7 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Animal = {}
 Animal.__index = Animal
 
-function Animal.new(model: Model?, type: string)
+function Animal.new(model: Model?, type: string, requiresAI: boolean?)
 	local self = setmetatable({}, Animal)
 	assert(model, "Missing animal model")
 	assert(type, "Missing animal type")
@@ -32,18 +32,18 @@ function Animal.new(model: Model?, type: string)
 	self.ClassType = "Animal"
 	self.Type = type
 	self.Humanoid = model:FindFirstChildOfClass("Humanoid")
-
+	self.AIEnabled = requiresAI
 	self.Animator = self.Humanoid and self.Humanoid:FindFirstChildOfClass("Animator")
 
 	self.HRP = model:FindFirstChild("HumanoidRootPart")
-	self.BodyParts = {
-		Head = Utility.GetInstance(model, false, "Head"),
-		Body = Utility.GetInstance(model, false, "Body"),
-	}
-	self.TorsoAimer = self:InitializeTorsoAimer()
-	self.AttackRunSpeed = animalData.AttackRunSpeed
+	self.BodyParts = {}
+
+	if requiresAI then
+		self.TorsoAimer = self:InitializeTorsoAimer()
+		self.AttackRunSpeed = animalData.AttackRunSpeed
+		self.AI = AnimalAI.new(self, type)
+	end
 	self.Humanoid.MaxSlopeAngle = 50
-	self.AI = AnimalAI.new(self, type)
 	self.VoicelineSound = self:SetupVoicelineSound()
 	self:Initialize()
 
@@ -87,19 +87,44 @@ function Animal:UpdateHealth(value: number, hitBy: Player?)
 	end
 end
 
+-- Allows the ball sockets to wander freely after disabling the AnimationConstraints
+-- Also enables collision on legs so legs dont go through ground
+function Animal:DeathRagdoll()
+	local character = self.Character
+	if not character then
+		return
+	end
+	-- Disable constraints
+	for _, instance in self.Character:GetDescendants() do
+		if instance:IsA("BasePart") then
+			instance.CollisionGroup = "Dead"
+		end
+		if instance:IsA("AnimationConstraint") then
+			instance.Enabled = false
+			if instance.Parent and instance.Parent:IsA("BasePart") then
+				local parent = instance.Parent
+				if not parent.CanCollide then
+					parent.CanCollide = true
+				end
+			end
+		end
+	end
+end
+
 function Animal:Die(killer: Player?)
 	if self.Dead then
 		return
 	end
-	if not self.AI or not self.AI.StateMachine or not self.AI.StateMachine.Transition then
-		return
+	if self.RequiresAI then
+		if not self.AI or not self.AI.StateMachine or not self.AI.StateMachine.Transition then
+			return
+		end
+		self.AI.StateMachine:Transition("Dead")
 	end
 	self.Dead = true
-	self.AI.StateMachine:Transition("Dead")
+	self.Humanoid.EvaluateStateMachine = false
+	self:DeathRagdoll()
 
-	if self.DeathRagdoll then
-		self:DeathRagdoll()
-	end
 	CollectionService:AddTag(self.Character, "Dead")
 
 	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.Type}Dead`, self.Character:GetPivot(), nil)

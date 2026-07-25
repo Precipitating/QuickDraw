@@ -219,27 +219,24 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 
 	-- Set animal to seek state when shot, aggroing them.
 	local ai = animalClass.AI
-	if not ai then
-		warn("Animal missing AI reference")
-		return
-	end
+	if ai then
+		if ai.StateMachine and ai.StateMachine.Transition then
+			local currentAnimalState = ai.StateMachine:GetState()
+			local shooter = damageData.Shooter
 
-	if ai and ai.StateMachine and ai.StateMachine.Transition then
-		local currentAnimalState = ai.StateMachine:GetState()
-		local shooter = damageData.Shooter
-
-		if shooter then
-			if currentAnimalState == "Patrol" then
-				local shooterCharacter = nil
-				if
-					(typeof(shooter) == "table" and shooter.Character)
-					or typeof(shooter) == "Instance" and shooter:IsA("Player")
-				then
-					shooterCharacter = shooter.Character
-				else
-					shooterCharacter = shooter
+			if shooter then
+				if currentAnimalState == "Patrol" then
+					local shooterCharacter = nil
+					if
+						(typeof(shooter) == "table" and shooter.Character)
+						or typeof(shooter) == "Instance" and shooter:IsA("Player")
+					then
+						shooterCharacter = shooter.Character
+					else
+						shooterCharacter = shooter
+					end
+					ai.StateMachine:Transition("Seek", { Target = shooterCharacter })
 				end
-				ai.StateMachine:Transition("Seek", { Target = shooterCharacter })
 			end
 		end
 	end

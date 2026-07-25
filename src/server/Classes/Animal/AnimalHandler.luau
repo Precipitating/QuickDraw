@@ -4,9 +4,10 @@ local ServerStorage = game:GetService("ServerStorage")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Animal = require(script.Parent.Animal)
 local Buffalo = require(script.Parent.Buffalo)
+local Horse = require(script.Parent.Horse)
 local AnimalHandler = {}
 local SpawnLoop = true
-local AnimalLimit = 10
+local AnimalLimit = 20
 local ActiveAnimalsCount = 0
 local AnimalsFolder = ServerStorage.NPCs.Animals.Models:GetChildren()
 local AnimalSpawns = ServerStorage.NPCs.Animals.SpawnAreas:GetChildren()
@@ -62,6 +63,9 @@ function AnimalHandler:Initialize()
 			if animalType == "Buffalo" then
 				ActiveAnimals[humanoid] = Buffalo.new(animalModel, "Buffalo")
 				warn(`Buffalo class initialized for {animalModel.Name}`)
+			elseif animalType == "Horse" then
+				ActiveAnimals[humanoid] = Horse.new(animalModel, "Horse")
+				warn(`Horse class initialized for {animalModel.Name}`)
 			else
 				ActiveAnimals[humanoid] = Animal.new(animalModel, animalType)
 				warn(`Animal class initialized for {animalModel.Name}`)
@@ -85,6 +89,9 @@ function AnimalHandler:Initialize()
 	task.spawn(function()
 		self:StartSpawnLoop()
 	end)
+
+	local hrse = ServerStorage.NPCs.RIdeableAnimals.HorseNPC:Clone()
+	hrse.Parent = workspace
 end
 
 return AnimalHandler
