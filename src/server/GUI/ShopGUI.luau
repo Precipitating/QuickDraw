@@ -1,15 +1,19 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerStorage = game:GetService("ServerStorage")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local CommonGUIFunctions = require(script.Parent.CommonGUIFunctions)
 local PopupGUI = require(script.Parent.PopupGUI)
+local ShopCosts = require(script.Parent.ShopCosts)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerData = require(ServerScriptService.Server.ServerData)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
+local HorseModel = ServerStorage.NPCs.RideableAnimals.HorseNPC
 local ShopGUI = {}
 
 function ShopGUI:OnGUIOpen(player: Player, npcModel: Model)
@@ -134,9 +138,42 @@ function ShopGUI:BuyItem(player: Player, productName: string, productCost: numbe
 	end
 	return success
 end
+
+function ShopGUI:BuyHorse(player: Player, horseType: string, horseSellerNPC: Model?)
+	if not horseSellerNPC then
+		return false
+	end
+
+	local currentMoney = ServerData.GetMoney(player)
+	local moneyIfPurchased = currentMoney - ShopCosts[horseType]
+	if currentMoney and moneyIfPurchased < 0 then
+		PopupGUI:NewPopup(player, 1, `Can't afford {horseType}`)
+		return false
+	end
+
+	local linkedStable = horseSellerNPC:GetAttribute("LinkedStable")
+	linkedStable = linkedStable:Get()
+	if not linkedStable then
+		warn("Horse seller NPC has no linked stable")
+		return false
+	end
+	local spawnPoints = linkedStable:FindFirstChild("SpawnPoints")
+	if not spawnPoints then
+		warn("Linked stable has no spawn points folder")
+		return false
+	end
+	spawnPoints = spawnPoints:GetChildren()
+	local horseClone = HorseModel:Clone()
+
+	local randomSpawnIdx = RandomModule.GetRandomIntBetween(1, #spawnPoints)
+	horseClone:PivotTo(spawnPoints[randomSpawnIdx].WorldCFrame)
+	horseClone.Parent = workspace
+
+	return true
+end
 ShopGUI.networker = Networker.new(
 	"ShopNetwork",
 	ShopGUI,
-	{ ShopGUI.BuyItem, ShopGUI.OnGUIClose, ShopGUI.OnGUIOpen, ShopGUI.BuyRefillAmmo }
+	{ ShopGUI.BuyItem, ShopGUI.OnGUIClose, ShopGUI.OnGUIOpen, ShopGUI.BuyRefillAmmo, ShopGUI.BuyHorse }
 )
 return ShopGUI

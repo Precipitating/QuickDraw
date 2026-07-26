@@ -7,7 +7,14 @@ return {
 	Horse = {
 		Health = 100,
 		MaxForwardSpeed = 40,
-		MaxReverseSpeed = 20,
+		MaxReverseSpeed = 10,
+		Acceleration = 20,
+		Deceleration = 20,
+	},
+	LeBangAverage = {
+		Health = 100,
+		MaxForwardSpeed = 40,
+		MaxReverseSpeed = 10,
 		Acceleration = 20,
 		Deceleration = 20,
 	},

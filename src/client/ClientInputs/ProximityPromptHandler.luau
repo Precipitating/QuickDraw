@@ -140,11 +140,13 @@ local PROMPT_HANDLERS = {
 			PlayerContext.IsBusy = false
 		end)
 	end,
+	["HorsePrompt"] = function(_: Player, prompt: ProximityPrompt)
+		if PlayerContext.IsBusy then
+			return
+		end
+		ProximityPromptHandler.networker:fire("HorseMount", prompt)
+	end,
 }
-
-function ProximityPromptHandler:ConnectLootPickupGUI(pickupType: string, chosenLoot: string)
-	LootPickupGUIHandler:ConnectGUI(pickupType, chosenLoot)
-end
 
 function ProximityPromptHandler.Initialize()
 	local function connectPrompt(tag, handler, prompt)

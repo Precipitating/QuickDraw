@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
+local LootPickupGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.LootPickupGUIHandler)
 local ProximityPromptHandler = require(script.Parent.Parent.ClientInputs.ProximityPromptHandler)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -12,6 +14,9 @@ function ClientLootHandler:SellAllOres()
 	return success
 end
 
+function ClientLootHandler:ConnectLootPickupGUI(pickupType: string, chosenLoot: string)
+	LootPickupGUIHandler:ConnectGUI(pickupType, chosenLoot)
+end
 function ClientLootHandler:PickupOre(prompt: ProximityPrompt)
 	if PlayerContext.IsBusy then
 		return

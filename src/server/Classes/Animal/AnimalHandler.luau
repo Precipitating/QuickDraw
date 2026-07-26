@@ -89,9 +89,6 @@ function AnimalHandler:Initialize()
 	task.spawn(function()
 		self:StartSpawnLoop()
 	end)
-
-	local hrse = ServerStorage.NPCs.RIdeableAnimals.HorseNPC:Clone()
-	hrse.Parent = workspace
 end
 
 return AnimalHandler

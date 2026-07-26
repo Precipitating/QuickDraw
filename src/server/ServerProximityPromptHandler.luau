@@ -52,9 +52,47 @@ function ServerProximityPromptHandler:LootPickup(player: Player, lootType: strin
 	LootHandler:PickupLoot(player, lootType, prompt)
 end
 
+function ServerProximityPromptHandler:HorseMount(player: Player, prompt: ProximityPrompt?)
+	if not prompt then
+		return
+	end
+
+	local vehicleSeat = prompt.Parent and prompt.Parent:FindFirstChildOfClass("VehicleSeat")
+
+	if not vehicleSeat then
+		warn("Horse has no vehicle seat")
+		prompt.Enabled = true
+		return
+	end
+	local character = player.Character
+	if not character then
+		warn("[ServerProximityPromptHandler:HorseMount] Missing character?")
+		prompt.Enabled = true
+		return
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then
+		warn("[ServerProximityPromptHandler:HorseMount] Missing humanoid")
+		prompt.Enabled = true
+		return
+	end
+	local distance = (character.PrimaryPart.Position - vehicleSeat.Position).Magnitude
+
+	if distance > 10 then
+		warn(`{player.Name} tried to mount horse but not close enough.`)
+		prompt.Enabled = true
+		return
+	end
+
+	if not vehicleSeat.Occupant then
+		vehicleSeat:Sit(humanoid)
+	end
+end
+
 ServerProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", ServerProximityPromptHandler, {
 	ServerProximityPromptHandler.CashPickedUp,
 	ServerProximityPromptHandler.HealPlayer,
 	ServerProximityPromptHandler.LootPickup,
+	ServerProximityPromptHandler.HorseMount,
 })
 return ServerProximityPromptHandler

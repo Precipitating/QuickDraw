@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Animal class
+local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local OnSeatedHandler = require(ServerScriptService.Server.OnSeatedHandler)
 
@@ -22,6 +23,7 @@ function Horse.new(model: Model?, classType: string)
 	self.LinearVelocity = model:FindFirstChildOfClass("LinearVelocity") :: LinearVelocity?
 	self.CurrentSeatedPlayer = nil
 	self.CurrentSpeed = 0
+	self.ProximityPrompt = model:FindFirstChildOfClass("ProximityPrompt")
 	self.BodyParts = {
 		Head = Utility.GetInstance(model, false, "Head"),
 		Torso = Utility.GetInstance(model, false, "Torso"),
@@ -96,10 +98,23 @@ function Horse:ConnectMovement()
 end
 
 function Horse:Die(killer: Player?)
-	Animal.Die(self, killer)
 	if self.Seat then
 		self.Seat.Disabled = true
 	end
+	if self.CurrentSeatedPlayer then
+		local human = PlayerManager:GetHumanClassFromPlayer(self.CurrentSeatedPlayer)
+
+		if human then
+			if self.CurrentSpeed > 20 then
+				human:Ragdoll(5)
+			end
+		end
+	end
+
+	if self.ProximityPrompt then
+		self.ProximityPrompt:Destroy()
+	end
+	Animal.Die(self, killer)
 end
 function Horse:ConnectSeat()
 	local seat = self.Seat
@@ -118,6 +133,9 @@ function Horse:ConnectSeat()
 			if not player then
 				return
 			end
+			if self.ProximityPrompt then
+				self.ProximityPrompt.Enabled = false
+			end
 			self.CurrentSeatedPlayer = player
 			linearVel.Enabled = true
 			self:ConnectMovement()
@@ -127,6 +145,9 @@ function Horse:ConnectSeat()
 			seat.Steer = 0
 			linearVel.VectorVelocity = Vector3.zero
 			linearVel.Enabled = false
+			if self.ProximityPrompt then
+				self.ProximityPrompt.Enabled = true
+			end
 			self.Janitor:Remove("HorseMovementConn")
 			OnSeatedHandler:InformClientIfSeated(self.CurrentSeatedPlayer, "Horse", seat)
 			self.CurrentSeatedPlayer = nil

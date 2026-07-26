@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
-local ClientLootHandler = require(StarterPlayer.StarterPlayerScripts.Client.Loot.ClientLootHandler)
+local ShopGUIHandler = require(script.Parent.GUI.ShopGUIHandler)
+local ClientLootHandler = require(script.Parent.Loot.ClientLootHandler)
 local QuestGUIHandler = require(script.Parent.GUI.QuestGUIHandler)
 local ClientSoundHandler = require(script.Parent.Sound.ClientSoundHandler)
 local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
@@ -508,6 +508,61 @@ return {
 					[1] = function(d)
 						QuestGUIHandler:AttemptToGiveQuest("AnimalCuller", npcModel)
 						d:hideGui("If not, you've completed it all.")
+					end,
+				},
+			},
+		})
+	end,
+	HorseSellerNPC = function(npcModel: Model?, prompt: ProximityPrompt?)
+		InitNPC(npcModel, prompt, {
+			name = "Mr Hans",
+			font = "RomanAntique",
+			dialogs = {
+				{
+					text = "Lookin' for some horses?",
+					responses = { "Yes, I would like to purchase one", "Bye" },
+				},
+				{
+					text = "Take yer pick!",
+					responses = { "Le Bang Average ($250)" },
+				},
+				{
+					text = "You can't afford it...",
+					responses = { "Grr..." },
+				},
+				{
+					text = "Should be in one of the stalls. Enjoy. ",
+					responses = { "Ok" },
+				},
+			},
+			responses = {
+				[1] = {
+					[1] = function(d)
+						d:triggerDialog(PlayerContext.Player, 2)
+					end,
+					[2] = function(d)
+						d:hideGui("Hmph. Train peasant.")
+					end,
+				},
+				[2] = {
+					[1] = function(d)
+						local success = ShopGUIHandler.networker:fetch("BuyHorse", "LeBangAverage", npcModel)
+
+						if success then
+							d:triggerDialog(PlayerContext.Player, 4)
+						else
+							d:triggerDialog(PlayerContext.Player, 3)
+						end
+					end,
+				},
+				[3] = {
+					[1] = function(d)
+						d:hideGui("Stop wasting my time...")
+					end,
+				},
+				[4] = {
+					[1] = function(d)
+						d:hideGui("Every little helps.")
 					end,
 				},
 			},

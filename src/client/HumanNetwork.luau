@@ -33,11 +33,13 @@ function HumanNetwork:ApplyImpulse(target, force: Vector3, position: Vector3?)
 		return
 	end
 
-	if position then
-		target:ApplyImpulseAtPosition(force, position)
-	else
-		target:ApplyImpulse(force)
-	end
+	task.defer(function()
+		if position then
+			target:ApplyImpulseAtPosition(force, position)
+		else
+			target:ApplyImpulse(force)
+		end
+	end)
 end
 
 function HumanNetwork:FinishedLoadingGame()
