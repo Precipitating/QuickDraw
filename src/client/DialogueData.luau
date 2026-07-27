@@ -69,6 +69,15 @@ local function InitNPC(npcModel: Model?, prompt: ProximityPrompt?, config: NPCCo
 	end)
 end
 
+local function AttemptToBuyHorse(dialog, horseName: string, npcModel)
+	local success = ShopGUIHandler.networker:fetch("BuyHorse", horseName, npcModel)
+
+	if success then
+		dialog:triggerDialog(PlayerContext.Player, 4)
+	else
+		dialog:triggerDialog(PlayerContext.Player, 3)
+	end
+end
 -- ─── NPC Definitions ──────────────────────────────────────────────────────────
 
 return {
@@ -524,7 +533,13 @@ return {
 				},
 				{
 					text = "Take yer pick!",
-					responses = { "Le Bang Average ($250)" },
+					responses = {
+						"Le Bang Average ($250)",
+						"Middlemanston ($500)",
+						"Roidied-Uppie ($700)",
+						"Chonkie ($600)",
+						"Prime Time ($1250)",
+					},
 				},
 				{
 					text = "You can't afford it...",
@@ -546,13 +561,19 @@ return {
 				},
 				[2] = {
 					[1] = function(d)
-						local success = ShopGUIHandler.networker:fetch("BuyHorse", "LeBangAverage", npcModel)
-
-						if success then
-							d:triggerDialog(PlayerContext.Player, 4)
-						else
-							d:triggerDialog(PlayerContext.Player, 3)
-						end
+						AttemptToBuyHorse(d, "LeBangAverage", npcModel)
+					end,
+					[2] = function(d)
+						AttemptToBuyHorse(d, "Middlemanston", npcModel)
+					end,
+					[3] = function(d)
+						AttemptToBuyHorse(d, "RoidiedUppie", npcModel)
+					end,
+					[4] = function(d)
+						AttemptToBuyHorse(d, "Chonkie", npcModel)
+					end,
+					[5] = function(d)
+						AttemptToBuyHorse(d, "PrimeTime", npcModel)
 					end,
 				},
 				[3] = {

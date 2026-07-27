@@ -97,6 +97,13 @@ SoundData.Sounds = {
 		Group = "Music",
 		Looped = true,
 	},
+	SandTownTheme = {
+		SoundId = "rbxassetid://97486581462502",
+		Volume = 0.7,
+		PlaybackSpeed = 1,
+		Group = "Music",
+		Looped = true,
+	},
 
 	--Human
 	LimbDismember = {

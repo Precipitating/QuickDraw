@@ -68,6 +68,7 @@ function ZoneHandler:InitializeMusicZones()
 	SetupZone("DoctorAudioZone", "DoctorTheme")
 	SetupZone("MercenaryAudioZone", "MercenaryTheme")
 	SetupZone("BankAudioZone", "BankTheme")
+	SetupZone("SandTownAudioZone", "SandTownTheme")
 	SetupZone("TrainAudioZone", "BankTheme", { MovingPlatform = true })
 	SetupZone("CaveAudioZone", "CaveTheme", nil, function()
 		local humanoid: Humanoid? = PlayerContext and PlayerContext.Humanoid

@@ -167,6 +167,7 @@ function ShopGUI:BuyHorse(player: Player, horseType: string, horseSellerNPC: Mod
 
 	local randomSpawnIdx = RandomModule.GetRandomIntBetween(1, #spawnPoints)
 	horseClone:PivotTo(spawnPoints[randomSpawnIdx].WorldCFrame)
+	horseClone:SetAttribute("HorseType", horseType)
 	horseClone.Parent = workspace
 
 	return true

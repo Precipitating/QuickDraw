@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Folder" referent="RBXDEAFAD6509EC4530832117D2FD95EA5D">
+	<Item class="Folder" referent="RBXA79F2CE21E1B46BD9A174A9E940C4A60">
 		<Properties>
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
@@ -11,7 +11,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Animation" referent="RBXE302809E7F954E64B8C792DE8A9E535C">
+		<Item class="Animation" referent="RBXEC0CCAB063224A5F82B881B2C79DA415">
 			<Properties>
 				<Content name="AnimationId"><url>rbxassetid://135177198742819</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -22,7 +22,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX0847D9E9C12E4608868138F2BCAF23C5">
+		<Item class="Animation" referent="RBXE0FAB30BD646406FAE7FCE1A3645E856">
 			<Properties>
 				<Content name="AnimationId"><url>rbxassetid://128720965366836</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -33,7 +33,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX6B230FEBF6194493A8BFF5D6FFF385CB">
+		<Item class="Animation" referent="RBX1367B5F0E20741ED8BE5090A16000969">
 			<Properties>
 				<Content name="AnimationId"><url>rbxassetid://91162263474298</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -44,7 +44,7 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX477D1B01BDD34A26A5D9FCBF5052C4DD">
+		<Item class="Animation" referent="RBX4AFA12B132BA401D88E65382E12AEBA1">
 			<Properties>
 				<Content name="AnimationId"><url>rbxassetid://107255590653833</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
@@ -55,9 +55,9 @@
 				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="Animation" referent="RBX22D60DE3FD214854A211FFB657879C93">
+		<Item class="Animation" referent="RBX7C9C44EF1073402194FA8E6902C1C035">
 			<Properties>
-				<Content name="AnimationId"><url>rbxassetid://107255590653833107255590653833</url></Content>
+				<Content name="AnimationId"><url>rbxassetid://107255590653833</url></Content>
 				<BinaryString name="AttributesSerialize">AQAAAAYAAABMb29wZWQDAQ==</BinaryString>
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>

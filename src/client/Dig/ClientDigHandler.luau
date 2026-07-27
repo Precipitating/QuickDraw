@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
-local CoreGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.Utility.CoreGUIHandler)
+local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)

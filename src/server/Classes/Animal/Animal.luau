@@ -94,6 +94,10 @@ function Animal:DeathRagdoll()
 	if not character then
 		return
 	end
+
+	self.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
+	self.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+
 	-- Disable constraints
 	for _, instance in self.Character:GetDescendants() do
 		if instance:IsA("BasePart") then
@@ -107,6 +111,8 @@ function Animal:DeathRagdoll()
 					parent.CanCollide = true
 				end
 			end
+		elseif instance:IsA("BallSocketConstraint") then
+			instance.MaxFrictionTorque = 5
 		end
 	end
 end
@@ -127,7 +133,7 @@ function Animal:Die(killer: Player?)
 
 	CollectionService:AddTag(self.Character, "Dead")
 
-	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.Type}Dead`, self.Character:GetPivot(), nil)
+	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.ClassType}Dead`, self.Character:GetPivot(), nil)
 
 	if killer and killer:IsA("Player") then
 		AwardHandler.AwardAnimalKill(self.Type, killer)

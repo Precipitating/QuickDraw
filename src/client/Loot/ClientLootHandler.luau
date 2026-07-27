@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
-local LootPickupGUIHandler = require(StarterPlayer.StarterPlayerScripts.Client.GUI.LootPickupGUIHandler)
+local LootPickupGUIHandler = require(script.Parent.Parent.GUI.LootPickupGUIHandler)
 local ProximityPromptHandler = require(script.Parent.Parent.ClientInputs.ProximityPromptHandler)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)

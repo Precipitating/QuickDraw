@@ -243,7 +243,7 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
-		`{animalClass.Type}Hit`,
+		`{animalClass.ClassType}Hit`,
 		animalClass.Character:GetPivot(),
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)

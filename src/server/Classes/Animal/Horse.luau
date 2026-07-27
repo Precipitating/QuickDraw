@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Animal class
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local OnSeatedHandler = require(ServerScriptService.Server.OnSeatedHandler)
@@ -12,16 +13,38 @@ local AnimalData = require(script.Parent.AnimalData)
 local Horse = setmetatable({}, Animal)
 Horse.__index = Horse
 
-function Horse.new(model: Model?, classType: string)
-	local self = setmetatable(Animal.new(model, classType, false), Horse)
+local RandomHorseColourList = {
+	[1] = Color3.fromRGB(120, 50, 20),
+	[2] = Color3.fromRGB(75, 40, 20),
+	[3] = Color3.fromRGB(30, 30, 30),
+	[4] = Color3.fromRGB(220, 180, 100),
+	[5] = Color3.fromRGB(230, 230, 230),
+}
+
+local RandomHorseMaterialList = {
+	[1] = Enum.Material.Leather,
+	[2] = Enum.Material.Sand,
+	[3] = Enum.Material.Snow,
+	[4] = Enum.Material.Plaster,
+	[5] = Enum.Material.Rubber,
+}
+function Horse.new(model: Model?)
 	if not model then
 		warn("Horse class missing model!")
 		return
 	end
+	local horseType = model:GetAttribute("HorseType")
+	assert(horseType, "Missing horse type")
+
 	------------------------------------------------------------------------
+	local self = setmetatable(Animal.new(model, horseType, false), Horse)
 	self.Seat = model:FindFirstChildOfClass("VehicleSeat") :: VehicleSeat?
 	self.LinearVelocity = model:FindFirstChildOfClass("LinearVelocity") :: LinearVelocity?
 	self.CurrentSeatedPlayer = nil
+	self.ClassType = "Horse"
+	self.HorseData = AnimalData[self.Type]
+	assert(self.HorseData, "Horse type is incorrect!")
+
 	self.CurrentSpeed = 0
 	self.ProximityPrompt = model:FindFirstChildOfClass("ProximityPrompt")
 	self.BodyParts = {
@@ -50,10 +73,20 @@ function Horse.new(model: Model?, classType: string)
 	end
 	------------------------------------------------------------------------
 
+	self:RandomizeAppearance()
 	self:ConnectSeat()
 	return self :: any
 end
+function Horse:RandomizeAppearance()
+	for _, part in self.BodyParts do
+		if not part:IsA("BasePart") then
+			continue
+		end
 
+		part.Material = RandomHorseMaterialList[RandomModule.GetRandomIntBetween(1, #RandomHorseMaterialList)]
+		part.Color = RandomHorseColourList[RandomModule.GetRandomIntBetween(1, #RandomHorseColourList)]
+	end
+end
 function Horse:ConnectMovement()
 	self.Janitor:Add(
 		RunService.Heartbeat:Connect(function(dt)
@@ -63,15 +96,15 @@ function Horse:ConnectMovement()
 			end
 			local throttle = seat.Throttle
 			local currentSpeed = self.CurrentSpeed
-			local acceleration = AnimalData.Horse.Acceleration
-			local deceleration = AnimalData.Horse.Deceleration
+			local acceleration = self.HorseData.Acceleration
+			local deceleration = self.HorseData.Deceleration
 			local targetSpeed = nil
 			local linearVelocity: LinearVelocity = self.LinearVelocity
 			------------------------------------------------------------------------
 
 			targetSpeed = if throttle >= 0
-				then throttle * AnimalData.Horse.MaxForwardSpeed
-				else throttle * AnimalData.Horse.MaxReverseSpeed
+				then throttle * self.HorseData.MaxForwardSpeed
+				else throttle * self.HorseData.MaxReverseSpeed
 
 			if math.abs(targetSpeed) > math.abs(currentSpeed) then
 				currentSpeed = currentSpeed + math.sign(targetSpeed - currentSpeed) * acceleration * dt

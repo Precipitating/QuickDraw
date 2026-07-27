@@ -61,13 +61,13 @@ function AnimalHandler:Initialize()
 			local animalType = animalModel:GetAttribute("Type")
 
 			if animalType == "Buffalo" then
-				ActiveAnimals[humanoid] = Buffalo.new(animalModel, "Buffalo")
+				ActiveAnimals[humanoid] = Buffalo.new(animalModel)
 				warn(`Buffalo class initialized for {animalModel.Name}`)
 			elseif animalType == "Horse" then
-				ActiveAnimals[humanoid] = Horse.new(animalModel, "Horse")
+				ActiveAnimals[humanoid] = Horse.new(animalModel)
 				warn(`Horse class initialized for {animalModel.Name}`)
 			else
-				ActiveAnimals[humanoid] = Animal.new(animalModel, animalType)
+				ActiveAnimals[humanoid] = Animal.new(animalModel, animalType, true)
 				warn(`Animal class initialized for {animalModel.Name}`)
 			end
 			ActiveAnimalsCount = math.max(0, ActiveAnimalsCount + 1)

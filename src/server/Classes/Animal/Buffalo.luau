@@ -15,14 +15,15 @@ local Animal = require(script.Parent.Animal)
 local Buffalo = setmetatable({}, Animal)
 Buffalo.__index = Buffalo
 
-function Buffalo.new(model: Model?, classType: string)
-	local self = setmetatable(Animal.new(model, classType, true), Buffalo)
+function Buffalo.new(model: Model?)
+	local self = setmetatable(Animal.new(model, "Buffalo", true), Buffalo)
 	if not model then
 		warn("Buffalo missing model")
 		return
 	end
 	self.ChargeDistance = 150
 	self.ChargeForce = 200
+	self.ClassType = "Buffalo"
 
 	self.BodyParts = {
 		Head = Utility.GetInstance(model, false, "Head"),
