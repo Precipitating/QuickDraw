@@ -6,9 +6,8 @@ local TrainPaths = ReplicatedStorage.Shared.Paths.TrainPaths
 local TrainPositions = {}
 local CreatedSpline = nil
 local TrainModel = nil
-local CarriageModel = nil
 local NetSendAccum = 0
-local NET_SEND_RATE = 1 / 20 -- 20 times per second is plenty
+local NET_SEND_RATE = 1 / 20
 local SPEED = 50
 local CARRIAGE_OFFSET = 78
 local SLOW_RADIUS = 50
@@ -55,11 +54,6 @@ function TrainHandler:Run(active: boolean)
 	local distance = CARRIAGE_OFFSET
 
 	LoopConn = RunService.Heartbeat:Connect(function(dt)
-		-- if not CarriageModel then
-		-- 	warn("No carriage found on server")
-		-- 	return
-		-- end
-
 		if not TrainModel then
 			warn("No train found on server")
 			return
@@ -123,7 +117,10 @@ function TrainHandler:Initialize()
 	end
 
 	CreatedSpline = SplineClass.new(TrainPositions, { Tension = 1, Looped = true })
-	self:Run(true)
+
+	task.spawn(function()
+		self:Run(true)
+	end)
 end
 
 return TrainHandler

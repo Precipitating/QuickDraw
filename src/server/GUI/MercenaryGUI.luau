@@ -15,10 +15,6 @@ end
 function MercenaryGUI:BuyTarget(player: Player, target: Player, cost: number)
 	local playerMoney = ServerData.GetMoney(player)
 
-	-- DEBUG, REMOVE LATER
-	cost = 0
-	--
-
 	if playerMoney < cost then
 		return false
 	end

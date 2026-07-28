@@ -1,9 +1,25 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local RateLimiter = require(ReplicatedStorage.Shared.RateLimiter)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ServerEffectsDisplayer = {}
+
+local EffectsLimiter = RateLimiter.new(10)
+
+local function GetRelevantPlayers(position: Vector3, maxDistance: number): { Player }
+	local relevant = {}
+	for _, player in Players:GetPlayers() do
+		local character = player.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+		if hrp and (hrp.Position - position).Magnitude <= maxDistance then
+			table.insert(relevant, player)
+		end
+	end
+	return relevant
+end
 
 -- Send these effects down to client to emit
 function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string, position: Vector3)
@@ -11,33 +27,47 @@ function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: 
 		warn(`[ServerEffectsDisplayer:DisplayDestroyParticle] one argument is nil!`)
 		return
 	end
-	self.networker:fireAll("DisplayDestroyParticle", destroyableParticleName, position)
+
+	if not EffectsLimiter:TryConsume() then
+		return
+	end
+	local closePlayers = GetRelevantPlayers(position, 100)
+	self.networker:fire(closePlayers, "DisplayDestroyParticle", destroyableParticleName, position)
 end
 function ServerEffectsDisplayer:DisplaySpreadParticle(
 	destroyableParticleName: string,
 	duration: number,
 	parent: BasePart?
 )
+	if not EffectsLimiter:TryConsume() then
+		return
+	end
 	self.networker:fireAll("DisplaySpreadParticle", destroyableParticleName, duration, parent)
 end
 
 function ServerEffectsDisplayer:DisplayProjectileMark(name: string, raycastResult: RaycastResult?)
 	assert(raycastResult, "[ServerGunHandler.DisplayProjectileMark] raycastResult is nil")
+	if not EffectsLimiter:TryConsume() then
+		return
+	end
+	local closePlayers = GetRelevantPlayers(raycastResult.Position, 100)
 
 	-- RaycastResult does not serialize to client, so do it manually via table
-	self.networker:fireAll("DisplayProjectileMark", name, {
+	self.networker:fire(closePlayers, "DisplayProjectileMark", name, {
 		Position = raycastResult.Position,
 		Normal = raycastResult.Normal,
 		Instance = raycastResult.Instance,
-		Material = raycastResult.Material,
-		Distance = raycastResult.Distance,
 	})
 end
 
 function ServerEffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vector3?)
 	assert(position, "[ServerGunHandler.DisplayBloodHit] position is nil")
 	assert(normal, "[ServerGunHandler.DisplayBloodHit] normal is nil")
-	self.networker:fireAll("DisplayBloodHit", position, normal)
+	if not EffectsLimiter:TryConsume() then
+		return
+	end
+	local closePlayers = GetRelevantPlayers(position, 100)
+	self.networker:fire(closePlayers, "DisplayBloodHit", position, normal)
 end
 
 -- Fired from client to display to other players their muzzle flash.
@@ -46,18 +76,22 @@ function ServerEffectsDisplayer:DisplayMuzzleFlashToOthers(player: Player?, gunT
 		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
+	if not EffectsLimiter:TryConsume() then
+		return
+	end
 
 	local shotPos = gunTool:FindFirstChild("Frame", true)
 	if not shotPos then
 		return
 	end
+
 	if player and player:IsA("Player") then
 		self.networker:fireAllExcept(player, "DisplayMuzzleFlash", gunTool)
 
 		ServerSoundHandler:Play3DOneShotToOthers(
 			player,
 			GunData[gunTool.Name].ShootSoundName,
-			shotPos:GetPivot(),
+			shotPos:GetPivot().Position,
 			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
 		)
 	end
@@ -75,6 +109,9 @@ function ServerEffectsDisplayer:DisplayMuzzleFlash(gun: Tool? | Model?, gunName:
 		return
 	end
 
+	if not EffectsLimiter:TryConsume() then
+		return
+	end
 	local gunData = GunData[gunName or gun.Name]
 
 	-- its an NPC, so fire all
@@ -82,7 +119,7 @@ function ServerEffectsDisplayer:DisplayMuzzleFlash(gun: Tool? | Model?, gunName:
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
 		gunData.ShootSoundName,
-		shotPos:GetPivot(),
+		shotPos:GetPivot().Position,
 		{ Pitch = 1 + (math.random() - 0.5) * 0.1, MaxDistance = 300 }
 	)
 
@@ -93,8 +130,12 @@ function ServerEffectsDisplayer:DisplayImpactParticle(particle: ParticleEmitter?
 	if not particle or not position then
 		return
 	end
+	if not EffectsLimiter:TryConsume() then
+		return
+	end
+	local closePlayers = GetRelevantPlayers(position, 100)
 
-	self.networker:fireAll("DisplayImpactParticle", particle, position)
+	self.networker:fire(closePlayers, "DisplayImpactParticle", particle, position)
 end
 ServerEffectsDisplayer.networker = Networker.new(
 	"EffectsDisplayerNetwork",

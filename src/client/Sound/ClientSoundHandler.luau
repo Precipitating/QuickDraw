@@ -15,12 +15,12 @@ function ClientSoundHandler:PlayOneShot(name: string, options: PlayOptions?)
 	SoundManager.Play(name, options)
 end
 
-function ClientSoundHandler:Play3DOneShotToOthers(soundName: string, emitterCFrame: CFrame, config: PlayOptions?)
+function ClientSoundHandler:Play3DOneShotToOthers(soundName: string, position: Vector3, config: PlayOptions?)
 	-- client probably doesn't have the object loaded in
-	if not emitterCFrame then
+	if not position then
 		return
 	end
-	SoundManager.PlayAtPosition(soundName, emitterCFrame.Position, config)
+	SoundManager.PlayAtPosition(soundName, position, config)
 end
 
 function ClientSoundHandler:Play3DNPCVoiceline(soundName: string, soundInstance: Sound, config: PlayOptions?)

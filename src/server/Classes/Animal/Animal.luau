@@ -133,7 +133,7 @@ function Animal:Die(killer: Player?)
 
 	CollectionService:AddTag(self.Character, "Dead")
 
-	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.ClassType}Dead`, self.Character:GetPivot(), nil)
+	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.ClassType}Dead`, self.Character:GetPivot().Position, nil)
 
 	if killer and killer:IsA("Player") then
 		AwardHandler.AwardAnimalKill(self.Type, killer)

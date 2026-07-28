@@ -246,7 +246,7 @@ function Gun:BulletByBulletReload(bulletsToReload: number, reloadTime: number, r
 		end
 
 		if self.Handle then
-			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
+			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame.Position)
 		end
 	end
 
@@ -278,7 +278,7 @@ function Gun:ReloadAsMagazine(bulletsToReload: number, reloadTime: number, gunNa
 		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading magazine, {reloadTime} seconds`)
 	end
 
-	ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame)
+	ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame.Position)
 
 	task.wait(reloadTime)
 
@@ -315,7 +315,7 @@ function Gun:Reload()
 	self.Reloading = true
 
 	if reloadSoundStart then
-		ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, self.Handle.CFrame)
+		ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, self.Handle.CFrame.Position)
 	end
 
 	if not gunType then

@@ -70,8 +70,8 @@ function HumanPlayer:InitializeWeaponLoadout()
 	)
 	self.Inventory:EquipWeapon("Throwable")
 
-	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
-	self.Inventory:EquipWeapon("Trap")
+	-- self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
+	-- self.Inventory:EquipWeapon("Trap")
 
 	if savedThrowableData then
 		-- Throwable

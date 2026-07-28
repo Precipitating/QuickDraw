@@ -1,5 +1,4 @@
 local ContextActionService = game:GetService("ContextActionService")
-local PlacesService = game:GetService("PlacesService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")

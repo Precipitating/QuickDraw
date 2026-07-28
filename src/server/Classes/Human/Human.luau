@@ -674,7 +674,7 @@ function Human:DisableLimb(limbName: string)
 		ServerSoundHandler:Play3DOneShotToOthers(
 			nil,
 			"BoneSnap",
-			limb.CFrame,
+			limb.CFrame.Position,
 			{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 		)
 	end

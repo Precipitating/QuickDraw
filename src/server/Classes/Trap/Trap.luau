@@ -55,7 +55,7 @@ local TrapActivatedLogic = {
 		trapData
 	)
 		local activateSound = trapData.TrapActivatedSoundName
-		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame)
+		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame.Position)
 
 		local data = {
 			Damage = trapData.Damage,
@@ -89,7 +89,7 @@ local TrapActivatedLogic = {
 			warn("Tripmine missing explosive data")
 			return
 		end
-		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame)
+		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame.Position)
 
 		local context = ProjectileContext.BulletContext.new({
 			Origin = trapModel:GetPivot().Position + Vector3.new(0, 1, 0),
@@ -155,7 +155,7 @@ local TrapActivatedLogic = {
 		rope.Color = BrickColor.new(Color3.fromRGB(142, 77, 165))
 
 		local activateSound = trapData.TrapActivatedSoundName
-		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame)
+		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame.Position)
 
 		if trapModel then
 			trapModel:Destroy()

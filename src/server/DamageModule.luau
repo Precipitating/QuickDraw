@@ -244,7 +244,7 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
 		`{animalClass.ClassType}Hit`,
-		animalClass.Character:GetPivot(),
+		animalClass.Character:GetPivot().Position,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
 	warn(`DAMAGED ANIMAL`)
@@ -308,7 +308,7 @@ function DamageModule.DamageHuman(
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
 		"BulletHitGroan",
-		human.HRP,
+		human.HRP.Position,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
 

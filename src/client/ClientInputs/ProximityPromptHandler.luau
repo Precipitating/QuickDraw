@@ -1,7 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
-local LootPickupGUIHandler = require(script.Parent.Parent.GUI.LootPickupGUIHandler)
 local GUIEffects = require(script.Parent.Parent.GUI.GUIEffects)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)

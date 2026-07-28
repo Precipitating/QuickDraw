@@ -546,7 +546,7 @@ function ProjectileEvents:ProjectileHitMaterial(result: RaycastResult)
 		ServerSoundHandler:Play3DOneShotToOthers(
 			nil,
 			data.HitSound,
-			hitCFrame,
+			hitCFrame.Position,
 			{ Pitch = 1 + (RandomModule.GetRandom() - 0.5) * 0.1 }
 		)
 
@@ -663,14 +663,14 @@ function ProjectileEvents:HandleThrowableLanding(
 	owner: Player?,
 	onDetonate: (Vector3) -> ()
 )
-	ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Instance.CFrame)
+	ServerSoundHandler:Play3DOneShotToOthers(nil, throwableData.LandSound, result.Position)
 
 	task.delay(throwableData.DetonationTime, function()
 		local hitPos = result.Position
 		ServerSoundHandler:Play3DOneShotToOthers(
 			nil,
 			throwableData.DetonationSound,
-			result.Instance.CFrame,
+			result.Position,
 			{ MaxDistance = 150 }
 		)
 
@@ -801,7 +801,7 @@ local function ApplyBulletsWhizz(context)
 				ServerSoundHandler:Play3DOneShotToOthers(
 					nil,
 					"BulletMiss",
-					CFrame.new(closestPathPoint),
+					closestPathPoint,
 					{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 				)
 				warn("Whizzed past " .. player.Name .. " once!")
@@ -818,6 +818,13 @@ function ProjectileEvents:Initialize()
 
 	ProjectileContext.Net.OnFireRejected:Connect(function(player, reason)
 		warn(`Rejected projectile hit because of {reason}`)
+	end)
+
+	ProjectileContext.VetraSignals.OnSegmentOpen:Connect(function(context, segment)
+		local serverProjectile = context.CosmeticBulletObject
+		if serverProjectile then
+			serverProjectile.Transparency = 1
+		end
 	end)
 
 	-- for NPCS/Server

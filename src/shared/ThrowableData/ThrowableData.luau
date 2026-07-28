@@ -37,13 +37,11 @@ local ThrowableData = {
 			:TimeThreshold(0.01)
 			:DisplacementThreshold(0.25)
 			:Done()
-			:When(isServer, function(b)
-				b:Cosmetic()
-					:AutoDelete(false)
-					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.DynamiteCosmetic)
-					:Container(workspace.ProjectilesFolder)
-					:Done()
-			end)
+			:Cosmetic()
+			:AutoDelete(false)
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.DynamiteCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
 			:Build(),
 	},
 
@@ -74,12 +72,10 @@ local ThrowableData = {
 			:MinSpeed(10) -- thrown with more force than a standard lob
 			:MaxDistance(200)
 			:Done()
-			:When(isServer, function(b)
-				b:Cosmetic()
-					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.KetchumGrenadeCosmetic)
-					:Container(workspace.ProjectilesFolder)
-					:Done()
-			end)
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.KetchumGrenadeCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
 			:Build(),
 	},
 
@@ -111,12 +107,10 @@ local ThrowableData = {
 			:Physics()
 			:MinSpeed(8)
 			:Done()
-			:When(isServer, function(b)
-				b:Cosmetic()
-					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.MolotovCosmetic)
-					:Container(workspace.ProjectilesFolder)
-					:Done()
-			end)
+			:Cosmetic()
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.MolotovCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
 			:Build(),
 	},
 	HookGrenade = {
@@ -155,13 +149,11 @@ local ThrowableData = {
 			:Deviation(35) -- wide spread angle, chaotic hook trajectories
 			:OnPierce(false) -- only fragments on terminal impact, not pierce
 			:Done()
-			:When(isServer, function(b)
-				b:Cosmetic()
-					:AutoDelete(false)
-					:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.HookGrenadeCosmetic)
-					:Container(workspace.ProjectilesFolder)
-					:Done()
-			end)
+			:Cosmetic()
+			:AutoDelete(false)
+			:Template(ReplicatedStorage.Shared.Templates.ProjectileCosmetics.HookGrenadeCosmetic)
+			:Container(workspace.ProjectilesFolder)
+			:Done()
 			:Build(),
 	},
 }

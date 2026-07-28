@@ -97,7 +97,12 @@ function Destroyable:Destroy()
 	end
 
 	if self.Type == "Explosive" then
-		ServerSoundHandler:Play3DOneShotToOthers(nil, "DynamiteExplosion", self.ModelRef.CFrame, { MaxDistance = 500 })
+		ServerSoundHandler:Play3DOneShotToOthers(
+			nil,
+			"DynamiteExplosion",
+			self.ModelRef.CFrame.Position,
+			{ MaxDistance = 500 }
+		)
 		self:ApplyRadiusDamage()
 	end
 
