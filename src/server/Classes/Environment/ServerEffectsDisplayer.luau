@@ -3,6 +3,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local RateLimiter = require(ReplicatedStorage.Shared.RateLimiter)
+local Sera = require(ReplicatedStorage.Shared.Sera)
+local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ServerEffectsDisplayer = {}
@@ -31,8 +33,14 @@ function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: 
 	if not EffectsLimiter:TryConsume() then
 		return
 	end
+
+	local serializedBuf = Sera.Serialize(
+		SeraSchemas.DisplayDestroySchema,
+		{ DestroyParticleName = destroyableParticleName, Position = position }
+	)
+
 	local closePlayers = GetRelevantPlayers(position, 100)
-	self.networker:fire(closePlayers, "DisplayDestroyParticle", destroyableParticleName, position)
+	self.networker:fire(closePlayers, "DisplayDestroyParticle", serializedBuf)
 end
 function ServerEffectsDisplayer:DisplaySpreadParticle(
 	destroyableParticleName: string,
@@ -42,7 +50,11 @@ function ServerEffectsDisplayer:DisplaySpreadParticle(
 	if not EffectsLimiter:TryConsume() then
 		return
 	end
-	self.networker:fireAll("DisplaySpreadParticle", destroyableParticleName, duration, parent)
+	local serializedBuf = Sera.Serialize(
+		SeraSchemas.DisplaySpreadParticleSchema,
+		{ DestroyableParticleName = destroyableParticleName, Duration = duration }
+	)
+	self.networker:fireAll("DisplaySpreadParticle", serializedBuf, parent)
 end
 
 function ServerEffectsDisplayer:DisplayProjectileMark(name: string, raycastResult: RaycastResult?)
@@ -51,13 +63,18 @@ function ServerEffectsDisplayer:DisplayProjectileMark(name: string, raycastResul
 		return
 	end
 	local closePlayers = GetRelevantPlayers(raycastResult.Position, 100)
-
-	-- RaycastResult does not serialize to client, so do it manually via table
-	self.networker:fire(closePlayers, "DisplayProjectileMark", name, {
+	local serializedBuf, err = Sera.Serialize(SeraSchemas.DisplayProjectileMarkSchema, {
+		Name = name,
 		Position = raycastResult.Position,
 		Normal = raycastResult.Normal,
-		Instance = raycastResult.Instance,
 	})
+
+	if not serializedBuf then
+		warn(err)
+		return
+	end
+	-- RaycastResult does not serialize to client, so do it manually via table
+	self.networker:fire(closePlayers, "DisplayProjectileMarkFromServer", serializedBuf, raycastResult.Instance)
 end
 
 function ServerEffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vector3?)
@@ -67,7 +84,17 @@ function ServerEffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vect
 		return
 	end
 	local closePlayers = GetRelevantPlayers(position, 100)
-	self.networker:fire(closePlayers, "DisplayBloodHit", position, normal)
+
+	local serializedBuf, err = Sera.Serialize(SeraSchemas.DisplayBloodHitSchema, {
+		Position = position,
+		Normal = normal,
+	})
+
+	if not serializedBuf then
+		warn(err)
+		return
+	end
+	self.networker:fire(closePlayers, "DisplayBloodHitFromServer", serializedBuf)
 end
 
 -- Fired from client to display to other players their muzzle flash.

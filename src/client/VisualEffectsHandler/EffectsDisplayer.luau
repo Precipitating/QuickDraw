@@ -2,6 +2,8 @@ local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local Sera = require(ReplicatedStorage.Shared.Sera)
+local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local PoolHandler = require(script.Parent.Parent.Pools.PoolHandler)
 local Particles = ReplicatedStorage.Shared.Effects
 local EffectsDisplayer = {}
@@ -71,6 +73,18 @@ function EffectsDisplayer:TryDisplayProjectileMark(context, result: RaycastResul
 	end
 end
 
+function EffectsDisplayer:DisplayProjectileMarkFromServer(buffer, raycastInstance: Instance)
+	local data = Sera.Deserialize(SeraSchemas.DisplayProjectileMarkSchema, buffer)
+
+	if not data then
+		warn("[DisplayProjectileMarkFromServer] deserialize failed")
+		return
+	end
+
+	local name = data.Name
+
+	self:DisplayProjectileMark(name, { Position = data.Position, Normal = data.Normal, Instance = raycastInstance })
+end
 function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastResult)
 	if not result then
 		warn("Client received an invalid RaycastResult when showing a projectile mark!")
@@ -139,15 +153,17 @@ function EffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
 end
 
 -- for destroyables
-function EffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string, position: Vector3)
+function EffectsDisplayer:DisplayDestroyParticle(buffer)
 	local explosion: Part = Instance.new("Part")
-	if not destroyableParticleName then
+	if not buffer then
 		warn(`[CLIENT] Can't show explosion particle, missing explosion name data`)
 		return
 	end
-	local particleEffect = if Particles[destroyableParticleName]
-		then Particles[destroyableParticleName]:Clone()
-		else nil
+
+	local data = Sera.Deserialize(SeraSchemas.DisplayDestroySchema, buffer)
+	local particleName = data.DestroyableParticleName
+	local position = data.Position
+	local particleEffect = if Particles[particleName] then Particles[particleName]:Clone() else nil
 
 	explosion.Parent = workspace
 	explosion.CanCollide = false
@@ -162,8 +178,9 @@ function EffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string
 end
 
 -- For inflicting damage spread e.g fire
-function EffectsDisplayer:DisplaySpreadParticle(destroyableParticleName: string, duration: number, parent: BasePart)
-	if not destroyableParticleName then
+function EffectsDisplayer:DisplaySpreadParticle(buffer, parent: BasePart)
+	local data = Sera.Deserialize(SeraSchemas.DisplaySpreadParticleSchema, buffer)
+	if not data.DestroyableParticleName then
 		warn(`[CLIENT] Can't show explosion particle, missing explosion name data`)
 		return
 	end
@@ -171,13 +188,27 @@ function EffectsDisplayer:DisplaySpreadParticle(destroyableParticleName: string,
 		return
 	end
 
-	local particleEffect = if Particles[destroyableParticleName]
-		then Particles[destroyableParticleName]:Clone()
+	local particleEffect = if Particles[data.DestroyableParticleName]
+		then Particles[data.DestroyableParticleName]:Clone()
 		else nil
 
 	particleEffect.Parent = parent
 	particleEffect:Emit(1)
-	Debris:AddItem(particleEffect, duration)
+	Debris:AddItem(particleEffect, data.Duration)
+end
+
+function EffectsDisplayer:DisplayBloodHitFromServer(buffer)
+	local data = Sera.Deserialize(SeraSchemas.DisplayBloodHitSchema, buffer)
+
+	if not data then
+		warn("Cannot deserialize blood hit")
+		return
+	end
+
+	local pos = data.Position
+	local normal = data.Normal
+
+	self:DisplayBloodHit(pos, normal)
 end
 
 function EffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vector3?)

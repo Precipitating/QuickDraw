@@ -1,6 +1,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local Sera = require(ReplicatedStorage.Shared.Sera)
+local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
+local PlayOneShotSchema = SeraSchemas.Play3DOneShotSchema
 
 export type PlayOptions = SoundManager.PlayOptions
 local ClientSoundHandler = {}
@@ -15,12 +18,19 @@ function ClientSoundHandler:PlayOneShot(name: string, options: PlayOptions?)
 	SoundManager.Play(name, options)
 end
 
-function ClientSoundHandler:Play3DOneShotToOthers(soundName: string, position: Vector3, config: PlayOptions?)
+function ClientSoundHandler:Play3DOneShotToOthers(buf)
+	local data = Sera.DeltaDeserialize(PlayOneShotSchema, buf)
+	local position = data.Position
+	local soundName = data.SoundName
 	-- client probably doesn't have the object loaded in
 	if not position then
 		return
 	end
-	SoundManager.PlayAtPosition(soundName, position, config)
+	SoundManager.PlayAtPosition(soundName, position, {
+		MaxDistance = data.MaxDistance or nil,
+		Volume = data.Volume or 1,
+		Pitch = data.Pitch or 1,
+	})
 end
 
 function ClientSoundHandler:Play3DNPCVoiceline(soundName: string, soundInstance: Sound, config: PlayOptions?)

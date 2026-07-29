@@ -1,6 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Sera = require(ReplicatedStorage.Shared.Sera)
+local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local SplineClass = require(ReplicatedStorage.Shared.SplineClass)
 local TrainPaths = ReplicatedStorage.Shared.Paths.TrainPaths
 local TrainPositions = {}
@@ -17,6 +19,7 @@ local StationPoints = {}
 local Stopped = false
 local CurrentSpeed = SPEED
 local TrainPosRemote = ReplicatedStorage.Shared.Remote.TrainPositionRemote
+local TrainPosSchema = SeraSchemas.TrainPositionSchema
 
 local TrainHandler = {}
 
@@ -85,7 +88,9 @@ function TrainHandler:Run(active: boolean)
 		NetSendAccum = NetSendAccum + dt
 		if NetSendAccum >= NET_SEND_RATE then
 			NetSendAccum = 0
-			TrainPosRemote:FireAllClients(distance, CurrentSpeed)
+
+			local buf = Sera.Serialize(TrainPosSchema, { Distance = distance, CurrentSpeed = CurrentSpeed })
+			TrainPosRemote:FireAllClients(buf)
 		end
 	end)
 end

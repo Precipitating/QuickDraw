@@ -1,8 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Sera = require(ReplicatedStorage.Shared.Sera)
+local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local SplineClass = require(ReplicatedStorage.Shared.SplineClass)
 local Templates = ReplicatedStorage.Shared.Templates
 local TrainPosRemote = ReplicatedStorage.Shared.Remote.TrainPositionRemote
+local TrainPosSchema = SeraSchemas.TrainPositionSchema
 local TrainPaths = ReplicatedStorage.Shared.Paths.TrainPaths
 
 local TrainHandler = {}
@@ -62,11 +65,10 @@ function TrainHandler:Initialize()
 
 	-- Smoothing constants
 
-	TrainPosRemote.OnClientEvent:Connect(function(netDistance: number, netSpeed: number)
-		ServerDistance = netDistance
-		-- Smooth the speed rather than jumping to it instantly
-		-- (actual lerp happens in RenderStepped)
-		CurrentSpeed = netSpeed
+	TrainPosRemote.OnClientEvent:Connect(function(buf)
+		local data = Sera.Deserialize(TrainPosSchema, buf)
+		ServerDistance = data.Distance
+		CurrentSpeed = data.CurrentSpeed
 
 		-- Only hard-snap if wildly out of sync
 		if math.abs(ClientDistance - ServerDistance) > SNAP_THRESHOLD then

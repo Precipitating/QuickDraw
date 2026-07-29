@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBXC5E1FE4B66C14891B55FB7AE5F3EAA26">
+	<Item class="Part" referent="RBX783F51CA110942488844FE2F81893991">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
@@ -18,7 +18,7 @@
 			<token name="BottomSurfaceInput">0</token>
 			<CoordinateFrame name="CFrame">
 				<X>-86.727417</X>
-				<Y>2.37176347</Y>
+				<Y>-13.4643478</Y>
 				<Z>-145.000504</Z>
 				<R00>1</R00>
 				<R01>0</R01>
@@ -98,10 +98,11 @@
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">BulletHole</string>
 			<int64 name="SourceAssetId">8416208584</int64>
-			<BinaryString name="Tags"></BinaryString>
+			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="Decal" referent="RBXBC42FAA3E3454AEB80EA6F52F0B303DC">
+		<Item class="Decal" referent="RBX3FF9F7EFF64241AE8548958B55314367">
 			<Properties>
+				<bool name="AutoLocalize">true</bool>
 				<Color3 name="Color3">
 					<R>1</R>
 					<G>1</G>
@@ -111,7 +112,7 @@
 				<Content name="NormalMap"><null></null></Content>
 				<float name="Rotation">0</float>
 				<Content name="RoughnessMap"><null></null></Content>
-				<Content name="Texture"><url>http://www.roblox.com/asset/?id=8135535081</url></Content>
+				<Content name="Texture"><url>rbxassetid://8135535081</url></Content>
 				<Content name="TexturePack"><null></null></Content>
 				<string name="TexturePackMetadata"></string>
 				<float name="Transparency">0</float>
@@ -130,10 +131,10 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Decal</string>
 				<int64 name="SourceAssetId">8135535096</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="WeldConstraint" referent="RBXEA3C13DC30734E74944524838F29C7F6">
+		<Item class="WeldConstraint" referent="RBXAF7B3866D141447BAF059D420CAC6D9B">
 			<Properties>
 				<CoordinateFrame name="CFrame0">
 					<X>0</X>
@@ -149,7 +150,7 @@
 					<R21>0</R21>
 					<R22>1</R22>
 				</CoordinateFrame>
-				<Ref name="Part0Internal">RBXC5E1FE4B66C14891B55FB7AE5F3EAA26</Ref>
+				<Ref name="Part0Internal">RBX783F51CA110942488844FE2F81893991</Ref>
 				<Ref name="Part1Internal">null</Ref>
 				<int name="State">1</int>
 				<BinaryString name="AttributesSerialize"></BinaryString>
@@ -157,8 +158,11 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">WeldConstraint</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
 	</Item>
+	<SharedStrings>
+		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+	</SharedStrings>
 </roblox>
