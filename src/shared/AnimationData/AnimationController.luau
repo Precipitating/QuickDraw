@@ -473,7 +473,7 @@ function controller.Load(self: AnimateController): ()
 	end
 	stateFunctions.Running = function()
 		local velocity = rootPart.AssemblyLinearVelocity
-		local horizontalSpeed = Vector3.new(velocity.X, 0, velocity.Z).Magnitude / GetRigScale()
+		local horizontalSpeed = vector.create(velocity.X, 0, velocity.Z).Magnitude / GetRigScale()
 
 		local sprintVariant = GetPossibleVariant("Sprint")
 		local runVariant = GetPossibleVariant("Run")

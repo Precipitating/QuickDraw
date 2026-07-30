@@ -67,6 +67,7 @@ function DamageModule:ApplyDamage(
 
 		-- if npc damaged on patrol, seek immediately the target
 		-- only applies to SHOT damage type
+
 		if ai and ai.StateMachine:GetState() == "Patrol" then
 			local shooterCharacter = nil
 
@@ -81,9 +82,23 @@ function DamageModule:ApplyDamage(
 			else
 				shooterCharacter = shooter
 			end
-			ai.StateMachine:Transition("Seek", {
-				Target = shooterCharacter,
-			})
+
+			-- Check if shooterCharacter is valid (not nil and not an empty table)
+			local isValidTarget = false
+
+			if typeof(shooterCharacter) == "Instance" then
+				isValidTarget = true
+			elseif typeof(shooterCharacter) == "table" then
+				isValidTarget = next(shooterCharacter) ~= nil -- True only if table has elements
+			end
+
+			if isValidTarget then
+				ai.StateMachine:Transition("Seek", {
+					Target = shooterCharacter,
+				})
+			else
+				warn("Invalid or empty shooter target:", shooterCharacter)
+			end
 		end
 	elseif human.HumanType == "Player" then
 		human = human :: HumanPlayer

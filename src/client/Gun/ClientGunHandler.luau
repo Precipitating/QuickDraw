@@ -46,6 +46,8 @@ local CAN_RELOAD_AFTER_SHOT_THRESHOLD = 0.2
 local HoldingLMB = nil
 local HoldingLMBStart = nil
 
+local XZ_PLANE = vector.create(1, 0, 1)
+local math_cos = math.cos
 -- for camera recoil
 local RecoilSpring = Ripple.createSpring(0, {
 	dampingRatio = 0.6,
@@ -93,7 +95,7 @@ function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
 		return
 	end
 
-	handle:ApplyImpulseAtPosition(Vector3.new(0, 1, 0) * GunData[gunTool.Name].GunRecoil, shootPoint.WorldPosition)
+	handle:ApplyImpulseAtPosition(vector.create(0, 1, 0) * GunData[gunTool.Name].GunRecoil, shootPoint.WorldPosition)
 
 	-- also make camera flick up via springs
 	RecoilSpring:impulse(GunData[gunTool.Name].CameraRecoil)
@@ -195,7 +197,7 @@ local function PredictBulletLanding(
 	for _ = 1, STEPS do
 		local speed = vel.Magnitude
 		local dragAccel = -vel.Unit * dragCoefficient * speed * speed
-		local gravAccel = Vector3.new(0, -GRAVITY, 0)
+		local gravAccel = vector.create(0, -GRAVITY, 0)
 		local totalAccel = dragAccel + gravAccel
 
 		local nextPos = prevPos + vel * dt + 0.5 * totalAccel * dt * dt
@@ -287,13 +289,14 @@ local function AimAndDisplayCrosshair(gunTool: Tool)
 		pitch = math.clamp(pitch, -math.rad(90), math.rad(90))
 
 		-- Use parent's flat forward as the base direction
-		local flatForward = (parentCF.LookVector * Vector3.new(1, 0, 1)).Unit
+		local flatForward = vector.normalize(parentCF.LookVector * XZ_PLANE)
 
 		-- Build a direction vector with parent's yaw + camera's pitch
-		local direction = (flatForward * math.cos(pitch) + Vector3.new(0, math.sin(pitch), 0)).Unit
+		local direction = vector.normalize(flatForward * math_cos(pitch) + vector.create(0, math.sin(pitch), 0))
 
 		-- Arm points down by default, so the "up" vector keeps roll stable
-		local targetCF = CFrame.lookAt(Vector3.zero, direction, parentCF.UpVector) * CFrame.Angles(math.rad(90), 0, 0) -- attachment offset
+		local targetCF = CFrame.lookAt(vector.zero :: any, direction, parentCF.UpVector)
+			* CFrame.Angles(math.rad(90), 0, 0) -- attachment offset
 
 		PlayerContext.RightArmYaw.CFrame = targetCF * CFrame.Angles(math.rad(-5), 0, 0)
 		if not HoldingRMB then

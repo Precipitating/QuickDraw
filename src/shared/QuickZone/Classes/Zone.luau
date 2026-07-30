@@ -17,7 +17,7 @@
 	:::
 ]=]
 
-local CollectionService = game:GetService('CollectionService')
+local CollectionService = game:GetService("CollectionService")
 
 local State = require(script.Parent.Parent.Core.State)
 local Types = require(script.Parent.Parent.Types)
@@ -43,15 +43,15 @@ local SHAPE_MAP = {
 }
 
 local function getShapeEnumValue(part: BasePart): number
-	if part:IsA('Part') then
+	if part:IsA("Part") then
 		return part.Shape.Value
 	end
 
-	if part:IsA('WedgePart') then
+	if part:IsA("WedgePart") then
 		return Enum.PartType.Wedge.Value
 	end
 
-	if part:IsA('CornerWedgePart') then
+	if part:IsA("CornerWedgePart") then
 		return Enum.PartType.CornerWedge.Value
 	end
 
@@ -73,10 +73,10 @@ local function setupAutoSync(zone: Types.InternalZone, reference: BasePart | Att
 
 	local connections = zone.syncConnections or {}
 
-	if reference:IsA('BasePart') then
+	if reference:IsA("BasePart") then
 		table.insert(
 			connections,
-			reference:GetPropertyChangedSignal('Size'):Connect(function()
+			reference:GetPropertyChangedSignal("Size"):Connect(function()
 				local newHalfSize = reference.ExtentsSize * 0.5
 				if dynamicHalfSizes[zone.id] ~= newHalfSize then
 					dynamicHalfSizes[zone.id] = newHalfSize
@@ -86,10 +86,10 @@ local function setupAutoSync(zone: Types.InternalZone, reference: BasePart | Att
 		)
 	end
 
-	if reference:IsA('Part') then
+	if reference:IsA("Part") then
 		table.insert(
 			connections,
-			reference:GetPropertyChangedSignal('Shape'):Connect(function()
+			reference:GetPropertyChangedSignal("Shape"):Connect(function()
 				local newShape = reference.Shape.Value
 				if dynamicTypes[zone.id] ~= newShape then
 					dynamicTypes[zone.id] = newShape
@@ -183,7 +183,7 @@ end
 	```lua
 	local zone = QuickZone.Zone({
 		cframe = CFrame.new(0, 10, 0),
-		size = Vector3.new(10, 10, 10),
+		size = vector.create(10, 10, 10),
 		shape = 'Block',
 		isDynamic = false,
 		metadata = { Name = "Lobby" },
@@ -269,11 +269,11 @@ function Zone.fromPart(
 	}?
 ): Types.Zone
 	local shapeId = Enum.PartType.Block.Value
-	if part:IsA('Part') then
+	if part:IsA("Part") then
 		shapeId = part.Shape.Value
-	elseif part:IsA('WedgePart') then
+	elseif part:IsA("WedgePart") then
 		shapeId = Enum.PartType.Wedge.Value
-	elseif part:IsA('CornerWedgePart') then
+	elseif part:IsA("CornerWedgePart") then
 		shapeId = Enum.PartType.CornerWedge.Value
 	end
 
@@ -313,7 +313,7 @@ function Zone.fromParts(
 	}) :: Types.InternalZones
 
 	for _, part in parts do
-		if part:IsA('BasePart') then
+		if part:IsA("BasePart") then
 			local newZone = Zone.fromPart(part, {
 				isDynamic = isDynamic,
 				metadata = zones.metadata,
@@ -358,7 +358,7 @@ function Zone.fromChildren(
 	local instanceToZone = {} :: { [Instance]: Types.Zone }
 
 	local function onAdded(child: Instance)
-		if child:IsA('BasePart') and not instanceToZone[child] then
+		if child:IsA("BasePart") and not instanceToZone[child] then
 			local newZone = Zone.fromPart(child, {
 				isDynamic = isDynamic,
 				metadata = zones.metadata,
@@ -432,7 +432,7 @@ function Zone.fromDescendants(
 	local instanceToZone = {} :: { [Instance]: Types.Zone }
 
 	local function onAdded(descendant: Instance)
-		if descendant:IsA('BasePart') and not instanceToZone[descendant] then
+		if descendant:IsA("BasePart") and not instanceToZone[descendant] then
 			local newZone = Zone.fromPart(descendant, {
 				isDynamic = isDynamic,
 				metadata = zones.metadata,
@@ -536,31 +536,31 @@ function Zone.fromTag(
 	local function processTaggedInstance(instance: Instance)
 		local inWorkspace = instance:IsDescendantOf(workspace)
 		if inWorkspace then
-			if instance:IsA('BasePart') then
+			if instance:IsA("BasePart") then
 				addPart(instance)
 			else
 				if not containerConnections[instance] then
 					local addedConn = instance.DescendantAdded:Connect(function(descendant)
-						if descendant:IsA('BasePart') then
+						if descendant:IsA("BasePart") then
 							addPart(descendant)
 						end
 					end)
 					local removedConn = instance.DescendantRemoving:Connect(function(descendant)
-						if descendant:IsA('BasePart') then
+						if descendant:IsA("BasePart") then
 							removePart(descendant)
 						end
 					end)
 					containerConnections[instance] = { addedConn, removedConn }
 
 					for _, descendant in instance:GetDescendants() do
-						if descendant:IsA('BasePart') then
+						if descendant:IsA("BasePart") then
 							addPart(descendant)
 						end
 					end
 				end
 			end
 		else
-			if instance:IsA('BasePart') then
+			if instance:IsA("BasePart") then
 				removePart(instance)
 			else
 				local conns = containerConnections[instance]
@@ -570,7 +570,7 @@ function Zone.fromTag(
 					containerConnections[instance] = nil
 				end
 				for _, descendant in instance:GetDescendants() do
-					if descendant:IsA('BasePart') then
+					if descendant:IsA("BasePart") then
 						removePart(descendant)
 					end
 				end
@@ -595,7 +595,7 @@ function Zone.fromTag(
 			watchingAncestry[instance] = nil
 		end
 
-		if instance:IsA('BasePart') then
+		if instance:IsA("BasePart") then
 			removePart(instance)
 		else
 			local conns = containerConnections[instance]
@@ -605,7 +605,7 @@ function Zone.fromTag(
 				containerConnections[instance] = nil
 			end
 			for _, descendant in instance:GetDescendants() do
-				if descendant:IsA('BasePart') then
+				if descendant:IsA("BasePart") then
 					removePart(descendant)
 				end
 			end
@@ -704,7 +704,7 @@ function Zone.setAutoSync(self: Types.InternalZone, autoSync: boolean): Types.Zo
 		if self.reference then
 			setupAutoSync(self, self.reference)
 		else
-			Log.warn('Cannot autoSync Zone %d without a tracked reference.', nil, self.id)
+			Log.warn("Cannot autoSync Zone %d without a tracked reference.", nil, self.id)
 		end
 	else
 		clearAutoSync(self)
@@ -755,13 +755,13 @@ end
 function Zone.sync(self: Types.InternalZone): Types.Zone
 	local reference = self.reference
 	if not reference then
-		Log.warn('Zone:sync failed for Zone %d. No reference found.', nil, self.id)
+		Log.warn("Zone:sync failed for Zone %d. No reference found.", nil, self.id)
 		return self
 	end
 
 	local id = self.id
 
-	if reference:IsA('BasePart') then
+	if reference:IsA("BasePart") then
 		local newCFrame = reference.CFrame
 		local newHalfSize = reference.ExtentsSize * 0.5
 		local newShape = getShapeEnumValue(reference)
@@ -813,7 +813,7 @@ function Zone.sync(self: Types.InternalZone): Types.Zone
 		return self
 	end
 
-	if reference:IsA('Attachment') or reference:IsA('Bone') then
+	if reference:IsA("Attachment") or reference:IsA("Bone") then
 		local newCFrame = reference.WorldCFrame
 		if self.dynamic then
 			if dynamicCFrames[id] == newCFrame then
@@ -1090,17 +1090,17 @@ end
 function Zone.getShape(self: Types.InternalZone): Types.ShapeType
 	local shapeType = self.dynamic and dynamicTypes[self.id] or staticTypes[self.id]
 	if shapeType == Enum.PartType.Block.Value then
-		return 'Block'
+		return "Block"
 	elseif shapeType == Enum.PartType.Ball.Value then
-		return 'Ball'
+		return "Ball"
 	elseif shapeType == Enum.PartType.Cylinder.Value then
-		return 'Cylinder'
+		return "Cylinder"
 	elseif shapeType == Enum.PartType.Wedge.Value then
-		return 'Wedge'
+		return "Wedge"
 	elseif shapeType == Enum.PartType.CornerWedge.Value then
-		return 'CornerWedge'
+		return "CornerWedge"
 	end
-	return 'Block'
+	return "Block"
 end
 
 --[=[ 

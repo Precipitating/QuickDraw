@@ -30,7 +30,7 @@
         SpinDecayRate     : number    — fraction of spin lost per second. 0 = no decay.
 
     Practical starting values (rifle, ~900 studs/s, right-hand twist):
-        SpinVector        = Vector3.new(0, 0, 1) * 300   -- rightward spin
+        SpinVector        = vector.create(0, 0, 1) * 300   -- rightward spin
         MagnusCoefficient = 0.0001
         SpinDecayRate     = 0.05
 
@@ -41,18 +41,18 @@
 -- ─── Module ──────────────────────────────────────────────────────────────────
 
 local Identity = "Magnus"
-local Magnus   = {}
-Magnus.__type  = Identity
+local Magnus = {}
+Magnus.__type = Identity
 
 -- ─── References ──────────────────────────────────────────────────────────────
 
 local Vetra = script.Parent.Parent
-local Core  = Vetra.Core
+local Core = Vetra.Core
 
 -- ─── Module References ───────────────────────────────────────────────────────
 
 local LogService = require(Core.Logger)
-local Constants  = require(Core.Constants)
+local Constants = require(Core.Constants)
 local PureMagnus = require(script.Parent.Pure.Magnus)
 
 -- ─── Logger ──────────────────────────────────────────────────────────────────
@@ -66,11 +66,7 @@ local MIN_MAGNITUDE_SQ = Constants.MIN_MAGNITUDE_SQ
 -- ─── Module ──────────────────────────────────────────────────────────────────
 
 -- Thin delegations — pure math lives in Physics/Pure/Magnus.
-function Magnus.ComputeForce(
-	SpinVector        : Vector3,
-	Velocity          : Vector3,
-	MagnusCoefficient : number
-): Vector3
+function Magnus.ComputeForce(SpinVector: Vector3, Velocity: Vector3, MagnusCoefficient: number): Vector3
 	return PureMagnus.ComputeForce(SpinVector, Velocity, MagnusCoefficient)
 end
 
@@ -80,7 +76,9 @@ end
 ]]
 function Magnus.StepSpinDecay(Behavior: any, Delta: number)
 	local DecayRate = Behavior.SpinDecayRate
-	if not DecayRate or DecayRate <= 0 then return end
+	if not DecayRate or DecayRate <= 0 then
+		return
+	end
 
 	Behavior.SpinVector = PureMagnus.ApplySpinDecay(Behavior.SpinVector, DecayRate, Delta)
 end
@@ -99,11 +97,7 @@ local MagnusMetatable = table.freeze({
 		Logger:Warn(string.format("Magnus: nil key '%s'", tostring(Key)))
 	end,
 	__newindex = function(_, Key, Value)
-		Logger:Error(string.format(
-			"Magnus: write to protected key '%s' = '%s'",
-			tostring(Key),
-			tostring(Value)
-			))
+		Logger:Error(string.format("Magnus: write to protected key '%s' = '%s'", tostring(Key), tostring(Value)))
 	end,
 })
 

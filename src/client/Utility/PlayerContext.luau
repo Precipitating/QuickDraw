@@ -43,7 +43,7 @@ local DefaultAnimateParams = {
 	SwimSpeedDividend = 16,
 	LandedDuration = 0.6,
 }
-
+local XZ_PLANE = vector.create(1, 0, 1)
 local PlayerContext = {}
 
 PlayerContext.Player = nil
@@ -101,7 +101,7 @@ function PlayerContext:PlayerFollowCamera()
 			if not self.CanRoll then
 				return
 			end
-			local flat = CurrentCamera.CFrame.LookVector * Vector3.new(1, 0, 1)
+			local flat = CurrentCamera.CFrame.LookVector * XZ_PLANE
 			if flat.Magnitude > 0.001 then
 				align.CFrame = CFrame.lookAt(Vector3.zero, flat.Unit)
 			end
@@ -169,7 +169,7 @@ end
 function PlayerContext:SetupLimbGUI()
 	-- Get references
 	if not self.Player or not self.Character then
-		warn("[SetupLimbGUI] Missing character/Player ref")
+		--warn("[SetupLimbGUI] Missing character/Player ref")
 		return
 	end
 
@@ -185,7 +185,7 @@ function PlayerContext:SetupLimbGUI()
 		return
 	end
 
-	rigClone:PivotTo(CFrame.fromEulerAnglesXYZ(0, math.rad(180), 0) + Vector3.new(0, 3, 0))
+	rigClone:PivotTo(CFrame.fromEulerAnglesXYZ(0, math.rad(180), 0) + vector.create(0, 3, 0) :: any)
 
 	-- Fixes accessory misplacement
 	rigClone.Parent = workspace
@@ -255,7 +255,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 
 	-- Configure humanoid safely
 	humanoid.AutoRotate = false
-	humanoid.CameraOffset = Vector3.new(2, 1, -2)
+	humanoid.CameraOffset = vector.create(2, 1, -2) :: any
 	humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
 
 	-- Reset colour corrector
@@ -350,7 +350,7 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 	PlayerContext.ApplyMouseLock(true)
 	UserInputService.MouseIconEnabled = false
 
-	warn("Local character references updated!")
+	--warn("Local character references updated!")
 end
 
 local function SetupWind()

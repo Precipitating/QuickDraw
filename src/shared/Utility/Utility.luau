@@ -74,4 +74,16 @@ return {
 
 		return holdingTool
 	end,
+
+	GetClosePlayers = function(position: Vector3, maxDistance: number): { Player }
+		local relevant = {}
+		for _, player in Players:GetPlayers() do
+			local character = player.Character
+			local hrp = character and character:FindFirstChild("HumanoidRootPart")
+			if hrp and (hrp.Position - position).Magnitude <= maxDistance then
+				table.insert(relevant, player)
+			end
+		end
+		return relevant
+	end,
 }

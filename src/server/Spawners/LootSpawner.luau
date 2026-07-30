@@ -19,7 +19,7 @@ local function GetRandomPositionInPart(part)
 	local y = math.lerp(TopRightFront.Y, BottomLeftBack.Y, RandomModule.GetRandom())
 	local z = math.lerp(TopRightFront.Z, BottomLeftBack.Z, RandomModule.GetRandom())
 
-	return Vector3.new(x, y, z)
+	return vector.create(x, y, z)
 end
 
 function LootSpawner:IsPointClear(partSize: Vector3, pos: Vector3)

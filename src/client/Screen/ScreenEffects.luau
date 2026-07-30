@@ -2,6 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local CameraShaker = require(ReplicatedStorage.Shared.Effects.CameraShaker)
+local Sera = require(ReplicatedStorage.Shared.Sera)
+local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -28,11 +30,18 @@ function ScreenEffects:ToggleBlackScreen(transparency: number, tweenDuration: nu
 	fadeTween:Play()
 end
 
-function ScreenEffects:ApplyOneShotEffect(effectName: string)
-	PlayerContext.CameraShaker:Shake(CameraShaker.Presets[effectName])
+function ScreenEffects:ApplyOneShotEffect(buf: { EffectName: string } | string)
+	local data = {}
+	if typeof(buf) == "buffer" then
+		data = Sera.Deserialize(SeraSchemas.ScreenEffectsSchema, buf)
+	else
+		data.EffectName = buf
+	end
+	PlayerContext.CameraShaker:Shake(CameraShaker.Presets[data.EffectName])
 end
-function ScreenEffects:StartSustainEffect(effectName: string)
-	PlayerContext.CameraShaker:ShakeSustain(CameraShaker.Presets[effectName])
+function ScreenEffects:StartSustainEffect(buf)
+	local data = Sera.Deserialize(SeraSchemas.ScreenEffectsSchema, buf)
+	PlayerContext.CameraShaker:ShakeSustain(CameraShaker.Presets[data.EffectName])
 end
 function ScreenEffects:StopAllSustainEffects(fadeOut: number)
 	PlayerContext.CameraShaker:StopSustained(fadeOut)

@@ -71,9 +71,9 @@ function DialogModule.new(npcName, npc, prompt, animation)
 	local heartbeatConnection = runService.Heartbeat:Connect(function()
 		frameCount += 1
 		if self.talking then
-			self.npcGui.StudsOffset = Vector3.new(0, 1.6, 0)
+			self.npcGui.StudsOffset = vector.create(0, 1.6, 0)
 		else
-			self.npcGui.StudsOffset = Vector3.new(0, math.sin(frameCount / 25) / 6 + 1.55, 0)
+			self.npcGui.StudsOffset = vector.create(0, math.sin(frameCount / 25) / 6 + 1.55, 0)
 		end
 	end)
 	local shownConnection = prompt.PromptShown:Connect(function()

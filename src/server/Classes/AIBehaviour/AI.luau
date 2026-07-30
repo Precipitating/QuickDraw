@@ -261,8 +261,8 @@ end
 
 -- Helper: raycast downward to snap candidate to ground level
 function AI:GetGroundY(pos: Vector3): number?
-	local origin = Vector3.new(pos.X, pos.Y + 50, pos.Z)
-	local direction = Vector3.new(0, -200, 0)
+	local origin = vector.create(pos.X, pos.Y + 50, pos.Z)
+	local direction = vector.create(0, -200, 0)
 	local result = workspace:Raycast(origin, direction, self.RaycastParams)
 	if result then
 		return result.Position.Y
@@ -297,9 +297,9 @@ function AI:FindAnglePosition(
 
 	local baseDir = (originPos - targetPos)
 	-- Flatten to XZ for rotation, but preserve a reference Y
-	local baseDirFlat = Vector3.new(baseDir.X, 0, baseDir.Z)
+	local baseDirFlat = vector.create(baseDir.X, 0, baseDir.Z)
 	if baseDirFlat.Magnitude < 0.001 then
-		baseDirFlat = Vector3.new(1, 0, 0) -- fallback if directly above/below
+		baseDirFlat = vector.create(1, 0, 0) -- fallback if directly above/below
 	end
 	baseDirFlat = baseDirFlat.Unit
 
@@ -312,12 +312,12 @@ function AI:FindAnglePosition(
 			local radians = math.rad(angle)
 			local cos, sin = math.cos(radians), math.sin(radians)
 			local rotated =
-				Vector3.new(baseDirFlat.X * cos - baseDirFlat.Z * sin, 0, baseDirFlat.X * sin + baseDirFlat.Z * cos)
+				vector.create(baseDirFlat.X * cos - baseDirFlat.Z * sin, 0, baseDirFlat.X * sin + baseDirFlat.Z * cos)
 
 			-- Raycast downward to find ground Y so the candidate sits on terrain
 			local candidateXZ = targetPos + rotated * radius
 			local groundY = self:GetGroundY(candidateXZ) or targetPos.Y
-			local candidate = Vector3.new(candidateXZ.X, groundY, candidateXZ.Z)
+			local candidate = vector.create(candidateXZ.X, groundY, candidateXZ.Z)
 
 			if self:IsTargetInView(candidate, target, false) then
 				-- Score: weighted sum of distance to origin + distance to target (prefer mid-range)

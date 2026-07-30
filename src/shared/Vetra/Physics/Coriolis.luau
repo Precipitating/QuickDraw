@@ -24,9 +24,9 @@
     for the current velocity, multiply by delta time, add to CurrentVelocity.
     This is what SimulateCast and the parallel Step module both do.
 ]]
-local Identity   = "Coriolis"
-local Coriolis   = {}
-Coriolis.__type  = Identity
+local Identity = "Coriolis"
+local Coriolis = {}
+Coriolis.__type = Identity
 
 -- ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -36,7 +36,6 @@ local EARTH_OMEGA_RADS = 7.2921e-5
 
 -- ─── Public API ──────────────────────────────────────────────────────────────
 
-
 function Coriolis.ComputeOmega(latitude: number, scale: number): Vector3
 	-- Fast path: scale = 0 means Coriolis is disabled. Return zero immediately
 	-- so the per-step check (omega:Dot(omega) > 0) exits without a cross product.
@@ -44,20 +43,15 @@ function Coriolis.ComputeOmega(latitude: number, scale: number): Vector3
 		return Vector3.zero
 	end
 
-	local phi   = math.rad(latitude)
+	local phi = math.rad(latitude)
 	local omega = EARTH_OMEGA_RADS * scale
 
 	-- +Y component (vertical):  zero at equator, maximum at poles.
 	-- +Z component (northward): maximum at equator, zero at poles.
 	-- +X component is always 0 — Earth's rotation axis lies in the Y-Z plane
 	-- under the +Z = north / +X = east convention.
-	return Vector3.new(
-		0,
-		omega * math.sin(phi),
-		omega * math.cos(phi)
-	)
+	return vector.create(0, omega * math.sin(phi), omega * math.cos(phi))
 end
-
 
 function Coriolis.ComputeAcceleration(omega: Vector3, velocity: Vector3): Vector3
 	-- a = -2 * (Ω x v)

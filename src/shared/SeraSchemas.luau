@@ -12,6 +12,13 @@ return {
 		Pitch = Sera.Float32, -- optional
 		MaxDistance = Sera.Float32, -- optional
 	}),
+
+	Play3DNPCVoicelineSchema = Sera.Schema({
+		SoundName = Sera.String8,
+		Volume = Sera.Float32, -- optional
+		Pitch = Sera.Float32, -- optional
+		MaxDistance = Sera.Float32, -- optional
+	}),
 	DisplayDestroySchema = Sera.Schema({
 		DestroyableParticleName = Sera.String8,
 		Position = Sera.Vector3,
@@ -29,5 +36,14 @@ return {
 	DisplayBloodHitSchema = Sera.Schema({
 		Position = Sera.Vector3,
 		Normal = Sera.Vector3,
+	}),
+
+	UpdateLimbGUIHPSchema = Sera.Schema({
+		LimbName = Sera.String8,
+		LimbHealthPercentage = Sera.Float32,
+	}),
+
+	ScreenEffectsSchema = Sera.Schema({
+		EffectName = Sera.String8,
 	}),
 }

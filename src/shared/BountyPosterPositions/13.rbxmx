@@ -1,0 +1,33 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Attachment" referent="RBX8583ECB92AEB40EF90167451EC883A9C">
+		<Properties>
+			<CoordinateFrame name="CFrame">
+				<X>521.577393</X>
+				<Y>10.7551918</Y>
+				<Z>-801.448547</Z>
+				<R00>-0.972521186</R00>
+				<R01>0</R01>
+				<R02>0.232814461</R02>
+				<R10>0</R10>
+				<R11>1</R11>
+				<R12>0</R12>
+				<R20>-0.232814461</R20>
+				<R21>0</R21>
+				<R22>-0.972521186</R22>
+			</CoordinateFrame>
+			<bool name="Visible">false</bool>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
+			<bool name="DefinesCapabilities">false</bool>
+			<string name="Name">13</string>
+			<int64 name="SourceAssetId">-1</int64>
+			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
+		</Properties>
+	</Item>
+	<SharedStrings>
+		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+	</SharedStrings>
+</roblox>

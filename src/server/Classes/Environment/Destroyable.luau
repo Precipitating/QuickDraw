@@ -1,9 +1,7 @@
-local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerEffectsDisplayer = require(script.Parent.ServerEffectsDisplayer)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ProjectileEvents = require(ServerScriptService.Server.ProjectilesHandler.ProjectileEvents)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -65,7 +63,7 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 		return
 	end
 	local dir = (root.Position - self.ModelRef:GetPivot().Position)
-	local dirUpBias = (dir + Vector3.new(0, 3, 0)).Unit
+	local dirUpBias = (dir + vector.create(0, 3, 0)).Unit
 
 	local force = 100
 	local impulse = dirUpBias * force * root.AssemblyMass

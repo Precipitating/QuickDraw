@@ -23,13 +23,13 @@
         correct for their respective key formats.
 ]]
 
-local PureBounce  = {}
+local PureBounce = {}
 PureBounce.__type = "PureBounce"
 
 -- ─── References ──────────────────────────────────────────────────────────────
 
 local Vetra = script.Parent.Parent.Parent
-local Core  = Vetra.Core
+local Core = Vetra.Core
 
 -- ─── Module References ───────────────────────────────────────────────────────
 
@@ -38,11 +38,11 @@ local Constants = require(Core.Constants)
 -- ─── Cached Globals ──────────────────────────────────────────────────────────
 
 local math_random = math.random
-local math_sqrt   = math.sqrt
-local math_max    = math.max
+local math_sqrt = math.sqrt
+local math_max = math.max
 
 local MIN_MAGNITUDE_SQ = Constants.MIN_MAGNITUDE_SQ
-local MIN_DOT_SQ       = Constants.MIN_DOT_SQ
+local MIN_DOT_SQ = Constants.MIN_DOT_SQ
 
 -- ─── Local Types ─────────────────────────────────────────────────────────────
 
@@ -50,20 +50,20 @@ local MIN_DOT_SQ       = Constants.MIN_DOT_SQ
 -- The serial Bounce wrapper builds one from Cast.Runtime + Cast.Behavior.
 -- ParallelPhysics constructs one from the snapshot / its mutable BounceState.
 export type CornerState = {
-	TotalRuntime:                number,
-	LastBounceTime:              number,
-	BouncePositionHistory:       { Vector3 },
-	BouncePositionHead:          number,
-	CornerBounceCount:           number,
-	VelocityDirectionEMA:        Vector3,
-	FirstBouncePosition:         Vector3?,
+	TotalRuntime: number,
+	LastBounceTime: number,
+	BouncePositionHistory: { Vector3 },
+	BouncePositionHead: number,
+	CornerBounceCount: number,
+	VelocityDirectionEMA: Vector3,
+	FirstBouncePosition: Vector3?,
 	-- config fields (from Behavior)
-	CornerTimeThreshold:         number,
+	CornerTimeThreshold: number,
 	CornerDisplacementThreshold: number,
-	CornerEMAAlpha:              number,
-	CornerEMAThreshold:          number,
-	CornerMinProgressPerBounce:  number,
-	CornerPositionHistorySize:   number,
+	CornerEMAAlpha: number,
+	CornerEMAThreshold: number,
+	CornerMinProgressPerBounce: number,
+	CornerPositionHistorySize: number,
 }
 
 -- ─── Module ──────────────────────────────────────────────────────────────────
@@ -73,26 +73,23 @@ function PureBounce.Reflect(IncomingVelocity: Vector3, SurfaceNormal: Vector3): 
 end
 
 function PureBounce.ApplyRestitution(
-	ReflectedVelocity  : Vector3,
-	SurfaceNormal      : Vector3,
-	Restitution        : number,
-	MaterialMultiplier : number,
-	NormalPerturbation : number
+	ReflectedVelocity: Vector3,
+	SurfaceNormal: Vector3,
+	Restitution: number,
+	MaterialMultiplier: number,
+	NormalPerturbation: number
 ): Vector3
 	-- Restitution only governs the normal component of velocity — energy loss
 	-- perpendicular to the surface. The tangential (sliding) component is
 	-- preserved. Applying the multiplier to the full vector incorrectly
 	-- attenuates tangential speed, which is most visible on shallow ricochets.
 	local ReflectedNormal = SurfaceNormal * SurfaceNormal:Dot(ReflectedVelocity)
-	local Tangential      = ReflectedVelocity - ReflectedNormal
-	local FinalVelocity   = Tangential + ReflectedNormal * (Restitution * MaterialMultiplier)
+	local Tangential = ReflectedVelocity - ReflectedNormal
+	local FinalVelocity = Tangential + ReflectedNormal * (Restitution * MaterialMultiplier)
 
 	if NormalPerturbation > 0 and FinalVelocity:Dot(FinalVelocity) > MIN_DOT_SQ then
-		local Noise = Vector3.new(
-			math_random() - 0.5,
-			math_random() - 0.5,
-			math_random() - 0.5
-		).Unit * NormalPerturbation
+		local Noise = vector.create(math_random() - 0.5, math_random() - 0.5, math_random() - 0.5).Unit
+			* NormalPerturbation
 		FinalVelocity = (FinalVelocity.Unit + Noise).Unit * FinalVelocity.Magnitude
 	end
 
@@ -105,10 +102,12 @@ end
     Used by the serial path where Behavior.MaterialRestitution stores Enum keys.
 ]]
 function PureBounce.GetMaterialMultiplier(
-	MaterialRestitutionMap : { [Enum.Material]: number }?,
-	Material               : Enum.Material
+	MaterialRestitutionMap: { [Enum.Material]: number }?,
+	Material: Enum.Material
 ): number
-	if not MaterialRestitutionMap then return 1.0 end
+	if not MaterialRestitutionMap then
+		return 1.0
+	end
 	return MaterialRestitutionMap[Material] or 1.0
 end
 
@@ -123,11 +122,7 @@ end
 
     All state is read from the provided CornerState; nothing is mutated.
 ]]
-function PureBounce.IsCornerTrap(
-	State           : CornerState,
-	ContactPosition : Vector3,
-	CurrentTime     : number
-): boolean
+function PureBounce.IsCornerTrap(State: CornerState, ContactPosition: Vector3, CurrentTime: number): boolean
 	-- Pass 1: time gate
 	if (CurrentTime - State.LastBounceTime) < State.CornerTimeThreshold then
 		return true
@@ -152,13 +147,10 @@ function PureBounce.IsCornerTrap(
 
 	-- Pass 4: net displacement guard
 	local MinProgress = State.CornerMinProgressPerBounce
-	if MinProgress > 0
-		and State.FirstBouncePosition ~= nil
-		and State.CornerBounceCount >= 3
-	then
+	if MinProgress > 0 and State.FirstBouncePosition ~= nil and State.CornerBounceCount >= 3 then
 		local NetDisplacement = ContactPosition - State.FirstBouncePosition
-		local NetDistanceSq   = NetDisplacement:Dot(NetDisplacement)
-		local MinRequired     = State.CornerBounceCount * MinProgress
+		local NetDistanceSq = NetDisplacement:Dot(NetDisplacement)
+		local MinRequired = State.CornerBounceCount * MinProgress
 		if NetDistanceSq < MinRequired * MinRequired then
 			return true
 		end
@@ -176,23 +168,23 @@ end
         NewCornerBounceCount, NewVelocityDirectionEMA, NewFirstBouncePosition
 ]]
 function PureBounce.RecordBounceState(
-	State              : CornerState,
-	ContactPosition    : Vector3,
-	PostBounceVelocity : Vector3,
-	TotalRuntime       : number
+	State: CornerState,
+	ContactPosition: Vector3,
+	PostBounceVelocity: Vector3,
+	TotalRuntime: number
 ): (number, number, { Vector3 }, number, Vector3, Vector3?)
 	local HistorySize = math_max(State.CornerPositionHistorySize, 4)
 
 	-- Advance ring-buffer head and write new contact
-	local NewHead    = (State.BouncePositionHead % HistorySize) + 1
-	local NewHistory : { Vector3 } = {}
+	local NewHead = (State.BouncePositionHead % HistorySize) + 1
+	local NewHistory: { Vector3 } = {}
 	for Index, Value in State.BouncePositionHistory do
 		NewHistory[Index] = Value
 	end
 	NewHistory[NewHead] = ContactPosition
 
 	-- Update velocity-direction EMA
-	local Alpha        = State.CornerEMAAlpha
+	local Alpha = State.CornerEMAAlpha
 	local NewEMA: Vector3
 	local SpeedSq = PostBounceVelocity:Dot(PostBounceVelocity)
 	if SpeedSq > MIN_MAGNITUDE_SQ then
@@ -203,8 +195,8 @@ function PureBounce.RecordBounceState(
 		NewEMA = State.VelocityDirectionEMA * (1 - Alpha)
 	end
 
-	local NewFirstBounce        = State.FirstBouncePosition or ContactPosition
-	local NewCornerBounceCount  = State.CornerBounceCount + 1
+	local NewFirstBounce = State.FirstBouncePosition or ContactPosition
+	local NewCornerBounceCount = State.CornerBounceCount + 1
 
 	return TotalRuntime, NewHead, NewHistory, NewCornerBounceCount, NewEMA, NewFirstBounce
 end

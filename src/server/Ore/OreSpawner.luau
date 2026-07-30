@@ -64,7 +64,7 @@ local function GetOreSpawnPoint(chosenAttachment: Attachment?)
 	for _ = 1, attempts do
 		local angle = RandomModule.GetRandom() * math.pi * 2
 
-		local direction = Vector3.new(math.cos(angle), 0, math.sin(angle))
+		local direction = vector.create(math.cos(angle), 0, math.sin(angle))
 
 		local rayOrigin = origin + direction * radius
 

@@ -371,7 +371,7 @@ function Vetra.Fire(self: Solver, FireBulletContext: BulletContextPublic, FireBe
 		)
 	end
 
-	local DefaultGravity = Vector3.new(0, -workspace.Gravity, 0)
+	local DefaultGravity = vector.create(0, -workspace.Gravity, 0)
 	local ResolvedGravity = DefaultGravity
 	if FireBehavior.Gravity and FireBehavior.Gravity.Magnitude > 0 then
 		ResolvedGravity = FireBehavior.Gravity

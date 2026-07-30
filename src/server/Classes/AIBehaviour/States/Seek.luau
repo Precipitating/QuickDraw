@@ -27,7 +27,7 @@ function Seek:PredictTarget(target: Model | BasePart): Vector3
 	end
 
 	local targetVelocity = primaryPart.AssemblyLinearVelocity
-	local horizontalVelocity = Vector3.new(targetVelocity.X, 0, targetVelocity.Z)
+	local horizontalVelocity = vector.create(targetVelocity.X, 0, targetVelocity.Z)
 	if horizontalVelocity.Magnitude < 0.1 then
 		return currentTargetPos -- target is stationary, no point predicting
 	end
@@ -143,8 +143,7 @@ function Seek:Enter(previous, seekData)
 	self:MoveToLastSeenLocation(target)
 
 	if not self.AI or not self.AI.NoobPath or not self.AI.NoobPath.Reached then
-		warn("Seek pathfind failed, returning to default state")
-		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
+		warn("Seek pathfind failed, probably dead")
 		return
 	end
 	-- 2. Wait until destination reached

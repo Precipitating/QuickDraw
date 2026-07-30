@@ -33,12 +33,21 @@ function ClientSoundHandler:Play3DOneShotToOthers(buf)
 	})
 end
 
-function ClientSoundHandler:Play3DNPCVoiceline(soundName: string, soundInstance: Sound, config: PlayOptions?)
+function ClientSoundHandler:Play3DNPCVoiceline(buf, soundInstance: Sound)
 	if not soundInstance then
 		-- usually because of client not in range
 		return
 	end
-	SoundManager.Play3DNPCVoiceline(soundName, soundInstance, config)
+
+	local data = Sera.DeltaDeserialize(SeraSchemas.Play3DNPCVoicelineSchema, buf)
+
+	local soundName = data.SoundName
+
+	SoundManager.Play3DNPCVoiceline(
+		soundName,
+		soundInstance,
+		{ MaxDistance = data.MaxDistance, Volume = data.Volume or 1, Pitch = data.Pitch or 1 }
+	)
 end
 
 return ClientSoundHandler

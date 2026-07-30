@@ -15,6 +15,8 @@ local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 local Inputs = {}
+
+local XZ_PLANE = vector.create(1, 0, 1)
 Inputs.networker = Networker.new("InputNetwork", Inputs)
 
 local function FaceTowardsMovementDirection()
@@ -23,7 +25,7 @@ local function FaceTowardsMovementDirection()
 		return
 	end
 
-	local flat = PlayerContext.Humanoid.MoveDirection * Vector3.new(1, 0, 1)
+	local flat = PlayerContext.Humanoid.MoveDirection * XZ_PLANE
 	if flat.Magnitude > 0.001 then
 		PlayerContext.HRPOrientation.CFrame = CFrame.lookAt(Vector3.zero, flat.Unit)
 	end
@@ -201,7 +203,7 @@ function Inputs:StopBarge(hitType: string)
 		Inputs.networker:fire("ToggleSprint", false)
 		self.networker:fire("DestroyBargeCollision")
 		if humanoid then
-			humanoid:Move(Vector3.new(0, 0, 0), false)
+			humanoid:Move(vector.zero, false)
 		end
 	end
 

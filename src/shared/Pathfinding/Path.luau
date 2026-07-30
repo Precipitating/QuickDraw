@@ -63,7 +63,7 @@ end
 local NoobPath = script.Parent
 
 local NEON = Enum.Material.Neon
-local SIZE = Vector3.new(0.5, 0.5, 0.5)
+local SIZE = vector.create(0.5, 0.5, 0.5)
 local BALL = Enum.PartType.Ball
 local ZERO = Vector3.zero
 

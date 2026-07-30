@@ -20,15 +20,15 @@ local function TrapPlacementHasRoof(
 	exclusion: RaycastParams?
 ): (boolean, RaycastResult?)
 	-- Check if placeable, needs to have a roof
-	local hasRoof = workspace:Raycast(origin, Vector3.new(0, checkDist, 0), exclusion)
+	local hasRoof = workspace:Raycast(origin, vector.create(0, checkDist, 0), exclusion)
 
 	-- Temporary Debug Line
 	-- local debugPart = Instance.new("Part")
 	-- debugPart.Anchored = true
 	-- debugPart.CanCollide = false
 	-- debugPart.Color = Color3.fromRGB(255, 0, 0)
-	-- debugPart.Size = Vector3.new(0.2, checkDist, 0.2)
-	-- debugPart.CFrame = CFrame.new(origin + Vector3.new(0, checkDist / 2, 0))
+	-- debugPart.Size = vector.create(0.2, checkDist, 0.2)
+	-- debugPart.CFrame = CFrame.new(origin + vector.create(0, checkDist / 2, 0))
 	-- debugPart.Parent = workspace
 	-- game:GetService("Debris"):AddItem(debugPart, 10) -- Disappears after 2 seconds
 
@@ -92,7 +92,7 @@ local TrapActivatedLogic = {
 		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame.Position)
 
 		local context = ProjectileContext.BulletContext.new({
-			Origin = trapModel:GetPivot().Position + Vector3.new(0, 1, 0),
+			Origin = trapModel:GetPivot().Position + vector.create(0, 1, 0),
 			Direction = -Vector3.yAxis,
 			Speed = explosiveData.Velocity,
 		})

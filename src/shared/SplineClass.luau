@@ -366,7 +366,7 @@ function SplineClass:DrawDebug(samples: number)
 		local position = self:GetPosition(alpha)
 
 		createPart({
-			Size = Vector3.new(1, 1, 1),
+			Size = vector.create(1, 1, 1),
 			CFrame = CFrame.new(position),
 			Parent = debugFolder,
 		})
@@ -377,7 +377,7 @@ function SplineClass:DrawDebug(samples: number)
 
 			if dist > 0 then
 				createPart({
-					Size = Vector3.new(0.25, 0.25, dist),
+					Size = vector.create(0.25, 0.25, dist),
 					CFrame = CFrame.lookAt(lastPosition + direction * 0.5, position),
 					Parent = debugFolder,
 					Color = Color3.new(0, 1, 0),
@@ -386,7 +386,7 @@ function SplineClass:DrawDebug(samples: number)
 		end
 
 		createPart({
-			Size = Vector3.new(0.5, 0.5, 1),
+			Size = vector.create(0.5, 0.5, 1),
 			CFrame = self:GetCFrame(alpha) * CFrame.new(0, 0, -0.5),
 			Parent = debugFolder,
 			Color = Color3.new(0, 0, 1),

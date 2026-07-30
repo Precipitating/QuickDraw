@@ -255,9 +255,13 @@ Sera.LossyCFrame = table.freeze({
 	end,
 	Des = function(b: buffer, offset: number): (CFrame, number)
 		return CFrame.fromAxisAngle(
-			Vector3.new(buffer.readf32(b, offset + 12), buffer.readf32(b, offset + 16), buffer.readf32(b, offset + 20)),
+			vector.create(
+				buffer.readf32(b, offset + 12),
+				buffer.readf32(b, offset + 16),
+				buffer.readf32(b, offset + 20)
+			) :: any,
 			buffer.readf32(b, offset :: number + 24)
-		) + Vector3.new(buffer.readf32(b, offset), buffer.readf32(b, offset + 4), buffer.readf32(b, offset + 8)),
+		) + vector.create(buffer.readf32(b, offset), buffer.readf32(b, offset + 4), buffer.readf32(b, offset + 8)) :: any,
 			offset + 28
 	end,
 })
@@ -271,7 +275,11 @@ Sera.Vector3 = table.freeze({
 		return offset + 12
 	end,
 	Des = function(b: buffer, offset: number): (Vector3, number)
-		return Vector3.new(buffer.readf32(b, offset), buffer.readf32(b, offset + 4), buffer.readf32(b, offset + 8)),
+		return vector.create(
+				buffer.readf32(b, offset),
+				buffer.readf32(b, offset + 4),
+				buffer.readf32(b, offset + 8)
+			) :: any,
 			offset + 12
 	end,
 })
@@ -299,11 +307,11 @@ Sera.ColorV3 = table.freeze({
 		return offset + 3
 	end,
 	Des = function(b: buffer, offset: number): (Vector3, number)
-		return Vector3.new(
+		return vector.create(
 			buffer.readu8(b, offset) / 255,
 			buffer.readu8(b, offset + 1) / 255,
 			buffer.readu8(b, offset + 2) / 255
-		),
+		) :: any,
 			offset + 3
 	end,
 })

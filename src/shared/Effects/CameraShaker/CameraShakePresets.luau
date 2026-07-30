@@ -31,8 +31,8 @@ local CameraShakePresets = {
 	-- Meant to resemble a strong, shoulder barge
 	Bump = function()
 		local c = CameraShakeInstance.new(4, 7, 0.03, 0.9)
-		c.PositionInfluence = Vector3.new(0.25, 0.2, 0.3)
-		c.RotationInfluence = Vector3.new(2, 1.5, 3)
+		c.PositionInfluence = vector.create(0.25, 0.2, 0.3)
+		c.RotationInfluence = vector.create(2, 1.5, 3)
 		return c
 	end,
 
@@ -40,8 +40,8 @@ local CameraShakePresets = {
 	-- Should happen once.
 	Explosion = function()
 		local c = CameraShakeInstance.new(5, 10, 0, 1.5)
-		c.PositionInfluence = Vector3.new(0.25, 0.25, 0.25)
-		c.RotationInfluence = Vector3.new(4, 1, 1)
+		c.PositionInfluence = vector.create(0.25, 0.25, 0.25)
+		c.RotationInfluence = vector.create(4, 1, 1)
 		return c
 	end,
 
@@ -49,8 +49,8 @@ local CameraShakePresets = {
 	-- Sustained.
 	Earthquake = function()
 		local c = CameraShakeInstance.new(0.6, 3.5, 2, 10)
-		c.PositionInfluence = Vector3.new(0.25, 0.25, 0.25)
-		c.RotationInfluence = Vector3.new(1, 1, 4)
+		c.PositionInfluence = vector.create(0.25, 0.25, 0.25)
+		c.RotationInfluence = vector.create(1, 1, 4)
 		return c
 	end,
 
@@ -58,8 +58,8 @@ local CameraShakePresets = {
 	-- Sustained.
 	BadTrip = function()
 		local c = CameraShakeInstance.new(10, 0.15, 5, 10)
-		c.PositionInfluence = Vector3.new(0, 0, 0.15)
-		c.RotationInfluence = Vector3.new(2, 1, 4)
+		c.PositionInfluence = vector.create(0, 0, 0.15)
+		c.RotationInfluence = vector.create(2, 1, 4)
 		return c
 	end,
 
@@ -67,8 +67,8 @@ local CameraShakePresets = {
 	-- Sustained.
 	HandheldCamera = function()
 		local c = CameraShakeInstance.new(1, 0.25, 5, 10)
-		c.PositionInfluence = Vector3.new(0, 0, 0)
-		c.RotationInfluence = Vector3.new(1, 0.5, 0.5)
+		c.PositionInfluence = vector.create(0, 0, 0)
+		c.RotationInfluence = vector.create(1, 0.5, 0.5)
 		return c
 	end,
 
@@ -76,8 +76,8 @@ local CameraShakePresets = {
 	-- Sustained.
 	Vibration = function()
 		local c = CameraShakeInstance.new(0.4, 20, 2, 2)
-		c.PositionInfluence = Vector3.new(0, 0.15, 0)
-		c.RotationInfluence = Vector3.new(1.25, 0, 4)
+		c.PositionInfluence = vector.create(0, 0.15, 0)
+		c.RotationInfluence = vector.create(1.25, 0, 4)
 		return c
 	end,
 
@@ -85,8 +85,8 @@ local CameraShakePresets = {
 	-- Sustained.
 	RoughDriving = function()
 		local c = CameraShakeInstance.new(1, 2, 1, 1)
-		c.PositionInfluence = Vector3.new(0, 0, 0)
-		c.RotationInfluence = Vector3.new(1, 1, 1)
+		c.PositionInfluence = vector.create(0, 0, 0)
+		c.RotationInfluence = vector.create(1, 1, 1)
 		return c
 	end,
 
@@ -98,8 +98,8 @@ local CameraShakePresets = {
 	-- High roughness but extremely low duration creates a pulse feel. One-shot.
 	Heartbeat = function()
 		local c = CameraShakeInstance.new(3.5, 12, 0.05, 0.3)
-		c.PositionInfluence = Vector3.new(0.05, 0.05, 0.05)
-		c.RotationInfluence = Vector3.new(0.8, 0.2, 0.2)
+		c.PositionInfluence = vector.create(0.05, 0.05, 0.05)
+		c.RotationInfluence = vector.create(0.8, 0.2, 0.2)
 		return c
 	end,
 
@@ -107,8 +107,8 @@ local CameraShakePresets = {
 	-- Snaps up rapidly, settles smoothly. One-shot.
 	GunRecoil = function()
 		local c = CameraShakeInstance.new(7, 22, 0, 0.3)
-		c.PositionInfluence = Vector3.new(0, 0, 0.35)
-		c.RotationInfluence = Vector3.new(4.5, 0.7, 0.7)
+		c.PositionInfluence = vector.create(0, 0, 0.35)
+		c.RotationInfluence = vector.create(4.5, 0.7, 0.7)
 		return c
 	end,
 
@@ -116,8 +116,8 @@ local CameraShakePresets = {
 	-- Sustained (Looping). Clear it when the player stops running.
 	Sprinting = function()
 		local c = CameraShakeInstance.new(1.2, 7, 0.5, 0.5)
-		c.PositionInfluence = Vector3.new(0.1, 0.2, 0) -- High vertical bobbing
-		c.RotationInfluence = Vector3.new(1, 0.5, 1.5) -- Side-to-side shoulder sway
+		c.PositionInfluence = vector.create(0.1, 0.2, 0) -- High vertical bobbing
+		c.RotationInfluence = vector.create(1, 0.5, 1.5) -- Side-to-side shoulder sway
 		return c
 	end,
 
@@ -125,8 +125,8 @@ local CameraShakePresets = {
 	-- Sustained. Smooth, incredibly low frequency.
 	SnipingBreath = function()
 		local c = CameraShakeInstance.new(0.2, 0.4, 1, 1)
-		c.PositionInfluence = Vector3.new(0, 0, 0)
-		c.RotationInfluence = Vector3.new(0.3, 0.3, 0.1)
+		c.PositionInfluence = vector.create(0, 0, 0)
+		c.RotationInfluence = vector.create(0.3, 0.3, 0.1)
 		return c
 	end,
 
@@ -134,8 +134,8 @@ local CameraShakePresets = {
 	-- Sharp initial drop down, fast falloff. One-shot.
 	HeavyThud = function()
 		local c = CameraShakeInstance.new(4, 8, 0.02, 0.6)
-		c.PositionInfluence = Vector3.new(0, 0.4, 0) -- Drops down vertically on hit
-		c.RotationInfluence = Vector3.new(1.5, 0, 0.5)
+		c.PositionInfluence = vector.create(0, 0.4, 0) -- Drops down vertically on hit
+		c.RotationInfluence = vector.create(1.5, 0, 0.5)
 		return c
 	end,
 
@@ -143,8 +143,8 @@ local CameraShakePresets = {
 	-- One-shot. High magnitude but incredibly smooth, lingering for a long time.
 	Flashbang = function()
 		local c = CameraShakeInstance.new(8, 0.6, 0.1, 5.0)
-		c.PositionInfluence = Vector3.new(0.1, 0.1, 0.1)
-		c.RotationInfluence = Vector3.new(2, 3, 5) -- Dizziness rotation twist
+		c.PositionInfluence = vector.create(0.1, 0.1, 0.1)
+		c.RotationInfluence = vector.create(2, 3, 5) -- Dizziness rotation twist
 		return c
 	end,
 
@@ -152,22 +152,22 @@ local CameraShakePresets = {
 	-- Sustained. Low-frequency bumping mixed with high yaw rotation.
 	AircraftTurbulence = function()
 		local c = CameraShakeInstance.new(1.5, 4.5, 2, 2)
-		c.PositionInfluence = Vector3.new(0.2, 0.3, 0.2)
-		c.RotationInfluence = Vector3.new(1, 2, 1.5)
+		c.PositionInfluence = vector.create(0.2, 0.3, 0.2)
+		c.RotationInfluence = vector.create(1, 2, 1.5)
 		return c
 	end,
 
 	BearTrapInjury = function()
 		local c = CameraShakeInstance.new(6, 15, 0, 2.0)
-		c.PositionInfluence = Vector3.new(0.1, 0.3, 0.05) -- sharp vertical jolt (leg buckling)
-		c.RotationInfluence = Vector3.new(2.5, 0.5, 3) -- pitch dip + roll stagger
+		c.PositionInfluence = vector.create(0.1, 0.3, 0.05) -- sharp vertical jolt (leg buckling)
+		c.RotationInfluence = vector.create(2.5, 0.5, 3) -- pitch dip + roll stagger
 		return c
 	end,
 	-- Devastating full-body impact from cannon fire. Max intensity one-shot.
 	CannonballHit = function()
 		local c = CameraShakeInstance.new(9, 20, 0, 2.5)
-		c.PositionInfluence = Vector3.new(0.4, 0.35, 0.5) -- huge shove in all axes
-		c.RotationInfluence = Vector3.new(3, 4, 5) -- violent tumble/spin
+		c.PositionInfluence = vector.create(0.4, 0.35, 0.5) -- huge shove in all axes
+		c.RotationInfluence = vector.create(3, 4, 5) -- violent tumble/spin
 		return c
 	end,
 
@@ -176,8 +176,8 @@ local CameraShakePresets = {
 	-- and disorienting spin as you get launched off your feet. One-shot.
 	BullRam = function()
 		local c = CameraShakeInstance.new(10, 18, 0, 1.8)
-		c.PositionInfluence = Vector3.new(0.5, 0.45, 0.6) -- big shove forward + thrown upward
-		c.RotationInfluence = Vector3.new(3.5, 4.5, 4) -- disorienting toss/spin off the horns
+		c.PositionInfluence = vector.create(0.5, 0.45, 0.6) -- big shove forward + thrown upward
+		c.RotationInfluence = vector.create(3.5, 4.5, 4) -- disorienting toss/spin off the horns
 		return c
 	end,
 }

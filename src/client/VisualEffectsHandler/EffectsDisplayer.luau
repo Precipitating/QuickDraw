@@ -12,9 +12,9 @@ local NoProjectileDecalList = { "Destroyable", "Player", "NPC", "Barrier", "Anim
 EffectsDisplayer.networker = Networker.new("EffectsDisplayerNetwork", EffectsDisplayer)
 
 function EffectsDisplayer:GetHoleCFrame(position: Vector3, normal: Vector3): CFrame
-	local up = Vector3.new(0, 1, 0)
+	local up = vector.create(0, 1, 0)
 	if math.abs(normal:Dot(up)) > 0.99 then
-		up = Vector3.new(1, 0, 0)
+		up = vector.create(1, 0, 0)
 	end
 	local right = normal:Cross(up).Unit
 	local adjustedUp = right:Cross(normal).Unit

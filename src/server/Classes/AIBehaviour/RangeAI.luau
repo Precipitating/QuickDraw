@@ -1,4 +1,3 @@
-local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Stack = require(ReplicatedStorage.Shared.Classes.Stack)
@@ -119,7 +118,7 @@ end
 -- Get angle required for object to hit a position (if possible)
 function RangeAI:GetThrowAngle(origin, target, velocity)
 	local diff = target - origin
-	local horizontalDist = Vector3.new(diff.X, 0, diff.Z).Magnitude
+	local horizontalDist = vector.magnitude(vector.create(diff.X, 0, diff.Z))
 	local verticalDist = diff.Y
 	local v2 = velocity * velocity
 	local g = workspace.Gravity

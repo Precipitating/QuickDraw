@@ -7,9 +7,9 @@ return {
 
 	KICK_DRAIN = 25,
 	KICK_FORCE = 70,
-	KICK_ANGULAR_FORCE = Vector3.new(10, 0, 0),
+	KICK_ANGULAR_FORCE = vector.create(10, 0, 0),
 	KICK_RADIUS = 3,
-	KICK_HEIGHT = Vector3.new(0, 0.8, 0),
+	KICK_HEIGHT = vector.create(0, 0.8, 0),
 
 	ROLL_DRAIN = 25,
 	ROLL_FORCE = 70,

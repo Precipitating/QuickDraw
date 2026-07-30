@@ -34,6 +34,8 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 		self:SetWeaponCollisions()
 	end
 
+	self:DisableUnneededStates()
+
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
 
 	if self.Character:GetAttribute("DefaultStateData") then
@@ -43,6 +45,18 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 
 	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
+end
+
+function HumanNPC:DisableUnneededStates()
+	local humanoid: Humanoid? = self.Humanoid
+
+	if not humanoid then
+		return
+	end
+
+	humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing, false)
+	humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+	humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
 end
 
 function HumanNPC:InitializeWeaponLoadout()
@@ -276,7 +290,7 @@ function HumanNPC:AimRightArmTowards(target)
 
 	-- Torso Alignment
 	local hrpPos = self.HRP.Position
-	local flattenedLookAt = Vector3.new(targetPos.X, hrpPos.Y, targetPos.Z)
+	local flattenedLookAt = vector.create(targetPos.X, hrpPos.Y, targetPos.Z)
 
 	-- Prevent NaN errors if target is directly above/below the HRP
 	if (flattenedLookAt - hrpPos).Magnitude > 0.001 then

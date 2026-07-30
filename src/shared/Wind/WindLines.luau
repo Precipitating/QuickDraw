@@ -4,7 +4,7 @@ local Terrain = workspace:FindFirstChildOfClass("Terrain")
 
 local EMPTY_TABLE = {}
 
-local OFFSET = Vector3.new(0, 0.1, 0)
+local OFFSET = vector.create(0, 0.1, 0)
 
 local module = {}
 
@@ -17,7 +17,7 @@ function module:Init(Settings)
 
 	module.Lifetime = Settings.Lifetime or 3
 
-	module.Direction = Settings.Direction or Vector3.new(1, 0, 0)
+	module.Direction = Settings.Direction or vector.create(1, 0, 0)
 
 	module.Speed = Settings.Speed or 6
 
@@ -89,12 +89,15 @@ function module:Init(Settings)
 
 			local StartPos = WindLine.Position
 
-			WindLine.Attachment0.WorldPosition = (
-				CFrame.new(StartPos, StartPos + WindLine.Direction)
-				* CFrame.new(0, 0, WindLine.Speed * -AliveTime
-)
-			).Position + Vector3.new(math.sin(SeededClock) * 0.5, math.sin(SeededClock) * 0.8, math.sin(SeededClock) * 0.5
-)
+			WindLine.Attachment0.WorldPosition = (CFrame.new(StartPos, StartPos + WindLine.Direction) * CFrame.new(
+				0,
+				0,
+				WindLine.Speed * -AliveTime
+			)).Position + vector.create(
+				math.sin(SeededClock) * 0.5,
+				math.sin(SeededClock) * 0.8,
+				math.sin(SeededClock) * 0.5
+			)
 
 			WindLine.Attachment1.WorldPosition = WindLine.Attachment0.WorldPosition + OFFSET
 		end
@@ -129,11 +132,11 @@ function module:Create(Settings)
 	local Lifetime = Settings.Lifetime or module.Lifetime
 
 	local Position = Settings.Position
- or (
-workspace.CurrentCamera.CFrame
- * CFrame.Angles(math.rad(math.random(-30, 70)), math.rad(math.random(-80, 80)), 0)
-)
- * CFrame.new(0, 0, math.random(200, 600) * -0.1).Position
+		or (
+				workspace.CurrentCamera.CFrame
+				* CFrame.Angles(math.rad(math.random(-30, 70)), math.rad(math.random(-80, 80)), 0)
+			)
+			* CFrame.new(0, 0, math.random(200, 600) * -0.1).Position
 
 	local Direction = Settings.Direction or module.Direction
 

@@ -1,27 +1,15 @@
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local RateLimiter = require(ReplicatedStorage.Shared.RateLimiter)
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ServerEffectsDisplayer = {}
 
 local EffectsLimiter = RateLimiter.new(10)
-
-local function GetRelevantPlayers(position: Vector3, maxDistance: number): { Player }
-	local relevant = {}
-	for _, player in Players:GetPlayers() do
-		local character = player.Character
-		local hrp = character and character:FindFirstChild("HumanoidRootPart")
-		if hrp and (hrp.Position - position).Magnitude <= maxDistance then
-			table.insert(relevant, player)
-		end
-	end
-	return relevant
-end
 
 -- Send these effects down to client to emit
 function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string, position: Vector3)
@@ -39,7 +27,7 @@ function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: 
 		{ DestroyParticleName = destroyableParticleName, Position = position }
 	)
 
-	local closePlayers = GetRelevantPlayers(position, 100)
+	local closePlayers = Utility.GetClosePlayers(position, 100)
 	self.networker:fire(closePlayers, "DisplayDestroyParticle", serializedBuf)
 end
 function ServerEffectsDisplayer:DisplaySpreadParticle(
@@ -62,7 +50,7 @@ function ServerEffectsDisplayer:DisplayProjectileMark(name: string, raycastResul
 	if not EffectsLimiter:TryConsume() then
 		return
 	end
-	local closePlayers = GetRelevantPlayers(raycastResult.Position, 100)
+	local closePlayers = Utility.GetClosePlayers(raycastResult.Position, 100)
 	local serializedBuf, err = Sera.Serialize(SeraSchemas.DisplayProjectileMarkSchema, {
 		Name = name,
 		Position = raycastResult.Position,
@@ -83,7 +71,7 @@ function ServerEffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vect
 	if not EffectsLimiter:TryConsume() then
 		return
 	end
-	local closePlayers = GetRelevantPlayers(position, 100)
+	local closePlayers = Utility.GetClosePlayers(position, 100)
 
 	local serializedBuf, err = Sera.Serialize(SeraSchemas.DisplayBloodHitSchema, {
 		Position = position,
@@ -160,7 +148,7 @@ function ServerEffectsDisplayer:DisplayImpactParticle(particle: ParticleEmitter?
 	if not EffectsLimiter:TryConsume() then
 		return
 	end
-	local closePlayers = GetRelevantPlayers(position, 100)
+	local closePlayers = Utility.GetClosePlayers(position, 100)
 
 	self.networker:fire(closePlayers, "DisplayImpactParticle", particle, position)
 end

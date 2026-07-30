@@ -48,7 +48,7 @@ function Geometry.getObjectBounds(cframe: CFrame, halfSize: Vector3): (Vector3, 
 	local y = math.abs(right.Y) * halfSize.X + math.abs(up.Y) * halfSize.Y + math.abs(look.Y) * halfSize.Z
 	local z = math.abs(right.Z) * halfSize.X + math.abs(up.Z) * halfSize.Y + math.abs(look.Z) * halfSize.Z
 
-	local extent = Vector3.new(x, y, z)
+	local extent = vector.create(x, y, z)
 	return pos - extent, pos + extent
 end
 
@@ -104,11 +104,11 @@ function Geometry.isPointInShape(point: Vector3, cframe: CFrame, halfSize: Vecto
 	elseif shapeType == CORNER_WEDGE_SHAPE_VALUE then
 		local size = halfSize * 2
 		local localPoint = cframe:PointToObjectSpace(point)
-		local plane1_normal = vector.normalize(Vector3.new(0, size.Z, size.Y))
+		local plane1_normal = vector.normalize(vector.create(0, size.Z, size.Y))
 		if vector.dot(localPoint, plane1_normal) > 0 then
 			return false
 		end
-		local plane2_normal = vector.normalize(Vector3.new(-size.Y, size.X, 0))
+		local plane2_normal = vector.normalize(vector.create(-size.Y, size.X, 0))
 		if vector.dot(localPoint, plane2_normal) > 0 then
 			return false
 		end

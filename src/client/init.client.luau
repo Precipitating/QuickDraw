@@ -1,7 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local MainMenuScreen = require(script.MainMenu.MainMenuScreen)
 local ClientUtility = require(script.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Utility.CoreGUIHandler)

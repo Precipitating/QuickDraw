@@ -65,7 +65,7 @@ function Throwable:Throw(cameraLookVector: Vector3)
 	self.CanThrow = false
 	self.Tool.Handle.Transparency = 1
 	local head = self.Owner.BodyParts["Head"]
-	local launchPos = head.Position + Vector3.new(0, 2, 0)
+	local launchPos = head.Position + vector.create(0, 2, 0)
 
 	local context = ProjectileContext.BulletContext.new({
 		Origin = launchPos,

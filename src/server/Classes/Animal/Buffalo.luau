@@ -120,7 +120,7 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 						humanClass:Ragdoll(5)
 					end
 
-					local dir = (self.HRP.CFrame.LookVector + Vector3.new(0, 0.3, 0)).Unit
+					local dir = (self.HRP.CFrame.LookVector + vector.create(0, 0.3, 0)).Unit
 						* self.HRP.AssemblyMass
 						* self.ChargeForce
 					task.defer(function()

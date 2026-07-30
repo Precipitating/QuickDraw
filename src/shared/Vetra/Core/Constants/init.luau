@@ -19,14 +19,14 @@ return table.freeze({
 
 	-- Fallback look-at direction for cosmetic bullet orientation when speed
 	-- is near zero (velocity.Unit would be NaN). Points along +Z axis.
-	LOOK_AT_FALLBACK = Vector3.new(0, 0, 1),
+	LOOK_AT_FALLBACK = vector.create(0, 0, 1),
 
 	-- World up vector — used for perpendicular axis selection in cone sampling.
-	UP_VECTOR = Vector3.new(0, 1, 0),
+	UP_VECTOR = vector.create(0, 1, 0),
 
 	-- World right vector — fallback perpendicular axis when BaseDirection is
 	-- nearly parallel to UP_VECTOR.
-	RIGHT_VECTOR = Vector3.new(1, 0, 0),
+	RIGHT_VECTOR = vector.create(1, 0, 0),
 
 	-- Minimum squared magnitude for velocity, normals, and displacement vectors.
 	-- Below this threshold a vector is considered degenerate.
@@ -78,7 +78,7 @@ return table.freeze({
 	-- Speed of sound in studs/s. Used by drag physics and the supersonic
 	-- transition signal.
 	SPEED_OF_SOUND = 340,
-	
+
 	-- NOTE: DEFAULT_GRAVITY is intentionally absent from Constants.
 	-- workspace.Gravity is a runtime value that can change (gravity zones,
 	-- zero-G sections, etc.). Computing it once at require() time would
@@ -93,7 +93,7 @@ return table.freeze({
 	-- Default air density for aerodynamic force calculations. Unity-normalised
 	-- for game-scale tuning — multiply by ReferenceArea to get physically
 	-- meaningful results.
-	DEFAULT_AIR_DENSITY       = 1.225,
+	DEFAULT_AIR_DENSITY = 1.225,
 
 	-- Default maximum angular speed (rad/s). Prevents divergence from
 	-- improperly tuned aerodynamic coefficients. 200π ≈ 628 rad/s ≈ 6000 RPM.
@@ -117,7 +117,6 @@ return table.freeze({
 	-- in milliseconds.
 	GLOBAL_FRAME_BUDGET_MS = 4,
 
-
 	-- ── Core / Pooling ───────────────────────────────────────────────────────
 
 	-- Maximum number of RaycastParams instances kept in the pool. Requests
@@ -130,28 +129,27 @@ return table.freeze({
 
 	-- Maximum seconds a CosmeticBulletProvider function may run before Vetra
 	-- warns that it is likely yielding unintentionally.
-	PROVIDER_TIMEOUT = .1,
-
+	PROVIDER_TIMEOUT = 0.1,
 
 	-- ── Spatial Partition ────────────────────────────────────────────────────
 
 	-- Step frequency tiers. Values represent "step every N frames".
 	-- HOT = full fidelity, WARM = half, COLD = quarter.
 	SPATIAL_TIERS = table.freeze({
-		HOT  = 1,
+		HOT = 1,
 		WARM = 2,
 		COLD = 4,
 	}),
 
 	-- Size of each grid cell in studs.
-	SPATIAL_DEFAULT_CELL_SIZE       = 50,
+	SPATIAL_DEFAULT_CELL_SIZE = 50,
 
 	-- Radius (in cells) around each interest point marked as HOT.
-	SPATIAL_DEFAULT_HOT_RADIUS      = 1,
+	SPATIAL_DEFAULT_HOT_RADIUS = 1,
 
 	-- Radius (in cells) around each interest point marked as WARM.
 	-- Cells inside HotRadius are already HOT so WARM only fills the ring beyond.
-	SPATIAL_DEFAULT_WARM_RADIUS     = 3,
+	SPATIAL_DEFAULT_WARM_RADIUS = 3,
 
 	-- How many frames between grid rebuilds.
 	SPATIAL_DEFAULT_UPDATE_INTERVAL = 3,
@@ -168,12 +166,12 @@ return table.freeze({
 	-- At the default 50-stud cell size this covers ±1,638,350 studs — well
 	-- beyond any practical Roblox world. STRIDE² = 2^32 fits exactly in a
 	-- double-precision float (53-bit mantissa), so no precision is lost.
-	SPATIAL_CELL_STRIDE    = 65536,
-	SPATIAL_CELL_OFFSET    = 32768,
+	SPATIAL_CELL_STRIDE = 65536,
+	SPATIAL_CELL_OFFSET = 32768,
 	SPATIAL_CELL_STRIDE_SQ = 65536 * 65536,
 
 	THRESHOLD_DIRECTION = {
-		Ascending  = true,
+		Ascending = true,
 		Descending = false,
 	},
 	-- ── Visualizer ───────────────────────────────────────────────────────────
@@ -194,8 +192,8 @@ return table.freeze({
 	-- Impact point colours — three distinct colours prevent misreading a
 	-- pierce as a terminal hit or a bounce as a pierce.
 	COLOR_HIT_TERMINAL = Color3.new(0.2, 1, 0.5),
-	COLOR_HIT_BOUNCE   = Color3.new(1, 0.85, 0.1),
-	COLOR_HIT_PIERCE   = Color3.new(1, 0.2, 0.2),
+	COLOR_HIT_BOUNCE = Color3.new(1, 0.85, 0.1),
+	COLOR_HIT_PIERCE = Color3.new(1, 0.2, 0.2),
 
 	-- ── Parallel Events ──────────────────────────────────────────────────────
 
@@ -204,17 +202,16 @@ return table.freeze({
 	-- Centralised here so both sides reference the same constant — a mismatch
 	-- becomes a nil comparison (never matches) rather than a silent drop.
 	PARALLEL_EVENT = table.freeze({
-		Travel        = "travel",
-		Hit           = "hit",
+		Travel = "travel",
+		Hit = "hit",
 		BouncePending = "bounce_pending",
-		Bounce        = "bounce",
+		Bounce = "bounce",
 		PiercePending = "pierce_pending",
-		DistanceEnd   = "dist_end",
-		SpeedEnd      = "spd_end",
-		TrajUpdate    = "traj_update",
-		Skip          = "skip",
+		DistanceEnd = "dist_end",
+		SpeedEnd = "spd_end",
+		TrajUpdate = "traj_update",
+		Skip = "skip",
 	}),
-
 
 	-- ── Visualizer Hit Types ───────────────────────────────────────────────
 
@@ -223,7 +220,7 @@ return table.freeze({
 	-- the string values are ever renamed.
 	VISUALIZER_HIT_TYPE = table.freeze({
 		Terminal = "terminal",
-		Bounce   = "bounce",
-		Pierce   = "pierce",
+		Bounce = "bounce",
+		Pierce = "pierce",
 	}),
 })

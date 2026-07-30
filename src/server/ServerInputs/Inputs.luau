@@ -189,7 +189,7 @@ function Inputs:AddBargeCollision(player: Player)
 		-- Get barge force
 		local force = HumanConstants.BARGE_FORCE
 		local rawDir = (humanClass.HRP.Position - hrp.Position)
-		local flattenedDir = Vector3.new(rawDir.X, 0, rawDir.Z)
+		local flattenedDir = vector.create(rawDir.X, 0, rawDir.Z)
 		local pushDirection = flattenedDir.Unit
 		local dir: Vector3 = pushDirection * force * humanClass.HRP.AssemblyMass
 

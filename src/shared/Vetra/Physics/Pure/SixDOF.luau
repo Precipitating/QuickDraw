@@ -31,13 +31,13 @@
 ]]
 
 local Identity = "Pure.SixDOF"
-local SixDOF   = {}
-SixDOF.__type  = Identity
+local SixDOF = {}
+SixDOF.__type = Identity
 
 -- ─── References ──────────────────────────────────────────────────────────────
 
 local Vetra = script.Parent.Parent.Parent
-local Core  = Vetra.Core
+local Core = Vetra.Core
 
 -- ─── Module References ───────────────────────────────────────────────────────
 
@@ -49,14 +49,14 @@ local Logger = LogService.new(Identity, false)
 
 -- ─── Cached Globals ──────────────────────────────────────────────────────────
 
-local math_acos  = math.acos
-local math_sin   = math.sin
-local math_cos   = math.cos
-local math_abs   = math.abs
+local math_acos = math.acos
+local math_sin = math.sin
+local math_cos = math.cos
+local math_abs = math.abs
 local math_clamp = math.clamp
-local math_pi    = math.pi
+local math_pi = math.pi
 local cframe_new = CFrame.new
-local ZERO_VEC   = Vector3.zero
+local ZERO_VEC = Vector3.zero
 
 -- Minimum squared magnitude before a vector is considered degenerate.
 local MIN_MAG_SQ = 1e-12
@@ -70,9 +70,11 @@ local MIN_MAG_SQ = 1e-12
     Returns α in radians ∈ [0, π]. Returns 0 when velocity is degenerate.
 ]]
 function SixDOF.AngleOfAttack(BodyForward: Vector3, Velocity: Vector3): number
-	if Velocity:Dot(Velocity) < MIN_MAG_SQ then return 0 end
+	if Velocity:Dot(Velocity) < MIN_MAG_SQ then
+		return 0
+	end
 	local VelUnit = Velocity.Unit
-	local Dot     = math_clamp(BodyForward:Dot(VelUnit), -1, 1)
+	local Dot = math_clamp(BodyForward:Dot(VelUnit), -1, 1)
 	return math_acos(Dot)
 end
 
@@ -87,10 +89,12 @@ end
     is degenerate.
 ]]
 function SixDOF.PitchPlaneAxis(BodyForward: Vector3, Velocity: Vector3): Vector3
-	if Velocity:Dot(Velocity) < MIN_MAG_SQ then return ZERO_VEC end
+	if Velocity:Dot(Velocity) < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 
 	local VelUnit = Velocity.Unit
-	local Cross   = BodyForward:Cross(VelUnit)
+	local Cross = BodyForward:Cross(VelUnit)
 	local CrossMagSq = Cross:Dot(Cross)
 
 	if CrossMagSq > MIN_MAG_SQ then
@@ -105,15 +109,17 @@ function SixDOF.PitchPlaneAxis(BodyForward: Vector3, Velocity: Vector3): Vector3
 
 	local Fallback
 	if AbsX <= AbsY and AbsX <= AbsZ then
-		Fallback = Vector3.new(1, 0, 0)
+		Fallback = vector.create(1, 0, 0)
 	elseif AbsY <= AbsZ then
-		Fallback = Vector3.new(0, 1, 0)
+		Fallback = vector.create(0, 1, 0)
 	else
-		Fallback = Vector3.new(0, 0, 1)
+		Fallback = vector.create(0, 0, 1)
 	end
 
 	local Perp = VelUnit:Cross(Fallback)
-	if Perp:Dot(Perp) < MIN_MAG_SQ then return ZERO_VEC end
+	if Perp:Dot(Perp) < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 	return Perp.Unit
 end
 
@@ -136,34 +142,42 @@ end
     1/(2m)).
 ]]
 function SixDOF.ComputeLiftForce(
-	Velocity            : Vector3,
-	BodyForward         : Vector3,
+	Velocity: Vector3,
+	BodyForward: Vector3,
 	LiftCoefficientSlope: number,
-	ReferenceArea       : number,
-	AirDensity          : number
+	ReferenceArea: number,
+	AirDensity: number
 ): Vector3
 	local SpeedSq = Velocity:Dot(Velocity)
-	if SpeedSq < MIN_MAG_SQ then return ZERO_VEC end
+	if SpeedSq < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 
 	local AoA = SixDOF.AngleOfAttack(BodyForward, Velocity)
-	if AoA < 1e-6 then return ZERO_VEC end
+	if AoA < 1e-6 then
+		return ZERO_VEC
+	end
 
 	-- Lift direction: perpendicular to velocity, in the pitch plane,
 	-- pointing from the velocity vector toward the body axis.
 	local LateralAxis = SixDOF.PitchPlaneAxis(BodyForward, Velocity)
-	if LateralAxis:Dot(LateralAxis) < MIN_MAG_SQ then return ZERO_VEC end
+	if LateralAxis:Dot(LateralAxis) < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 
 	-- Lift direction is velocity x lateralAxis (into the pitch plane, toward body axis)
 	local LiftDir = Velocity.Unit:Cross(LateralAxis)
-	if LiftDir:Dot(LiftDir) < MIN_MAG_SQ then return ZERO_VEC end
+	if LiftDir:Dot(LiftDir) < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 	LiftDir = LiftDir.Unit
 
 	-- F_lift = CL(α) · ½ρv² · S_ref
 	-- CL(α) = CLα · sin(α)  — valid for small α where sin(α)≈α, naturally
 	-- caps at 90° and returns to zero at 180° (no unphysical lift at high AoA).
-	local CL        = LiftCoefficientSlope * math_sin(AoA)
-	local DynPress   = 0.5 * AirDensity * SpeedSq
-	local LiftMag    = CL * DynPress * ReferenceArea
+	local CL = LiftCoefficientSlope * math_sin(AoA)
+	local DynPress = 0.5 * AirDensity * SpeedSq
+	local LiftMag = CL * DynPress * ReferenceArea
 
 	return LiftDir * LiftMag
 end
@@ -180,14 +194,12 @@ end
     AoADragFactor = 0 means no AoA effect on drag (pure 3DOF behaviour).
     Typical values: 2–8 depending on projectile shape.
 ]]
-function SixDOF.DragMultiplier(
-	BodyForward   : Vector3,
-	Velocity      : Vector3,
-	AoADragFactor : number
-): number
-	if AoADragFactor <= 0 then return 1.0 end
+function SixDOF.DragMultiplier(BodyForward: Vector3, Velocity: Vector3, AoADragFactor: number): number
+	if AoADragFactor <= 0 then
+		return 1.0
+	end
 
-	local AoA  = SixDOF.AngleOfAttack(BodyForward, Velocity)
+	local AoA = SixDOF.AngleOfAttack(BodyForward, Velocity)
 	local SinA = math_sin(AoA)
 	return 1.0 + AoADragFactor * SinA * SinA
 end
@@ -212,24 +224,30 @@ end
     The caller divides by moment of inertia to get angular acceleration.
 ]]
 function SixDOF.ComputePitchingMoment(
-	Velocity            : Vector3,
-	BodyForward         : Vector3,
-	PitchingMomentSlope : number,
-	ReferenceArea       : number,
-	ReferenceLength     : number,
-	AirDensity          : number
+	Velocity: Vector3,
+	BodyForward: Vector3,
+	PitchingMomentSlope: number,
+	ReferenceArea: number,
+	ReferenceLength: number,
+	AirDensity: number
 ): Vector3
 	local SpeedSq = Velocity:Dot(Velocity)
-	if SpeedSq < MIN_MAG_SQ then return ZERO_VEC end
+	if SpeedSq < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 
 	local AoA = SixDOF.AngleOfAttack(BodyForward, Velocity)
-	if AoA < 1e-6 then return ZERO_VEC end
+	if AoA < 1e-6 then
+		return ZERO_VEC
+	end
 
 	local LateralAxis = SixDOF.PitchPlaneAxis(BodyForward, Velocity)
-	if LateralAxis:Dot(LateralAxis) < MIN_MAG_SQ then return ZERO_VEC end
+	if LateralAxis:Dot(LateralAxis) < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 
 	-- M = Cmα · sin(α) · ½ρv² · S · d
-	local Cm       = PitchingMomentSlope * math_sin(AoA)
+	local Cm = PitchingMomentSlope * math_sin(AoA)
 	local DynPress = 0.5 * AirDensity * SpeedSq
 	local MomentMag = Cm * DynPress * ReferenceArea * ReferenceLength
 
@@ -255,29 +273,35 @@ end
     Returns the damping torque vector.
 ]]
 function SixDOF.ComputePitchDamping(
-	AngularVelocity   : Vector3,
-	BodyForward       : Vector3,
-	PitchDampingCoeff : number,
-	Speed             : number,
-	ReferenceArea     : number,
-	ReferenceLength   : number,
-	AirDensity        : number
+	AngularVelocity: Vector3,
+	BodyForward: Vector3,
+	PitchDampingCoeff: number,
+	Speed: number,
+	ReferenceArea: number,
+	ReferenceLength: number,
+	AirDensity: number
 ): Vector3
-	if PitchDampingCoeff <= 0 then return ZERO_VEC end
+	if PitchDampingCoeff <= 0 then
+		return ZERO_VEC
+	end
 
 	-- Extract the component of angular velocity perpendicular to the spin axis.
 	-- This is the pitch/yaw rate that damping opposes.
-	local SpinComponent    = BodyForward * BodyForward:Dot(AngularVelocity)
-	local PitchYawOmega    = AngularVelocity - SpinComponent
-	local PitchYawMagSq    = PitchYawOmega:Dot(PitchYawOmega)
+	local SpinComponent = BodyForward * BodyForward:Dot(AngularVelocity)
+	local PitchYawOmega = AngularVelocity - SpinComponent
+	local PitchYawMagSq = PitchYawOmega:Dot(PitchYawOmega)
 
-	if PitchYawMagSq < MIN_MAG_SQ then return ZERO_VEC end
+	if PitchYawMagSq < MIN_MAG_SQ then
+		return ZERO_VEC
+	end
 
 	-- Damping torque = -Cmq · (d/(2v)) · ωpitch · ½ρv²Sd
 	-- The (d/(2v)) term makes damping scale with the non-dimensional pitch rate.
-	if Speed < 1e-3 then return ZERO_VEC end
+	if Speed < 1e-3 then
+		return ZERO_VEC
+	end
 
-	local DynPress  = 0.5 * AirDensity * Speed * Speed
+	local DynPress = 0.5 * AirDensity * Speed * Speed
 	local DampScale = PitchDampingCoeff * (ReferenceLength / (2 * Speed)) * DynPress * ReferenceArea * ReferenceLength
 
 	return -PitchYawOmega * DampScale
@@ -292,22 +316,28 @@ end
     Returns the roll damping torque vector.
 ]]
 function SixDOF.ComputeRollDamping(
-	AngularVelocity  : Vector3,
-	BodyForward      : Vector3,
-	RollDampingCoeff : number,
-	Speed            : number,
-	ReferenceArea    : number,
-	ReferenceLength  : number,
-	AirDensity       : number
+	AngularVelocity: Vector3,
+	BodyForward: Vector3,
+	RollDampingCoeff: number,
+	Speed: number,
+	ReferenceArea: number,
+	ReferenceLength: number,
+	AirDensity: number
 ): Vector3
-	if RollDampingCoeff <= 0 then return ZERO_VEC end
+	if RollDampingCoeff <= 0 then
+		return ZERO_VEC
+	end
 
-	local RollRate    = BodyForward:Dot(AngularVelocity)
-	if math_abs(RollRate) < 1e-6 then return ZERO_VEC end
+	local RollRate = BodyForward:Dot(AngularVelocity)
+	if math_abs(RollRate) < 1e-6 then
+		return ZERO_VEC
+	end
 
-	if Speed < 1e-3 then return ZERO_VEC end
+	if Speed < 1e-3 then
+		return ZERO_VEC
+	end
 
-	local DynPress  = 0.5 * AirDensity * Speed * Speed
+	local DynPress = 0.5 * AirDensity * Speed * Speed
 	local DampScale = RollDampingCoeff * (ReferenceLength / (2 * Speed)) * DynPress * ReferenceArea * ReferenceLength
 
 	return BodyForward * (-RollRate * DampScale)
@@ -325,16 +355,18 @@ end
     from improperly tuned coefficients.
 ]]
 function SixDOF.IntegrateAngularVelocity(
-	AngularVelocity : Vector3,
-	TotalTorque     : Vector3,
-	MomentOfInertia : number,
-	MaxAngularSpeed : number,
-	Delta           : number
+	AngularVelocity: Vector3,
+	TotalTorque: Vector3,
+	MomentOfInertia: number,
+	MaxAngularSpeed: number,
+	Delta: number
 ): Vector3
-	if MomentOfInertia <= 0 then return AngularVelocity end
+	if MomentOfInertia <= 0 then
+		return AngularVelocity
+	end
 
 	local AngularAccel = TotalTorque / MomentOfInertia
-	local NewOmega     = AngularVelocity + AngularAccel * Delta
+	local NewOmega = AngularVelocity + AngularAccel * Delta
 
 	-- Clamp to MaxAngularSpeed to prevent divergence.
 	local OmegaMagSq = NewOmega:Dot(NewOmega)
@@ -362,19 +394,17 @@ end
     Returns the new orientation CFrame (position zeroed — caller composites
     with the projectile's world position).
 ]]
-function SixDOF.IntegrateOrientation(
-	Orientation     : CFrame,
-	AngularVelocity : Vector3,
-	Delta           : number
-): CFrame
-	local ThetaVec  = AngularVelocity * Delta
-	local ThetaSq   = ThetaVec:Dot(ThetaVec)
+function SixDOF.IntegrateOrientation(Orientation: CFrame, AngularVelocity: Vector3, Delta: number): CFrame
+	local ThetaVec = AngularVelocity * Delta
+	local ThetaSq = ThetaVec:Dot(ThetaVec)
 
 	-- No rotation this frame — return unchanged.
-	if ThetaSq < MIN_MAG_SQ then return Orientation end
+	if ThetaSq < MIN_MAG_SQ then
+		return Orientation
+	end
 
 	local Theta = ThetaSq ^ 0.5
-	local Axis  = ThetaVec / Theta
+	local Axis = ThetaVec / Theta
 
 	-- Rodrigues rotation: R = I·cos(θ) + (1-cos(θ))·(k⊗k) + sin(θ)·K
 	-- Expressed as CFrame.fromAxisAngle.
@@ -383,7 +413,7 @@ function SixDOF.IntegrateOrientation(
 	-- Apply rotation in world frame: new = R * old
 	-- Strip position from both so we get a pure rotation result.
 	local PureOrientation = Orientation - Orientation.Position
-	local NewOrientation  = RotationCFrame * PureOrientation
+	local NewOrientation = RotationCFrame * PureOrientation
 
 	return NewOrientation
 end
@@ -409,15 +439,19 @@ end
     requiring the full Euler rigid-body solver.
 ]]
 function SixDOF.ComputeGyroscopicPrecession(
-	AeroTorque      : Vector3,
-	BodyForward     : Vector3,
-	AngularVelocity : Vector3,
-	SpinMOI         : number
+	AeroTorque: Vector3,
+	BodyForward: Vector3,
+	AngularVelocity: Vector3,
+	SpinMOI: number
 ): Vector3
 	-- SpinRate is the angular velocity component along the body axis.
 	local SpinRate = BodyForward:Dot(AngularVelocity)
-	if math_abs(SpinRate) < 1e-3 then return ZERO_VEC end
-	if SpinMOI <= 0 then return ZERO_VEC end
+	if math_abs(SpinRate) < 1e-3 then
+		return ZERO_VEC
+	end
+	if SpinMOI <= 0 then
+		return ZERO_VEC
+	end
 
 	local AngularMomentum = SpinMOI * SpinRate
 
@@ -458,31 +492,29 @@ end
         AngleOfAttack     : number  (radians, for telemetry)
 ]]
 function SixDOF.Step(
-	Orientation          : CFrame,
-	AngularVelocity      : Vector3,
-	Velocity             : Vector3,
-	Delta                : number,
-	LiftCoefficientSlope : number,
-	PitchingMomentSlope  : number,
-	PitchDampingCoeff    : number,
-	RollDampingCoeff     : number,
-	AoADragFactor        : number,
-	ReferenceArea        : number,
-	ReferenceLength      : number,
-	AirDensity           : number,
-	MomentOfInertia      : number,
-	SpinMOI              : number,
-	MaxAngularSpeed      : number,
-	BulletMass           : number
+	Orientation: CFrame,
+	AngularVelocity: Vector3,
+	Velocity: Vector3,
+	Delta: number,
+	LiftCoefficientSlope: number,
+	PitchingMomentSlope: number,
+	PitchDampingCoeff: number,
+	RollDampingCoeff: number,
+	AoADragFactor: number,
+	ReferenceArea: number,
+	ReferenceLength: number,
+	AirDensity: number,
+	MomentOfInertia: number,
+	SpinMOI: number,
+	MaxAngularSpeed: number,
+	BulletMass: number
 ): (CFrame, Vector3, Vector3, number, number)
 	local BodyForward = SixDOF.GetBodyForward(Orientation)
-	local Speed       = Velocity.Magnitude
-	local AoA         = SixDOF.AngleOfAttack(BodyForward, Velocity)
+	local Speed = Velocity.Magnitude
+	local AoA = SixDOF.AngleOfAttack(BodyForward, Velocity)
 
 	-- ── Aerodynamic forces ───────────────────────────────────────────────
-	local LiftForce = SixDOF.ComputeLiftForce(
-		Velocity, BodyForward, LiftCoefficientSlope, ReferenceArea, AirDensity
-	)
+	local LiftForce = SixDOF.ComputeLiftForce(Velocity, BodyForward, LiftCoefficientSlope, ReferenceArea, AirDensity)
 
 	-- Convert force to acceleration. If BulletMass is zero or unset,
 	-- treat the coefficient as already encoding force/mass.
@@ -497,31 +529,45 @@ function SixDOF.Step(
 
 	-- ── Aerodynamic torques ──────────────────────────────────────────────
 	local PitchMoment = SixDOF.ComputePitchingMoment(
-		Velocity, BodyForward, PitchingMomentSlope, ReferenceArea, ReferenceLength, AirDensity
+		Velocity,
+		BodyForward,
+		PitchingMomentSlope,
+		ReferenceArea,
+		ReferenceLength,
+		AirDensity
 	)
 
 	local PitchDamp = SixDOF.ComputePitchDamping(
-		AngularVelocity, BodyForward, PitchDampingCoeff, Speed, ReferenceArea, ReferenceLength, AirDensity
+		AngularVelocity,
+		BodyForward,
+		PitchDampingCoeff,
+		Speed,
+		ReferenceArea,
+		ReferenceLength,
+		AirDensity
 	)
 
 	local RollDamp = SixDOF.ComputeRollDamping(
-		AngularVelocity, BodyForward, RollDampingCoeff, Speed, ReferenceArea, ReferenceLength, AirDensity
+		AngularVelocity,
+		BodyForward,
+		RollDampingCoeff,
+		Speed,
+		ReferenceArea,
+		ReferenceLength,
+		AirDensity
 	)
 
 	-- Gyroscopic precession — converts pitching moment into coning motion.
-	local Precession = SixDOF.ComputeGyroscopicPrecession(
-		PitchMoment, BodyForward, AngularVelocity, SpinMOI
-	)
+	local Precession = SixDOF.ComputeGyroscopicPrecession(PitchMoment, BodyForward, AngularVelocity, SpinMOI)
 
 	-- ── Integrate angular state ──────────────────────────────────────────
 	-- Transverse torques (pitching moment + pitch damping) are divided by
 	-- the transverse MOI. Roll damping acts about the longitudinal axis and
 	-- must be divided by SpinMOI — combining them with one MOI would scale
 	-- roll decay by the wrong factor (typically ~10x off for rifle bullets).
-	local TransverseTorque   = PitchMoment + PitchDamp
-	local NewAngularVelocity = SixDOF.IntegrateAngularVelocity(
-		AngularVelocity, TransverseTorque, MomentOfInertia, MaxAngularSpeed, Delta
-	)
+	local TransverseTorque = PitchMoment + PitchDamp
+	local NewAngularVelocity =
+		SixDOF.IntegrateAngularVelocity(AngularVelocity, TransverseTorque, MomentOfInertia, MaxAngularSpeed, Delta)
 
 	-- Roll decay: applied separately with the axial (spin) MOI.
 	if SpinMOI > 0 then
@@ -536,9 +582,7 @@ function SixDOF.Step(
 	-- Precession is applied to orientation only — not stored in
 	-- AngularVelocity. Storing it would cause ComputePitchDamping to treat
 	-- the precession rate as nutation and artificially kill it off each frame.
-	local NewOrientation = SixDOF.IntegrateOrientation(
-		Orientation, NewAngularVelocity + Precession, Delta
-	)
+	local NewOrientation = SixDOF.IntegrateOrientation(Orientation, NewAngularVelocity + Precession, Delta)
 
 	return NewOrientation, NewAngularVelocity, LiftAccel, DragMult, AoA
 end
@@ -550,10 +594,7 @@ local SixDOFMetatable = table.freeze({
 		Logger:Warn(string.format("%s: nil key '%s'", Identity, tostring(Key)))
 	end,
 	__newindex = function(_, Key, Value)
-		Logger:Error(string.format(
-			"%s: write to protected key '%s' = '%s'",
-			Identity, tostring(Key), tostring(Value)
-		))
+		Logger:Error(string.format("%s: write to protected key '%s' = '%s'", Identity, tostring(Key), tostring(Value)))
 	end,
 })
 

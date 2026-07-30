@@ -19,7 +19,7 @@ local COLLECTION_TAG = "WindShake" -- The CollectionService tag to be watched an
 -- are undefined or using the wrong value types.
 
 local FALLBACK_SETTINGS = {
-	WindDirection = Vector3.new(0.5, 0, 0.5),
+	WindDirection = vector.create(0.5, 0, 0.5),
 	WindSpeed = 20,
 	WindPower = 0.5,
 }

@@ -21,7 +21,7 @@ function ClientThrowableHandler:Throw(throwable: Tool)
 	local cameraLookVector = workspace.CurrentCamera.CFrame.LookVector
 	ThrowableRaycastParams.ExcludeInstances = { throwable, PlayerContext.Character }
 	local head = PlayerContext.BodyParts["Head"]
-	local launchPos = head.Position + Vector3.new(0, 2, 0)
+	local launchPos = head.Position + vector.create(0, 2, 0)
 	local throwableData = ThrowableData[throwable.Name]
 	local context = ClientVetraContext.Vetra.BulletContext.new({
 		Origin = launchPos,

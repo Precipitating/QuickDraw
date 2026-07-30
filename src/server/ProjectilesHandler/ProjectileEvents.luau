@@ -317,7 +317,7 @@ local function RandomConeDirection(BaseDirection: Vector3, HalfAngleDeg: number)
 	local SinTheta = math_sqrt(1 - CosTheta * CosTheta)
 
 	local PerpendicularA =
-		BaseDirection:Cross(math_abs(BaseDirection.X) < 0.9 and Vector3.new(1, 0, 0) or Vector3.new(0, 1, 0)).Unit
+		BaseDirection:Cross(math_abs(BaseDirection.X) < 0.9 and vector.create(1, 0, 0) or vector.create(0, 1, 0)).Unit
 	local PerpendicularB = BaseDirection:Cross(PerpendicularA).Unit
 
 	return (
@@ -436,10 +436,10 @@ function ProjectileEvents:ApplyExplosionForce(
 
 	local direction = target.Position - explosionCenter
 	if direction.Magnitude == 0 then
-		direction = Vector3.new(0, 1, 0) -- Safe fallback if center is identical to root
+		direction = vector.create(0, 1, 0) -- Safe fallback if center is identical to root
 	else
 		-- Normalize the actual direction, then blend in a slight upward trajectory
-		direction = (direction.Unit + Vector3.new(0, 0.5, 0)).Unit
+		direction = (direction.Unit + vector.create(0, 0.5, 0)).Unit
 	end
 
 	if humanClass.ApplyImpulse then

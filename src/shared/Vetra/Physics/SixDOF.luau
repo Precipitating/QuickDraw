@@ -28,29 +28,31 @@
 ]]
 
 local Identity = "SixDOF"
-local SixDOF   = {}
-SixDOF.__type  = Identity
+local SixDOF = {}
+SixDOF.__type = Identity
 
 -- ─── References ──────────────────────────────────────────────────────────────
 
-local Vetra   = script.Parent.Parent
+local Vetra = script.Parent.Parent
 local Physics = script.Parent
-local Core    = Vetra.Core
+local Core = Vetra.Core
 
 -- ─── Module References ───────────────────────────────────────────────────────
 
 local LogService = require(Core.Logger)
-local Constants  = require(Core.Constants)
+local Constants = require(Core.Constants)
 local PureSixDOF = require(Physics.Pure.SixDOF)
 
-local SPEED_OF_SOUND  = Constants.SPEED_OF_SOUND
-local LerpMachTable   = Constants.MACH_TABLES.Lerp
+local SPEED_OF_SOUND = Constants.SPEED_OF_SOUND
+local LerpMachTable = Constants.MACH_TABLES.Lerp
 local ANGULAR_SUBSTEP = Constants.ANGULAR_SUBSTEP
 
 -- Resolves a coefficient: if a Mach table is provided, interpolate at the
 -- given Mach number; otherwise fall back to the flat scalar.
 local function Resolve(Table: { { number } }?, Mach: number, Scalar: number): number
-	if Table then return LerpMachTable(Table, Mach) end
+	if Table then
+		return LerpMachTable(Table, Mach)
+	end
 	return Scalar
 end
 
@@ -83,31 +85,27 @@ end
         LiftAcceleration : Vector3 — add to the new trajectory acceleration
         DragMultiplier   : number  — multiply onto the effective drag coeff
 ]]
-function SixDOF.StepAngularState(
-	Cast     : any,
-	Velocity : Vector3,
-	Delta    : number
-): (Vector3, number)
-	local Runtime  = Cast.Runtime
+function SixDOF.StepAngularState(Cast: any, Velocity: Vector3, Delta: number): (Vector3, number)
+	local Runtime = Cast.Runtime
 	local Behavior = Cast.Behavior
 
 	-- Resolve Mach-variable coefficients once per drag-recalc interval.
 	-- Velocity is treated as approximately constant across sub-steps because
 	-- linear speed changes negligibly over the ~4ms recalc window.
-	local Mach    = Velocity.Magnitude / SPEED_OF_SOUND
+	local Mach = Velocity.Magnitude / SPEED_OF_SOUND
 	local CLSlope = Resolve(Behavior.CLAlphaMachTable, Mach, Behavior.LiftCoefficientSlope)
 	local CmSlope = Resolve(Behavior.CmAlphaMachTable, Mach, Behavior.PitchingMomentSlope)
-	local CmqCoef = Resolve(Behavior.CmqMachTable,     Mach, Behavior.PitchDampingCoeff)
-	local ClpCoef = Resolve(Behavior.ClpMachTable,     Mach, Behavior.RollDampingCoeff)
+	local CmqCoef = Resolve(Behavior.CmqMachTable, Mach, Behavior.PitchDampingCoeff)
+	local ClpCoef = Resolve(Behavior.ClpMachTable, Mach, Behavior.RollDampingCoeff)
 
-	local AoADragFactor  = Behavior.AoADragFactor
-	local ReferenceArea  = Behavior.ReferenceArea
-	local ReferenceLen   = Behavior.ReferenceLength
-	local AirDensity     = Behavior.AirDensity
-	local MOI            = Behavior.MomentOfInertia
-	local SpinMOI        = Behavior.SpinMOI
-	local MaxAngSpeed    = Behavior.MaxAngularSpeed
-	local BulletMass     = Behavior.BulletMass
+	local AoADragFactor = Behavior.AoADragFactor
+	local ReferenceArea = Behavior.ReferenceArea
+	local ReferenceLen = Behavior.ReferenceLength
+	local AirDensity = Behavior.AirDensity
+	local MOI = Behavior.MomentOfInertia
+	local SpinMOI = Behavior.SpinMOI
+	local MaxAngSpeed = Behavior.MaxAngularSpeed
+	local BulletMass = Behavior.BulletMass
 
 	-- ── Fixed-timestep accumulator sub-stepping ───────────────────────────────
 	-- Pitching moment and gyroscopic precession form a stiff ODE — their
@@ -122,8 +120,8 @@ function SixDOF.StepAngularState(
 	Runtime.SixDOFAccumulator = (Runtime.SixDOFAccumulator or 0) + Delta
 
 	local AccumLiftAccel = Vector3.zero
-	local AccumDragMult  = 0
-	local SubStepCount   = 0
+	local AccumDragMult = 0
+	local SubStepCount = 0
 
 	while Runtime.SixDOFAccumulator >= ANGULAR_SUBSTEP do
 		local NewOrientation, NewAngularVelocity, LiftAccel, DragMult, AoA = PureSixDOF.Step(
@@ -145,13 +143,13 @@ function SixDOF.StepAngularState(
 			BulletMass
 		)
 
-		Runtime.Orientation     = NewOrientation
+		Runtime.Orientation = NewOrientation
 		Runtime.AngularVelocity = NewAngularVelocity
-		Runtime.AngleOfAttack   = AoA
+		Runtime.AngleOfAttack = AoA
 
 		AccumLiftAccel += LiftAccel
-		AccumDragMult  += DragMult
-		SubStepCount   += 1
+		AccumDragMult += DragMult
+		SubStepCount += 1
 
 		Runtime.SixDOFAccumulator -= ANGULAR_SUBSTEP
 	end
@@ -178,9 +176,9 @@ function SixDOF.StepAngularState(
 			MaxAngSpeed,
 			BulletMass
 		)
-		Runtime.Orientation     = NewOrientation
+		Runtime.Orientation = NewOrientation
 		Runtime.AngularVelocity = NewAngularVelocity
-		Runtime.AngleOfAttack   = AoA
+		Runtime.AngleOfAttack = AoA
 		-- Do NOT drain the accumulator here — this remainder will combine
 		-- with the next interval's Delta to form a full sub-step.
 		return LiftAccel, DragMult
@@ -219,14 +217,11 @@ end
     are preserved (they represent tumble/wobble), but the roll component is
     dampened by the bounce restitution.
 ]]
-function SixDOF.OnBounce(
-	Cast           : any,
-	SurfaceNormal  : Vector3,
-	PostBounceVel  : Vector3,
-	Restitution    : number
-)
+function SixDOF.OnBounce(Cast: any, SurfaceNormal: Vector3, PostBounceVel: Vector3, Restitution: number)
 	local Runtime = Cast.Runtime
-	if not Runtime.Orientation then return end
+	if not Runtime.Orientation then
+		return
+	end
 
 	local BodyForward = PureSixDOF.GetBodyForward(Runtime.Orientation)
 
@@ -244,10 +239,10 @@ function SixDOF.OnBounce(
 		if Lateral:Dot(Lateral) > 1e-12 then
 			UpHint = Lateral:Cross(ReflectedForward).Unit
 		else
-			UpHint = Vector3.new(0, 1, 0)
+			UpHint = vector.create(0, 1, 0)
 		end
 	else
-		UpHint = Vector3.new(0, 1, 0)
+		UpHint = vector.create(0, 1, 0)
 	end
 
 	Runtime.Orientation = CFrame.lookAt(Vector3.zero, ReflectedForward, UpHint)
@@ -255,9 +250,9 @@ function SixDOF.OnBounce(
 	-- Dampen the roll (spin) component of angular velocity by restitution.
 	-- Pitch/yaw components are preserved — the bounce adds wobble, it doesn't
 	-- remove it.
-	local OldOmega       = Runtime.AngularVelocity
-	local SpinComponent  = BodyForward * BodyForward:Dot(OldOmega)
-	local PitchYawOmega  = OldOmega - SpinComponent
+	local OldOmega = Runtime.AngularVelocity
+	local SpinComponent = BodyForward * BodyForward:Dot(OldOmega)
+	local PitchYawOmega = OldOmega - SpinComponent
 
 	-- Reflect the pitch/yaw component about the surface normal (mirror tumble axis).
 	local ReflectedPitchYaw = PitchYawOmega - 2 * PitchYawOmega:Dot(SurfaceNormal) * SurfaceNormal
@@ -272,10 +267,7 @@ local SixDOFMetatable = table.freeze({
 		Logger:Warn(string.format("%s: nil key '%s'", Identity, tostring(Key)))
 	end,
 	__newindex = function(_, Key, Value)
-		Logger:Error(string.format(
-			"%s: write to protected key '%s' = '%s'",
-			Identity, tostring(Key), tostring(Value)
-		))
+		Logger:Error(string.format("%s: write to protected key '%s' = '%s'", Identity, tostring(Key), tostring(Value)))
 	end,
 })
 

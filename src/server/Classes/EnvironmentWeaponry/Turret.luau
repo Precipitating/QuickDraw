@@ -79,7 +79,7 @@ function Turret:GetRandomSpreadVector()
 	local randomX = RandomModule.GetRandomDecimalBetween(-1, 1) * self.MaxSpreadStuds
 	local randomY = RandomModule.GetRandomDecimalBetween(-1, 1) * self.MaxSpreadStuds
 
-	return Vector3.new(randomX, randomY, 0)
+	return vector.create(randomX, randomY, 0)
 end
 
 function Turret:GetTargetOffset()

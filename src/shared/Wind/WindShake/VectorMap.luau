@@ -32,7 +32,7 @@ function VectorMap:AddObject(position: Vector3, object: any)
 	local className = object.ClassName
 
 	local voxelSize = self._voxelSize
-	local voxelKey = Vector3.new(
+	local voxelKey = vector.create(
 		math.floor(position.X / voxelSize),
 		math.floor(position.Y / voxelSize),
 		math.floor(position.Z / voxelSize)
@@ -99,7 +99,7 @@ function VectorMap:ForEachObjectInRegion(top: Vector3, bottom: Vector3, callback
 	for x = math.floor(xMin / voxelSize), math.floor(xMax / voxelSize) do
 		for z = math.floor(zMin / voxelSize), math.floor(zMax / voxelSize) do
 			for y = math.floor(yMin / voxelSize), math.floor(yMax / voxelSize) do
-				local voxel = self._voxels[Vector3.new(x, y, z)]
+				local voxel = self._voxels[vector.create(x, y, z)]
 				if not voxel then
 					continue
 				end
@@ -124,10 +124,10 @@ function VectorMap:ForEachObjectInView(camera: Camera, distance: number, callbac
 	local farPlaneHeight2 = math.tan(math.rad((camera.FieldOfView + 5) / 2)) * distance
 	local farPlaneWidth2 = farPlaneHeight2 * (camera.ViewportSize.X / camera.ViewportSize.Y)
 	local farPlaneCFrame = cameraCFrame * CFrame.new(0, 0, -distance)
-	local farPlaneTopLeft = farPlaneCFrame * Vector3.new(-farPlaneWidth2, farPlaneHeight2, 0)
-	local farPlaneTopRight = farPlaneCFrame * Vector3.new(farPlaneWidth2, farPlaneHeight2, 0)
-	local farPlaneBottomLeft = farPlaneCFrame * Vector3.new(-farPlaneWidth2, -farPlaneHeight2, 0)
-	local farPlaneBottomRight = farPlaneCFrame * Vector3.new(farPlaneWidth2, -farPlaneHeight2, 0)
+	local farPlaneTopLeft = farPlaneCFrame * vector.create(-farPlaneWidth2, farPlaneHeight2, 0)
+	local farPlaneTopRight = farPlaneCFrame * vector.create(farPlaneWidth2, farPlaneHeight2, 0)
+	local farPlaneBottomLeft = farPlaneCFrame * vector.create(-farPlaneWidth2, -farPlaneHeight2, 0)
+	local farPlaneBottomRight = farPlaneCFrame * vector.create(farPlaneWidth2, -farPlaneHeight2, 0)
 
 	local frustumCFrameInverse = (cameraCFrame * CFrame.new(0, 0, -distance2)):Inverse()
 
@@ -141,12 +141,12 @@ function VectorMap:ForEachObjectInView(camera: Camera, distance: number, callbac
 	local maxBound =
 		cameraPos:Max(farPlaneTopLeft):Max(farPlaneTopRight):Max(farPlaneBottomLeft):Max(farPlaneBottomRight)
 
-	minBound = Vector3.new(
+	minBound = vector.create(
 		math.floor(minBound.X / voxelSize),
 		math.floor(minBound.Y / voxelSize),
 		math.floor(minBound.Z / voxelSize)
 	)
-	maxBound = Vector3.new(
+	maxBound = vector.create(
 		math.floor(maxBound.X / voxelSize),
 		math.floor(maxBound.Y / voxelSize),
 		math.floor(maxBound.Z / voxelSize)
@@ -194,7 +194,7 @@ function VectorMap:ForEachObjectInView(camera: Camera, distance: number, callbac
 				local zMin = z * voxelSize
 				local zMax = zMin + voxelSize
 
-				local voxelNearestPoint = Vector3.new(xPos, yPos, math.clamp(farPlaneCFrame.Z, zMin, zMax))
+				local voxelNearestPoint = vector.create(xPos, yPos, math.clamp(farPlaneCFrame.Z, zMin, zMax))
 				if isPointInView(voxelNearestPoint) then
 					-- Found the first in frustum, now binary search for the last
 					local entry, exit = z, minBound.Z - 1
@@ -203,7 +203,7 @@ function VectorMap:ForEachObjectInView(camera: Camera, distance: number, callbac
 
 					while left <= right do
 						local mid = math.floor((left + right) / 2)
-						local midPos = Vector3.new(
+						local midPos = vector.create(
 							xPos,
 							yPos,
 							math.clamp(farPlaneCFrame.Z, mid * voxelSize, mid * voxelSize + voxelSize)
@@ -218,7 +218,7 @@ function VectorMap:ForEachObjectInView(camera: Camera, distance: number, callbac
 					end
 
 					for fillZ = entry, exit do
-						local voxel = self._voxels[Vector3.new(x, y, fillZ)]
+						local voxel = self._voxels[vector.create(x, y, fillZ)]
 						if voxel then
 							for className, objects in voxel do
 								for _, object in objects do

@@ -23,7 +23,7 @@
     makes the byte layout of every payload visible at the call site.
 ]]
 
-local Identity   = "Serializer"
+local Identity = "Serializer"
 
 local Serializer = {}
 Serializer.__type = Identity
@@ -37,16 +37,16 @@ local SerializerMetatable = table.freeze({
 -- Localise buffer API for native-compile inlining in hot encode/decode paths.
 local buffer_writef32 = buffer.writef32
 local buffer_writef64 = buffer.writef64
-local buffer_writeu8  = buffer.writeu8
+local buffer_writeu8 = buffer.writeu8
 local buffer_writeu16 = buffer.writeu16
 local buffer_writeu32 = buffer.writeu32
-local buffer_readf32  = buffer.readf32
-local buffer_readf64  = buffer.readf64
-local buffer_readu8   = buffer.readu8
-local buffer_readu16  = buffer.readu16
-local buffer_readu32  = buffer.readu32
+local buffer_readf32 = buffer.readf32
+local buffer_readf64 = buffer.readf64
+local buffer_readu8 = buffer.readu8
+local buffer_readu16 = buffer.readu16
+local buffer_readu32 = buffer.readu32
 
-local string_format   = string.format
+local string_format = string.format
 
 -- ─── Primitive Writers ────────────────────────────────────────────────────────
 
@@ -121,7 +121,7 @@ end
 -- Components are written in XYZ order consistently; swapping the order would
 -- silently corrupt any payload that includes a Vector3.
 function Serializer.WriteVector3(Buffer: buffer, Offset: number, Value: Vector3): number
-	buffer_writef32(Buffer, Offset,     Value.X)
+	buffer_writef32(Buffer, Offset, Value.X)
 	buffer_writef32(Buffer, Offset + 4, Value.Y)
 	buffer_writef32(Buffer, Offset + 8, Value.Z)
 	return Offset + 12
@@ -131,7 +131,7 @@ function Serializer.ReadVector3(Buffer: buffer, Offset: number): (Vector3, numbe
 	local X = buffer_readf32(Buffer, Offset)
 	local Y = buffer_readf32(Buffer, Offset + 4)
 	local Z = buffer_readf32(Buffer, Offset + 8)
-	return Vector3.new(X, Y, Z), Offset + 12
+	return vector.create(X, Y, Z), Offset + 12
 end
 
 -- Timestamp — f64. workspace:GetServerTimeNow() returns a double-precision

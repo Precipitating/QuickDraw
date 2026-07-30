@@ -123,7 +123,7 @@ function Horse:ConnectMovement()
 				end
 			end
 			self.CurrentSpeed = currentSpeed
-			linearVelocity.VectorVelocity = Vector3.new(0, 0, -currentSpeed) -- -Z is forward in local space
+			linearVelocity.VectorVelocity = vector.create(0, 0, -currentSpeed) -- -Z is forward in local space
 		end),
 		"Disconnect",
 		"HorseMovementConn"

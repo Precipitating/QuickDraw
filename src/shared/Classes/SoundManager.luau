@@ -511,7 +511,7 @@ function SoundManager.PlayAtPosition(name: string, position: Vector3, options: P
 	part.CanTouch = false
 	part.CanQuery = false
 	part.Transparency = 1
-	part.Size = Vector3.new(0.1, 0.1, 0.1)
+	part.Size = vector.create(0.1, 0.1, 0.1)
 	part.Position = position
 	part.Parent = workspace
 

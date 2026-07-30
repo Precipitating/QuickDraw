@@ -390,7 +390,7 @@ function Human:ApplyRollForce()
 	end
 
 	local moveDir = humanoid.MoveDirection
-	local forward = (moveDir.Magnitude >= 0.1 and moveDir or hrp.CFrame.LookVector) * Vector3.new(1, 0, 1)
+	local forward = (moveDir.Magnitude >= 0.1 and moveDir or hrp.CFrame.LookVector) * vector.create(1, 0, 1)
 
 	if forward.Magnitude < 0.01 then
 		forward = hrp.CFrame.LookVector
@@ -399,7 +399,7 @@ function Human:ApplyRollForce()
 
 	-- Zero out existing horizontal velocity first so forces don't stack
 	local currentVel = hrp.AssemblyLinearVelocity
-	hrp.AssemblyLinearVelocity = Vector3.new(0, currentVel.Y, 0)
+	hrp.AssemblyLinearVelocity = vector.create(0, currentVel.Y, 0)
 
 	local attachment = Instance.new("Attachment")
 	attachment.Parent = hrp

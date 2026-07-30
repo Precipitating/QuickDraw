@@ -27,8 +27,30 @@ NPCEvents.NPCTypesSpawned = {
 NPCEvents.SecondsToSpawnNPC = 120
 NPCEvents.CurrentSpawnedNPCS = 0
 
+-- Each NPC type can only spawn 3 above the rest of the types to prevent faction dominance
+local MAX_TYPE_OFFSET = 3
+
+-- Returns true if the specified NPC type has a spawn count exceeding another types by MAX_TYPE_OFFSET
+local function IsNPCTypeOverloading(npcType: string)
+	local currentTypeSpawnCount = NPCEvents.NPCTypesSpawned[npcType]
+
+	for currNpcType, spawnCount in NPCEvents.NPCTypesSpawned do
+		if currNpcType == npcType then
+			continue
+		end
+		if (currentTypeSpawnCount - spawnCount) >= MAX_TYPE_OFFSET then
+			return true
+		end
+	end
+
+	return false
+end
+
 local function CanSpawn(spawnerType: string)
 	if not spawnerType then
+		return false
+	end
+	if NPCEvents.CurrentSpawnedNPCS >= NPCEvents.MaxNPCSAllowed then
 		return false
 	end
 
@@ -36,6 +58,10 @@ local function CanSpawn(spawnerType: string)
 		local spawnedType = NPCEvents.NPCTypesSpawned[spawnerType]
 		local maxAllowed = NPCEvents.MaxNPCTypesAllowed[spawnerType]
 		if spawnedType == nil or maxAllowed == nil then
+			return false
+		end
+
+		if IsNPCTypeOverloading(spawnerType) then
 			return false
 		end
 
@@ -131,44 +157,59 @@ local function SpawnLoop(spawnerModel, spawnLocation)
 		return
 	end
 
-	if NPCEvents.CurrentSpawnedNPCS < NPCEvents.MaxNPCSAllowed then
-		local spawnerType = spawnerModel:GetAttribute("SpawnerType")
-		if not CanSpawn(spawnerType) then
-			task.delay(
-				RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
-				SpawnLoop,
-				spawnerModel,
-				spawnLocation
-			)
-			return
-		end
-
-		local npcModel = GetNPCModel(spawnerType)
-		if not npcModel then
-			warn("Spawner has no valid npc model to choose from")
-			return
-		end
-
-		npcModel = NPCList[npcModel]:Clone()
-		npcModel.Name = `{npcType}NPC{NPCEvents.CurrentSpawnedNPCS}`
-		CollectionService:AddTag(npcModel, npcType)
-		CollectionService:AddTag(npcModel, spawnerType)
-		CollectionService:AddTag(npcModel, "NPC")
-
-		if spawnerModel:GetAttribute("DefaultStateData") then
-			npcModel:SetAttribute("DefaultStateData", spawnerModel:GetAttribute("DefaultStateData"))
-		end
-
-		npcModel:PivotTo(spawnLocation.WorldCFrame)
-		npcModel.Parent = workspace.NPCs
-		NPCEvents.CurrentSpawnedNPCS = math.max(0, math.min(NPCEvents.CurrentSpawnedNPCS + 1, NPCEvents.MaxNPCSAllowed))
-		if NPCEvents.NPCTypesSpawned[spawnerType] then
-			NPCEvents.NPCTypesSpawned[spawnerType] = math.max(
-				0,
-				math.min(NPCEvents.NPCTypesSpawned[spawnerType] + 1, NPCEvents.MaxNPCTypesAllowed[spawnerType])
-			)
-		end
+	-- Early exit conditions
+	----------------------------------------------------------------------------------------
+	if NPCEvents.CurrentSpawnedNPCS >= NPCEvents.MaxNPCSAllowed then
+		task.delay(
+			RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
+			SpawnLoop,
+			spawnerModel,
+			spawnLocation
+		)
+		return
 	end
+
+	local spawnerType = spawnerModel:GetAttribute("SpawnerType")
+	if not CanSpawn(spawnerType) then
+		task.delay(
+			RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
+			SpawnLoop,
+			spawnerModel,
+			spawnLocation
+		)
+		return
+	end
+	local npcModel = GetNPCModel(spawnerType)
+	if not npcModel then
+		warn("Spawner has no valid npc model to choose from")
+		task.delay(
+			RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
+			SpawnLoop,
+			spawnerModel,
+			spawnLocation
+		)
+		return
+	end
+	----------------------------------------------------------------------------------------
+
+	npcModel = NPCList[npcModel]:Clone()
+	npcModel.Name = `{npcType}NPC{NPCEvents.CurrentSpawnedNPCS}`
+	CollectionService:AddTag(npcModel, npcType)
+	CollectionService:AddTag(npcModel, spawnerType)
+	CollectionService:AddTag(npcModel, "NPC")
+
+	if spawnerModel:GetAttribute("DefaultStateData") then
+		npcModel:SetAttribute("DefaultStateData", spawnerModel:GetAttribute("DefaultStateData"))
+	end
+
+	npcModel:PivotTo(spawnLocation.WorldCFrame)
+	npcModel.Parent = workspace.NPCs
+	NPCEvents.CurrentSpawnedNPCS = math.max(0, math.min(NPCEvents.CurrentSpawnedNPCS + 1, NPCEvents.MaxNPCSAllowed))
+	if NPCEvents.NPCTypesSpawned[spawnerType] then
+		NPCEvents.NPCTypesSpawned[spawnerType] =
+			math.max(0, math.min(NPCEvents.NPCTypesSpawned[spawnerType] + 1, NPCEvents.MaxNPCTypesAllowed[spawnerType]))
+	end
+
 	task.delay(
 		RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
 		SpawnLoop,
