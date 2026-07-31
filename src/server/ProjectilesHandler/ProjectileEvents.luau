@@ -310,21 +310,24 @@ function ProjectileEvents:FragmentHitHumanoid(
 	end
 	return false
 end
-local function RandomConeDirection(BaseDirection: Vector3, HalfAngleDeg: number): Vector3
+local function RandomConeDirection(BaseDirection: vector, HalfAngleDeg: number): vector
 	local HalfAngleRad = math_rad(HalfAngleDeg)
 	local Phi = RandomModule.GetRandomDecimalBetween(0, math.pi * 2)
 	local CosTheta = RandomModule.GetRandomDecimalBetween(math_cos(HalfAngleRad), 1)
 	local SinTheta = math_sqrt(1 - CosTheta * CosTheta)
 
-	local PerpendicularA =
-		BaseDirection:Cross(math_abs(BaseDirection.X) < 0.9 and vector.create(1, 0, 0) or vector.create(0, 1, 0)).Unit
-	local PerpendicularB = BaseDirection:Cross(PerpendicularA).Unit
+	-- Pick a non-parallel arbitrary reference vector
+	local arbitrary = math_abs(BaseDirection.x) < 0.9 and vector.create(1, 0, 0) or vector.create(0, 1, 0)
 
-	return (
-		BaseDirection * CosTheta
+	-- BOTH orthogonal basis vectors MUST be normalized
+	local PerpendicularA = vector.normalize(vector.cross(BaseDirection, arbitrary))
+	local PerpendicularB = vector.normalize(vector.cross(BaseDirection, PerpendicularA))
+
+	local ConeVector = BaseDirection * CosTheta
 		+ PerpendicularA * (SinTheta * math_cos(Phi))
 		+ PerpendicularB * (SinTheta * math_sin(Phi))
-	).Unit
+
+	return vector.normalize(ConeVector)
 end
 function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableData)
 	-- damage bodyparts if hits player
@@ -501,7 +504,7 @@ function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, th
 
 	-- spawn fragments on surface outwards from the radius
 	for _ = 1, throwableData.FragmentCount do
-		local randomDir = RandomConeDirection(Vector3.yAxis, 180)
+		local randomDir = RandomConeDirection(vector.create(0, 1, 0), 180)
 
 		local surfaceResult = workspace:Raycast(center, randomDir * blastRadius)
 		local origin = if surfaceResult then surfaceResult.Position else center + randomDir * blastRadius

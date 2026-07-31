@@ -28,7 +28,7 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self.VoicelineSound = self:SetupVoicelineSound()
 
-	self:SetNPCNetworkOwnership()
+	--self:SetNPCNetworkOwnership()
 	self:InitializeWeaponLoadout()
 	if self.Inventory:GetGun() then
 		self:SetWeaponCollisions()

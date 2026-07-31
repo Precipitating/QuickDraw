@@ -9,8 +9,8 @@ local AnimalHandler = {}
 local SpawnLoop = true
 local AnimalLimit = 20
 local ActiveAnimalsCount = 0
-local AnimalsFolder = ServerStorage.NPCs.Animals.Models:GetChildren()
-local AnimalSpawns = ServerStorage.NPCs.Animals.SpawnAreas:GetChildren()
+local AnimalsFolder = ReplicatedStorage.Shared.NPCData.NPCs.Animals.Models:GetChildren()
+local AnimalSpawns = ReplicatedStorage.Shared.NPCData.NPCs.Animals.SpawnAreas:GetChildren()
 local AnimalDelay = 300
 local ActiveAnimals = {}
 

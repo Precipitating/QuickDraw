@@ -1,5 +1,4 @@
 local Lighting = game:GetService("Lighting")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
 

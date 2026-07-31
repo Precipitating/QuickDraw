@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local CommonGUIFunctions = require(script.Parent.CommonGUIFunctions)
 local PopupGUI = require(script.Parent.PopupGUI)
@@ -13,7 +12,7 @@ local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerM
 local ServerData = require(ServerScriptService.Server.ServerData)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
-local HorseModel = ServerStorage.NPCs.RideableAnimals.HorseNPC
+local HorseModel = ReplicatedStorage.Shared.NPCData.NPCs.RideableAnimals.HorseNPC
 local ShopGUI = {}
 
 function ShopGUI:OnGUIOpen(player: Player, npcModel: Model)

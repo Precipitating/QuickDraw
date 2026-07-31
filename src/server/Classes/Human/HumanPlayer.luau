@@ -200,7 +200,7 @@ end
 
 function HumanPlayer:DestroyLimb(limbName: string)
 	Human.DestroyLimb(self, limbName)
-	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, nil)
+	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, 0)
 end
 
 function HumanPlayer:RevertCrawlState()
@@ -210,7 +210,6 @@ function HumanPlayer:RevertCrawlState()
 
 	-- Revert animation folder back to default on client
 	AnimationHandler:ResetToDefaultAnimations(self.Player)
-	--AnimationHandler:SetAnimationFolder(self.Player, "DefaultAnimations", nil)
 
 	-- Re-enable HRP collision
 	local hrp = self.Character:FindFirstChild("HumanoidRootPart")

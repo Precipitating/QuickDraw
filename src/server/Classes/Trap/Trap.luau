@@ -92,7 +92,7 @@ local TrapActivatedLogic = {
 		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame.Position)
 
 		local context = ProjectileContext.BulletContext.new({
-			Origin = trapModel:GetPivot().Position + vector.create(0, 1, 0),
+			Origin = trapModel:GetPivot().Position + vector.create(0, 1, 0) :: any,
 			Direction = -Vector3.yAxis,
 			Speed = explosiveData.Velocity,
 		})

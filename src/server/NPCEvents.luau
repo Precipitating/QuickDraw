@@ -1,13 +1,12 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
 local Queue = require(ReplicatedStorage.Shared.Classes.Queue)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-local NPCList = ServerStorage.NPCs
+local NPCList = ReplicatedStorage.Shared.NPCData.NPCs.Humans
 local TargetList = Queue.new()
 local BanditModels = { "CowboyNPC" }
 local SheriffModels = { "SheriffNPC" }
