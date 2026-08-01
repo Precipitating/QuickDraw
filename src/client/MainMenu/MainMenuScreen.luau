@@ -78,6 +78,7 @@ local function LoadMenuGUI()
 		ClientUtility.ToggleControls(true)
 		ZoneHandler:Initialize()
 		NPCHandler:InitializeNPCDialogue()
+		warn("DONE")
 	end)
 
 	startButton.MouseEnter:Connect(function()

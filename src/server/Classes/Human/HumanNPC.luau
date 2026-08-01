@@ -15,10 +15,13 @@ local Human = require(script.Parent.Human)
 local HumanNPC = setmetatable({}, Human)
 HumanNPC.__index = HumanNPC
 
-function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
+-- NOTE:  This refers to the server rig, we have to manually replicate everything manually to client due to locally spawned NPCS
+function HumanNPC.new(id: number, humanoid: Humanoid, classType: string, optionalData: any?)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
 	self:SetupBloodEmitters()
+	-- ID to get the client model
+	self.ID = id
 	self.ClassType = "HumanNPC"
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
@@ -27,7 +30,7 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	self.CurrentTrack = nil
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self.VoicelineSound = self:SetupVoicelineSound()
-
+	self.CrawlAnimTrack = nil
 	--self:SetNPCNetworkOwnership()
 	self:InitializeWeaponLoadout()
 	if self.Inventory:GetGun() then
@@ -37,14 +40,17 @@ function HumanNPC.new(humanoid: Humanoid, classType: string, optionalData: any?)
 	self:DisableUnneededStates()
 
 	self.AI:ChangeWalkSpeed(HumanConstants.WALKSPEED)
-
-	if self.Character:GetAttribute("DefaultStateData") then
-	end
-
+	self:SetupServerAnims()
 	self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
 
 	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
+end
+
+function HumanNPC:SetupServerAnims()
+	local crawlAnim = Instance.new("Animation")
+	crawlAnim.AnimationId = `rbxassetid://{AnimationIds.LeglessGunIdle}`
+	self.CrawlAnimTrack = self.Animator:LoadAnimation(crawlAnim)
 end
 
 function HumanNPC:DisableUnneededStates()
@@ -201,11 +207,7 @@ function HumanNPC:SetCrawlState()
 		AnimationHandler:SetAnimationFolder(nil, "CrawlAnimations", self.Character)
 
 		-- we need to set on server as well, as the body is lying
-		local crawlAnim = Instance.new("Animation")
-
-		crawlAnim.AnimationId = `rbxassetid://{AnimationIds.LeglessGunIdle}`
-		local track = self.Animator:LoadAnimation(crawlAnim)
-		track:Play()
+		self.CrawlAnimTrack:Play()
 
 		self.Humanoid.UseJumpPower = true
 		self.Humanoid.JumpPower = 0
@@ -374,6 +376,9 @@ function HumanNPC:Die(shooter: Player?)
 	if not dead then
 		return
 	end
+
+	self.CrawlAnimTrack:Stop()
+	self.CrawlAnimTrack:Destroy()
 
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
 	if shooter and typeof(shooter) == "Instance" and shooter:IsA("Player") then

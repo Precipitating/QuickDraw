@@ -14,7 +14,7 @@ require(script.Trap.ClientTrapHandler)
 require(script.Train.TrainHandler):Initialize()
 require(script.GUI.PopupHandler)
 require(script.OnSeatedClientHandler)
-
+require(script.OptimizedNPC.ClientOptimizedNPCHandler):Initialize()
 local function WaitForPlayerLoad()
 	ClientUtility.ToggleControls(false)
 	CoreGUIHandler.ToggleBackpackVisibility(false)

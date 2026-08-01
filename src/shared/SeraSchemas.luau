@@ -46,4 +46,11 @@ return {
 	ScreenEffectsSchema = Sera.Schema({
 		EffectName = Sera.String8,
 	}),
+
+	NPCSchema = Sera.Schema({
+		ID = Sera.Int8,
+		CFrame = Sera.LossyCFrame,
+		-- 1 = Bandit | 2 = Sheriff | 3 = Mercenary | 4 = Buffalo | 5 = Horse
+		Faction = Sera.Uint8,
+	}),
 }

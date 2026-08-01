@@ -168,9 +168,7 @@ function Human.new(humanoid: Humanoid?): Human
 	self.LastInvincible = nil
 	self.ActiveInvincibleDelayHandle = nil
 	self.CombatLogTimerHandle = nil
-	self.JumpSignalled = false
-	self.RollSignalled = false
-	self.KickSignalled = false
+
 	self.Invincible = false
 	self.InCombat = false
 	self.CombatTimer = 0
@@ -430,7 +428,10 @@ function Human:ApplyRollForce()
 		if attachment and attachment.Parent then
 			attachment:Destroy()
 		end
-		self.RollSignalled = false
+
+		if self.RollSignalled then
+			self.RollSignalled = false
+		end
 	end)
 end
 

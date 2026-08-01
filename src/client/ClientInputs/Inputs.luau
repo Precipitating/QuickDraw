@@ -188,26 +188,24 @@ function Inputs:ConnectInputBegin()
 		self:ConnectOnSit()
 	end)
 end
+function Inputs:ResetBarge()
+	local humanoid = PlayerContext.Humanoid
+	PlayerContext.janitor:Remove("BargeConn")
 
-function Inputs:StopBarge(hitType: string)
+	AnimationsHandler.StopCustomAnimation("BargeRun")
+	PlayerContext.IsCharging = false
+	Inputs.networker:fire("ToggleSprint", false)
+	self.networker:fire("DestroyBargeCollision")
+	if humanoid then
+		humanoid:Move(vector.zero, false)
+	end
+end
+function Inputs:StopBarge(hitType: string?)
 	if not PlayerContext.janitor:Get("BargeConn") then
 		return
 	end
 
-	local function ResetBarge()
-		local humanoid = PlayerContext.Humanoid
-		PlayerContext.janitor:Remove("BargeConn")
-
-		AnimationsHandler.StopCustomAnimation("BargeRun")
-		PlayerContext.IsCharging = false
-		Inputs.networker:fire("ToggleSprint", false)
-		self.networker:fire("DestroyBargeCollision")
-		if humanoid then
-			humanoid:Move(vector.zero, false)
-		end
-	end
-
-	ResetBarge()
+	self:ResetBarge()
 
 	-- Hit a wall, play a custom stagger animation
 	if hitType then
@@ -217,7 +215,7 @@ function Inputs:StopBarge(hitType: string)
 			ScreenEffects:ApplyOneShotEffect("Bump")
 
 			bargeHitEnvAnim.Ended:Once(function()
-				ResetBarge()
+				self:ResetBarge()
 				CoreGUIHandler.ToggleBackpackVisibility(true, false)
 				ClientUtility.ToggleControls(true)
 			end)

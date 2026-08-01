@@ -1,16 +1,18 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Queue = require(ReplicatedStorage.Shared.Classes.Queue)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
+local OptimizedNPCHandler = require(ReplicatedStorage.Shared.OptimizedNPC.OptimizedNPCHandler)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local NPCList = ReplicatedStorage.Shared.NPCData.NPCs.Humans
 local TargetList = Queue.new()
-local BanditModels = { "CowboyNPC" }
-local SheriffModels = { "SheriffNPC" }
 
+local NPCDataRemote = ReplicatedStorage.Shared.Remote.NPCDataRemote
+local Elapsed = 0
 type HumanPlayer = ClassTypes.HumanPlayer
 
 local NPCEvents = {}
@@ -23,6 +25,8 @@ NPCEvents.NPCTypesSpawned = {
 	Sheriff = 0,
 	Bandit = 0,
 }
+
+NPCEvents.ActiveHumanNPCS = {}
 NPCEvents.SecondsToSpawnNPC = 120
 NPCEvents.CurrentSpawnedNPCS = 0
 
@@ -72,65 +76,42 @@ local function CanSpawn(spawnerType: string)
 	return false
 end
 
-local function AddNPCClass(taggedNPC: Model, classType: string)
+local function AddHumanNPCClass(id: number, taggedNPC: Model, classType: string)
 	local humanoid = taggedNPC:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
 		error("NPC has no humanoid to initialize its class!")
 	end
 
 	local humanNPC = nil
-
+	local factionType = nil
 	-- Mercenary mode, will spawn at a random spawner
 	if not TargetList:isEmpty() then
 		local mercenaryTarget = TargetList:dequeue()
+		factionType = "Mercenary"
 		taggedNPC.Name = `Mercenary{NPCEvents.CurrentSpawnedNPCS}`
 		CollectionService:AddTag(taggedNPC, "Mercenary")
 		humanNPC = PlayerManager:AddHumanClassNPC(
+			id,
 			humanoid,
 			"Grenadier",
+			factionType,
 			{ DefaultStateData = { Target = mercenaryTarget.Character } }
 		)
 		humanNPC.AI.EnemyList = { [mercenaryTarget.Name] = true }
 	elseif CollectionService:HasTag(taggedNPC, "Sheriff") then
-		humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
+		factionType = "Sheriff"
+		humanNPC = PlayerManager:AddHumanClassNPC(id, humanoid, classType, factionType)
 		taggedNPC.Name = `Sheriff{NPCEvents.CurrentSpawnedNPCS}`
 		humanNPC.AI.EnemyList = { Bandit = true, Wanted = true }
 	else
 		-- else Bandit
-		humanNPC = PlayerManager:AddHumanClassNPC(humanoid, classType)
+		factionType = "Bandit"
+		humanNPC = PlayerManager:AddHumanClassNPC(id, humanoid, classType, factionType)
 		humanNPC.AI.EnemyList = { Player = true, Sheriff = true, Animal = true }
 	end
 
 	print(`[SERVER] NPCs spawned: {NPCEvents.CurrentSpawnedNPCS}`)
-	return humanNPC
-end
-
--- for existing models in studio, initialize its class
-local function InitializeNPCS()
-	local npcInstances = CollectionService:GetTagged("NPC")
-	for _, NPC: Model in npcInstances do
-		for _, NPCType: string in { "Sniper", "Basic", "Shotgunner", "Grenadier" } do
-			if CollectionService:HasTag(NPC, NPCType) then
-				AddNPCClass(NPC, NPCType)
-				break
-			end
-		end
-	end
-end
-
-local function GetNPCModel(spawnerType: string)
-	if not spawnerType then
-		warn("Spawner missing attribute SpawnerType")
-		return nil
-	end
-
-	if spawnerType == "Bandit" then
-		return BanditModels[RandomModule.GetRandomIntBetween(1, #BanditModels)], spawnerType
-	elseif spawnerType == "Sheriff" then
-		return SheriffModels[RandomModule.GetRandomIntBetween(1, #SheriffModels)], spawnerType
-	else
-		return nil, nil
-	end
+	return humanNPC, factionType
 end
 
 local function SpawnLoop(spawnerModel, spawnLocation)
@@ -178,31 +159,49 @@ local function SpawnLoop(spawnerModel, spawnLocation)
 		)
 		return
 	end
-	local npcModel = GetNPCModel(spawnerType)
-	if not npcModel then
-		warn("Spawner has no valid npc model to choose from")
-		task.delay(
-			RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
-			SpawnLoop,
-			spawnerModel,
-			spawnLocation
-		)
-		return
-	end
+
+	-- local npcModel = GetNPCModel(spawnerType)
+	-- if not npcModel then
+	-- 	warn("Spawner has no valid npc model to choose from")
+	-- 	task.delay(
+	-- 		RandomModule.GetRandomIntBetween(1, 10) + NPCEvents.SecondsToSpawnNPC,
+	-- 		SpawnLoop,
+	-- 		spawnerModel,
+	-- 		spawnLocation
+	-- 	)
+	-- 	return
+	-- end
 	----------------------------------------------------------------------------------------
 
-	npcModel = NPCList[npcModel]:Clone()
-	npcModel.Name = `{npcType}NPC{NPCEvents.CurrentSpawnedNPCS}`
-	CollectionService:AddTag(npcModel, npcType)
-	CollectionService:AddTag(npcModel, spawnerType)
-	CollectionService:AddTag(npcModel, "NPC")
+	--npcModel = NPCList[npcModel]:Clone()
 
-	if spawnerModel:GetAttribute("DefaultStateData") then
-		npcModel:SetAttribute("DefaultStateData", spawnerModel:GetAttribute("DefaultStateData"))
+	-- 1. Spawn a basic rig on the server, let the client handle the apperance and visuals
+	local npcClass = OptimizedNPCHandler.new(spawnLocation.WorldPosition)
+	local npcModel = npcClass.Model
+
+	if not npcModel then
+		error("Model missing when spawning new enemy NPC")
+		return
 	end
 
-	npcModel:PivotTo(spawnLocation.WorldCFrame)
-	npcModel.Parent = workspace.NPCs
+	-- 1.1 Add relevant tags
+	npcClass.Model.Name = `{npcType}NPC{NPCEvents.CurrentSpawnedNPCS}`
+	CollectionService:AddTag(npcClass.Model, npcType)
+	CollectionService:AddTag(npcClass.Model, spawnerType)
+	CollectionService:AddTag(npcClass.Model, "NPC")
+
+	-- 1.2 Set optional attribute (if exists) patrol paths ID
+	if spawnerModel:GetAttribute("DefaultStateData") then
+		npcClass.Model:SetAttribute("DefaultStateData", spawnerModel:GetAttribute("DefaultStateData"))
+	end
+
+	-- 2. Add the actual NPC class, handling AI, pathfinding and overall logic
+	local _, faction = AddHumanNPCClass(npcClass.ID, npcClass.Model, npcType)
+
+	-- 2.1 Used on client to spawn the correct NPC model appearance, this is a number to save network bandwith
+	npcClass.Faction = faction
+
+	-- 3. Update NPC spawned count
 	NPCEvents.CurrentSpawnedNPCS = math.max(0, math.min(NPCEvents.CurrentSpawnedNPCS + 1, NPCEvents.MaxNPCSAllowed))
 	if NPCEvents.NPCTypesSpawned[spawnerType] then
 		NPCEvents.NPCTypesSpawned[spawnerType] =
@@ -238,7 +237,7 @@ local function InitializeNPCSpawners()
 	end
 end
 
--- Next spawning NPC will only shoot the target
+-- For mercenaries: Next spawning NPC will only shoot the target
 function NPCEvents.AddTarget(target: Player?)
 	if not target then
 		warn("Mercenary target invalid player instance")
@@ -246,23 +245,32 @@ function NPCEvents.AddTarget(target: Player?)
 	end
 	TargetList:enqueue(target)
 end
+
 function NPCEvents.Initialize()
 	-- for dynamically spawned npcs
-	CollectionService:GetInstanceAddedSignal("NPC"):Connect(function(taggedNPC: Model)
-		for key, _ in NPCTypes do
-			if CollectionService:HasTag(taggedNPC, key) then
-				AddNPCClass(taggedNPC, key)
-				break
-			end
-		end
-	end)
+	-- CollectionService:GetInstanceAddedSignal("NPC"):Connect(function(taggedNPC: Model)
+	-- 	for key, _ in NPCTypes do
+	-- 		if CollectionService:HasTag(taggedNPC, key) then
+	-- 			AddNPCClass(taggedNPC, key)
+	-- 			break
+	-- 		end
+	-- 	end
+	-- end)
 
 	CollectionService:GetInstanceAddedSignal("Spawner"):Connect(function(spawnerModel: Model)
 		InitializeSpawner(spawnerModel)
 	end)
 
-	InitializeNPCS()
 	InitializeNPCSpawners()
+
+	-- Update the NPCS on client at a a fixed rate
+	RunService.Heartbeat:Connect(function(deltatime)
+		Elapsed += deltatime
+		if Elapsed >= 0.1 then
+			Elapsed = 0
+			NPCDataRemote:FireAllClients(OptimizedNPCHandler.ConstructRenderPacket())
+		end
+	end)
 end
 
 return NPCEvents

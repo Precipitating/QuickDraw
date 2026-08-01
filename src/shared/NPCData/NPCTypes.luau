@@ -1,4 +1,5 @@
 return {
+
 	Sniper = {
 		WeaponName = "Winchester",
 		ThrowableName = "Dynamite",

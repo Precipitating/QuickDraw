@@ -1,6 +1,5 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
 
 --

@@ -39,6 +39,9 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.Player = player
 	self.ClassType = "HumanPlayer"
 	self.HumanType = "Player"
+	self.JumpSignalled = false
+	self.RollSignalled = false
+	self.KickSignalled = false
 	self:InitializeWeaponLoadout()
 
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
