@@ -161,6 +161,9 @@ function ShopGUI:BuyHorse(player: Player, horseType: string, horseSellerNPC: Mod
 		warn("Linked stable has no spawn points folder")
 		return false
 	end
+
+	ServerData.UpdateMoney(player, -ShopCosts[horseType])
+
 	spawnPoints = spawnPoints:GetChildren()
 	local horseClone = HorseModel:Clone()
 
