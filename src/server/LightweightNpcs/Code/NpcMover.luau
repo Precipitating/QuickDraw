@@ -227,7 +227,9 @@ function module:ProcessMovement(npcRecord: NpcTypes.npcRecordType, dt: number)
 		return
 	end
 
-	npcRecord.hitBox.Position = npcRecord.position
+	if npcRecord.serverRig then
+		npcRecord.serverRig:PivotTo(CFrame.new(npcRecord.position) * CFrame.Angles(0, npcRecord.angle, 0))
+	end
 end
 
 return module :: NpcMover

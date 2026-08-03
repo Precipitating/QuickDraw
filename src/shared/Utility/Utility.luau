@@ -1,5 +1,21 @@
 local Players = game:GetService("Players")
 
+local DEBUG_PRINT = true
+
+local _print = print
+local function print(...)
+	if DEBUG_PRINT then
+		_print(...)
+	end
+end
+
+local _warn = warn
+local function warn(...)
+	if DEBUG_PRINT then
+		_warn(...)
+	end
+end
+
 local RandomModule = require(script.Parent.RandomModule)
 return {
 	SumNumberTable = function(tbl: {})
@@ -85,5 +101,17 @@ return {
 			end
 		end
 		return relevant
+	end,
+
+	Log = function(...)
+		if DEBUG_PRINT then
+			_print(...)
+		end
+	end,
+
+	Warn = function(...)
+		if DEBUG_PRINT then
+			_warn(...)
+		end
 	end,
 }

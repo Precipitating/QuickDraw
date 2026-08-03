@@ -154,11 +154,11 @@ export type Human = {
 	-- Methods
 	new: (humanoid: Humanoid?) -> Human,
 	GetHealthPercentage: (self: Human) -> number,
-	SetupPhysicsSettings: (self: Human) -> (),
+
 	ApplyRollForce: (self: Human) -> (),
 	ApplyKickForce: (self: Human) -> (),
 	AssignBodyParts: (self: Human, tagName: string) -> (),
-	SimulateDefaultLimbs: (self: Human) -> (),
+
 	OnHumanoidStateChange: (self: Human) -> (),
 	OnHit: (self: Human, damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model) -> (),
 	Die: (self: Human, shooter: Player?) -> (),
@@ -180,6 +180,8 @@ export type HumanPlayer = Human & {
 	Player: Player,
 	AdjustGrayscale: (self: HumanPlayer) -> (),
 	ConnectGUIs: (self: HumanPlayer) -> (),
+	SetupPhysicsSettings: (self: Human) -> (),
+	SimulateDefaultLimbs: (self: Human) -> (),
 }
 
 export type HumanNPC = Human & {

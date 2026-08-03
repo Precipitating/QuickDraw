@@ -16,6 +16,23 @@ local HumanSignals = require(script.Parent.HumanSignals)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
 
+local RagdollDisabledStates = {
+	[Enum.HumanoidStateType.Ragdoll] = true,
+	[Enum.HumanoidStateType.FallingDown] = true,
+	[Enum.HumanoidStateType.GettingUp] = true,
+	[Enum.HumanoidStateType.Dead] = true,
+}
+
+local SimulatingLimbs = {
+	["LeftShoulder"] = true,
+	["RightShoulder"] = true,
+	["LeftElbow"] = true,
+	["RightElbow"] = true,
+	["RightUpperArm"] = true,
+	["LeftWrist"] = true,
+	["RightWrist"] = true,
+}
+
 local LimbHealth = {
 	Head = 50,
 	UpperTorso = 85,
@@ -33,6 +50,9 @@ local LimbHealth = {
 function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	assert(player, "HumanPlayer constructor needs a valid player instance!")
 	local self = setmetatable(Human.new(humanoid), HumanPlayer)
+	self:SimulateDefaultLimbs()
+	self:SetupPhysicsSettings()
+	self:OnHumanoidStateChange()
 
 	Human.AssignBodyParts(self, "Player")
 	self:SetupBloodEmitters()
@@ -56,6 +76,81 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	print(`New Human class initialized for {self.Player.DisplayName}`)
 
 	return self :: any
+end
+function HumanPlayer:OnHumanoidStateChange()
+	if not self.Humanoid then
+		error("Missing humanoid reference in human class!")
+	end
+	-- keep BallSocketConstraints on death
+	self.Humanoid.BreakJointsOnDeath = false
+
+	self.Janitor:Add(
+		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
+			if RagdollDisabledStates[newState] then
+				self.AnimationControllerState = false
+				self.IsRagdolled = true
+			else
+				self.AnimationControllerState = true
+				self.IsRagdolled = false
+			end
+
+			for _, j in self.Character:GetDescendants() do
+				if j:IsA("AnimationConstraint") and j.Name ~= "Root" then
+					j.Enabled = self.AnimationControllerState
+				end
+			end
+			if newState == Enum.HumanoidStateType.Dead then
+				self:OnDeath()
+			end
+		end)
+	)
+end
+function HumanPlayer:SimulateDefaultLimbs()
+	-- setting this to HumanoidRootPart prevents any sliding from occuring, very IMPORTANT
+	local physicalProperties: PhysicalProperties = PhysicalProperties.new(100, 2, 0.5, 1, 1)
+	self.HRP.CustomPhysicalProperties = physicalProperties
+
+	for _, obj in self.Character:GetDescendants() do
+		if not obj:IsA("AnimationConstraint") then
+			continue
+		end
+
+		if SimulatingLimbs[obj.Name] then
+			obj.IsKinematic = false
+			obj.MaxTorque = 700
+		end
+	end
+end
+
+function HumanPlayer:SetupPhysicsSettings()
+	local rightArm = Utility.GetInstance(self.Character, true, "RightUpperArm")
+	local rightLowerArm = Utility.GetInstance(self.Character, true, "RightLowerArm")
+	local rightHand = Utility.GetInstance(self.Character, true, "RightHand")
+
+	local rightShoulder: AnimationConstraint =
+		Utility.GetInstance(rightArm, true, "RightShoulder") :: AnimationConstraint
+
+	local rightElbow: AnimationConstraint =
+		Utility.GetInstance(rightLowerArm, true, "RightElbow") :: AnimationConstraint
+
+	local rightWrist: AnimationConstraint = Utility.GetInstance(rightHand, true, "RightWrist") :: AnimationConstraint
+
+	-- important to be high so the arm doesn't get stuck when going back to original position (when ADS)
+	rightShoulder.MaxTorque = 9999
+	rightElbow.MaxTorque = 9999
+	rightWrist.MaxTorque = 9999
+
+	local rightArmSocket: BallSocketConstraint =
+		Utility.GetInstance(rightArm, true, "RightShoulderBallSocket") :: BallSocketConstraint
+
+	local rightLowerArmSocket: BallSocketConstraint =
+		Utility.GetInstance(rightLowerArm, true, "RightElbowBallSocket") :: BallSocketConstraint
+
+	rightArmSocket.UpperAngle = 90
+
+	rightLowerArmSocket.UpperAngle = 0
+	rightLowerArmSocket.TwistUpperAngle = 5
+	rightLowerArmSocket.TwistLowerAngle = 0
 end
 
 function HumanPlayer:InitializeWeaponLoadout()

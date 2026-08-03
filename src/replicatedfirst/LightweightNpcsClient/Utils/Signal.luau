@@ -17,7 +17,7 @@ export type Signal = {
 	Fire: (self: Signal, ...any) -> (),
 	Wait: (self: Signal) -> ...any,
 	Destroy: (self: Signal) -> (),
-	HasConnections: (self: Signal) -> (boolean)
+	HasConnections: (self: Signal) -> boolean,
 }
 
 type Node = {
@@ -146,7 +146,7 @@ function Signal:Destroy()
 
 	self._destroyed = true
 
-	local node : Node? = self._head
+	local node: Node? = self._head
 	while node do
 		node.connected = false
 		local nextNode = node.next

@@ -7,7 +7,7 @@ local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
-
+local NPC_CULL_RADIUS = 200
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
 local Human = require(script.Parent.Human)
@@ -16,12 +16,12 @@ local HumanNPC = setmetatable({}, Human)
 HumanNPC.__index = HumanNPC
 
 -- NOTE:  This refers to the server rig, we have to manually replicate everything manually to client due to locally spawned NPCS
-function HumanNPC.new(id: number, humanoid: Humanoid, classType: string, optionalData: any?)
+function HumanNPC.new(lightweightNPCClass, humanoid: Humanoid, classType: string, optionalData: any?)
 	local self = setmetatable(Human.new(humanoid), HumanNPC)
 	Human.AssignBodyParts(self, "NPC")
 	self:SetupBloodEmitters()
 	-- ID to get the client model
-	self.ID = id
+	self.LightweightNPCClass = lightweightNPCClass
 	self.ClassType = "HumanNPC"
 	self.HumanType = "NPC"
 	self.RightArmAimer = self:InitializeRightArmAimer()
@@ -45,6 +45,24 @@ function HumanNPC.new(id: number, humanoid: Humanoid, classType: string, optiona
 
 	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
+end
+
+function HumanNPC:SetupLightweightNPC()
+	local npcRecord = self.LightweightNPCClass
+
+	self.Janitor:Add(npcRecord.onCullCheck:Connect(function()
+		for key, player in game.Players:GetPlayers() do
+			if player.Character and player.Character.PrimaryPart then
+				local bubbleVec = npcRecord.position - (player.Character.PrimaryPart :: any).Position
+
+				if bubbleVec.Magnitude < NPC_CULL_RADIUS then
+					npcRecord:SetPlayerVisibleFlag(player, true)
+				else
+					npcRecord:SetPlayerVisibleFlag(player, false)
+				end
+			end
+		end
+	end))
 end
 
 function HumanNPC:SetupServerAnims()

@@ -14,23 +14,6 @@ local BloodFlowEmitter = ReplicatedStorage.Shared.Templates.BloodFlow
 type Gun = ClassTypes.Gun
 type Human = ClassTypes.Human
 
-local RagdollDisabledStates = {
-	[Enum.HumanoidStateType.Ragdoll] = true,
-	[Enum.HumanoidStateType.FallingDown] = true,
-	[Enum.HumanoidStateType.GettingUp] = true,
-	[Enum.HumanoidStateType.Dead] = true,
-}
-
-local SimulatingLimbs = {
-	["LeftShoulder"] = true,
-	["RightShoulder"] = true,
-	["LeftElbow"] = true,
-	["RightElbow"] = true,
-	["RightUpperArm"] = true,
-	["LeftWrist"] = true,
-	["RightWrist"] = true,
-}
-
 -- Applied on UpperTorso and LowerTorso
 local DismemberAttachments = {
 	LeftUpperArm = "LeftShoulderRigAttachment",
@@ -320,36 +303,7 @@ function Human:SetInvincibleFor(duration: number, excludeFromCooldown: boolean?)
 	end)
 end
 
-function Human:SetupPhysicsSettings()
-	local rightArm = Utility.GetInstance(self.Character, true, "RightUpperArm")
-	local rightLowerArm = Utility.GetInstance(self.Character, true, "RightLowerArm")
-	local rightHand = Utility.GetInstance(self.Character, true, "RightHand")
-
-	local rightShoulder: AnimationConstraint =
-		Utility.GetInstance(rightArm, true, "RightShoulder") :: AnimationConstraint
-
-	local rightElbow: AnimationConstraint =
-		Utility.GetInstance(rightLowerArm, true, "RightElbow") :: AnimationConstraint
-
-	local rightWrist: AnimationConstraint = Utility.GetInstance(rightHand, true, "RightWrist") :: AnimationConstraint
-
-	-- important to be high so the arm doesn't get stuck when going back to original position (when ADS)
-	rightShoulder.MaxTorque = 9999
-	rightElbow.MaxTorque = 9999
-	rightWrist.MaxTorque = 9999
-
-	local rightArmSocket: BallSocketConstraint =
-		Utility.GetInstance(rightArm, true, "RightShoulderBallSocket") :: BallSocketConstraint
-
-	local rightLowerArmSocket: BallSocketConstraint =
-		Utility.GetInstance(rightLowerArm, true, "RightElbowBallSocket") :: BallSocketConstraint
-
-	rightArmSocket.UpperAngle = 90
-
-	rightLowerArmSocket.UpperAngle = 0
-	rightLowerArmSocket.TwistUpperAngle = 5
-	rightLowerArmSocket.TwistLowerAngle = 0
-end
+function Human:SetupPhysicsSettings() end
 
 function Human:ApplyKickForce()
 	local rightFoot = self.BodyParts["RightFoot"]
@@ -507,51 +461,11 @@ function Human:AssignBodyParts(tagName: string)
 end
 
 function Human:SimulateDefaultLimbs()
-	-- setting this to HumanoidRootPart prevents any sliding from occuring, very IMPORTANT
-	local physicalProperties: PhysicalProperties = PhysicalProperties.new(100, 2, 0.5, 1, 1)
-	self.HRP.CustomPhysicalProperties = physicalProperties
-
-	for _, obj in self.Character:GetDescendants() do
-		if not obj:IsA("AnimationConstraint") then
-			continue
-		end
-
-		if SimulatingLimbs[obj.Name] then
-			obj.IsKinematic = false
-			obj.MaxTorque = 700
-		end
-	end
+	warn("[Human:SimulateDefaultLimbs] Base class called!")
 end
 
 -- ragdoll when player's state is equal to any CharacterStates
-function Human:OnHumanoidStateChange()
-	if not self.Humanoid then
-		error("Missing humanoid reference in human class!")
-	end
-	-- keep BallSocketConstraints on death
-	self.Humanoid.BreakJointsOnDeath = false
-
-	self.Janitor:Add(
-		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
-			if RagdollDisabledStates[newState] then
-				self.AnimationControllerState = false
-				self.IsRagdolled = true
-			else
-				self.AnimationControllerState = true
-				self.IsRagdolled = false
-			end
-
-			for _, j in self.Character:GetDescendants() do
-				if j:IsA("AnimationConstraint") and j.Name ~= "Root" then
-					j.Enabled = self.AnimationControllerState
-				end
-			end
-			if newState == Enum.HumanoidStateType.Dead then
-				self:OnDeath()
-			end
-		end)
-	)
-end
+function Human:OnHumanoidStateChange() end
 
 function Human:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model)
 	self.LimbHealth[limbName] -= damage

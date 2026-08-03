@@ -1,6 +1,9 @@
 --!strict
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lightweightNpcsServerModule = {} :: lightweightNpcsServerModuleType
 
+local NPCHealth = require(script.Parent.NPCHealth)
+local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MessageId = require(game.ReplicatedFirst.LightweightNpcsClient.Code.MessageId)
 
 local WriteBufferModule = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.WriteBuffer)
@@ -32,8 +35,7 @@ type lightweightNpcsServerModuleType = {
 		self: lightweightNpcsServerModuleType,
 		template: Instance,
 		config: any,
-		position: Vector3,
-		angle: number
+		originCFrame: CFrame
 	) -> NpcTypes.npcRecordType,
 	SendInitialState: (
 		self: lightweightNpcsServerModuleType,
@@ -275,56 +277,74 @@ local function Jump(self: NpcTypes.npcRecordType)
 	self.jump = true
 end
 
+local function SnapToGround(position: Vector3, motionSize: Vector3): Vector3
+	local castParams = RaycastParams.new()
+	castParams.CollisionGroup = "NpcMovement"
+	castParams.RespectCanCollide = true
+
+	local castSize = Vector3.new(motionSize.X - 0.1, motionSize.Y - 0.1, motionSize.Z - 0.1)
+	local searchStart = position + Vector3.new(0, 10, 0) -- start well above, catches spawns that are too high
+	local hit = game.Workspace:Blockcast(CFrame.new(searchStart), castSize, Vector3.new(0, -100, 0), castParams)
+
+	if hit then
+		return searchStart + Vector3.new(0, -100, 0).Unit * (hit.Distance - 0.1)
+	end
+
+	warn("[CreateNpc] SnapToGround found no ground beneath spawn point — using original position")
+	return position
+end
+
 function lightweightNpcsServerModule:CreateNpc(
 	template: Instance,
 	npcConfig: any,
-	position: Vector3,
-	angle: number
+	originCFrame: CFrame
 ): NpcTypes.npcRecordType
 	local npcId = GetNextNpcId()
 
-	local hitBox = Instance.new("Part")
-	hitBox.Size = npcConfig.hitBoxSize
-	hitBox.Anchored = true
-	hitBox.CollisionGroup = npcConfig.collisionGroup
-	hitBox.Name = "NPC"
-	hitBox:SetAttribute("npcId", npcId)
+	local serverRigTemplate = ReplicatedStorage.Shared.NPCData.NPCs.Humans.ServerNPCRig:Clone()
+	serverRigTemplate:SetAttribute("npcId", npcId)
 
-	if npcConfig.canCollide then
-		hitBox.CanCollide = true
-		hitBox.CanQuery = true
-		hitBox.CanTouch = true
-	else
-		hitBox.CanCollide = false
-		hitBox.CanQuery = false
-		hitBox.CanTouch = false
-	end
+	local snappedPosition = SnapToGround(originCFrame.Position, npcConfig.motionSize)
+	originCFrame = CFrame.new(snappedPosition) * (originCFrame - originCFrame.Position)
 
-	hitBox.Position = position
+	-- Pivot server rig to the target CFrame
+	serverRigTemplate:PivotTo(originCFrame)
 
 	if config.debugHitboxes == false then
-		hitBox.Parent = self.DoNotReplicate
+		serverRigTemplate.Parent = self.DoNotReplicate
 	else
-		hitBox.Parent = game.Workspace
+		serverRigTemplate.Parent = game.Workspace
 	end
 
-	if hitBox.Anchored == false then
-		hitBox:SetNetworkOwner(nil)
+	-- Store limb references
+	local limbs = {}
+	for _, part in serverRigTemplate:GetChildren() do
+		if part:IsA("BasePart") and part:IsA("MeshPart") then
+			local enum = LimbsEnum[part.Name]
+			if enum then
+				limbs[enum] = { Part = part, HP = NPCHealth.LimbHealth[enum] }
+			end
+		end
 	end
 
+	-- Clone and position the visual template model
 	local currentInstance = template:Clone() :: Model
 	currentInstance.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
+	currentInstance:PivotTo(originCFrame)
 	currentInstance.Parent = game.ReplicatedStorage
 	currentInstance:SetAttribute("npcId", npcId)
+
+	-- Extract Yaw angle (ground rotation) in radians from originCFrame
+	local _, yawAngle, _ = originCFrame:ToOrientation()
 
 	local npcConfiguration: NpcTypes.npcRecordConfiguration = {
 		templateInstance = template,
 		maximumStepHeight = npcConfig.maximumStepHeight,
-		maximumSlopeAngle = npcConfig.maximumSlopeAngle, --Todo!
+		maximumSlopeAngle = npcConfig.maximumSlopeAngle,
 		replicationHzRate = npcConfig.replicationHzRate,
 		thinkHzRate = npcConfig.thinkHzRate,
 		motionSize = npcConfig.motionSize,
-		groundTolerance = npcConfig.groundTolerance, --Todo: remove this, should be eps
+		groundTolerance = npcConfig.groundTolerance,
 		animations = npcConfig.animations,
 		walkSpeed = npcConfig.walkSpeed,
 		walkAccel = npcConfig.walkAccel,
@@ -336,31 +356,30 @@ function lightweightNpcsServerModule:CreateNpc(
 
 	local npcInternal: NpcTypes.npcRecordInternal = {
 		timeOfNextReplicate = 0,
-		timeOfNextThink = 0, --if tick() > this
+		timeOfNextThink = 0,
 		timeOfLastThink = 0,
 		timeOfNextCullingCheck = 0,
-		localOrigin = position, --The actual transmitted positions are only float16s, we use this to claw back some precision
+		localOrigin = originCFrame.Position,
 		forceReplicate = false,
 		forceThink = false,
 		isOnGround = false,
 		deleteFlag = false,
-		pendingAnimationChanges = {}, --These go out in the next animation update packet
+		pendingAnimationChanges = {},
 		playerReplicationVisible = {},
 		playerVisibleFlag = {},
 	}
 
 	local npcRecord: NpcTypes.npcRecordType = {
 		npcId = npcId,
-		hitBox = hitBox,
+		serverRig = serverRigTemplate,
 		instance = currentInstance,
-
 		configuration = npcConfiguration,
 		internal = npcInternal,
 
 		npcState = NpcStateModule.Idle,
-		position = position,
-		angle = angle,
-		targetAngle = angle,
+		position = originCFrame.Position,
+		angle = yawAngle,
+		targetAngle = yawAngle,
 
 		motionVector = Vector3.zero,
 		jump = false,
@@ -372,7 +391,12 @@ function lightweightNpcsServerModule:CreateNpc(
 		onFellOffMap = SignalModule.new(),
 		onDeath = SignalModule.new(),
 		onCleanup = SignalModule.new(),
+		onHit = SignalModule.new(),
+		onDisableLimb = SignalModule.new(),
+		onDismemberLimb = SignalModule.new(),
 		onBumpIntoWall = SignalModule.new(),
+		onPoseChange = SignalModule.new(),
+		onRagdoll = SignalModule.new(),
 		onCrashland = SignalModule.new(),
 		onCullCheck = SignalModule.new(),
 
@@ -385,7 +409,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		Move = Move,
 		Jump = Jump,
 		playingAnimations = {},
-		data = {},
+		data = { BodyParts = limbs },
 	}
 
 	for key, playerRecord in self.playerRecords do
@@ -430,6 +454,12 @@ function lightweightNpcsServerModule:DestroyNpc(npcRecord: NpcTypes.npcRecordTyp
 	npcRecord.onFellOffMap:Destroy()
 	npcRecord.onDeath:Destroy()
 	npcRecord.onBumpIntoWall:Destroy()
+	npcRecord.onDisableLimb:Destroy()
+	npcRecord.onDismemberLimb:Destroy()
+	npcRecord.onBumpIntoWall:Destroy()
+	npcRecord.onRagdoll:Destroy()
+	npcRecord.onHit:Destroy()
+	npcRecord.onPoseChange:Destroy()
 	npcRecord.onCrashland:Destroy()
 	npcRecord.onCullCheck:Destroy()
 end
