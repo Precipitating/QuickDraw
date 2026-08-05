@@ -1,9 +1,12 @@
+local NPCHealth = require(script.Parent.NPCHealth)
 local NpcTypes = require(script.Parent.NpcTypes)
 local MathUtils = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.MathUtils)
 local NPC_CULL_DISTANCE = 400
 local NPCLogic = {}
 
 function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
+	npcRecord:AddClientEvent({ id = "Initialized" })
+
 	npcRecord.onThink:Connect(function(dt)
 		if tick() > npcRecord.data.nextMove then
 			npcRecord.data.nextMove = tick() + 0.5 + math.random()
@@ -34,6 +37,13 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 					npcRecord:SetPlayerVisibleFlag(player, false)
 				end
 			end
+		end
+	end)
+
+	npcRecord.onDeath:Connect(function(attacker: any?)
+		if npcRecord.instance then
+			npcRecord:Move(Vector3.zero)
+			npcRecord:AddClientEvent({ id = "Death", attacker = attacker })
 		end
 	end)
 

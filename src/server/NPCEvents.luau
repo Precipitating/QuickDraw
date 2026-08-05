@@ -151,7 +151,7 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 		return
 	end
 
-	local npcTemplateModel = GetNPCModel(spawnerType)
+	local npcTemplateModel = GetNPCModel(spawnerType, spawnerModel:GetTags())
 	if not npcTemplateModel then
 		return
 	end

@@ -4,6 +4,7 @@ local GunSignals = require(script.Parent.GunSignals)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
+local NpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -19,7 +20,7 @@ type Gun = ClassTypes.Gun
 local Gun = {}
 Gun.__index = Gun
 
-function Gun.new(gunName: string, humanClass: Human, player: Player | Model, tool: Tool?): Gun
+function Gun.new(gunName: string, humanClass: Human | NpcTypes.npcRecordType, player: Player | Model, tool: Tool?): Gun
 	if not GunData[gunName] then
 		error("Gun doesn't exist")
 	end
@@ -223,7 +224,7 @@ function Gun:BulletByBulletReload(bulletsToReload: number, reloadTime: number, r
 	for _ = 1, bulletsToReload do
 		task.wait(reloadTime)
 
-		if self.HumanClassRef and self.HumanClassRef.Dead then
+		if self.HumanClassRef and self.HumanClassRef.Dead or self.HumanClassRef.dead then
 			return
 		end
 		if not self.Reloading then

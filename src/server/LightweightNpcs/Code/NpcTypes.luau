@@ -60,6 +60,10 @@ export type npcRecordType = {
 	isOnGround: boolean, --bool
 	motionVector: Vector3, --setting this controls where the npc will try and move to
 	jump: boolean, --A jump is requested
+	bodyParts: { [number]: { Part: MeshPart, HP: number } },
+	currentEquipped: number?,
+	storedWeapon: number?,
+	storedThrowable: number?,
 
 	--Methods
 	PlayAnimation: (

@@ -386,6 +386,10 @@ function lightweightNpcsServerModule:CreateNpc(
 		velocity = Vector3.zero,
 		hitPoints = npcConfig.maxHitPoints,
 		isOnGround = false,
+		bodyParts = limbs,
+		currentEquipped = nil,
+		storedThrowable = nil,
+		storedWeapon = nil,
 
 		onThink = SignalModule.new(),
 		onFellOffMap = SignalModule.new(),
@@ -409,7 +413,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		Move = Move,
 		Jump = Jump,
 		playingAnimations = {},
-		data = { BodyParts = limbs },
+		data = {},
 	}
 
 	for key, playerRecord in self.playerRecords do

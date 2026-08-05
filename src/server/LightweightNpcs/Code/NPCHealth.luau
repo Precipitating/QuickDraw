@@ -35,7 +35,7 @@ function NPCHealth:UpdateLimbHealth(
 	attacker: any
 )
 	------------------------------------------------------------------------------------------------
-	local bodyParts = npcRecord.data.BodyParts
+	local bodyParts = npcRecord.bodyParts
 	if not bodyParts then
 		Utility.Warn(`NPC id:{npcRecord.npcId} cannot update limb health! missing`)
 		return
@@ -47,7 +47,7 @@ function NPCHealth:UpdateLimbHealth(
 	end
 	------------------------------------------------------------------------------------------------
 	local toEnum = LimbsEnum[limbHit]
-	local maxLimbHP = self.LimbHealth[toEnum]
+	local maxLimbHP = self.limbHealth[toEnum]
 	local hp = bodyParts[toEnum].HP
 
 	hp += math.clamp(hp + damageTaken, HumanConstants.LIMB_DISMEMBER_HP, maxLimbHP)
@@ -68,7 +68,7 @@ function NPCHealth:HealAll(npcRecord: NpcTypes.npcRecordType)
 
 	for _, limb in bodyParts do
 		local toEnum = LimbsEnum[limb.Part.Name]
-		limb.HP = self.LimbHealth[toEnum]
+		limb.HP = self.limbHealth[toEnum]
 	end
 end
 

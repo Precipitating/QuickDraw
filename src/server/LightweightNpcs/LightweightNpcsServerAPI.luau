@@ -18,6 +18,7 @@ function module:CreateConfig()
 		canCollide = true,
 		groundTolerance = 0.5,
 		maximumStepHeight = 3,
+		maximumSlopeHeight = 50,
 		replicationHzRate = 10, -- This is complicated. Higher values are more responsive for motion, and cost more bandwidth
 		thinkHzRate = 10, --How frequently this NPC runs its simulation
 		maxHitPoints = HumanConstants.MAX_HP,
@@ -35,6 +36,7 @@ function module:SpawnNpc(template: Model, configuration: any, originCFrame: CFra
 	end
 
 	local npcRecord = lightweightNpcsServerModule:CreateNpc(template, configuration, originCFrame)
+
 	return npcRecord
 end
 
