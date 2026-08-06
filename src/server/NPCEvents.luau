@@ -7,6 +7,7 @@ local Queue = require(ReplicatedStorage.Shared.Classes.Queue)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local NPCHealth = require(ServerScriptService.Server.LightweightNpcs.Code.NPCHealth)
 local NPCLogic = require(ServerScriptService.Server.LightweightNpcs.Code.NPCLogic)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 

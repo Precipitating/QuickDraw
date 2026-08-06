@@ -1,5 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local module = {}
 
+local Signal = require(ReplicatedStorage.Packages.Signal)
 local SignalModule = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.Signal)
 local NpcStateModule = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcState)
 local NpcAnimationTypes = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcAnimationTypes)
@@ -61,9 +63,11 @@ export type npcRecordType = {
 	motionVector: Vector3, --setting this controls where the npc will try and move to
 	jump: boolean, --A jump is requested
 	bodyParts: { [number]: { Part: MeshPart, HP: number } },
+	HRP: BasePart,
 	currentEquipped: number?,
 	storedWeapon: number?,
 	storedThrowable: number?,
+	humanType: number,
 
 	--Methods
 	PlayAnimation: (
@@ -92,6 +96,7 @@ export type npcRecordType = {
 	onRagdoll: SignalModule.Signal,
 	onPoseChange: SignalModule.Signal,
 	onHit: SignalModule.Signal,
+	onLimbHit: SignalModule.Signal,
 	onCrashland: SignalModule.Signal,
 	onCullCheck: SignalModule.Signal,
 

@@ -208,6 +208,7 @@ local function Init()
 					invHz = 1 / message.hz,
 					placed = false,
 					timeline = {},
+					isDead = false,
 					eventline = {},
 					cframe = CFrame.identity,
 					animations = message.animationsByIndex,
@@ -378,16 +379,20 @@ function lightweightNpcsClientModule:Heartbeat(dt: number)
 				lightweightNpcsClientModule:ProcessLoad(npcRecord)
 			end
 
-			npcRecord.instance:PivotTo(orientation)
-			npcRecord.cframe = orientation
-		else
-			--pivotTo, but only if its moved
-			if
-				(npcRecord.cframe.LookVector:Dot(orientation.LookVector) < 0.999999)
-				or (npcRecord.cframe.Position - orientation.Position).Magnitude > 0.01
-			then
+			if not npcRecord.isDead then
 				npcRecord.instance:PivotTo(orientation)
 				npcRecord.cframe = orientation
+			end
+		else
+			--pivotTo, but only if its moved
+			if not npcRecord.isDead then
+				if
+					(npcRecord.cframe.LookVector:Dot(orientation.LookVector) < 0.999999)
+					or (npcRecord.cframe.Position - orientation.Position).Magnitude > 0.01
+				then
+					npcRecord.instance:PivotTo(orientation)
+					npcRecord.cframe = orientation
+				end
 			end
 		end
 

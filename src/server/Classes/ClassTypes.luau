@@ -1,3 +1,5 @@
+local ServerScriptService = game:GetService("ServerScriptService")
+local NpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
 export type Gun = {
 	Tool: Tool?,
 	MaxAmmo: number,
@@ -118,7 +120,7 @@ export type AI = {
 
 export type Human = {
 	-- Identity
-	HumanType: string,
+	humanType: number,
 	Dead: boolean,
 	Legless: boolean,
 	IsRagdolled: boolean,
@@ -176,20 +178,11 @@ export type Human = {
 }
 
 export type HumanPlayer = Human & {
-	HumanType: "Player",
 	Player: Player,
 	AdjustGrayscale: (self: HumanPlayer) -> (),
 	ConnectGUIs: (self: HumanPlayer) -> (),
 	SetupPhysicsSettings: (self: Human) -> (),
 	SimulateDefaultLimbs: (self: Human) -> (),
-}
-
-export type HumanNPC = Human & {
-	HumanType: "NPC",
-	AI: AI,
-	AimRightArmTowards: (self: HumanNPC, target: Vector3) -> boolean,
-	ToggleTorsoAimer: (self: HumanNPC, enable: boolean) -> (),
-	ToggleRightArmAimer: (self: HumanNPC, enable: boolean) -> (),
 }
 
 export type Destroyable = {
@@ -204,7 +197,7 @@ export type Destroyable = {
 }
 
 export type DamageData = {
-	TargetHuman: Human,
+	TargetHuman: Human | NpcTypes.npcRecordType,
 	Damage: number,
 	Shooter: Player?,
 	CosmeticBulletObject: BasePart?,

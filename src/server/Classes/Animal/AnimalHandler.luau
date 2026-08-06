@@ -1,6 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Animal = require(script.Parent.Animal)
 local Buffalo = require(script.Parent.Buffalo)

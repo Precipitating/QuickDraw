@@ -18,14 +18,15 @@ NPCHealth.LimbHealth = {
 	[LimbsEnum.RightLowerLeg] = 40,
 }
 function NPCHealth:UpdateHealth(npcRecord: NpcTypes.npcRecordType, damageTaken: number, attacker: any)
-	npcRecord.hitPoints = math.clamp(npcRecord.hitPoints, 0, HumanConstants.MAX_HP)
-
-	if damageTaken < 0 then
-		npcRecord.onHit:Fire(attacker)
-	end
+	npcRecord.hitPoints = math.clamp(npcRecord.hitPoints + damageTaken, 0, HumanConstants.MAX_HP)
 
 	if npcRecord.hitPoints <= 0 then
 		npcRecord.onDeath:Fire(attacker)
+		return
+	end
+
+	if damageTaken < 0 then
+		npcRecord.onHit:Fire(attacker)
 	end
 end
 function NPCHealth:UpdateLimbHealth(
@@ -47,10 +48,10 @@ function NPCHealth:UpdateLimbHealth(
 	end
 	------------------------------------------------------------------------------------------------
 	local toEnum = LimbsEnum[limbHit]
-	local maxLimbHP = self.limbHealth[toEnum]
+	local maxLimbHP = self.LimbHealth[toEnum]
 	local hp = bodyParts[toEnum].HP
 
-	hp += math.clamp(hp + damageTaken, HumanConstants.LIMB_DISMEMBER_HP, maxLimbHP)
+	bodyParts[toEnum].HP = math.clamp(hp + damageTaken, HumanConstants.LIMB_DISMEMBER_HP, maxLimbHP)
 
 	if hp <= HumanConstants.LIMB_DISMEMBER_HP then
 		npcRecord.onDismemberLimb:Fire(limbHit)

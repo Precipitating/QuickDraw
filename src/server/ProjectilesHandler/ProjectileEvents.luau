@@ -57,16 +57,15 @@ local function GetHumanoidFromHit(instance: Instance): Humanoid?
 end
 
 function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, owner: Player?, bulletCosmetic: BasePart?)
-	local hitHumanoid = GetHumanoidFromHit(raycastResult.Instance)
-	local isAccessory = raycastResult.Instance:FindFirstAncestorOfClass("Accessory")
-
-	if not hitHumanoid then
+	local parent = raycastResult.Instance.Parent
+	if not parent then
 		return false
 	end
 
-	local parent = raycastResult.Instance.Parent
+	local hitHumanoid = GetHumanoidFromHit(parent)
+	local isNPC = parent:GetAttribute("npcId")
 
-	if not parent then
+	if not hitHumanoid and not isNPC then
 		return false
 	end
 
@@ -74,12 +73,14 @@ function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, ow
 		return false
 	end
 
-	if isAccessory then
-		return false
-	end
-
 	-- hit body part
-	GunSignals.PlayerHit:Fire(raycastResult, hitHumanoid, hitData.Damage, bulletCosmetic, owner or hitData.Owner)
+	GunSignals.PlayerHit:Fire(
+		raycastResult,
+		hitHumanoid or isNPC,
+		hitData.Damage,
+		bulletCosmetic,
+		owner or hitData.Owner
+	)
 	print(`{raycastResult.Instance.Name} hit!`)
 	return true
 end

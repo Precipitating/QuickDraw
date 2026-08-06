@@ -2,6 +2,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AnimalHandler = require(ServerScriptService.Server.Classes.Animal.AnimalHandler)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
+local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local GunSignals = require(script.Parent.GunSignals)
 local ServerGunHandler = require(script.Parent.ServerGunHandler)
@@ -43,7 +44,7 @@ return {
 	GunSignals.PlayerHit:Connect(
 		function(
 			hitObj: RaycastResult?,
-			playerHumanoid: Humanoid?,
+			playerHumanoidOrID: Humanoid? | number?,
 			damageInflicted: number,
 			cosmeticBullet: BasePart?,
 			shooter: Player? | Model?,
@@ -54,11 +55,16 @@ return {
 				return
 			end
 
-			if not playerHumanoid then
+			if not playerHumanoidOrID then
 				warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
 				return
 			end
-			local humanClass = PlayerManager:GetHumanClass(playerHumanoid)
+			local humanClass = nil --
+			if typeof(playerHumanoidOrID) == "number" then
+				humanClass = LightweightNpcsServerAPI:GetNpcById(playerHumanoidOrID)
+			else
+				humanClass = PlayerManager:GetHumanClass(playerHumanoidOrID)
+			end
 
 			-- if model, NPC or turret shot
 			-- if player, player shot

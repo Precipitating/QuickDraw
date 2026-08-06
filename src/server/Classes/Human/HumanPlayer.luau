@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
@@ -58,7 +59,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self:SetupBloodEmitters()
 	self.Player = player
 	self.ClassType = "HumanPlayer"
-	self.HumanType = "Player"
+	self.HumanType = HumanTypeEnum.Player
 	self.JumpSignalled = false
 	self.RollSignalled = false
 	self.KickSignalled = false

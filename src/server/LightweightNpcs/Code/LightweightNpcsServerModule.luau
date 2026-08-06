@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lightweightNpcsServerModule = {} :: lightweightNpcsServerModuleType
 
+local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local NPCHealth = require(script.Parent.NPCHealth)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MessageId = require(game.ReplicatedFirst.LightweightNpcsClient.Code.MessageId)
@@ -387,15 +388,18 @@ function lightweightNpcsServerModule:CreateNpc(
 		hitPoints = npcConfig.maxHitPoints,
 		isOnGround = false,
 		bodyParts = limbs,
+		HRP = serverRigTemplate:FindFirstChild("HumanoidRootPart"),
 		currentEquipped = nil,
 		storedThrowable = nil,
 		storedWeapon = nil,
+		humanType = HumanTypeEnum.NPC,
 
 		onThink = SignalModule.new(),
 		onFellOffMap = SignalModule.new(),
 		onDeath = SignalModule.new(),
 		onCleanup = SignalModule.new(),
 		onHit = SignalModule.new(),
+		onLimbHit = SignalModule.new(),
 		onDisableLimb = SignalModule.new(),
 		onDismemberLimb = SignalModule.new(),
 		onBumpIntoWall = SignalModule.new(),
@@ -429,7 +433,10 @@ function lightweightNpcsServerModule:CheckForHitpointDeath(npcRecord: NpcTypes.n
 	if npcRecord.hitPoints <= 0 then
 		--die
 		npcRecord.onDeath:Fire()
-		npcRecord.internal.deleteFlag = true
+
+		task.delay(30, function()
+			npcRecord.internal.deleteFlag = true
+		end)
 	end
 end
 
@@ -442,10 +449,18 @@ function lightweightNpcsServerModule:CheckForCleanup(npcRecord: NpcTypes.npcReco
 	return false
 end
 
+function lightweightNpcsServerModule:GetNPCRecordFromID(id: number)
+	return lightweightNpcsServerModule.npcRecords[id]
+end
+
 function lightweightNpcsServerModule:DestroyNpc(npcRecord: NpcTypes.npcRecordType)
 	npcRecord.onCleanup:Fire()
 	if npcRecord.instance then
 		npcRecord.instance:Destroy()
+	end
+
+	if npcRecord.serverRig then
+		npcRecord.serverRig:Destroy()
 	end
 	self.npcRecords[npcRecord.npcId] = nil
 
@@ -460,7 +475,6 @@ function lightweightNpcsServerModule:DestroyNpc(npcRecord: NpcTypes.npcRecordTyp
 	npcRecord.onBumpIntoWall:Destroy()
 	npcRecord.onDisableLimb:Destroy()
 	npcRecord.onDismemberLimb:Destroy()
-	npcRecord.onBumpIntoWall:Destroy()
 	npcRecord.onRagdoll:Destroy()
 	npcRecord.onHit:Destroy()
 	npcRecord.onPoseChange:Destroy()

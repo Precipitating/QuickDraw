@@ -40,8 +40,8 @@ function module:SpawnNpc(template: Model, configuration: any, originCFrame: CFra
 	return npcRecord
 end
 
--- function module:GetNpcByHitbox(hitbox: BasePart)
--- 	return lightweightNpcsServerModule:GetNpcByHitBox(hitbox)
--- end
+function module:GetNpcById(id: number)
+	return lightweightNpcsServerModule:GetNPCRecordFromID(id)
+end
 
 return module

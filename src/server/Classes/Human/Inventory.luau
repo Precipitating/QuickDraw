@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
@@ -75,7 +76,7 @@ function Inventory:RemoveWeapon(weaponType: string)
 		return false
 	end
 
-	if self.Owner.HumanType == "Player" then
+	if self.Owner.HumanType == HumanTypeEnum.Player then
 		local backpack = self.Owner.Player:FindFirstChild("Backpack")
 		if not backpack then
 			warn("[Inventory:RemoveWeapon] Missing backpack")
@@ -142,7 +143,7 @@ function Inventory:EquipWeapon(weaponType: string)
 		return false
 	end
 
-	if ownerType == "Player" then
+	if ownerType == HumanTypeEnum.Player then
 		local player = self.Owner.Player
 		local backpack = player.Backpack
 		weapon.Tool.Parent = backpack

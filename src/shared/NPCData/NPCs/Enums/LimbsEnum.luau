@@ -1,4 +1,4 @@
-return {
+local LimbsEnum = {
 	Head = 1,
 	UpperTorso = 2,
 	LowerTorso = 3,
@@ -17,3 +17,10 @@ return {
 	RightLowerLeg = 14,
 	RightFoot = 15,
 }
+
+-- generate the reverse (number -> name) entries
+for name, id in LimbsEnum do
+	LimbsEnum[id] = name
+end
+
+return LimbsEnum

@@ -2,13 +2,18 @@ local NPCHealth = require(script.Parent.NPCHealth)
 local NpcTypes = require(script.Parent.NpcTypes)
 local MathUtils = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.MathUtils)
 local NPC_CULL_DISTANCE = 400
+local NpcStateModule = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcState)
 local NPCLogic = {}
 
 function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
-	npcRecord:AddClientEvent({ id = "Initialized" })
+	npcRecord:AddClientEvent({ id = "Initialize" })
 
 	npcRecord.onThink:Connect(function(dt)
 		if tick() > npcRecord.data.nextMove then
+			if npcRecord.npcState == NpcStateModule.Dying then
+				return
+			end
+
 			npcRecord.data.nextMove = tick() + 0.5 + math.random()
 
 			if math.random() > 0.5 then
@@ -23,6 +28,29 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 			end
 		end
 	end)
+
+	npcRecord.onLimbHit:Connect(
+		function(
+			damage: number,
+			dmgMultiplier: number,
+			limbHit: number,
+			shotPos: Vector3,
+			shotPosNormal: Vector3,
+			attacker: any?
+		)
+			local totalDmg = damage * dmgMultiplier
+			NPCHealth:UpdateLimbHealth(npcRecord, limbHit, -totalDmg)
+			npcRecord:AddClientEvent({
+				id = "LimbHit",
+				limb = limbHit,
+				position = shotPos,
+				normal = shotPosNormal,
+				attacker = attacker,
+			})
+		end
+	)
+
+	npcRecord.onHit:Connect(function(damageData, attacker: any?) end)
 
 	npcRecord.onCullCheck:Connect(function()
 		--Basic culling, but you could technically mask NPCs to individual players
@@ -41,9 +69,14 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 	end)
 
 	npcRecord.onDeath:Connect(function(attacker: any?)
+		if npcRecord.npcState == NpcStateModule.Dying then
+			return
+		end
+		npcRecord.npcState = NpcStateModule.Dying
+		warn("onDeath called")
 		if npcRecord.instance then
 			npcRecord:Move(Vector3.zero)
-			npcRecord:AddClientEvent({ id = "Death", attacker = attacker })
+			npcRecord:AddClientEvent({ id = "Dead", attacker = attacker })
 		end
 	end)
 

@@ -5,13 +5,17 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local TweenService = game:GetService("TweenService")
 local ServerScreenEffects = require(script.Parent.ServerScreenEffects)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
+local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
+local NpcStateModule = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcState)
+local NpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
 type Human = ClassTypes.Human
 type HumanPlayer = ClassTypes.HumanPlayer
-type HumanNPC = ClassTypes.HumanNPC
+type HumanNPC = NpcTypes.npcRecordType
 
 local LimbDamageMultiplier = {
 	Head = 2.5,
@@ -35,6 +39,7 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 	local highlight = Instance.new("Highlight")
 	highlight.OutlineTransparency = 1
 	highlight.DepthMode = Enum.HighlightDepthMode.Occluded
+	highlight.FillColor = Color3.fromRGB(255, 0, 0)
 	highlight.Parent = humanClass.BodyParts[limbName]
 	Debris:AddItem(highlight, 0.5)
 	TweenService:Create(highlight, TweenInfo.new(0.5), { FillTransparency = 1 }):Play()
@@ -45,75 +50,43 @@ function DamageModule:ApplyDamage(
 	limbName: string,
 	damage: number,
 	shotPos: Vector3,
+	shotPosNormal: Vector3,
 	shooter: Player | Model
 )
-	if not human or not human.LimbHealth or not human.LimbHealth[limbName] or human.Dead or human.Invincible then
+	if not human then
 		return
 	end
-	local gun = human.Inventory and human.Inventory:GetGun()
 
-	if gun then
-		local reloading = gun.Reloading
-
-		-- stop reloading if hurt
-		if reloading then
-			gun:StopReloading()
-		end
-	end
-
-	if human.HumanType == "NPC" then
-		human = human :: HumanNPC
-		local ai = human.AI
-
-		-- if npc damaged on patrol, seek immediately the target
-		-- only applies to SHOT damage type
-
-		if ai and ai.StateMachine:GetState() == "Patrol" then
-			local shooterCharacter = nil
-
-			-- If table, should be the Human class, so .Character should be its model.
-			-- Same with if it's Player instance
-
-			if
-				(typeof(shooter) == "table" and shooter.Character)
-				or typeof(shooter) == "Instance" and shooter:IsA("Player")
-			then
-				shooterCharacter = shooter.Character
-			else
-				shooterCharacter = shooter
-			end
-
-			-- Check if shooterCharacter is valid (not nil and not an empty table)
-			local isValidTarget = false
-
-			if typeof(shooterCharacter) == "Instance" then
-				isValidTarget = true
-			elseif typeof(shooterCharacter) == "table" then
-				isValidTarget = next(shooterCharacter) ~= nil -- True only if table has elements
-			end
-
-			if isValidTarget then
-				ai.StateMachine:Transition("Seek", {
-					Target = shooterCharacter,
-				})
-			else
-				warn("Invalid or empty shooter target:", shooterCharacter)
-			end
-		end
-	elseif human.HumanType == "Player" then
-		human = human :: HumanPlayer
-		human:AdjustGrayscale()
-	end
-
+	local isPlayer = human and human.humanType == HumanTypeEnum.Player
+	local isNPC = human and human.humanType == HumanTypeEnum.NPC
+	local gun = nil
 	local multiplier = LimbDamageMultiplier[limbName] or 1
+	--
+	if isPlayer then
+		local humanPlayer = human :: HumanPlayer
+		gun = humanPlayer.Inventory and humanPlayer.Inventory:GetGun()
+		if gun then
+			local reloading = gun.Reloading
 
-	if not human or human.Dead or not human.OnHit then
-		return
+			-- stop reloading if hurt
+			if reloading then
+				gun:StopReloading()
+			end
+		end
+
+		humanPlayer:AdjustGrayscale()
+
+		if not humanPlayer or humanPlayer.Dead or not humanPlayer.OnHit then
+			return
+		end
+
+		humanPlayer:OnLimbHit(damage, multiplier, LimbsEnum[limbName], shooter)
+
+		ApplyDamageHighlight(humanPlayer, limbName)
+	elseif isNPC then
+		local humanNPC = human :: NpcTypes.npcRecordType
+		humanNPC.onLimbHit:Fire(damage, multiplier, limbName, shotPos, shotPosNormal, shooter)
 	end
-
-	human:OnHit(damage, multiplier, limbName, shooter)
-
-	ApplyDamageHighlight(human, limbName)
 end
 
 function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.InflictingDamage)
@@ -200,10 +173,10 @@ local function ApplyHumanRepercussionsAfterShot(human: Human, cosmeticBullet: Ba
 end
 
 local function CheckAndHandleLimbDestroyed(human: Human, damage: number, limbName: string)
-	local limbHealth = human.LimbHealth
-	local limbHP = limbHealth[limbName]
+	local limbHealth = human.LimbHealth or human.BodyParts
+	local limbHP = limbHealth[limbName] or limbHealth[LimbsEnum[limbName]]
 
-	if limbHP and limbHealth[limbName] <= 0 then
+	if limbHP <= 0 then
 		HandleLimbDestroyed(human, limbName, damage)
 	end
 end
@@ -288,7 +261,7 @@ function DamageModule.DamageHuman(
 		return
 	end
 
-	local limbHealth = human.LimbHealth
+	local limbHealth = human.LimbHealth or human.bodyParts
 	local damage = damageData.Damage
 	local shooter = damageData.Shooter
 	local shotPos = if damageData.Type == "Shot" then damageData.ShotPosition else nil
@@ -297,7 +270,8 @@ function DamageModule.DamageHuman(
 		warn("[DamageHuman] Invalid hit object")
 		return
 	end
-	if human.Dead or not limbHealth then
+
+	if (human.Dead or human.npcState == NpcStateModule.Dying) or not limbHealth then
 		return
 	end
 
@@ -316,7 +290,7 @@ function DamageModule.DamageHuman(
 		limbName = instanceRef.Name
 	end
 
-	if not limbHealth[limbName] then
+	if not limbHealth[limbName] and not limbHealth[LimbsEnum[limbName]] then
 		return
 	end
 
@@ -329,9 +303,9 @@ function DamageModule.DamageHuman(
 
 	-- Apply special logic that may occur after being shot by a specific bullet type
 
-	DamageModule:ApplyDamage(human, limbName, damage, shotPos, shooter)
-	ApplyHumanRepercussionsAfterShot(human, cosmeticBulletObj)
+	DamageModule:ApplyDamage(human, limbName, damage, shotPos, hitObj.Normal, shooter)
 
+	ApplyHumanRepercussionsAfterShot(human, cosmeticBulletObj)
 	CheckAndHandleLimbDestroyed(human, damage, limbName)
 	CheckAndHandleDeadHuman(human, shooter)
 	if not human or not human.Health then
