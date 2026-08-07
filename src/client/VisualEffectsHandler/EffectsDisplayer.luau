@@ -197,6 +197,18 @@ function EffectsDisplayer:DisplaySpreadParticle(buffer, parent: BasePart)
 	Debris:AddItem(particleEffect, data.Duration)
 end
 
+function EffectsDisplayer:DisplaySpreadParticleClient(particleName: string, duration: number, parent: BasePart)
+	if not parent then
+		return
+	end
+
+	local particleEffect = if Particles[particleName] then Particles[particleName]:Clone() else nil
+
+	particleEffect.Parent = parent
+	particleEffect:Emit(1)
+	Debris:AddItem(particleEffect, duration)
+end
+
 function EffectsDisplayer:DisplayBloodHitFromServer(buffer)
 	local data = Sera.Deserialize(SeraSchemas.DisplayBloodHitSchema, buffer)
 

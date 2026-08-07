@@ -281,10 +281,18 @@ function ProjectileEvents:FragmentHitHumanoid(
 	end
 
 	local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
+	local isNPC = if owner and owner.Character then owner.Character:GetAttribute("npcId") else nil
 
 	if throwableData.Type == "Explosive" then
 		if humanoidType == "Human" then
-			GunSignals.PlayerHit:Fire(raycastResult, humanoid, throwableData.Damage, cosmeticBullet, isPlayer, true)
+			GunSignals.PlayerHit:Fire(
+				raycastResult,
+				if isNPC then isNPC else humanoid,
+				throwableData.Damage,
+				cosmeticBullet,
+				isPlayer,
+				true
+			)
 		elseif humanoidType == "Animal" then
 			GunSignals.AnimalHit:Fire(throwableData, raycastResult, isPlayer)
 		end
@@ -294,7 +302,7 @@ function ProjectileEvents:FragmentHitHumanoid(
 			throwableData.SpreadDuration,
 			throwableData.Damage,
 			raycastResult.Instance,
-			humanoid,
+			if isNPC then isNPC else humanoid,
 			isPlayer,
 			humanoidType,
 			true

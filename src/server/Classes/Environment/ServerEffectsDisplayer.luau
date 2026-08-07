@@ -32,7 +32,7 @@ function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: 
 end
 function ServerEffectsDisplayer:DisplaySpreadParticle(
 	destroyableParticleName: string,
-	duration: number,
+	duration: number?,
 	parent: BasePart?
 )
 	if not EffectsLimiter:TryConsume() then

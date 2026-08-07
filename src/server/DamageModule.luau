@@ -50,7 +50,6 @@ function DamageModule:ApplyDamage(
 	limbName: string,
 	damage: number,
 	shotPos: Vector3,
-	shotPosNormal: Vector3,
 	shooter: Player | Model
 )
 	if not human then
@@ -58,7 +57,6 @@ function DamageModule:ApplyDamage(
 	end
 
 	local isPlayer = human and human.humanType == HumanTypeEnum.Player
-	local isNPC = human and human.humanType == HumanTypeEnum.NPC
 	local gun = nil
 	local multiplier = LimbDamageMultiplier[limbName] or 1
 	--
@@ -83,9 +81,6 @@ function DamageModule:ApplyDamage(
 		humanPlayer:OnLimbHit(damage, multiplier, LimbsEnum[limbName], shooter)
 
 		ApplyDamageHighlight(humanPlayer, limbName)
-	elseif isNPC then
-		local humanNPC = human :: NpcTypes.npcRecordType
-		humanNPC.onLimbHit:Fire(damage, multiplier, limbName, shotPos, shotPosNormal, shooter)
 	end
 end
 
@@ -261,7 +256,7 @@ function DamageModule.DamageHuman(
 		return
 	end
 
-	local limbHealth = human.LimbHealth or human.bodyParts
+	local limbHealth = human.LimbHealth
 	local damage = damageData.Damage
 	local shooter = damageData.Shooter
 	local shotPos = if damageData.Type == "Shot" then damageData.ShotPosition else nil
@@ -271,7 +266,7 @@ function DamageModule.DamageHuman(
 		return
 	end
 
-	if (human.Dead or human.npcState == NpcStateModule.Dying) or not limbHealth then
+	if human.Dead or not limbHealth then
 		return
 	end
 
@@ -303,7 +298,7 @@ function DamageModule.DamageHuman(
 
 	-- Apply special logic that may occur after being shot by a specific bullet type
 
-	DamageModule:ApplyDamage(human, limbName, damage, shotPos, hitObj.Normal, shooter)
+	DamageModule:ApplyDamage(human, limbName, damage, shotPos, shooter)
 
 	ApplyHumanRepercussionsAfterShot(human, cosmeticBulletObj)
 	CheckAndHandleLimbDestroyed(human, damage, limbName)

@@ -393,7 +393,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		storedThrowable = nil,
 		storedWeapon = nil,
 		humanType = HumanTypeEnum.NPC,
-
+		invincible = true,
 		onThink = SignalModule.new(),
 		onFellOffMap = SignalModule.new(),
 		onDeath = SignalModule.new(),

@@ -30,14 +30,14 @@ function PlayerManager:AddHumanClassNPC(
 	return HumanRegistry:Add(humanoid, humanClass)
 end
 
-function PlayerManager:RemoveHumanClass(humanoid: Humanoid?)
+function PlayerManager:RemoveHumanClass(humanoid: Humanoid)
 	if not humanoid then
 		return
 	end
 	HumanRegistry:Remove(humanoid)
 end
 
-function PlayerManager:GetHumanClass(key: Humanoid)
+function PlayerManager:GetHumanClass(key: Humanoid?)
 	return HumanRegistry:Get(key)
 end
 

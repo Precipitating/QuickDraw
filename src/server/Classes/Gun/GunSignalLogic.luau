@@ -83,6 +83,13 @@ return {
 				CanAffectShooter = canAffectShooter,
 			}
 
+			-- Handle NPC logic elsewhere, combining it in DamageModule is messy.
+			if typeof(playerHumanoidOrID) == "number" then
+				humanClass.onHit:Fire(gunShotData)
+				return
+			end
+
+			-- Should call if player gets hit.
 			DamageModule.DamageHuman(gunShotData)
 		end
 	),
@@ -93,7 +100,7 @@ return {
 			spreadDuration: number,
 			damageInflicted: number,
 			limb: MeshPart | BasePart,
-			humanoid: Humanoid,
+			humanoidOrNpcId: Humanoid | number,
 			shooter: Player?,
 			humanoidType: string,
 			canAffectShooter: boolean?
@@ -102,27 +109,28 @@ return {
 				warn("[GunSignals.PlayerHit] Limb reference invalid")
 				return
 			end
-			if not humanoid then
+			if not humanoidOrNpcId then
 				warn("[GunSignals.PlayerHit] humanoid reference invalid")
 				return
 			end
 
 			local targetClass = nil
-
+			local target = humanoidOrNpcId :: any
 			if humanoidType == "Human" then
-				targetClass = PlayerManager:GetHumanClass(humanoid)
+				targetClass = PlayerManager:GetHumanClass(target)
+					or LightweightNpcsServerAPI:GetNpcById(humanoidOrNpcId :: number)
 
 				if not targetClass then
 					warn("[InflictLimbDamage] humanClass invalid")
 					return
 				end
 
-				if targetClass.Invincible then
+				if targetClass.Invincible or targetClass.invincible then
 					warn(`Invincible, not inflicting limb damage`)
 					return
 				end
 			elseif humanoidType == "Animal" then
-				targetClass = AnimalHandler:GetAnimal(humanoid)
+				targetClass = AnimalHandler:GetAnimal(humanoidOrNpcId :: Humanoid)
 				if not targetClass then
 					warn("[InflictLimbDamage] animalClass invalid")
 					return

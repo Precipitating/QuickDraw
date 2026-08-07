@@ -68,6 +68,7 @@ export type npcRecordType = {
 	storedWeapon: number?,
 	storedThrowable: number?,
 	humanType: number,
+	invincible: boolean,
 
 	--Methods
 	PlayAnimation: (

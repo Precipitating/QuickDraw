@@ -6,6 +6,7 @@ local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local EffectsDisplayer = require(StarterPlayer.StarterPlayerScripts.Client.VisualEffectsHandler.EffectsDisplayer)
 local clientNpcModule = require(ReplicatedFirst.LightweightNpcsClient.Code.LightweightNpcsClientModule)
 local ClientNpcTypes = require(ReplicatedFirst.LightweightNpcsClient.Code.ClientNpcTypes)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 local function RagdollNPC(model: Model?, enabled: boolean)
 	if not model then
@@ -120,11 +121,16 @@ end
 
 local function HitLimb(
 	npcRecord: ClientNpcTypes.clientNpcRecordType,
-	limbHit: string,
+	limbHit: number,
 	shotPos: Vector3,
 	shotPosNormal: Vector3
 )
-	EffectsDisplayer:DisplayBloodHit(shotPos, shotPosNormal)
+	-- convert to string
+	limbHit = LimbsEnum[limbHit]
+
+	if shotPos and shotPosNormal then
+		EffectsDisplayer:DisplayBloodHit(shotPos, shotPosNormal)
+	end
 
 	if not limbHit then
 		warn("Missing string for hit limb")
@@ -143,21 +149,12 @@ local function HitLimb(
 		warn("Missing npc limb reference for hit limb")
 		return
 	end
-	--ApplyDamageHighlight(limb)
+	ApplyDamageHighlight(limb)
 end
 clientNpcModule.onNpcLoad:Connect(function(npcRecord: ClientNpcTypes.clientNpcRecordType)
 	npcRecord.onCustomEvent:Connect(function(event: any, serverTime: number)
-		if event.id == "Bump" then
-			if npcRecord.instance then
-				local head = npcRecord.instance:FindFirstChild("Head", true) :: BasePart
-				if head then
-					head.Color = Color3.new(1, 1, 1)
-					task.spawn(function()
-						task.wait(0.1)
-						head.Color = BrickColor.Yellow().Color
-					end)
-				end
-			end
+		if event.id == "Initialize" then
+			SetupNPCRagdoll(npcRecord)
 		elseif event.id == "Dead" then
 			local attacker = event.attacker
 			local character = npcRecord.instance
@@ -175,13 +172,26 @@ clientNpcModule.onNpcLoad:Connect(function(npcRecord: ClientNpcTypes.clientNpcRe
 			local shotPos = event.position
 			local shotPosNormal = event.normal
 
-			if not limbHit or not shotPos or not shotPosNormal then
+			if not limbHit then
 				return
 			end
 
 			HitLimb(npcRecord, limbHit, shotPos, shotPosNormal)
-		elseif event.id == "Initialize" then
-			SetupNPCRagdoll(npcRecord)
+		elseif event.id == "ToggleInvincibility" then
+			ToggleInvincibleHighlight(npcRecord.instance, event.state)
+		elseif event.id == "SpreadParticle" then
+			local particleName = event.ParticleName
+			local duration = event.Duration
+			-- num -> string
+			local limbName = LimbsEnum[event.limbName]
+			local npcCharacter = npcRecord.instance
+
+			if not npcCharacter then
+				Utility.Warn(`SpreadParticle NPC client event failed, npc model missing`)
+				return
+			end
+
+			EffectsDisplayer:DisplaySpreadParticleClient(particleName, duration, npcCharacter:FindFirstChild(limbName))
 		end
 	end)
 end)
