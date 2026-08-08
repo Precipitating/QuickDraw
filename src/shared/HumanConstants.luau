@@ -1,6 +1,6 @@
 return {
 	MAX_STAMINA = 100,
-	MAX_HP = 400,
+	MAX_HP = 685,
 	STAMINA_DRAIN_RATE = 10, -- per sec
 
 	JUMP_DRAIN = 30,

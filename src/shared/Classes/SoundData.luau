@@ -121,6 +121,13 @@ SoundData.Sounds = {
 		Group = "SFX",
 		PoolSize = 6,
 	},
+	HumanDeathGasp = {
+		SoundId = "rbxassetid://9114029789",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+		PoolSize = 6,
+	},
 	BoneSnap = {
 		SoundId = "rbxassetid://137260412436272",
 		Volume = 4,

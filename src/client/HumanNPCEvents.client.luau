@@ -1,12 +1,15 @@
-local ReplicatedFirst = game:GetService("ReplicatedFirst")
+-- Sync NPC data from server, so client handles the NPC visuals
+-- NPC position is handled by server
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 local TweenService = game:GetService("TweenService")
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
-local EffectsDisplayer = require(StarterPlayer.StarterPlayerScripts.Client.VisualEffectsHandler.EffectsDisplayer)
-local clientNpcModule = require(ReplicatedFirst.LightweightNpcsClient.Code.LightweightNpcsClientModule)
-local ClientNpcTypes = require(ReplicatedFirst.LightweightNpcsClient.Code.ClientNpcTypes)
+local EffectsDisplayer = require(script.Parent.VisualEffectsHandler.EffectsDisplayer)
+local clientNpcModule = require(script.Parent.LightweightNpcsClient.Code.LightweightNpcsClientModule)
+local ClientNpcTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.ClientNpcTypes)
+local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local BloodFlowEmitter = ReplicatedStorage.Shared.Templates.BloodFlow
 
 local function RagdollNPC(model: Model?, enabled: boolean)
 	if not model then
@@ -22,13 +25,15 @@ local function RagdollNPC(model: Model?, enabled: boolean)
 
 	for _, part in model:GetDescendants() do
 		if part:IsA("AnimationConstraint") then
-			part.Enabled = if enabled then false else true
+			part.Enabled = not enabled
 		elseif part:IsA("BallSocketConstraint") and isDead then
 			part.MaxFrictionTorque = 10
 		end
 
 		if part:IsA("MeshPart") and part.CanCollide == false then
 			part.CanCollide = enabled
+		elseif part.Name == "HumanoidRootPart" then
+			part.Anchored = enabled
 		end
 	end
 end
@@ -61,6 +66,22 @@ local function SetupNPCRagdoll(npcRecord: ClientNpcTypes.clientNpcRecordType)
 			return
 		end
 	end)
+end
+
+local function StoreBodyParts(npcRecord: ClientNpcTypes.clientNpcRecordType)
+	if not npcRecord or not npcRecord.instance then
+		Utility.Warn("[StoreBodyParts] Missing character/NPC record")
+		return
+	end
+	local character = npcRecord.instance
+
+	for _, part in character:GetChildren() do
+		if not part:IsA("MeshPart") then
+			continue
+		end
+
+		npcRecord.bodyParts[LimbsEnum[part.Name]] = part
+	end
 end
 
 local function SetNPCDead(character: Model?)
@@ -133,7 +154,7 @@ local function HitLimb(
 	end
 
 	if not limbHit then
-		warn("Missing string for hit limb")
+		debug.traceback("Missing string for hit limb", 5)
 		return
 	end
 
@@ -151,47 +172,238 @@ local function HitLimb(
 	end
 	ApplyDamageHighlight(limb)
 end
+
+local function SetupBloodEmitters(npcRecords: ClientNpcTypes.clientNpcRecordType)
+	local model = npcRecords.instance
+	if not model then
+		Utility.Warn("Failed to get BloodEmitters reference")
+		return
+	end
+
+	local upperTorso = Utility.GetInstance(model, true, "UpperTorso")
+	local lowerTorso = Utility.GetInstance(model, true, "LowerTorso")
+
+	if not upperTorso or not lowerTorso then
+		error("[SetupBloodEmitters] Failed to get torso references")
+	end
+
+	-- legs
+	for limbId, attachmentName in CommonNPCData.DISMEMBER_ATTACHMENTS do
+		local attachment = if lowerTorso:FindFirstChild(attachmentName)
+			then lowerTorso:FindFirstChild(attachmentName)
+			else upperTorso:FindFirstChild(attachmentName)
+		if not attachment then
+			warn("Attachment not found")
+			continue
+		end
+		local bloodEmitter: ParticleEmitter = BloodFlowEmitter:Clone()
+		local isLeg = limbId == LimbsEnum.LeftUpperLeg
+			or LimbsEnum.LeftLowerLeg
+			or LimbsEnum.RightUpperLeg
+			or LimbsEnum.RightLowerLeg
+		local isHead = limbId == LimbsEnum.Head
+		local isArm = limbId == LimbsEnum.LeftUpperArm
+			or LimbsEnum.LeftLowerArm
+			or LimbsEnum.RightUpperArm
+			or LimbsEnum.RightLowerArm
+
+		if isLeg then
+			bloodEmitter.EmissionDirection = Enum.NormalId.Bottom
+		-- arm
+		elseif isArm then
+			bloodEmitter.EmissionDirection = if isArm == LimbsEnum.LeftUpperArm
+				then Enum.NormalId.Left
+				else Enum.NormalId.Right
+		elseif isHead then
+			bloodEmitter.EmissionDirection = Enum.NormalId.Top
+		end
+
+		npcRecords.bloodEmitterRefs[limbId] = bloodEmitter
+		bloodEmitter.Enabled = false
+		bloodEmitter.Parent = attachment
+	end
+end
+--------------------------------------------------------------------------------------------------------------------
+local StateEvents = {
+	Initialize = function(npcRecord: ClientNpcTypes.clientNpcRecordType)
+		StoreBodyParts(npcRecord)
+		SetupNPCRagdoll(npcRecord)
+		SetupBloodEmitters(npcRecord)
+	end,
+
+	Dead = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		local attacker = event.attacker
+		local character = npcRecord.instance
+		if not character then
+			return
+		end
+		SetNPCDead(character)
+		npcRecord.isDead = true
+	end,
+
+	InvincibleToggle = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		ToggleInvincibleHighlight(npcRecord.instance, event.state)
+	end,
+
+	SpreadParticle = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		local particleName = event.ParticleName
+		local duration = event.Duration
+		-- num -> string
+		local limbName = LimbsEnum[event.limbName]
+		local npcCharacter = npcRecord.instance
+
+		if not npcCharacter then
+			Utility.Warn(`SpreadParticle NPC client event failed, npc model missing`)
+			return
+		end
+
+		EffectsDisplayer:DisplaySpreadParticleClient(particleName, duration, npcCharacter:FindFirstChild(limbName))
+	end,
+
+	LimbHit = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		if npcRecord.isDead then
+			return
+		end
+
+		local limbHit = event.limb
+		local shotPos = event.position
+		local shotPosNormal = event.normal
+
+		if not limbHit then
+			return
+		end
+		HitLimb(npcRecord, limbHit, shotPos, shotPosNormal)
+	end,
+
+	HealAll = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		for limbId, part in npcRecord.bodyParts do
+			part.Transparency = 0
+			part.CanCollide = true
+			part.CanQuery = true
+			part.CanTouch = true
+
+			---------------------------------------------------------------------------------------------------------
+			local hasConstraint: AnimationConstraint? = part:FindFirstChildOfClass("AnimationConstraint")
+			local hasBallSocket: BallSocketConstraint? = part:FindFirstChildOfClass("BallSocketConstraint")
+			local isBleeding: ParticleEmitter? = npcRecord.bloodEmitterRefs
+				and npcRecord.bloodEmitterRefs[limbId] :: ParticleEmitter?
+
+			---------------------------------------------------------------------------------------------------------
+			if hasConstraint then
+				hasConstraint.Enabled = true
+			end
+
+			if hasBallSocket then
+				hasBallSocket.LimitsEnabled = true
+				hasBallSocket.MaxFrictionTorque = CommonNPCData.BALL_SOCKET_MAX_FRICTION_TORQUES[limbId]
+			end
+
+			if isBleeding then
+				isBleeding.Enabled = false
+			end
+		end
+	end,
+
+	DismemberLimb = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		local partToDismember: number = event.limb
+
+		if not partToDismember then
+			Utility.Warn("Cannot dismember part on client, missing limb number ref")
+			return
+		end
+
+		local shouldBleed = CommonNPCData.DISMEMBER_ATTACHMENTS[partToDismember]
+		local bodyPart: BasePart = npcRecord.bodyParts[partToDismember] :: BasePart
+
+		if not bodyPart then
+			Utility.Warn("Cannot dismember part on client, missing limb  ref")
+			return
+		end
+
+		-- 1. If part dismembered can bleed, enable its particle.
+		if shouldBleed then
+			local bloodLeakParticle: ParticleEmitter? = npcRecord.bloodEmitterRefs
+				and npcRecord.bloodEmitterRefs[partToDismember] :: ParticleEmitter?
+			if not bloodLeakParticle then
+				Utility.Warn("Cannot get particle to bleed out a dismembered limb")
+				return
+			end
+			bloodLeakParticle.Enabled = true
+		end
+
+		-- 2. Hide all affected limbs, unless its the head which guarantees death
+		if partToDismember == LimbsEnum.Head then
+			bodyPart:Destroy()
+			return
+		end
+		--
+		bodyPart.Transparency = 0.5
+		bodyPart.CanCollide = false
+		bodyPart.CanQuery = false
+
+		-- 2.1 Also hide chained limbs
+		local hasChain = CommonNPCData.LIMB_CHAIN[partToDismember]
+		if hasChain then
+			for _, partID in hasChain do
+				local limbRef: BasePart = npcRecord.bodyParts[partID] :: BasePart
+
+				if limbRef then
+					limbRef.Transparency = 1
+					limbRef.CanCollide = false
+					limbRef.CanQuery = false
+				end
+			end
+		end
+	end,
+
+	DisableLimb = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		local partToDisable: number = event.limb
+
+		if not partToDisable then
+			Utility.Warn("Cannot disable part on client, missing limb number ref")
+			return
+		end
+
+		local limbRef: BasePart = npcRecord.bodyParts[partToDisable] :: BasePart
+
+		if not limbRef then
+			Utility.Warn("Missing limb reference disabling limb on client!")
+			return
+		end
+		local animationConstraint: AnimationConstraint? = limbRef:FindFirstChildOfClass("AnimationConstraint")
+		local ballSocketConstraint: BallSocketConstraint? = limbRef:FindFirstChildOfClass("BallSocketConstraint")
+
+		if not animationConstraint or not ballSocketConstraint then
+			Utility.Warn("Missing animation/ballSocket constraint disabling limb on client!")
+			return
+		end
+
+		animationConstraint.Enabled = false
+		ballSocketConstraint.LimitsEnabled = false
+		ballSocketConstraint.MaxFrictionTorque = 0
+
+		-- Chain disable
+		local hasChain = CommonNPCData.LIMB_CHAIN[partToDisable]
+		if hasChain then
+			for _, partID in hasChain do
+				local childLimb: BasePart = npcRecord.bodyParts[partID] :: BasePart
+				local childAnimationConstraint: AnimationConstraint? =
+					childLimb:FindFirstChildOfClass("AnimationConstraint")
+				local childBallSocketConstraint: BallSocketConstraint? =
+					childLimb:FindFirstChildOfClass("BallSocketConstraint")
+
+				if childAnimationConstraint and childBallSocketConstraint then
+					childAnimationConstraint.Enabled = false
+					childBallSocketConstraint.LimitsEnabled = false
+					childBallSocketConstraint.MaxFrictionTorque = 0
+				end
+			end
+		end
+	end,
+}
+
 clientNpcModule.onNpcLoad:Connect(function(npcRecord: ClientNpcTypes.clientNpcRecordType)
 	npcRecord.onCustomEvent:Connect(function(event: any, serverTime: number)
-		if event.id == "Initialize" then
-			SetupNPCRagdoll(npcRecord)
-		elseif event.id == "Dead" then
-			local attacker = event.attacker
-			local character = npcRecord.instance
-			if not character then
-				return
-			end
-			SetNPCDead(character)
-			npcRecord.isDead = true
-		elseif event.id == "LimbHit" then
-			if npcRecord.isDead then
-				return
-			end
-
-			local limbHit = event.limb
-			local shotPos = event.position
-			local shotPosNormal = event.normal
-
-			if not limbHit then
-				return
-			end
-
-			HitLimb(npcRecord, limbHit, shotPos, shotPosNormal)
-		elseif event.id == "ToggleInvincibility" then
-			ToggleInvincibleHighlight(npcRecord.instance, event.state)
-		elseif event.id == "SpreadParticle" then
-			local particleName = event.ParticleName
-			local duration = event.Duration
-			-- num -> string
-			local limbName = LimbsEnum[event.limbName]
-			local npcCharacter = npcRecord.instance
-
-			if not npcCharacter then
-				Utility.Warn(`SpreadParticle NPC client event failed, npc model missing`)
-				return
-			end
-
-			EffectsDisplayer:DisplaySpreadParticleClient(particleName, duration, npcCharacter:FindFirstChild(limbName))
-		end
+		StateEvents[event.id](npcRecord, event, serverTime)
 	end)
 end)

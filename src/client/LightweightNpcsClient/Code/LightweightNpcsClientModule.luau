@@ -1,12 +1,14 @@
 --!strict
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lightweightNpcsClientModule = {} :: lightweightNpcsClientModuleType
 
-local MessageId = require(game.ReplicatedFirst.LightweightNpcsClient.Code.MessageId)
-local ReadBuffer = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.ReadBuffer)
-local ClientNpcTypes = require(game.ReplicatedFirst.LightweightNpcsClient.Code.ClientNpcTypes)
-local MathUtils = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.MathUtils)
-local SignalModule = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.Signal)
-local PositionBits = require(game.ReplicatedFirst.LightweightNpcsClient.Code.PositionBits)
+local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
+local MessageId = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.MessageId)
+local ReadBuffer = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.ReadBuffer)
+local ClientNpcTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.ClientNpcTypes)
+local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
+local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
+local PositionBits = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.PositionBits)
 
 lightweightNpcsClientModule.onNpcLoad = SignalModule.new()
 
@@ -207,6 +209,13 @@ local function Init()
 					hz = message.hz,
 					invHz = 1 / message.hz,
 					placed = false,
+					bloodEmitterRefs = {
+						[LimbsEnum.LeftUpperArm] = true,
+						[LimbsEnum.LeftUpperLeg] = true,
+						[LimbsEnum.RightUpperLeg] = true,
+						[LimbsEnum.Head] = true,
+					},
+					bodyParts = {},
 					timeline = {},
 					isDead = false,
 					eventline = {},

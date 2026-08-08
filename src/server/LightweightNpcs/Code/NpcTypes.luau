@@ -2,9 +2,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local module = {}
 
 local Signal = require(ReplicatedStorage.Packages.Signal)
-local SignalModule = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.Signal)
-local NpcStateModule = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcState)
-local NpcAnimationTypes = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcAnimationTypes)
+local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
+local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
+local NpcAnimationTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcAnimationTypes)
 type NpcState = NpcStateModule.NpcState
 
 export type npcRecordInternal = {
@@ -51,9 +51,11 @@ export type npcRecordType = {
 	--Primary state
 	npcState: NpcState, --Idle, falling, etc
 	hitPoints: number,
-
+	humanType: number,
+	invincible: boolean,
 	playingAnimations: { [number]: NpcAnimationTypes.AnimEntry? }, --Four channels I guess?
-
+	animator: Animator?,
+	poses: { [string]: AnimationTrack },
 	--Motion
 	position: Vector3,
 	angle: number, --Actual heading
@@ -62,13 +64,12 @@ export type npcRecordType = {
 	isOnGround: boolean, --bool
 	motionVector: Vector3, --setting this controls where the npc will try and move to
 	jump: boolean, --A jump is requested
-	bodyParts: { [number]: { Part: MeshPart, HP: number } },
+	bodyParts: { [number]: { Part: MeshPart, HP: number, State: string } },
 	HRP: BasePart,
+	legless: boolean,
 	currentEquipped: number?,
 	storedWeapon: number?,
 	storedThrowable: number?,
-	humanType: number,
-	invincible: boolean,
 
 	--Methods
 	PlayAnimation: (

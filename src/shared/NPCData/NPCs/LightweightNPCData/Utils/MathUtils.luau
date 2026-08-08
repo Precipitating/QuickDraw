@@ -39,21 +39,13 @@ export type MathUtils = {
 	ClipVelocity: (self: MathUtils, input: Vector3, normal: Vector3, overbounce: number) -> Vector3,
 
 	-- SmoothLerp overloads
-	SmoothLerp: <T>(
-		self: MathUtils,
-		variableA: T,
-		variableB: T,
-		fraction: number,
-		deltaTime: number
-	) -> T,
+	SmoothLerp: <T>(self: MathUtils, variableA: T, variableB: T, fraction: number, deltaTime: number) -> T,
 
 	ValidVector3: (self: MathUtils, vec: any) -> boolean,
 
-
 	PickRandom: <T>(self: MathUtils, tab: { T }) -> T,
 
-	AngleLerp : ( a: number, b : number, fraction : number) -> number
-
+	AngleLerp: (a: number, b: number, fraction: number) -> number,
 }
 
 local MathUtils = {} :: MathUtils
@@ -81,11 +73,7 @@ function MathUtils:PlayerVecToAngle(vec: Vector3): number
 end
 
 function MathUtils:PlayerAngleToVec(angle: number): Vector3
-	return Vector3.new(
-		math.sin(angle),
-		0,
-		math.cos(angle)
-	)
+	return Vector3.new(math.sin(angle), 0, math.cos(angle))
 end
 
 -- dt variable decay function
@@ -109,7 +97,13 @@ function MathUtils:FlatVec(vec: Vector3): Vector3
 end
 
 -- Redirects velocity
-function MathUtils:GroundAccelerate(wishDir: Vector3, wishSpeed: number, accel: number, velocity: Vector3, dt: number): Vector3
+function MathUtils:GroundAccelerate(
+	wishDir: Vector3,
+	wishSpeed: number,
+	accel: number,
+	velocity: Vector3,
+	dt: number
+): Vector3
 	-- Cap velocity
 	local speed = velocity.Magnitude
 	if speed > wishSpeed then
@@ -132,7 +126,13 @@ function MathUtils:GroundAccelerate(wishDir: Vector3, wishSpeed: number, accel: 
 	return velocity + (canPush * pushDir.Unit)
 end
 
-function MathUtils:Accelerate(wishDir: Vector3, wishSpeed: number, accel: number, velocity: Vector3, dt: number): Vector3
+function MathUtils:Accelerate(
+	wishDir: Vector3,
+	wishSpeed: number,
+	accel: number,
+	velocity: Vector3,
+	dt: number
+): Vector3
 	local speed = velocity.Magnitude
 
 	local currentSpeed = velocity:Dot(wishDir)
@@ -199,8 +199,7 @@ function MathUtils:SmoothLerp(variableA: any, variableB: any, fraction: number, 
 	return (variableA :: any):Lerp(variableB, f)
 end
 
-function MathUtils:AngleLerp( a: number, b : number, fraction : number) : number
-	
+function MathUtils:AngleLerp(a: number, b: number, fraction: number): number
 	-- normalize delta to (-pi, pi]
 	local delta = (b - a + math.pi) % (2 * math.pi) - math.pi
 

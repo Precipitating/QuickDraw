@@ -1,6 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local module = {}
 
-local NpcAnimationTypes = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcAnimationTypes)
+local NpcAnimationTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcAnimationTypes)
 
 function module:GetDefaultAnimations(): NpcAnimationTypes.FinalAnimTable
 	--Extra fields supported:

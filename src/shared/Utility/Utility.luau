@@ -3,18 +3,8 @@ local Players = game:GetService("Players")
 local DEBUG_PRINT = true
 
 local _print = print
-local function print(...)
-	if DEBUG_PRINT then
-		_print(...)
-	end
-end
-
 local _warn = warn
-local function warn(...)
-	if DEBUG_PRINT then
-		_warn(...)
-	end
-end
+local _error = error
 
 local RandomModule = require(script.Parent.RandomModule)
 return {
@@ -112,6 +102,12 @@ return {
 	Warn = function(...)
 		if DEBUG_PRINT then
 			_warn(...)
+		end
+	end,
+
+	Error = function(...)
+		if DEBUG_PRINT then
+			_error(...)
 		end
 	end,
 }

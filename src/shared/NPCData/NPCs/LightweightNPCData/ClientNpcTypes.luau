@@ -1,7 +1,7 @@
 local module = {}
 
-local SignalModule = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.Signal)
-local NpcAnimationTypes = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcAnimationTypes)
+local SignalModule = require(script.Parent.Utils.Signal)
+local NpcAnimationTypes = require(script.Parent.NpcAnimationTypes)
 
 export type clientNpcRecordType = {
 	npcId: number,
@@ -9,6 +9,8 @@ export type clientNpcRecordType = {
 	eventline: { any },
 	instance: Model,
 	isDead: boolean,
+	bloodEmitterRefs: { [number]: (ParticleEmitter | boolean)? },
+	bodyParts: { [number]: (BasePart | boolean)? },
 	hz: number,
 	invHz: number,
 	placed: boolean,

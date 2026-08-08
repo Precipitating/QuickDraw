@@ -1,8 +1,8 @@
-local module = {}
-
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local NpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
-local MathUtils = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.MathUtils)
+local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 
+local module = {}
 -- Basic ultralightweight character controller
 -- This controller follows one simple rule: the position of the character is only ever moved
 -- to a location that has been guarenteed to be "clear" via a collision sweep.

@@ -2,17 +2,18 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lightweightNpcsServerModule = {} :: lightweightNpcsServerModuleType
 
+local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local NPCHealth = require(script.Parent.NPCHealth)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
-local MessageId = require(game.ReplicatedFirst.LightweightNpcsClient.Code.MessageId)
+local MessageId = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.MessageId)
 
-local WriteBufferModule = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.WriteBuffer)
+local WriteBufferModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.WriteBuffer)
 local NpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
-local SignalModule = require(game.ReplicatedFirst.LightweightNpcsClient.Utils.Signal)
-local NpcStateModule = require(game.ReplicatedFirst.LightweightNpcsClient.Code.NpcState)
+local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
+local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local NpcMover = require(script.Parent.NpcMover)
-local PositionBits = require(game.ReplicatedFirst.LightweightNpcsClient.Code.PositionBits)
+local PositionBits = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.PositionBits)
 
 local config = {
 	doDebugPrinting = true,
@@ -323,7 +324,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		if part:IsA("BasePart") and part:IsA("MeshPart") then
 			local enum = LimbsEnum[part.Name]
 			if enum then
-				limbs[enum] = { Part = part, HP = NPCHealth.LimbHealth[enum] }
+				limbs[enum] = { Part = part, HP = CommonNPCData.LIMB_HEALTH[enum], State = "Healthy" }
 			end
 		end
 	end
@@ -378,16 +379,18 @@ function lightweightNpcsServerModule:CreateNpc(
 		internal = npcInternal,
 
 		npcState = NpcStateModule.Idle,
+		legless = false,
 		position = originCFrame.Position,
 		angle = yawAngle,
 		targetAngle = yawAngle,
-
 		motionVector = Vector3.zero,
 		jump = false,
 		velocity = Vector3.zero,
 		hitPoints = npcConfig.maxHitPoints,
 		isOnGround = false,
 		bodyParts = limbs,
+		animator = currentInstance:FindFirstChild("Animator", true) :: Animator?,
+		poses = {},
 		HRP = serverRigTemplate:FindFirstChild("HumanoidRootPart"),
 		currentEquipped = nil,
 		storedThrowable = nil,
