@@ -17,7 +17,7 @@ return {
 			:Container(workspace.ProjectilesFolder)
 			:Done()
 			:Debug()
-			:Visualize(false)
+			:Visualize(true)
 			:Done()
 			:Hitscan(true)
 			:Build(),

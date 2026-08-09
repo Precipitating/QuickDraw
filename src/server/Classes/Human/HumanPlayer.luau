@@ -163,11 +163,11 @@ function HumanPlayer:InitializeWeaponLoadout()
 	self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
 	self.Inventory:EquipWeapon("Gun")
 
-	-- self.Inventory:AddWeaponToInventory(
-	-- 	savedThrowableData and savedThrowableData.Name or "Molotov",
-	-- 	savedThrowableData and savedThrowableData.Ammo or 9
-	-- )
-	-- self.Inventory:EquipWeapon("Throwable")
+	self.Inventory:AddWeaponToInventory(
+		savedThrowableData and savedThrowableData.Name or "Molotov",
+		savedThrowableData and savedThrowableData.Ammo or 9
+	)
+	self.Inventory:EquipWeapon("Throwable")
 
 	-- self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
 	-- self.Inventory:EquipWeapon("Trap")

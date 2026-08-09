@@ -1,14 +1,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
+local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
-local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
+local ClassTypes = require(script.Parent.Parent.Parent.Classes.ClassTypes)
+local ServerSoundHandler = require(script.Parent.Parent.Parent.Sound.ServerSoundHandler)
 local NPCHealth = require(script.Parent.NPCHealth)
-local NpcTypes = require(script.Parent.NpcTypes)
+local NPCWeaponsClass = require(script.Parent.NPCWeaponsClass)
+local LightweightNpcTypes = require(script.Parent.LightweightNpcTypes)
+local NPCPoses = require(script.Parent.NPCPoses)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local NPC_CULL_DISTANCE = 400
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
@@ -17,8 +18,9 @@ local NPCLogic = {}
 
 --
 local CrawlIdleAnim = Instance.new("Animation")
-CrawlIdleAnim.AnimationId = `rbxassetid://{AnimationIds.LeglessGunIdle}`
---
+CrawlIdleAnim.AnimationId = `rbxassetid://122940383806072`
+local ToolHold = Instance.new("Animation")
+ToolHold.AnimationId = "http://www.roblox.com/asset/?id=507768375"
 
 local LimbDamageMultiplier = {
 	[LimbsEnum.Head] = 2.5,
@@ -35,32 +37,40 @@ local LimbDamageMultiplier = {
 	[LimbsEnum.RightUpperLeg] = 0.7,
 	[LimbsEnum.RightLowerLeg] = 0.7,
 }
-function NPCLogic:SetupServerAnims(npcRecord: NpcTypes.npcRecordType)
+function NPCLogic:SetupServerAnims(npcRecord: LightweightNpcTypes.npcRecordType)
 	if not npcRecord.animator then
 		Utility.Warn("[ NPCLogic:SetupServerAnims] Animator ref missing")
 		return
 	end
 
-	npcRecord.poses["Crawl"] = npcRecord.animator:LoadAnimation(CrawlIdleAnim)
+	npcRecord.poses["crawlidle"] = npcRecord.animator:LoadAnimation(CrawlIdleAnim)
+	npcRecord.poses["toolhold"] = npcRecord.animator:LoadAnimation(ToolHold)
 end
 
-local function InitializeOnSpawn(npcRecord: NpcTypes.npcRecordType)
+local function InitializeOnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	NPCLogic:SetupServerAnims(npcRecord)
-
 	--
 	npcRecord:AddClientEvent({ id = "Initialize" })
+	NPCWeaponsClass:InitializeWeaponClass(npcRecord)
+	NPCWeaponsClass:EquipWeapon(npcRecord)
+
 	NPCHealth:SetInvincibleFor(npcRecord, 5)
 end
 
-function NPCLogic:HitByGunshot(npcRecord: NpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)
+function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)
 	local canAffectShooter: boolean? = gunShotData.CanAffectShooter
 	local raycastResult: RaycastResult = gunShotData.RaycastResult
 	local damageInflicted: number = gunShotData.Damage
-	local attacker: Player? = gunShotData.Shooter
+	local attacker: Player? | Model? = gunShotData.Shooter
 	local limbEnum = LimbsEnum[raycastResult and raycastResult.Instance and raycastResult.Instance.Name]
 
 	if not raycastResult or not damageInflicted then
 		Utility.Warn(`[NPCLogic:HitByGunshot] Missing raycast result or damage values`)
+		return
+	end
+
+	-- Don't hit himself
+	if attacker == npcRecord.instance and canAffectShooter == false then
 		return
 	end
 
@@ -71,13 +81,14 @@ local function IsLimbOut(limb)
 end
 
 function NPCLogic:AffectLimbAndChildren(
-	npcRecord: NpcTypes.npcRecordType,
+	npcRecord: LightweightNpcTypes.npcRecordType,
 	rootLimbId: number,
 	newState: string,
 	eventId: string
 )
 	local rootLimb = npcRecord.bodyParts and npcRecord.bodyParts[rootLimbId]
-
+	local isDismembered = newState == "Dismembered"
+	local isDisabled = newState == "Disabled"
 	if not rootLimb or not rootLimb.Part then
 		Utility.Warn(("[npcRecord.%s] Limb reference missing"):format(eventId))
 		return
@@ -90,7 +101,7 @@ function NPCLogic:AffectLimbAndChildren(
 	npcRecord:AddClientEvent({ id = eventId, limb = rootLimbId })
 
 	rootLimb.Part.Transparency = 0.5
-	rootLimb.Part.CanQuery = false
+	rootLimb.Part.CanQuery = not isDismembered
 	rootLimb.Part.CanCollide = false
 
 	-- affect downstream chain
@@ -106,7 +117,7 @@ function NPCLogic:AffectLimbAndChildren(
 		end
 
 		childLimb.Part.Transparency = 0.5
-		childLimb.Part.CanQuery = false
+		childLimb.Part.CanQuery = not isDismembered
 		childLimb.Part.CanCollide = false
 
 		if childLimb.State then
@@ -118,18 +129,21 @@ function NPCLogic:AffectLimbAndChildren(
 	if
 		IsLimbOut(npcRecord.bodyParts[LimbsEnum.LeftUpperLeg])
 			and IsLimbOut(npcRecord.bodyParts[LimbsEnum.RightUpperLeg])
-		or IsLimbOut(npcRecord.bodyParts[LimbsEnum.RightUpperLeg])
+		or IsLimbOut(npcRecord.bodyParts[LimbsEnum.LeftLowerLeg])
 			and IsLimbOut(npcRecord.bodyParts[LimbsEnum.RightLowerLeg])
 	then
 		-- Will make client NPCs play crawl anims
 		npcRecord.legless = true
 		-- Force crawl server pose so we can somewhat emulate its hitboxes
-		npcRecord.onPoseChange:Fire("Crawl")
+		npcRecord.onPoseChange:Fire("crawlidle")
 	end
 end
 
-function NPCLogic:HitByInflictingBullet(npcRecord: NpcTypes.npcRecordType, inflictingData: ClassTypes.InflictingDamage)
-	local spreadParticleName: string? = inflictingData.SpreadParticleName
+function NPCLogic:HitByInflictingBullet(
+	npcRecord: LightweightNpcTypes.npcRecordType,
+	inflictingData: ClassTypes.InflictingDamage
+)
+	local spreadParticleName: string? = inflictingData.SpreadParticle
 	local spreadDuration: number? = inflictingData.SpreadDuration
 	local limbHit: BasePart? = inflictingData.LimbHit
 	local attacker: Player? = inflictingData.Shooter
@@ -150,7 +164,7 @@ function NPCLogic:HitByInflictingBullet(npcRecord: NpcTypes.npcRecordType, infli
 				if spreadParticleName then
 					npcRecord:AddClientEvent({
 						id = "SpreadParticle",
-						ParticleName = spreadParticleName,
+						SpreadParticle = spreadParticleName,
 						Duration = spreadDuration,
 						limbName = limbHit.Name,
 					})
@@ -161,23 +175,7 @@ function NPCLogic:HitByInflictingBullet(npcRecord: NpcTypes.npcRecordType, infli
 	end
 end
 
-function NPCLogic:ChangePose(npcRecord: NpcTypes.npcRecordType, poseName: string)
-	if not npcRecord.animator then
-		Utility.Warn("Missing server NPC animator ref")
-		return
-	end
-
-	local animator: Animator = npcRecord.animator
-
-	for _, track in animator:GetPlayingAnimationTracks() do
-		track:Stop(0.5 or 0)
-	end
-
-	npcRecord.poses[poseName]:Play(0.5, 1, 1)
-end
-
-function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
-	InitializeOnSpawn(npcRecord)
+function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
 		if tick() > npcRecord.data.nextMove then
 			if npcRecord.npcState == NpcStateModule.Dying then
@@ -206,6 +204,12 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 					npcRecord:PlayAnimation("walk", false, 1, 1)
 				end
 			end
+
+			if npcRecord.currentEquipped and not npcRecord.legless then
+				npcRecord:PlayAnimation("toolhold", false, 2, 1)
+			else
+				npcRecord:StopAnimationChannel(2)
+			end
 		end
 	end)
 	npcRecord.onDismemberLimb:Connect(function(limbToDestroy: number)
@@ -218,6 +222,9 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 
 	npcRecord.onLimbHit:Connect(
 		function(damage: number, limbHit: number, shotPos: Vector3?, shotPosNormal: Vector3?, attacker: any?)
+			if npcRecord.npcState == NpcStateModule.Dying then
+				return
+			end
 			local totalDmg = damage * (LimbDamageMultiplier[limbHit] or 1)
 			warn(LimbsEnum[limbHit])
 
@@ -237,6 +244,9 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 		function(
 			damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
 		)
+			if npcRecord.npcState == NpcStateModule.Dying then
+				return
+			end
 			if not damageData.Type then
 				warn("NPC On Hit: Missing damage type")
 				return
@@ -249,7 +259,7 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 			local damageType = damageData.Type
 			if damageType == "Shot" then
 				self:HitByGunshot(npcRecord, damageData)
-			elseif damageType == "Inflict" then
+			elseif damageType == "Spread" then
 				self:HitByInflictingBullet(npcRecord, damageData)
 			end
 
@@ -280,21 +290,35 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 		end
 	end)
 
-	npcRecord.onDeath:Connect(function(attacker: any?)
+	npcRecord.onDeath:Connect(function()
 		if npcRecord.npcState == NpcStateModule.Dying then
 			return
 		end
 		npcRecord.npcState = NpcStateModule.Dying
 		warn("onDeath called")
+
+		-- Change collision group so its untouchable
+		for _, bodyPart in npcRecord.bodyParts do
+			local part = bodyPart.Part
+			if not part then
+				continue
+			end
+
+			part.CollisionGroup = "Dead"
+		end
 		if npcRecord.instance then
 			npcRecord:Move(Vector3.zero)
-			npcRecord:AddClientEvent({ id = "Dead", attacker = attacker })
+			npcRecord:AddClientEvent({ id = "Dead", attacker = npcRecord.killedBy })
 			ServerSoundHandler:Play3DOneShotToOthers(
 				nil,
 				"HumanDeathGasp",
 				npcRecord.instance and npcRecord.instance:GetPivot().Position,
 				{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 			)
+
+			if npcRecord.killedBy and typeof(npcRecord.killedBy) == "Instance" and npcRecord.killedBy:IsA("Player") then
+				AwardHandler.AwardNPCKill(npcRecord.killedBy)
+			end
 		end
 	end)
 
@@ -303,9 +327,10 @@ function NPCLogic:OnSpawn(npcRecord: NpcTypes.npcRecordType)
 			Utility.Warn(`[onPoseChange] Cannot change pose, missing a pose ref`)
 			return
 		end
-		self:ChangePose(npcRecord, poseName)
+		NPCPoses:ChangePose(npcRecord, poseName)
 	end)
 
+	InitializeOnSpawn(npcRecord)
 	-- npcRecord.onBumpIntoWall:Connect(function(instance)
 	-- 	--send an event to clients if we bump into something
 	-- 	if npcRecord.instance then

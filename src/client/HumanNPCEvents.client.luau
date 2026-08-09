@@ -2,13 +2,15 @@
 -- NPC position is handled by server
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local GunGripData = require(ReplicatedStorage.Shared.GunData.GunGripData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local EffectsDisplayer = require(script.Parent.VisualEffectsHandler.EffectsDisplayer)
 local clientNpcModule = require(script.Parent.LightweightNpcsClient.Code.LightweightNpcsClientModule)
 local ClientNpcTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.ClientNpcTypes)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
+local GunsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.GunsEnum)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local GunsFolder = ReplicatedStorage.Shared.Templates
 local BloodFlowEmitter = ReplicatedStorage.Shared.Templates.BloodFlow
 
 local function RagdollNPC(model: Model?, enabled: boolean)
@@ -83,7 +85,45 @@ local function StoreBodyParts(npcRecord: ClientNpcTypes.clientNpcRecordType)
 		npcRecord.bodyParts[LimbsEnum[part.Name]] = part
 	end
 end
+local function AttachGunToHand(npcRecord: ClientNpcTypes.clientNpcRecordType, gunTool: Tool, gunId: number)
+	local rightHand = npcRecord.bodyParts[LimbsEnum.RightHand]
+	local handle = gunTool:FindFirstChild("Handle")
+	if not handle then
+		Utility.Warn("Gun tool missing Handle part")
+		return
+	end
 
+	local gripData = GunGripData[gunId]
+
+	if not gripData then
+		Utility.Warn(`Missing grip data! cannot attach gun to hand!`)
+		return
+	end
+	-- Clean up any existing grip first
+	local existing = rightHand:FindFirstChild("RightGrip")
+	if existing then
+		existing:Destroy()
+	end
+
+	local existingTool = npcRecord.instance:FindFirstChildOfClass("Tool")
+	if existingTool then
+		existingTool:Destroy()
+	end
+
+	handle.Anchored = false
+	handle.CanCollide = false
+	handle.Massless = true
+
+	gunTool.Parent = npcRecord.instance
+
+	local grip = Instance.new("Motor6D")
+	grip.Name = "RightGrip"
+	grip.Part0 = rightHand
+	grip.Part1 = handle
+	grip.C0 = gripData.C0
+	grip.C1 = gripData.C1
+	grip.Parent = rightHand
+end
 local function SetNPCDead(character: Model?)
 	if not character then
 		warn("[SetupNPCDeath] NPC missing model")
@@ -153,11 +193,6 @@ local function HitLimb(
 		EffectsDisplayer:DisplayBloodHit(shotPos, shotPosNormal)
 	end
 
-	if not limbHit then
-		debug.traceback("Missing string for hit limb", 5)
-		return
-	end
-
 	local model = npcRecord.instance
 	if not model then
 		warn("Missing npc model for hit limb")
@@ -170,6 +205,7 @@ local function HitLimb(
 		warn("Missing npc limb reference for hit limb")
 		return
 	end
+
 	ApplyDamageHighlight(limb)
 end
 
@@ -198,22 +234,17 @@ local function SetupBloodEmitters(npcRecords: ClientNpcTypes.clientNpcRecordType
 		end
 		local bloodEmitter: ParticleEmitter = BloodFlowEmitter:Clone()
 		local isLeg = limbId == LimbsEnum.LeftUpperLeg
-			or LimbsEnum.LeftLowerLeg
-			or LimbsEnum.RightUpperLeg
-			or LimbsEnum.RightLowerLeg
+			or limbId == LimbsEnum.LeftLowerLeg
+			or limbId == LimbsEnum.RightUpperLeg
+			or limbId == LimbsEnum.RightLowerLeg
 		local isHead = limbId == LimbsEnum.Head
-		local isArm = limbId == LimbsEnum.LeftUpperArm
-			or LimbsEnum.LeftLowerArm
-			or LimbsEnum.RightUpperArm
-			or LimbsEnum.RightLowerArm
+		local isLeftArm = limbId == LimbsEnum.LeftUpperArm or limbId == LimbsEnum.LeftLowerArm
 
 		if isLeg then
 			bloodEmitter.EmissionDirection = Enum.NormalId.Bottom
 		-- arm
-		elseif isArm then
-			bloodEmitter.EmissionDirection = if isArm == LimbsEnum.LeftUpperArm
-				then Enum.NormalId.Left
-				else Enum.NormalId.Right
+		elseif isLeftArm then
+			bloodEmitter.EmissionDirection = Enum.NormalId.Left
 		elseif isHead then
 			bloodEmitter.EmissionDirection = Enum.NormalId.Top
 		end
@@ -246,7 +277,7 @@ local StateEvents = {
 	end,
 
 	SpreadParticle = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
-		local particleName = event.ParticleName
+		local spreadParticle = event.SpreadParticle
 		local duration = event.Duration
 		-- num -> string
 		local limbName = LimbsEnum[event.limbName]
@@ -257,9 +288,10 @@ local StateEvents = {
 			return
 		end
 
-		EffectsDisplayer:DisplaySpreadParticleClient(particleName, duration, npcCharacter:FindFirstChild(limbName))
+		EffectsDisplayer:DisplaySpreadParticleClient(spreadParticle, duration, npcCharacter:FindFirstChild(limbName))
 	end,
 
+	-- Limbs and health
 	LimbHit = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
 		if npcRecord.isDead then
 			return
@@ -278,9 +310,6 @@ local StateEvents = {
 	HealAll = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
 		for limbId, part in npcRecord.bodyParts do
 			part.Transparency = 0
-			part.CanCollide = true
-			part.CanQuery = true
-			part.CanTouch = true
 
 			---------------------------------------------------------------------------------------------------------
 			local hasConstraint: AnimationConstraint? = part:FindFirstChildOfClass("AnimationConstraint")
@@ -289,6 +318,8 @@ local StateEvents = {
 				and npcRecord.bloodEmitterRefs[limbId] :: ParticleEmitter?
 
 			---------------------------------------------------------------------------------------------------------
+			part.Transparency = 0
+
 			if hasConstraint then
 				hasConstraint.Enabled = true
 			end
@@ -305,6 +336,9 @@ local StateEvents = {
 	end,
 
 	DismemberLimb = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		if npcRecord.isDead then
+			return
+		end
 		local partToDismember: number = event.limb
 
 		if not partToDismember then
@@ -337,7 +371,7 @@ local StateEvents = {
 			return
 		end
 		--
-		bodyPart.Transparency = 0.5
+		bodyPart.Transparency = 1
 		bodyPart.CanCollide = false
 		bodyPart.CanQuery = false
 
@@ -400,6 +434,62 @@ local StateEvents = {
 			end
 		end
 	end,
+
+	-- Weaponry
+	UnEquipAll = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		if npcRecord.isDead then
+			return
+		end
+
+		local humanoid: Humanoid? = npcRecord.humanoid
+		if not humanoid then
+			Utility.Warn("NPC missing humanoid, cannot unequip weapon")
+			return
+		end
+
+		humanoid:UnequipTools()
+	end,
+	EquipWeapon = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		if npcRecord.isDead then
+			return
+		end
+
+		Utility.Warn(`NPC equip weapon called on client!`)
+		-- 1. Get relevant references, humanoid and gun tool
+		local humanoid: Humanoid? = npcRecord.humanoid
+		if not humanoid then
+			Utility.Warn("NPC missing humanoid, cannot unequip weapon")
+			return
+		end
+
+		-- This should be a number
+		local weaponToEquip: number? = event.weaponToEquip
+
+		if not weaponToEquip then
+			Utility.Warn(`NPC cannot equip weapon on client, missing gun id`)
+			return
+		end
+
+		local gunToString = weaponToEquip and GunsEnum[weaponToEquip]
+
+		if not gunToString then
+			Utility.Warn("NPC cannot equip weapon, missing gun to equip data")
+			return
+		end
+
+		local gunTool: Tool? = Utility.GetInstance(GunsFolder, true, gunToString)
+
+		if not gunTool then
+			return
+		end
+
+		-- 2. Clone and equip tool to NPC humanoid
+		gunTool = gunTool:Clone()
+
+		AttachGunToHand(npcRecord, gunTool, weaponToEquip)
+	end,
+
+	ShootWeapon = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number) end,
 }
 
 clientNpcModule.onNpcLoad:Connect(function(npcRecord: ClientNpcTypes.clientNpcRecordType)

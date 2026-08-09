@@ -24,7 +24,7 @@ function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: 
 
 	local serializedBuf = Sera.Serialize(
 		SeraSchemas.DisplayDestroySchema,
-		{ DestroyParticleName = destroyableParticleName, Position = position }
+		{ DestroyableParticleName = destroyableParticleName, Position = position }
 	)
 
 	local closePlayers = Utility.GetClosePlayers(position, 100)

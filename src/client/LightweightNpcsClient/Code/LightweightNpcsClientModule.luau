@@ -216,6 +216,7 @@ local function Init()
 						[LimbsEnum.Head] = true,
 					},
 					bodyParts = {},
+					humanoid = model:FindFirstChild("Humanoid") :: Humanoid?,
 					timeline = {},
 					isDead = false,
 					eventline = {},

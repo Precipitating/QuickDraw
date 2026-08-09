@@ -26,10 +26,13 @@ function module:GetDefaultAnimations(): NpcAnimationTypes.FinalAnimTable
 			{ id = "http://www.roblox.com/asset/?id=507767968", weight = 10 },
 		},
 		["crawlidle"] = {
-			{ id = "http://www.roblox.com/asset/?id=122940383806072", weight = 10 },
+			{ id = "http://www.roblox.com/asset/?id=122940383806072", weight = 1 },
 		},
 		["crawlwalk"] = {
 			{ id = "http://www.roblox.com/asset/?id=109814683228688", weight = 10 },
+		},
+		["toolhold"] = {
+			{ id = "http://www.roblox.com/asset/?id=507768375", weight = 1 },
 		},
 	}
 

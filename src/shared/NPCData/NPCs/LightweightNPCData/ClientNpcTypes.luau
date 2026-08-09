@@ -10,6 +10,7 @@ export type clientNpcRecordType = {
 	instance: Model,
 	isDead: boolean,
 	bloodEmitterRefs: { [number]: (ParticleEmitter | boolean)? },
+	humanoid: Humanoid?,
 	bodyParts: { [number]: (BasePart | boolean)? },
 	hz: number,
 	invHz: number,

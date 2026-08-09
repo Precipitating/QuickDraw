@@ -1,28 +1,28 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
-local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
+local ServerSoundHandler = require(script.Parent.Parent.Parent.Sound.ServerSoundHandler)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-local NpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
+local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local NPCHealth = {}
 
-function NPCHealth:UpdateHealth(npcRecord: NpcTypes.npcRecordType, damageTaken: number, attacker: any)
+function NPCHealth:UpdateHealth(npcRecord: LightweightNpcTypes.npcRecordType, damageTaken: number, attacker: any)
 	if npcRecord.invincible then
 		return
 	end
 	npcRecord.hitPoints = math.clamp(npcRecord.hitPoints + damageTaken, 0, HumanConstants.MAX_HP)
 
+	-- There's a loop that handles onDeath event being called, don't add more entries to it.
 	if npcRecord.hitPoints <= 0 then
-		npcRecord.onDeath:Fire(attacker)
+		npcRecord.killedBy = attacker
 		return
 	end
 end
 function NPCHealth:UpdateLimbHealth(
-	npcRecord: NpcTypes.npcRecordType,
+	npcRecord: LightweightNpcTypes.npcRecordType,
 	limbHit: number,
 	damageTaken: number,
 	attacker: any
@@ -67,6 +67,7 @@ function NPCHealth:UpdateLimbHealth(
 		)
 	elseif limbData.HP <= HumanConstants.LIMB_DISABLE_HP then
 		if CommonNPCData.CRUCIAL_LIMBS[limbHit] then
+			npcRecord.killedBy = attacker
 			npcRecord.hitPoints = 0
 			return
 		end
@@ -84,7 +85,7 @@ function NPCHealth:UpdateLimbHealth(
 	end
 end
 
-function NPCHealth:SetInvincibleFor(npcRecord: NpcTypes.npcRecordType, duration: number)
+function NPCHealth:SetInvincibleFor(npcRecord: LightweightNpcTypes.npcRecordType, duration: number)
 	local isDead = npcRecord.npcState == NpcStateModule.Dying
 	if isDead then
 		return
@@ -101,7 +102,7 @@ function NPCHealth:SetInvincibleFor(npcRecord: NpcTypes.npcRecordType, duration:
 	end)
 end
 
-function NPCHealth:HealAll(npcRecord: NpcTypes.npcRecordType)
+function NPCHealth:HealAll(npcRecord: LightweightNpcTypes.npcRecordType)
 	local bodyParts = npcRecord.bodyParts
 	if not bodyParts then
 		Utility.Warn(`NPC id:{npcRecord.npcId} cannot update limb health! missing`)

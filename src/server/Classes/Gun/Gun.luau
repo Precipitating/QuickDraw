@@ -4,11 +4,12 @@ local GunSignals = require(script.Parent.GunSignals)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
-local NpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local NpcState = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 local GunRaycastParam = RaycastParams.new()
@@ -20,7 +21,12 @@ type Gun = ClassTypes.Gun
 local Gun = {}
 Gun.__index = Gun
 
-function Gun.new(gunName: string, humanClass: Human | NpcTypes.npcRecordType, player: Player | Model, tool: Tool?): Gun
+function Gun.new(
+	gunName: string,
+	humanClass: Human | LightweightNpcTypes.npcRecordType,
+	player: Player? | Model?,
+	tool: Tool?
+): Gun
 	if not GunData[gunName] then
 		error("Gun doesn't exist")
 	end
@@ -28,9 +34,13 @@ function Gun.new(gunName: string, humanClass: Human | NpcTypes.npcRecordType, pl
 	local self = setmetatable({}, Gun)
 	self.Janitor = Janitor.new()
 
-	self.Tool = tool or nil
+	self.GunData = gunData
+	self.Tool = tool
 	self.Name = gunName
+	self.ReloadTime = gunData.ReloadTime or gunData.ReloadTimePerBullet
 	self.MaxAmmo = gunData.MaxAmmo
+	self.ReloadSound = gunData.ReloadSoundName
+	self.ReloadSoundStart = gunData.ReloadSoundStartName
 	self.MaxAmmoStack = gunData.MaxAmmoStack
 	self.EquipWalkspeedMultiplier = gunData.EquipWalkspeedMultiplier or 1
 	self.CurrentAmmo = gunData.MaxAmmo
@@ -48,7 +58,7 @@ function Gun.new(gunName: string, humanClass: Human | NpcTypes.npcRecordType, pl
 
 	-- if its NPC, its their model, else player instance
 	self.PlayerRef = player
-	if player:IsA("Player") then
+	if player and player:IsA("Player") then
 		self.PlayerRef = player
 	end
 	self.HumanClassRef = humanClass
@@ -215,16 +225,16 @@ function Gun:Destroy()
 	table.clear(self)
 end
 
-function Gun:BulletByBulletReload(bulletsToReload: number, reloadTime: number, reloadSound: string)
+function Gun:BulletByBulletReload(bulletsToReload: number)
 	local isPlayer = self.PlayerRef and self.PlayerRef:IsA("Player")
 
 	if isPlayer then
-		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading, {reloadTime} seconds per round`)
+		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading, {self.ReloadTime} seconds per round`)
 	end
 	for _ = 1, bulletsToReload do
-		task.wait(reloadTime)
+		task.wait(self.ReloadTime)
 
-		if self.HumanClassRef and self.HumanClassRef.Dead or self.HumanClassRef.dead then
+		if self.HumanClassRef and (self.HumanClassRef.Dead or self.HumanClassRef.npcState == NpcState.Dying) then
 			return
 		end
 		if not self.Reloading then
@@ -247,14 +257,14 @@ function Gun:BulletByBulletReload(bulletsToReload: number, reloadTime: number, r
 		end
 
 		if self.Handle then
-			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame.Position)
+			ServerSoundHandler:Play3DOneShotToOthers(nil, self.ReloadSound, self.Handle.CFrame.Position)
 		end
 	end
 
 	return nil
 end
 
-function Gun:ReloadAsMagazine(bulletsToReload: number, reloadTime: number, gunName: string, reloadSound: string)
+function Gun:ReloadAsMagazine(bulletsToReload: number)
 	if not self.Handle then
 		return
 	end
@@ -276,17 +286,17 @@ function Gun:ReloadAsMagazine(bulletsToReload: number, reloadTime: number, gunNa
 			return
 		end
 
-		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading magazine, {reloadTime} seconds`)
+		PopupGUI:NewPopup(self.PlayerRef, 2, `Start reloading magazine, {self.ReloadTime} seconds`)
 	end
 
-	ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, self.Handle.CFrame.Position)
+	ServerSoundHandler:Play3DOneShotToOthers(nil, self.ReloadSound, self.Handle.CFrame.Position)
 
-	task.wait(reloadTime)
+	task.wait(self.ReloadTime)
 
 	if not self.Reloading then
 		return
 	end
-	if Utility.IsHoldingTool(character, gunName) then
+	if Utility.IsHoldingTool(character, self.Name) then
 		self:UpdateAmmoReserve(-bulletsToReload)
 		self:UpdateAmmo(bulletsToReload)
 	else
@@ -301,11 +311,12 @@ function Gun:Reload()
 		warn("[Gun:Reload] Missing gun data ")
 		return
 	end
-	local reloadTime = gunData.ReloadTimePerBullet or gunData.ReloadTime
-	local reloadSound = gunData.ReloadSoundName
-	local gunType = gunData.GunType
-	local reloadSoundStart = gunData.ReloadSoundStartName
+
+	local gunType = self.GunType
+	local reloadSoundStart = self.ReloadSoundStartName
 	local bulletsToReload = self.MaxAmmo - self.CurrentAmmo
+
+	--
 	if bulletsToReload <= 0 then
 		return
 	end
@@ -325,9 +336,9 @@ function Gun:Reload()
 	end
 
 	if gunType == "Automatic" then
-		self:ReloadAsMagazine(bulletsToReload, reloadTime, gunName, reloadSound)
+		self:ReloadAsMagazine(bulletsToReload)
 	else
-		self:BulletByBulletReload(bulletsToReload, reloadTime, reloadSound)
+		self:BulletByBulletReload(bulletsToReload)
 	end
 
 	-- Finished loading to max ammo without interruptions, update flags.

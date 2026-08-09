@@ -12,6 +12,7 @@ local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Enviro
 local ProjectileContext = require(script.Parent.ProjectileContext)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
 local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
+local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local DestroyableManager = require(ServerScriptService.Server.Managers.Destroyable.DestroyableManager)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
@@ -281,18 +282,10 @@ function ProjectileEvents:FragmentHitHumanoid(
 	end
 
 	local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
-	local isNPC = if owner and owner.Character then owner.Character:GetAttribute("npcId") else nil
 
 	if throwableData.Type == "Explosive" then
 		if humanoidType == "Human" then
-			GunSignals.PlayerHit:Fire(
-				raycastResult,
-				if isNPC then isNPC else humanoid,
-				throwableData.Damage,
-				cosmeticBullet,
-				isPlayer,
-				true
-			)
+			GunSignals.PlayerHit:Fire(raycastResult, humanoid, throwableData.Damage, cosmeticBullet, isPlayer, true)
 		elseif humanoidType == "Animal" then
 			GunSignals.AnimalHit:Fire(throwableData, raycastResult, isPlayer)
 		end
@@ -302,7 +295,7 @@ function ProjectileEvents:FragmentHitHumanoid(
 			throwableData.SpreadDuration,
 			throwableData.Damage,
 			raycastResult.Instance,
-			if isNPC then isNPC else humanoid,
+			humanoid,
 			isPlayer,
 			humanoidType,
 			true
@@ -357,6 +350,42 @@ function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableDa
 	end
 
 	return false
+end
+
+function ProjectileEvents:FragmentHitNPC(hit: RaycastResult, throwableData)
+	local partHit = hit and hit.Instance
+	if not partHit then
+		return false
+	end
+
+	local parent = partHit.Parent
+
+	if not parent then
+		return false
+	end
+
+	local npcId = parent:GetAttribute("npcId")
+	if not npcId then
+		return false
+	end
+
+	local npcRecord = LightweightNpcsServerAPI:GetNpcById(npcId)
+
+	if not npcRecord then
+		return false
+	end
+
+	npcRecord.onHit:Fire(throwableData)
+
+	-- if throwableData.Type == "Spread" then
+	-- 	-- special effects add-on
+	-- 	task.spawn(function()
+	-- 		if throwableData.Subtype and throwableData.SubtypeEffectDuration then
+	-- 			self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
+	-- 		end
+	-- 	end)
+	-- end
+	return true
 end
 
 function ProjectileEvents:FragmentHitEnvironment(hit: RaycastResult, throwableData)
@@ -584,6 +613,10 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 
 	self:ProjectileHitMaterial(result)
 
+	if self:FragmentHitNPC(result, throwableData) then
+		return
+	end
+
 	-- handle hitting player/animal
 	if self:FragmentHitHumanoid(result, owner, throwableData, cosmeticBullet) then
 		return
@@ -716,7 +749,11 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 		end
 
 		if cosmeticBullet then
-			Debris:AddItem(cosmeticBullet, throwableData.DetonationTime)
+			task.delay(throwableData.DetonationTime, function()
+				if cosmeticBullet then
+					cosmeticBullet:Destroy()
+				end
+			end)
 		end
 		if currentThrowable.CurrentAmmo <= 0 then
 			human.Inventory:RemoveWeapon("Throwable")

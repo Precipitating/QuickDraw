@@ -9,11 +9,12 @@ local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MessageId = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.MessageId)
 
 local WriteBufferModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.WriteBuffer)
-local NpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
+local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local NpcMover = require(script.Parent.NpcMover)
 local PositionBits = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.PositionBits)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 local config = {
 	doDebugPrinting = true,
@@ -38,19 +39,25 @@ type lightweightNpcsServerModuleType = {
 		template: Instance,
 		config: any,
 		originCFrame: CFrame
-	) -> NpcTypes.npcRecordType,
+	) -> LightweightNpcTypes.npcRecordType,
 	SendInitialState: (
 		self: lightweightNpcsServerModuleType,
 		playerRecord: playerRecordType,
-		npcRecord: NpcTypes.npcRecordType
+		npcRecord: LightweightNpcTypes.npcRecordType
 	) -> (),
 	Heartbeat: (self: lightweightNpcsServerModuleType, dt: number) -> (),
-	DestroyNpc: (self: lightweightNpcsServerModuleType, npcRecord: NpcTypes.npcRecordType) -> (),
-	CheckForHitpointDeath: (self: lightweightNpcsServerModuleType, npcRecord: NpcTypes.npcRecordType) -> (),
-	CheckForCleanup: (self: lightweightNpcsServerModuleType, npcRecord: NpcTypes.npcRecordType) -> boolean,
+	DestroyNpc: (self: lightweightNpcsServerModuleType, npcRecord: LightweightNpcTypes.npcRecordType) -> (),
+	CheckForHitpointDeath: (
+		self: lightweightNpcsServerModuleType,
+		npcRecord: LightweightNpcTypes.npcRecordType
+	) -> (),
+	CheckForCleanup: (
+		self: lightweightNpcsServerModuleType,
+		npcRecord: LightweightNpcTypes.npcRecordType
+	) -> boolean,
 
 	playerRecords: { [Player]: playerRecordType },
-	npcRecords: { [number]: NpcTypes.npcRecordType },
+	npcRecords: { [number]: LightweightNpcTypes.npcRecordType },
 
 	timeOffset: number,
 	currentServerTime: number,
@@ -188,7 +195,7 @@ local function Init()
 	UpdateCurrentServerTime()
 end
 
-function GetAnimationState(npcRecord: NpcTypes.npcRecordType)
+function GetAnimationState(npcRecord: LightweightNpcTypes.npcRecordType)
 	local data = {}
 	for channel, record in npcRecord.playingAnimations do
 		if record and record.index then
@@ -200,7 +207,10 @@ function GetAnimationState(npcRecord: NpcTypes.npcRecordType)
 	return data
 end
 
-function lightweightNpcsServerModule:SendInitialState(playerRecord: playerRecordType, npcRecord: NpcTypes.npcRecordType)
+function lightweightNpcsServerModule:SendInitialState(
+	playerRecord: playerRecordType,
+	npcRecord: LightweightNpcTypes.npcRecordType
+)
 	--Thought: this could be compressed quite a bit with a buffer, but isn't hot path
 	playerRecord:SendEvent({
 		id = MessageId.InitialState,
@@ -221,7 +231,7 @@ local function PickRandom(animTable)
 end
 
 local function PlayAnimation(
-	self: NpcTypes.npcRecordType,
+	self: LightweightNpcTypes.npcRecordType,
 	animName: string,
 	forceRestart: boolean,
 	channel: number,
@@ -248,7 +258,21 @@ local function PlayAnimation(
 	end
 end
 
-local function AddClientEvent(self: NpcTypes.npcRecordType, event: any)
+local function StopAnimationChannel(self: LightweightNpcTypes.npcRecordType, channel: number)
+	local existingChannel = self.playingAnimations[channel]
+	if existingChannel == nil then
+		return -- already empty
+	end
+
+	self.playingAnimations[channel] = nil
+
+	-- signal clients to stop this channel's track
+	if lightweightNpcsServerModule.RemoteEvent then
+		self.internal.pendingAnimationChanges[channel] = 0
+	end
+end
+
+local function AddClientEvent(self: LightweightNpcTypes.npcRecordType, event: any)
 	if lightweightNpcsServerModule.RemoteEvent then
 		lightweightNpcsServerModule.RemoteEvent:FireAllClients({
 			id = MessageId.CustomClientEvent,
@@ -259,23 +283,23 @@ local function AddClientEvent(self: NpcTypes.npcRecordType, event: any)
 	end
 end
 
-local function SetPlayerVisibleFlag(self: NpcTypes.npcRecordType, player: Player, visible: boolean)
+local function SetPlayerVisibleFlag(self: LightweightNpcTypes.npcRecordType, player: Player, visible: boolean)
 	self.internal.playerVisibleFlag[player] = visible
 end
 
-local function GetPlayerVisibleFlag(self: NpcTypes.npcRecordType, player: Player): boolean
+local function GetPlayerVisibleFlag(self: LightweightNpcTypes.npcRecordType, player: Player): boolean
 	return self.internal.playerVisibleFlag[player] or true
 end
 
-local function ForceReplicate(self: NpcTypes.npcRecordType)
+local function ForceReplicate(self: LightweightNpcTypes.npcRecordType)
 	self.internal.forceReplicate = true
 end
 
-local function Move(self: NpcTypes.npcRecordType, motion: Vector3)
+local function Move(self: LightweightNpcTypes.npcRecordType, motion: Vector3)
 	self.motionVector = motion
 end
 
-local function Jump(self: NpcTypes.npcRecordType)
+local function Jump(self: LightweightNpcTypes.npcRecordType)
 	self.jump = true
 end
 
@@ -299,8 +323,9 @@ end
 function lightweightNpcsServerModule:CreateNpc(
 	template: Instance,
 	npcConfig: any,
+	_npcType: string,
 	originCFrame: CFrame
-): NpcTypes.npcRecordType
+): LightweightNpcTypes.npcRecordType
 	local npcId = GetNextNpcId()
 
 	local serverRigTemplate = ReplicatedStorage.Shared.NPCData.NPCs.Humans.ServerNPCRig:Clone()
@@ -339,7 +364,7 @@ function lightweightNpcsServerModule:CreateNpc(
 	-- Extract Yaw angle (ground rotation) in radians from originCFrame
 	local _, yawAngle, _ = originCFrame:ToOrientation()
 
-	local npcConfiguration: NpcTypes.npcRecordConfiguration = {
+	local npcConfiguration: LightweightNpcTypes.npcRecordConfiguration = {
 		templateInstance = template,
 		maximumStepHeight = npcConfig.maximumStepHeight,
 		maximumSlopeAngle = npcConfig.maximumSlopeAngle,
@@ -356,7 +381,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		jumpPower = npcConfig.jumpPower,
 	}
 
-	local npcInternal: NpcTypes.npcRecordInternal = {
+	local npcInternal: LightweightNpcTypes.npcRecordInternal = {
 		timeOfNextReplicate = 0,
 		timeOfNextThink = 0,
 		timeOfLastThink = 0,
@@ -371,7 +396,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		playerVisibleFlag = {},
 	}
 
-	local npcRecord: NpcTypes.npcRecordType = {
+	local npcRecord: LightweightNpcTypes.npcRecordType = {
 		npcId = npcId,
 		serverRig = serverRigTemplate,
 		instance = currentInstance,
@@ -380,8 +405,10 @@ function lightweightNpcsServerModule:CreateNpc(
 
 		npcState = NpcStateModule.Idle,
 		legless = false,
+		killedBy = nil,
 		position = originCFrame.Position,
 		angle = yawAngle,
+		npcType = _npcType,
 		targetAngle = yawAngle,
 		motionVector = Vector3.zero,
 		jump = false,
@@ -389,7 +416,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		hitPoints = npcConfig.maxHitPoints,
 		isOnGround = false,
 		bodyParts = limbs,
-		animator = currentInstance:FindFirstChild("Animator", true) :: Animator?,
+		animator = serverRigTemplate:FindFirstChild("Animator", true) :: Animator?,
 		poses = {},
 		HRP = serverRigTemplate:FindFirstChild("HumanoidRootPart"),
 		currentEquipped = nil,
@@ -412,6 +439,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		onCullCheck = SignalModule.new(),
 
 		PlayAnimation = PlayAnimation,
+		StopAnimationChannel = StopAnimationChannel,
 		AddClientEvent = AddClientEvent,
 		SetPlayerVisibleFlag = SetPlayerVisibleFlag,
 		GetPlayerVisibleFlag = GetPlayerVisibleFlag,
@@ -432,7 +460,7 @@ function lightweightNpcsServerModule:CreateNpc(
 	return npcRecord
 end
 
-function lightweightNpcsServerModule:CheckForHitpointDeath(npcRecord: NpcTypes.npcRecordType)
+function lightweightNpcsServerModule:CheckForHitpointDeath(npcRecord: LightweightNpcTypes.npcRecordType)
 	if npcRecord.hitPoints <= 0 then
 		--die
 		npcRecord.onDeath:Fire()
@@ -443,7 +471,7 @@ function lightweightNpcsServerModule:CheckForHitpointDeath(npcRecord: NpcTypes.n
 	end
 end
 
-function lightweightNpcsServerModule:CheckForCleanup(npcRecord: NpcTypes.npcRecordType): boolean
+function lightweightNpcsServerModule:CheckForCleanup(npcRecord: LightweightNpcTypes.npcRecordType): boolean
 	if npcRecord.internal.deleteFlag then
 		self:DestroyNpc(npcRecord)
 		return true
@@ -456,7 +484,7 @@ function lightweightNpcsServerModule:GetNPCRecordFromID(id: number)
 	return lightweightNpcsServerModule.npcRecords[id]
 end
 
-function lightweightNpcsServerModule:DestroyNpc(npcRecord: NpcTypes.npcRecordType)
+function lightweightNpcsServerModule:DestroyNpc(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onCleanup:Fire()
 	if npcRecord.instance then
 		npcRecord.instance:Destroy()

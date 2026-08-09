@@ -64,12 +64,16 @@ export type npcRecordType = {
 	isOnGround: boolean, --bool
 	motionVector: Vector3, --setting this controls where the npc will try and move to
 	jump: boolean, --A jump is requested
+
+	--
 	bodyParts: { [number]: { Part: MeshPart, HP: number, State: string } },
 	HRP: BasePart,
 	legless: boolean,
-	currentEquipped: number?,
-	storedWeapon: number?,
-	storedThrowable: number?,
+	killedBy: Player? | Model?,
+	npcType: string?,
+	currentEquipped: any?,
+	storedWeapon: any?,
+	storedThrowable: any?,
 
 	--Methods
 	PlayAnimation: (
@@ -79,6 +83,7 @@ export type npcRecordType = {
 		channel: number,
 		speedMultiplier: number
 	) -> (),
+	StopAnimationChannel: (self: npcRecordType, channel: number) -> (),
 	AddClientEvent: (self: npcRecordType, event: any) -> (),
 	SetPlayerVisibleFlag: (self: npcRecordType, player: Player, visible: boolean) -> (),
 	GetPlayerVisibleFlag: (self: npcRecordType, player: Player) -> boolean,

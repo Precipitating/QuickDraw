@@ -158,7 +158,8 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 	end
 
 	-- Spawn NPC
-	local npcRecord = LightweightNPCModule:SpawnNpc(npcTemplateModel, LightweightNPCConfig, spawnLocation.WorldCFrame)
+	local npcRecord =
+		LightweightNPCModule:SpawnNpc(npcTemplateModel, LightweightNPCConfig, npcType, spawnLocation.WorldCFrame)
 	local npcModel = npcRecord.instance
 	npcRecord.data.nextMove = 0
 

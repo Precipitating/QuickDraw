@@ -83,22 +83,15 @@ function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
 			)
 			return
 		end
-		local isLegless = character:GetAttribute("Legless")
 		local animalType = character:GetAttribute("Type")
-
-		if isLegless then
-			controller = AnimationController.new(character, CrawlAnims, DefaultAnimateParams)
-		else
-			if animalType then
-				if animalType == "Buffalo" then
-					controller = AnimationController.new(character, BuffaloAnims, DefaultAnimateParams)
-				elseif animalType == "Horse" then
-					controller = AnimationController.new(character, HorseAnims, DefaultAnimateParams)
-				end
-			else
-				controller = AnimationController.new(character, DefaultAnims, DefaultAnimateParams)
+		if animalType then
+			if animalType == "Buffalo" then
+				controller = AnimationController.new(character, BuffaloAnims, DefaultAnimateParams)
+			elseif animalType == "Horse" then
+				controller = AnimationController.new(character, HorseAnims, DefaultAnimateParams)
 			end
 		end
+
 		AnimatedNPCS[character] = controller
 	end)
 end

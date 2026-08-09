@@ -1,5 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local NpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
+local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 
 local module = {}
@@ -14,11 +14,11 @@ castParams.CollisionGroup = "NpcMovement"
 castParams.RespectCanCollide = true
 
 export type NpcMover = {
-	HandleFallingState: (self: NpcMover, npcRecord: NpcTypes.npcRecordType, dt: number) -> (),
-	ProcessMotionVectorIntoVelocity: (self: NpcMover, npcRecord: NpcTypes.npcRecordType, dt: number) -> (),
-	HandleWalkingState: (self: NpcMover, npcRecord: NpcTypes.npcRecordType, dt: number) -> (),
-	ProcessMovement: (self: NpcMover, npcRecord: NpcTypes.npcRecordType, dt: number) -> (),
-	UpdateFacingAngle: (self: NpcMover, npcRecord: NpcTypes.npcRecordType, dt: number) -> (),
+	HandleFallingState: (self: NpcMover, npcRecord: LightweightNpcTypes.npcRecordType, dt: number) -> (),
+	ProcessMotionVectorIntoVelocity: (self: NpcMover, npcRecord: LightweightNpcTypes.npcRecordType, dt: number) -> (),
+	HandleWalkingState: (self: NpcMover, npcRecord: LightweightNpcTypes.npcRecordType, dt: number) -> (),
+	ProcessMovement: (self: NpcMover, npcRecord: LightweightNpcTypes.npcRecordType, dt: number) -> (),
+	UpdateFacingAngle: (self: NpcMover, npcRecord: LightweightNpcTypes.npcRecordType, dt: number) -> (),
 }
 
 local function SweepMove(
@@ -51,7 +51,7 @@ local function SweepMove(
 	end
 end
 
-function module:HandleFallingState(npcRecord: NpcTypes.npcRecordType, dt: number)
+function module:HandleFallingState(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	-- fall
 	local previousVelocity = npcRecord.velocity
 	npcRecord.velocity += npcRecord.configuration.gravity * dt
@@ -76,7 +76,7 @@ function module:HandleFallingState(npcRecord: NpcTypes.npcRecordType, dt: number
 	end
 end
 
-function module:ProcessMotionVectorIntoVelocity(npcRecord: NpcTypes.npcRecordType, dt: number)
+function module:ProcessMotionVectorIntoVelocity(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	local moveVec: Vector3 = MathUtils:FlatVec(npcRecord.motionVector)
 	local mag: number = moveVec.Magnitude
 
@@ -91,7 +91,7 @@ function module:ProcessMotionVectorIntoVelocity(npcRecord: NpcTypes.npcRecordTyp
 	--end
 end
 
-function module:UpdateFacingAngle(npcRecord: NpcTypes.npcRecordType, dt: number)
+function module:UpdateFacingAngle(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	-- Signed shortest delta to target
 	local delta = MathUtils:AngleShortest(npcRecord.angle, npcRecord.targetAngle)
 
@@ -112,7 +112,7 @@ function module:UpdateFacingAngle(npcRecord: NpcTypes.npcRecordType, dt: number)
 	npcRecord.angle += delta
 end
 
-function module:ProcessMotionIntoTargetAngle(npcRecord: NpcTypes.npcRecordType)
+function module:ProcessMotionIntoTargetAngle(npcRecord: LightweightNpcTypes.npcRecordType)
 	local moveVec: Vector3 = MathUtils:FlatVec(npcRecord.motionVector)
 	local mag: number = moveVec.Magnitude
 
@@ -121,7 +121,7 @@ function module:ProcessMotionIntoTargetAngle(npcRecord: NpcTypes.npcRecordType)
 	end
 end
 
-function module:HandleWalkingState(npcRecord: NpcTypes.npcRecordType, dt: number)
+function module:HandleWalkingState(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	--Ground accelerate
 	self:ProcessMotionVectorIntoVelocity(npcRecord, dt)
 
@@ -184,7 +184,7 @@ function module:HandleWalkingState(npcRecord: NpcTypes.npcRecordType, dt: number
 	end
 end
 
-function module:ProcessMovement(npcRecord: NpcTypes.npcRecordType, dt: number)
+function module:ProcessMovement(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	assert(npcRecord.internal.deleteFlag == false)
 
 	npcRecord.isOnGround = false

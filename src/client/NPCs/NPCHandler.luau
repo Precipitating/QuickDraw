@@ -19,20 +19,16 @@ function NPCHandler:InitializeNPCDialogue()
 end
 function NPCHandler:ConnectEvents()
 	-- Initialize animation controller on NPCS that already exist on join
-	local existingNPCS = CollectionService:GetTagged("NPC")
 	local existingAnimals = CollectionService:GetTagged("Animal")
 
-	for _, npc in existingNPCS do
-		NPCAnimationsHandler:AddNPCAnimationController(npc)
-	end
 	for _, animal in existingAnimals do
 		NPCAnimationsHandler:AddNPCAnimationController(animal)
 	end
 
-	-- initialize the animation controller per npc on dynamic add
+	-- initialize the animation controller per animal on dynamic add
 	workspace.DescendantAdded:Connect(function(descendant: Instance)
 		if descendant:IsA("Model") then
-			if CollectionService:HasTag(descendant, "NPC") or CollectionService:HasTag(descendant, "Animal") then
+			if CollectionService:HasTag(descendant, "Animal") then
 				NPCAnimationsHandler:AddNPCAnimationController(descendant)
 			end
 		end
@@ -40,7 +36,7 @@ function NPCHandler:ConnectEvents()
 
 	workspace.DescendantRemoving:Connect(function(descendant: Instance)
 		if descendant:IsA("Model") then
-			if CollectionService:HasTag(descendant, "NPC") or CollectionService:HasTag(descendant, "Animal") then
+			if CollectionService:HasTag(descendant, "Animal") then
 				NPCAnimationsHandler:RemoveNPCAnimationController(descendant)
 			end
 		end

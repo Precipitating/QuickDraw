@@ -11,11 +11,10 @@ local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
-local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
-local NpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
+local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 type Human = ClassTypes.Human
 type HumanPlayer = ClassTypes.HumanPlayer
-type HumanNPC = NpcTypes.npcRecordType
+type HumanNPC = LightweightNpcTypes.npcRecordType
 
 local LimbDamageMultiplier = {
 	Head = 2.5,
@@ -85,7 +84,7 @@ function DamageModule:ApplyDamage(
 end
 
 function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.InflictingDamage)
-	local spreadParticleName = inflictingDamageData.SpreadParticleName
+	local spreadParticleName = inflictingDamageData.SpreadParticle
 	local damagedLimb = inflictingDamageData.LimbHit
 	local spreadDuration = inflictingDamageData.SpreadDuration
 	local humanoidType = inflictingDamageData.HumanoidType

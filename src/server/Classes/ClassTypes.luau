@@ -1,5 +1,5 @@
 local ServerScriptService = game:GetService("ServerScriptService")
-local NpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.NpcTypes)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 export type Gun = {
 	Tool: Tool?,
 	MaxAmmo: number,
@@ -197,7 +197,7 @@ export type Destroyable = {
 }
 
 export type DamageData = {
-	TargetHuman: Human | NpcTypes.npcRecordType,
+	TargetHuman: Human | LightweightNpcTypes.npcRecordType,
 	Damage: number,
 	Shooter: Player?,
 	CosmeticBulletObject: BasePart?,
@@ -205,7 +205,7 @@ export type DamageData = {
 }
 export type InflictingDamage = DamageData & {
 	Type: "Inflict",
-	SpreadParticleName: string?,
+	SpreadParticle: string?,
 	HumanoidType: string,
 	SpreadDuration: number?,
 	LimbHit: BasePart,

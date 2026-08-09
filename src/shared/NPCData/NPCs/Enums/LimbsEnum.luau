@@ -16,11 +16,24 @@ local LimbsEnum = {
 	RightUpperLeg = 13,
 	RightLowerLeg = 14,
 	RightFoot = 15,
-}
 
--- generate the reverse (number -> name) entries
-for name, id in LimbsEnum do
-	LimbsEnum[id] = name
-end
+	[1] = "Head",
+	[2] = "UpperTorso",
+	[3] = "LowerTorso",
+
+	[4] = "LeftUpperArm",
+	[5] = "LeftLowerArm",
+	[6] = "LeftHand",
+	[7] = "RightUpperArm",
+	[8] = "RightLowerArm",
+	[9] = "RightHand",
+
+	[10] = "LeftUpperLeg",
+	[11] = "LeftLowerLeg",
+	[12] = "LeftFoot",
+	[13] = "RightUpperLeg",
+	[14] = "RightLowerLeg",
+	[15] = "RightFoot",
+}
 
 return LimbsEnum

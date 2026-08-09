@@ -139,7 +139,7 @@ return {
 
 			local shotData: ClassTypes.InflictingDamage = {
 				Type = "Inflict",
-				SpreadParticleName = spreadParticleName,
+				SpreadParticle = spreadParticleName,
 				SpreadDuration = spreadDuration,
 				Damage = damageInflicted,
 				TargetHuman = targetClass,
@@ -148,6 +148,11 @@ return {
 				Shooter = shooter,
 				CanAffectShooter = canAffectShooter,
 			}
+
+			if typeof(humanoidOrNpcId) == "number" then
+				targetClass.onHit:Fire(shotData)
+				return
+			end
 
 			DamageModule:ApplyInflictingDamage(shotData)
 		end

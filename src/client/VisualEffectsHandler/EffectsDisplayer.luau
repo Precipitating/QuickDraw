@@ -154,13 +154,12 @@ end
 
 -- for destroyables
 function EffectsDisplayer:DisplayDestroyParticle(buffer)
-	local explosion: Part = Instance.new("Part")
 	if not buffer then
-		warn(`[CLIENT] Can't show explosion particle, missing explosion name data`)
+		warn(`[CLIENT] Can't show explosion particle, missing explosion buffer`)
 		return
 	end
-
 	local data = Sera.Deserialize(SeraSchemas.DisplayDestroySchema, buffer)
+	local explosion: Part = Instance.new("Part")
 	local particleName = data.DestroyableParticleName
 	local position = data.Position
 	local particleEffect = if Particles[particleName] then Particles[particleName]:Clone() else nil
@@ -202,11 +201,19 @@ function EffectsDisplayer:DisplaySpreadParticleClient(particleName: string, dura
 		return
 	end
 
+	-- Already emitting in this limb, return early.
+	if parent:FindFirstChild(particleName) then
+		return
+	end
+
 	local particleEffect = if Particles[particleName] then Particles[particleName]:Clone() else nil
 
 	particleEffect.Parent = parent
 	particleEffect:Emit(1)
-	Debris:AddItem(particleEffect, duration)
+
+	task.delay(duration, function()
+		particleEffect:Destroy()
+	end)
 end
 
 function EffectsDisplayer:DisplayBloodHitFromServer(buffer)
