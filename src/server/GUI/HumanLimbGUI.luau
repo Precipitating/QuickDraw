@@ -15,6 +15,7 @@ function HumanLimbGUIHandler:UpdateLimbGUIHP(player: Player, limbName: string, l
 	end
 
 	self.networker:fire(player, "UpdateLimbGUIHP", buf)
+	warn("Update limb gui hp")
 end
 
 HumanLimbGUIHandler.networker = Networker.new("HumanLimbGUINetwork", HumanLimbGUIHandler)

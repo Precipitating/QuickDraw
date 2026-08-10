@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBX561180247EC341C088B52E39335CADE9">
+	<Item class="Part" referent="RBX0C1330F87FFC410D94BAEB3AB007B422">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
@@ -93,14 +93,14 @@
 				<Y>2.02446604</Y>
 				<Z>1</Z>
 			</Vector3>
-			<BinaryString name="AttributesSerialize"></BinaryString>
+			<BinaryString name="AttributesSerialize">AQAAAAgAAABMaWZldGltZQIBAAAAMw==</BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">DynamiteCosmetic</string>
 			<int64 name="SourceAssetId">-1</int64>
-			<BinaryString name="Tags">VGhyb3dhYmxl</BinaryString>
+			<SharedString name="Tags">5S//UgRagelTAOz3fET96Q==</SharedString>
 		</Properties>
-		<Item class="SpecialMesh" referent="RBXDD9D4C14B8D84E308C5C44816AE6F655">
+		<Item class="SpecialMesh" referent="RBX6DB5C14BED2E4CDE89251BA01CB0CD89">
 			<Properties>
 				<token name="MeshType">5</token>
 				<Content name="MeshId"><url>http://www.roblox.com/asset/?id=12551202</url></Content>
@@ -125,8 +125,12 @@
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">Mesh</string>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
 	</Item>
+	<SharedStrings>
+		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+		<SharedString md5="5S//UgRagelTAOz3fET96Q==">VGhyb3dhYmxl</SharedString>
+	</SharedStrings>
 </roblox>

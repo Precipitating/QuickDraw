@@ -2,6 +2,7 @@
 -- NPC position is handled by server
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local GunGripData = require(ReplicatedStorage.Shared.GunData.GunGripData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local EffectsDisplayer = require(script.Parent.VisualEffectsHandler.EffectsDisplayer)
@@ -9,6 +10,7 @@ local clientNpcModule = require(script.Parent.LightweightNpcsClient.Code.Lightwe
 local ClientNpcTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.ClientNpcTypes)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local GunsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.GunsEnum)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local GunsFolder = ReplicatedStorage.Shared.Templates
 local BloodFlowEmitter = ReplicatedStorage.Shared.Templates.BloodFlow
@@ -138,7 +140,7 @@ local function SetNPCDead(character: Model?)
 
 	character:AddTag("Dead")
 
-	for _, part in character:GetChildren() do
+	for _, part in character:GetDescendants() do
 		if not part:IsA("BasePart") then
 			continue
 		end
@@ -207,6 +209,12 @@ local function HitLimb(
 	end
 
 	ApplyDamageHighlight(limb)
+
+	SoundManager.PlayAtPosition(
+		"BulletHitGroan",
+		model:GetPivot().Position,
+		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+	)
 end
 
 local function SetupBloodEmitters(npcRecords: ClientNpcTypes.clientNpcRecordType)

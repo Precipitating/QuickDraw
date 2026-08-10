@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="MeshPart" referent="RBXE86A7B19E2F74F8BA1E818704E4337A6">
+	<Item class="MeshPart" referent="RBXA1507ED9C28C44C6B9A28429DB68D90C">
 		<Properties>
 			<bool name="DoubleSided">false</bool>
 			<bool name="HasJointOffset">false</bool>
@@ -129,12 +129,12 @@
 				<Y>1.24301839</Y>
 				<Z>2.22275686</Z>
 			</Vector3>
-			<BinaryString name="AttributesSerialize"></BinaryString>
+			<BinaryString name="AttributesSerialize">AQAAAAgAAABMaWZldGltZQIBAAAAMw==</BinaryString>
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">HookGrenadeCosmetic</string>
 			<int64 name="SourceAssetId">120410007112393</int64>
-			<BinaryString name="Tags">VGhyb3dhYmxl</BinaryString>
+			<SharedString name="Tags">5S//UgRagelTAOz3fET96Q==</SharedString>
 		</Properties>
 	</Item>
 	<SharedStrings>
@@ -523,5 +523,6 @@ gHIhOZ0WUmorE4sXlfNwbe8E/Adp6Ha85IygLA/fJFt24D2n6HJHfD5m+n5ieb6GpaOVSBKn
 bYQd85+47xy7Epbt3lms13LAnK0zV54hf3+H4dKnP6+PX4AXfH+mUKc/mq07MuG+HVQxg24Z
 Lr7N+TVn2v2yedHM596NGt/iHwT0nh34aIpW</SharedString>
 		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+		<SharedString md5="5S//UgRagelTAOz3fET96Q==">VGhyb3dhYmxl</SharedString>
 	</SharedStrings>
 </roblox>

@@ -2,7 +2,7 @@ return {
 	FireBarrel = {
 		Health = 10,
 		Type = "Explosive",
-		HumanEffect = "Spread",
+		HumanEffect = "Status",
 		Damage = 5,
 		Radius = 10,
 		SpreadParticle = "Burning",

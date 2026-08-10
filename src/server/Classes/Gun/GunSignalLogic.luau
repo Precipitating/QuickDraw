@@ -45,7 +45,7 @@ return {
 		function(
 			hitObj: RaycastResult?,
 			playerHumanoidOrID: Humanoid? | number?,
-			damageInflicted: number,
+			damage: number,
 			cosmeticBullet: BasePart?,
 			shooter: Player? | Model?,
 			canAffectShooter: boolean?
@@ -77,7 +77,7 @@ return {
 				CosmeticBulletObject = cosmeticBullet,
 				RaycastResult = hitObj,
 				TargetHuman = humanClass,
-				Damage = damageInflicted,
+				Damage = damage,
 				ShotPosition = shotPos,
 				Shooter = shooter,
 				CanAffectShooter = canAffectShooter,
@@ -94,11 +94,11 @@ return {
 		end
 	),
 
-	GunSignals.InflictLimbDamage:Connect(
+	GunSignals.ApplyLimbStatusDamage:Connect(
 		function(
 			spreadParticleName: string,
 			spreadDuration: number,
-			damageInflicted: number,
+			damagePerHit: number,
 			limb: MeshPart | BasePart,
 			humanoidOrNpcId: Humanoid | number,
 			shooter: Player?,
@@ -137,11 +137,11 @@ return {
 				end
 			end
 
-			local shotData: ClassTypes.InflictingDamage = {
-				Type = "Inflict",
+			local shotData: ClassTypes.StatusDamage = {
+				Type = "Status",
 				SpreadParticle = spreadParticleName,
 				SpreadDuration = spreadDuration,
-				Damage = damageInflicted,
+				Damage = damagePerHit,
 				TargetHuman = targetClass,
 				HumanoidType = humanoidType,
 				LimbHit = limb,
@@ -154,7 +154,7 @@ return {
 				return
 			end
 
-			DamageModule:ApplyInflictingDamage(shotData)
+			DamageModule:ApplyStatusDamage(shotData)
 		end
 	),
 

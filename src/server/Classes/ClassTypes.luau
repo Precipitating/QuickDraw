@@ -179,6 +179,7 @@ export type Human = {
 
 export type HumanPlayer = Human & {
 	Player: Player,
+	HumanType: number,
 	AdjustGrayscale: (self: HumanPlayer) -> (),
 	ConnectGUIs: (self: HumanPlayer) -> (),
 	SetupPhysicsSettings: (self: Human) -> (),
@@ -203,8 +204,8 @@ export type DamageData = {
 	CosmeticBulletObject: BasePart?,
 	CanAffectShooter: boolean?,
 }
-export type InflictingDamage = DamageData & {
-	Type: "Inflict",
+export type StatusDamage = DamageData & {
+	Type: "Status",
 	SpreadParticle: string?,
 	HumanoidType: string,
 	SpreadDuration: number?,

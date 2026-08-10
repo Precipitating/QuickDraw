@@ -6,7 +6,7 @@ return {
 	DisconnectGun = Signal.new(),
 	PlayerHit = Signal.new(),
 	AnimalHit = Signal.new(),
-	InflictLimbDamage = Signal.new(),
+	ApplyLimbStatusDamage = Signal.new(),
 	NormalLimbDamage = Signal.new(),
 	StoppedReloading = Signal.new(),
 }

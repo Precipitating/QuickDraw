@@ -176,7 +176,7 @@ function EffectsDisplayer:DisplayDestroyParticle(buffer)
 	Debris:AddItem(explosion, 0.2)
 end
 
--- For inflicting damage spread e.g fire
+-- For status damage spread e.g fire
 function EffectsDisplayer:DisplaySpreadParticle(buffer, parent: BasePart)
 	local data = Sera.Deserialize(SeraSchemas.DisplaySpreadParticleSchema, buffer)
 	if not data.DestroyableParticleName then
@@ -187,13 +187,20 @@ function EffectsDisplayer:DisplaySpreadParticle(buffer, parent: BasePart)
 		return
 	end
 
+	-- Already emitting in this limb, return early.
+	if parent:FindFirstChild(data.DestroyableParticleName) then
+		return
+	end
+
 	local particleEffect = if Particles[data.DestroyableParticleName]
 		then Particles[data.DestroyableParticleName]:Clone()
 		else nil
 
 	particleEffect.Parent = parent
 	particleEffect:Emit(1)
-	Debris:AddItem(particleEffect, data.Duration)
+	task.delay(data.Duration, function()
+		particleEffect:Destroy()
+	end)
 end
 
 function EffectsDisplayer:DisplaySpreadParticleClient(particleName: string, duration: number, parent: BasePart)

@@ -11,10 +11,8 @@ local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
-local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 type Human = ClassTypes.Human
 type HumanPlayer = ClassTypes.HumanPlayer
-type HumanNPC = LightweightNpcTypes.npcRecordType
 
 local LimbDamageMultiplier = {
 	Head = 2.5,
@@ -45,7 +43,7 @@ local function ApplyDamageHighlight(humanClass: Human, limbName: string)
 end
 
 function DamageModule:ApplyDamage(
-	human: HumanPlayer | HumanNPC,
+	human: HumanPlayer,
 	limbName: string,
 	damage: number,
 	shotPos: Vector3,
@@ -55,7 +53,7 @@ function DamageModule:ApplyDamage(
 		return
 	end
 
-	local isPlayer = human and human.humanType == HumanTypeEnum.Player
+	local isPlayer = human and human.HumanType == HumanTypeEnum.Player
 	local gun = nil
 	local multiplier = LimbDamageMultiplier[limbName] or 1
 	--
@@ -77,21 +75,21 @@ function DamageModule:ApplyDamage(
 			return
 		end
 
-		humanPlayer:OnLimbHit(damage, multiplier, LimbsEnum[limbName], shooter)
+		humanPlayer:OnHit(damage, multiplier, limbName, shooter)
 
 		ApplyDamageHighlight(humanPlayer, limbName)
 	end
 end
 
-function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.InflictingDamage)
-	local spreadParticleName = inflictingDamageData.SpreadParticle
-	local damagedLimb = inflictingDamageData.LimbHit
-	local spreadDuration = inflictingDamageData.SpreadDuration
-	local humanoidType = inflictingDamageData.HumanoidType
-	local targetHuman = inflictingDamageData.TargetHuman
+function DamageModule:ApplyStatusDamage(statusDamageData: ClassTypes.StatusDamage)
+	local spreadParticleName = statusDamageData.SpreadParticle
+	local damagedLimb = statusDamageData.LimbHit
+	local spreadDuration = statusDamageData.SpreadDuration
+	local humanoidType = statusDamageData.HumanoidType
+	local targetHuman = statusDamageData.TargetHuman
 
 	if not humanoidType then
-		warn("[ApplyInflictingDamage]: Missing humanoid type")
+		warn("[ApplyStatusDamage]: Missing humanoid type")
 		return
 	end
 
@@ -101,9 +99,9 @@ function DamageModule:ApplyInflictingDamage(inflictingDamageData: ClassTypes.Inf
 
 	local damageFunction = function()
 		if humanoidType == "Human" then
-			self.DamageHuman(inflictingDamageData)
+			self.DamageHuman(statusDamageData)
 		elseif humanoidType == "Animal" then
-			self.DamageAnimal(inflictingDamageData)
+			self.DamageAnimal(statusDamageData)
 		end
 	end
 
@@ -180,13 +178,13 @@ local function CheckAndHandleDeadHuman(human: Human, shooter: Player?)
 		human:Die(shooter)
 	end
 end
-function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassTypes.InflictingDamage)
+function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassTypes.StatusDamage)
 	if not damageData then
 		return
 	end
 
 	local animalClass = damageData.TargetHuman
-	-- Inflicting Damage does not have RaycastResult, so it will only display blood if we do.
+	-- Status Damage does not have RaycastResult, so it will only display blood if we do.
 	local raycastResult = (damageData :: any).RaycastResult
 	if not animalClass then
 		warn("Missing animal class.")
@@ -232,7 +230,7 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 	warn(`DAMAGED ANIMAL`)
 end
 function DamageModule.DamageHuman(
-	damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
+	damageData: ClassTypes.StatusDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
 )
 	local hitObj = nil
 	if damageData.Type == "Shot" then

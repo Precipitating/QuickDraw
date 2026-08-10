@@ -60,11 +60,11 @@ end
 function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)
 	local canAffectShooter: boolean? = gunShotData.CanAffectShooter
 	local raycastResult: RaycastResult = gunShotData.RaycastResult
-	local damageInflicted: number = gunShotData.Damage
+	local damage: number = gunShotData.Damage
 	local attacker: Player? | Model? = gunShotData.Shooter
 	local limbEnum = LimbsEnum[raycastResult and raycastResult.Instance and raycastResult.Instance.Name]
 
-	if not raycastResult or not damageInflicted then
+	if not raycastResult or not damage then
 		Utility.Warn(`[NPCLogic:HitByGunshot] Missing raycast result or damage values`)
 		return
 	end
@@ -74,7 +74,7 @@ function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gun
 		return
 	end
 
-	npcRecord.onLimbHit:Fire(damageInflicted, limbEnum, raycastResult.Position, raycastResult.Normal, attacker)
+	npcRecord.onLimbHit:Fire(damage, limbEnum, raycastResult.Position, raycastResult.Normal, attacker)
 end
 local function IsLimbOut(limb)
 	return limb.State == "Dismembered" or limb.State == "Disabled"
@@ -139,18 +139,15 @@ function NPCLogic:AffectLimbAndChildren(
 	end
 end
 
-function NPCLogic:HitByInflictingBullet(
-	npcRecord: LightweightNpcTypes.npcRecordType,
-	inflictingData: ClassTypes.InflictingDamage
-)
-	local spreadParticleName: string? = inflictingData.SpreadParticle
-	local spreadDuration: number? = inflictingData.SpreadDuration
-	local limbHit: BasePart? = inflictingData.LimbHit
-	local attacker: Player? = inflictingData.Shooter
-	local damageInflicted = inflictingData.Damage
+function NPCLogic:HitByStatusBullet(npcRecord: LightweightNpcTypes.npcRecordType, statusData: ClassTypes.StatusDamage)
+	local spreadParticleName: string? = statusData.SpreadParticle
+	local spreadDuration: number? = statusData.SpreadDuration
+	local limbHit: BasePart? = statusData.LimbHit
+	local attacker: Player? = statusData.Shooter
+	local damage = statusData.Damage
 
 	if not limbHit then
-		Utility.Warn("[NPCLogic:HitByInflictingBullet] Missing limb reference")
+		Utility.Warn("[NPCLogic:HitByStatusBullet] Missing limb reference")
 		return
 	end
 
@@ -160,13 +157,14 @@ function NPCLogic:HitByInflictingBullet(
 				if npcRecord.npcState == NpcStateModule.Dying then
 					return
 				end
-				npcRecord.onLimbHit:Fire(damageInflicted, LimbsEnum[limbHit.Name], nil, nil, attacker)
+				npcRecord.onLimbHit:Fire(damage, LimbsEnum[limbHit.Name], nil, nil, attacker)
 				if spreadParticleName then
 					npcRecord:AddClientEvent({
 						id = "SpreadParticle",
 						SpreadParticle = spreadParticleName,
 						Duration = spreadDuration,
-						limbName = limbHit.Name,
+						-- send limb number to client, reduce some data.
+						limbName = LimbsEnum[limbHit.Name],
 					})
 				end
 				task.wait(1)
@@ -240,9 +238,10 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 	)
 
+	-- Entry for all damage, decides the damage type and executes correct logic
 	npcRecord.onHit:Connect(
 		function(
-			damageData: ClassTypes.InflictingDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
+			damageData: ClassTypes.StatusDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
 		)
 			if npcRecord.npcState == NpcStateModule.Dying then
 				return
@@ -259,8 +258,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			local damageType = damageData.Type
 			if damageType == "Shot" then
 				self:HitByGunshot(npcRecord, damageData)
-			elseif damageType == "Spread" then
-				self:HitByInflictingBullet(npcRecord, damageData)
+			elseif damageType == "Status" then
+				self:HitByStatusBullet(npcRecord, damageData)
 			end
 
 			if character then

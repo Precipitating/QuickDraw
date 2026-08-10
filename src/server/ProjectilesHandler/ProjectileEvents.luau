@@ -57,7 +57,7 @@ local function GetHumanoidFromHit(instance: Instance): Humanoid?
 	return humanoid
 end
 
-function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, owner: Player?, bulletCosmetic: BasePart?)
+function ProjectileEvents:GunHitPlayer(hitData, context, raycastResult: RaycastResult)
 	local parent = raycastResult.Instance.Parent
 	if not parent then
 		return false
@@ -74,24 +74,28 @@ function ProjectileEvents:GunHitPlayer(hitData, raycastResult: RaycastResult, ow
 		return false
 	end
 
+	local owner = context.UserData.Owner
+	local cosmeticBullet = context.CosmeticBulletObject
+
 	-- hit body part
 	GunSignals.PlayerHit:Fire(
 		raycastResult,
 		hitHumanoid or isNPC,
 		hitData.Damage,
-		bulletCosmetic,
+		cosmeticBullet,
 		owner or hitData.Owner
 	)
 	print(`{raycastResult.Instance.Name} hit!`)
 	return true
 end
 
-function ProjectileEvents:GunHitAnimal(gunData, raycastResult: RaycastResult, owner: Player? | Model?)
+function ProjectileEvents:GunHitAnimal(gunData, context, raycastResult: RaycastResult?)
 	if not gunData or not raycastResult then
 		return false
 	end
 	local hitInstance = raycastResult.Instance
 	local parent = hitInstance.Parent
+	local owner = context.UserData.Owner
 
 	if not parent then
 		return false
@@ -105,12 +109,14 @@ function ProjectileEvents:GunHitAnimal(gunData, raycastResult: RaycastResult, ow
 	return true
 end
 
-function ProjectileEvents:GunHitDestroyable(hitData, raycastResult: RaycastResult, owner: Player?)
+function ProjectileEvents:GunHitDestroyable(hitData, context, raycastResult: RaycastResult)
 	local instance = raycastResult.Instance
 	local destroyableClass: Destroyable = DestroyableManager.Destroyables[instance]
 	if not destroyableClass then
 		return
 	end
+
+	local owner = context.UserData.Result
 
 	destroyableClass:Damage(hitData.Damage, owner or hitData.Owner)
 
@@ -261,12 +267,7 @@ function ProjectileEvents:GetHumanoidType(parent)
 	return humanoidType
 end
 
-function ProjectileEvents:FragmentHitHumanoid(
-	raycastResult: RaycastResult,
-	owner,
-	throwableData,
-	cosmeticBullet: BasePart?
-)
+function ProjectileEvents:FragmentHitHumanoid(raycastResult: RaycastResult, context)
 	local isModel = raycastResult.Instance:FindFirstAncestorOfClass("Model")
 	if not isModel then
 		return false
@@ -281,6 +282,10 @@ function ProjectileEvents:FragmentHitHumanoid(
 		return false
 	end
 
+	local throwableData = context.UserData.Data
+	local owner = context.UserData.Owner
+	local cosmeticBullet = context.CosmeticBulletObject
+
 	local isPlayer = if owner and typeof(owner) == "table" then owner.Character else owner
 
 	if throwableData.Type == "Explosive" then
@@ -289,8 +294,8 @@ function ProjectileEvents:FragmentHitHumanoid(
 		elseif humanoidType == "Animal" then
 			GunSignals.AnimalHit:Fire(throwableData, raycastResult, isPlayer)
 		end
-	elseif throwableData.Type == "Spread" then
-		GunSignals.InflictLimbDamage:Fire(
+	elseif throwableData.Type == "Status" then
+		GunSignals.ApplyLimbStatusDamage:Fire(
 			throwableData.SpreadParticle,
 			throwableData.SpreadDuration,
 			throwableData.Damage,
@@ -331,7 +336,7 @@ local function RandomConeDirection(BaseDirection: vector, HalfAngleDeg: number):
 
 	return vector.normalize(ConeVector)
 end
-function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableData)
+function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, context)
 	-- damage bodyparts if hits player
 	local instance = hit.Instance
 	local isDestroyable = CollectionService:HasTag(instance, "Destroyable")
@@ -341,6 +346,8 @@ function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableDa
 			warn("[FragmentHitDestroyable] Destroyable class is not valid?")
 			return
 		end
+
+		local throwableData = context.UserData.Data
 
 		if throwableData.Type == "Explosive" then
 			destroyableClass:Damage(throwableData.Damage)
@@ -352,7 +359,7 @@ function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, throwableDa
 	return false
 end
 
-function ProjectileEvents:FragmentHitNPC(hit: RaycastResult, throwableData)
+function ProjectileEvents:FragmentHitHumanNPC(hit: RaycastResult, context)
 	local partHit = hit and hit.Instance
 	if not partHit then
 		return false
@@ -375,20 +382,39 @@ function ProjectileEvents:FragmentHitNPC(hit: RaycastResult, throwableData)
 		return false
 	end
 
-	npcRecord.onHit:Fire(throwableData)
+	local attacker = context.UserData.Owner
+	local throwableData = context.UserData.Data
+	local cosmeticBullet = context.CosmeticBulletObject
 
-	-- if throwableData.Type == "Spread" then
+	local isPlayer = if attacker and typeof(attacker) == "table" then attacker.Character else attacker
+
+	if throwableData.Type == "Explosive" then
+		GunSignals.PlayerHit:Fire(hit, npcId, throwableData.Damage, cosmeticBullet, isPlayer, true)
+	elseif throwableData.Type == "Status" then
+		GunSignals.ApplyLimbStatusDamage:Fire(
+			throwableData.SpreadParticle,
+			throwableData.SpreadDuration,
+			throwableData.Damage,
+			hit.Instance,
+			npcId,
+			isPlayer,
+			"Human",
+			true
+		)
+	end
+
 	-- 	-- special effects add-on
 	-- 	task.spawn(function()
 	-- 		if throwableData.Subtype and throwableData.SubtypeEffectDuration then
 	-- 			self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
 	-- 		end
 	-- 	end)
-	-- end
+
 	return true
 end
 
-function ProjectileEvents:FragmentHitEnvironment(hit: RaycastResult, throwableData)
+function ProjectileEvents:FragmentHitEnvironment(hit: RaycastResult, context)
+	local throwableData = context.UserData.Data
 	local explosiveType = throwableData.Type
 
 	if not explosiveType then
@@ -403,7 +429,7 @@ function ProjectileEvents:FragmentHitEnvironment(hit: RaycastResult, throwableDa
 
 	if explosiveType == "Explosive" then
 		ServerEffectsDisplayer:DisplayProjectileMark("Bullet", hit)
-	elseif explosiveType == "Spread" then
+	elseif explosiveType == "Status" then
 		ServerEffectsDisplayer:DisplayProjectileMark("Burn", hit)
 	end
 end
@@ -423,8 +449,8 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 	local effectDuration = explosiveData.SpreadDuration or 0
 	local damageType = explosiveData.HumanEffect or explosiveData.Type
 	if isBodyPart then
-		if damageType == "Spread" then
-			GunSignals.InflictLimbDamage:Fire(
+		if damageType == "Status" then
+			GunSignals.ApplyLimbStatusDamage:Fire(
 				explosiveData.SpreadParticle,
 				effectDuration,
 				dmg,
@@ -436,7 +462,16 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 			)
 		else
 			if damageType == "Damage" then
-				GunSignals.InflictLimbDamage:Fire(nil, 1, dmg, damagedObject, humanoid, initiator, humanoidType, true)
+				GunSignals.ApplyLimbStatusDamage:Fire(
+					nil,
+					1,
+					dmg,
+					damagedObject,
+					humanoid,
+					initiator,
+					humanoidType,
+					true
+				)
 			end
 		end
 		return true
@@ -492,7 +527,7 @@ end
 
 function ProjectileEvents:ApplyThrowableRadiusDamage(origin: Vector3, radius: number, explosiveData, owner)
 	local partsInRadius = workspace:GetPartBoundsInRadius(origin, radius)
-	local isSpread = explosiveData.Type and explosiveData.Type == "Spread"
+	local isSpread = explosiveData.Type and explosiveData.Type == "Status"
 	task.spawn(function()
 		local impulseAppliedList = {}
 		for _, obj in partsInRadius do
@@ -606,29 +641,24 @@ function ProjectileEvents:OnFragmentHit(context, result: RaycastResult?)
 	if not result then
 		return
 	end
-
-	local throwableData = context.UserData.Data
-	local owner = context.UserData.Owner
-	local cosmeticBullet = context.CosmeticBulletObject
-
 	self:ProjectileHitMaterial(result)
 
-	if self:FragmentHitNPC(result, throwableData) then
+	if self:FragmentHitHumanNPC(result, context) then
 		return
 	end
 
 	-- handle hitting player/animal
-	if self:FragmentHitHumanoid(result, owner, throwableData, cosmeticBullet) then
+	if self:FragmentHitHumanoid(result, context) then
 		return
 	end
 
 	-- handle hitting destroyables
-	if self:FragmentHitDestroyable(result, throwableData) then
+	if self:FragmentHitDestroyable(result, context) then
 		return
 	end
 
 	-- else hit environment
-	self:FragmentHitEnvironment(result, throwableData)
+	self:FragmentHitEnvironment(result, context)
 end
 -- Resolves the current gun's GunData for a player owner.
 function ProjectileEvents:GetGunDataForOwner(owner: Player)
@@ -675,26 +705,20 @@ function ProjectileEvents:GetThrowableDataForOwner(owner: Player)
 end
 
 -- Shared bullet resolution: material fx, then player/animal/destroyable (and optionally environment).
-function ProjectileEvents:ResolveBulletHit(
-	gunData,
-	result: RaycastResult,
-	owner: Player?,
-	cosmeticBullet: Instance?,
-	checkEnvironment: boolean?
-)
+function ProjectileEvents:ResolveBulletHit(gunData, context, result: RaycastResult, checkEnvironment: boolean?)
 	self:ProjectileHitMaterial(result)
 
-	if self:GunHitPlayer(gunData, result, owner, cosmeticBullet) then
+	if self:GunHitPlayer(gunData, context, result) then
 		return true
 	end
-	if self:GunHitAnimal(gunData, result, owner) then
+	if self:GunHitAnimal(gunData, context, result) then
 		return true
 	end
-	if self:GunHitDestroyable(gunData, result, owner) then
+	if self:GunHitDestroyable(gunData, context, result) then
 		return true
 	end
 	if checkEnvironment then
-		self:GunHitEnvironment(gunData, result, owner)
+		self:GunHitEnvironment(gunData, result)
 	end
 
 	return false
@@ -741,7 +765,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 		if not gunData then
 			return
 		end
-		self:ResolveBulletHit(gunData, result, owner, cosmeticBullet)
+		self:ResolveBulletHit(gunData, context, result)
 	elseif CollectionService:HasTag(cosmeticBullet, "Throwable") then
 		local throwableData, currentThrowable, human = self:GetThrowableDataForOwner(owner)
 		if not throwableData then
@@ -761,6 +785,9 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 
 		self:HandleThrowableLanding(throwableData, result, owner, function(hitPos)
 			self:OnThrowImpact(throwableData.ImpactParticle, hitPos)
+			if cosmeticBullet then
+				cosmeticBullet:Destroy()
+			end
 		end)
 	end
 end
@@ -774,7 +801,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	local cosmeticBullet = context.CosmeticBulletObject
 
 	if data.ProjectileType == "Bullet" then
-		self:ResolveBulletHit(data, result, nil, cosmeticBullet, true)
+		self:ResolveBulletHit(data, context, result, true)
 	elseif data.ProjectileType == "Throwable" then
 		local throwableData = data.Data
 
