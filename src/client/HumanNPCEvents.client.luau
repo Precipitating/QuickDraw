@@ -24,8 +24,13 @@ local function RagdollNPC(model: Model?, enabled: boolean)
 		return
 	end
 
+	if enabled then
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	else
+		humanoid:ChangeState(Enum.HumanoidStateType.Running)
+	end
+	humanoid:Move(Vector3.zero)
 	local isDead = humanoid:GetState() == Enum.HumanoidStateType.Dead
-	humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, if enabled then true else false)
 
 	for _, part in model:GetDescendants() do
 		if part:IsA("AnimationConstraint") then
@@ -34,10 +39,12 @@ local function RagdollNPC(model: Model?, enabled: boolean)
 			part.MaxFrictionTorque = 10
 		end
 
-		if part:IsA("MeshPart") and part.CanCollide == false then
-			part.CanCollide = enabled
-		elseif part.Name == "HumanoidRootPart" then
-			part.Anchored = enabled
+		if part:IsA("BasePart") then
+			part.CollisionGroup = if enabled then "Ragdoll" else "NPC"
+
+			if part.Parent and part.Parent:IsA("Tool") then
+				part.CanCollide = not enabled
+			end
 		end
 	end
 end
@@ -85,6 +92,7 @@ local function StoreBodyParts(npcRecord: ClientNpcTypes.clientNpcRecordType)
 		end
 
 		npcRecord.bodyParts[LimbsEnum[part.Name]] = part
+		part.CollisionGroup = "NPC"
 	end
 end
 local function AttachGunToHand(npcRecord: ClientNpcTypes.clientNpcRecordType, gunTool: Tool, gunId: number)
@@ -498,6 +506,30 @@ local StateEvents = {
 	end,
 
 	ShootWeapon = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number) end,
+
+	Ragdoll = function(npcRecord: ClientNpcTypes.clientNpcRecordType, event: any, serverTime: number)
+		local model: Model? = npcRecord.instance
+
+		local duration = event.duration
+
+		if not model then
+			Utility.Warn(`Cannot ragdoll on client, missing character model`)
+			return
+		end
+
+		RagdollNPC(model, true)
+
+		if not duration then
+			return
+		end
+
+		task.delay(duration, function()
+			if not model or npcRecord.isDead then
+				return
+			end
+			RagdollNPC(model, false)
+		end)
+	end,
 }
 
 clientNpcModule.onNpcLoad:Connect(function(npcRecord: ClientNpcTypes.clientNpcRecordType)

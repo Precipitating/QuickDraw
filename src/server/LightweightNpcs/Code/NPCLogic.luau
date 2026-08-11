@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
-local AnimationIds = require(ReplicatedStorage.Shared.AnimationData.AnimationIds)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -9,6 +8,7 @@ local ServerSoundHandler = require(script.Parent.Parent.Parent.Sound.ServerSound
 local NPCHealth = require(script.Parent.NPCHealth)
 local NPCWeaponsClass = require(script.Parent.NPCWeaponsClass)
 local LightweightNpcTypes = require(script.Parent.LightweightNpcTypes)
+local NPCPhysics = require(script.Parent.NPCPhysics)
 local NPCPoses = require(script.Parent.NPCPoses)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local NPC_CULL_DISTANCE = 400
@@ -55,6 +55,8 @@ local function InitializeOnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	NPCWeaponsClass:EquipWeapon(npcRecord)
 
 	NPCHealth:SetInvincibleFor(npcRecord, 5)
+
+	NPCPhysics:Ragdoll(npcRecord, 10)
 end
 
 function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)
@@ -176,7 +178,7 @@ end
 function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
 		if tick() > npcRecord.data.nextMove then
-			if npcRecord.npcState == NpcStateModule.Dying then
+			if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
 				return
 			end
 
@@ -210,6 +212,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			end
 		end
 	end)
+
+	--
 	npcRecord.onDismemberLimb:Connect(function(limbToDestroy: number)
 		self:AffectLimbAndChildren(npcRecord, limbToDestroy, "Dismembered", "DismemberLimb")
 	end)
@@ -287,6 +291,10 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				end
 			end
 		end
+	end)
+
+	npcRecord.onRagdoll:Connect(function(duration: number?)
+		NPCPhysics:Ragdoll(npcRecord, duration)
 	end)
 
 	npcRecord.onDeath:Connect(function()
