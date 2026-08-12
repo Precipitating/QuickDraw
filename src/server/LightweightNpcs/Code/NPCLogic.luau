@@ -179,6 +179,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
 		if tick() > npcRecord.data.nextMove then
 			if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
+				npcRecord:Move(Vector3.zero)
 				return
 			end
 
@@ -293,8 +294,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 	end)
 
-	npcRecord.onRagdoll:Connect(function(duration: number?)
-		NPCPhysics:Ragdoll(npcRecord, duration)
+	npcRecord.onRagdoll:Connect(function(duration: number?, onChanged: (() -> ())?)
+		NPCPhysics:Ragdoll(npcRecord, duration, onChanged)
 	end)
 
 	npcRecord.onDeath:Connect(function()

@@ -4,7 +4,7 @@ local lightweightNpcsServerModule = {} :: lightweightNpcsServerModuleType
 
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
-local NPCHealth = require(script.Parent.NPCHealth)
+
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MessageId = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.MessageId)
 
@@ -13,8 +13,6 @@ local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightN
 local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local NpcMover = require(script.Parent.NpcMover)
-local PositionBits = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.PositionBits)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 local config = {
 	doDebugPrinting = true,
