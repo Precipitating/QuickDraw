@@ -5,6 +5,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local LightweightNPCModule = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local Queue = require(ReplicatedStorage.Shared.Classes.Queue)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
+local NPCFactionTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.NPCFactionTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local NPCHealth = require(ServerScriptService.Server.LightweightNpcs.Code.NPCHealth)
@@ -133,6 +134,7 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 	end
 
 	local npcType = nil
+
 	for key, _ in NPCTypes do
 		if CollectionService:HasTag(spawnerModel, key) then
 			npcType = key
@@ -158,8 +160,13 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 	end
 
 	-- Spawn NPC
-	local npcRecord =
-		LightweightNPCModule:SpawnNpc(npcTemplateModel, LightweightNPCConfig, npcType, spawnLocation.WorldCFrame)
+	local npcRecord = LightweightNPCModule:SpawnNpc(
+		npcTemplateModel,
+		LightweightNPCConfig,
+		npcType,
+		spawnerType,
+		spawnLocation.WorldCFrame
+	)
 	local npcModel = npcRecord.instance
 	npcRecord.data.nextMove = 0
 

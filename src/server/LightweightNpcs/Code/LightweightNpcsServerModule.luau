@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lightweightNpcsServerModule = {} :: lightweightNpcsServerModuleType
 
+local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 
@@ -12,6 +13,7 @@ local WriteBufferModule = require(ReplicatedStorage.Shared.NPCData.NPCs.Lightwei
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
+local NPCFactionTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.NPCFactionTypes)
 local NpcMover = require(script.Parent.NpcMover)
 
 local config = {
@@ -322,6 +324,7 @@ function lightweightNpcsServerModule:CreateNpc(
 	template: Instance,
 	npcConfig: any,
 	_npcType: string,
+	_faction: string,
 	originCFrame: CFrame
 ): LightweightNpcTypes.npcRecordType
 	local npcId = GetNextNpcId()
@@ -400,7 +403,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		instance = currentInstance,
 		configuration = npcConfiguration,
 		internal = npcInternal,
-
+		faction = _faction,
 		npcState = NpcStateModule.Idle,
 		legless = false,
 		killedBy = nil,
@@ -416,12 +419,14 @@ function lightweightNpcsServerModule:CreateNpc(
 		bodyParts = limbs,
 		animator = serverRigTemplate:FindFirstChild("Animator", true) :: Animator?,
 		poses = {},
+		enemies = NPCFactionTypes[_faction],
 		HRP = serverRigTemplate:FindFirstChild("HumanoidRootPart"),
 		currentEquipped = nil,
 		storedThrowable = nil,
 		storedWeapon = nil,
 		humanType = HumanTypeEnum.NPC,
 		invincible = true,
+		ai = {},
 		onThink = SignalModule.new(),
 		onFellOffMap = SignalModule.new(),
 		onDeath = SignalModule.new(),

@@ -71,9 +71,27 @@ export type npcRecordType = {
 	legless: boolean,
 	killedBy: Player? | Model?,
 	npcType: string?,
+	enemies: { [string]: boolean },
+	faction: string?,
 	currentEquipped: any?,
 	storedWeapon: any?,
 	storedThrowable: any?,
+
+	-- NPC AI conditions
+
+	ai: {
+		worldState: any,
+		perception: any,
+		navigation: any,
+		currentGoal: any?,
+		currentPlan: any?,
+		planStep: number?,
+		actionStarted: boolean?,
+		actionResult: boolean?,
+		stateDirty: boolean?,
+		defaultState: string?,
+		defaultStateData: any?,
+	},
 
 	--Methods
 	PlayAnimation: (

@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Planner = require(ReplicatedStorage.Shared.GoalAI.Planner)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
@@ -8,6 +9,7 @@ local ServerSoundHandler = require(script.Parent.Parent.Parent.Sound.ServerSound
 local NPCHealth = require(script.Parent.NPCHealth)
 local NPCWeaponsClass = require(script.Parent.NPCWeaponsClass)
 local LightweightNpcTypes = require(script.Parent.LightweightNpcTypes)
+local NPCAI = require(script.Parent.NPCAI)
 local NPCPhysics = require(script.Parent.NPCPhysics)
 local NPCPoses = require(script.Parent.NPCPoses)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
@@ -53,6 +55,7 @@ local function InitializeOnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord:AddClientEvent({ id = "Initialize" })
 	NPCWeaponsClass:InitializeWeaponClass(npcRecord)
 	NPCWeaponsClass:EquipWeapon(npcRecord)
+	NPCAI:Initialize(npcRecord)
 
 	NPCHealth:SetInvincibleFor(npcRecord, 5)
 
@@ -177,41 +180,50 @@ end
 
 function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
-		if tick() > npcRecord.data.nextMove then
-			if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
-				npcRecord:Move(Vector3.zero)
-				return
-			end
+		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
+			return
+		end
 
-			npcRecord.data.nextMove = tick() + 0.5 + math.random()
-
-			if math.random() > 0.5 then
-				--idle
-				npcRecord:Move(Vector3.zero)
-
-				if npcRecord.legless then
-					npcRecord:PlayAnimation("crawlidle", false, 1, 1)
-				else
-					npcRecord:PlayAnimation("idle", false, 1, 1)
-				end
-			else
-				--run
-				local ang = math.random() * math.pi * 2
-				npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
-
-				if npcRecord.legless then
-					npcRecord:PlayAnimation("crawlwalk", false, 1, 1)
-				else
-					npcRecord:PlayAnimation("walk", false, 1, 1)
-				end
-			end
-
-			if npcRecord.currentEquipped and not npcRecord.legless then
-				npcRecord:PlayAnimation("toolhold", false, 2, 1)
-			else
-				npcRecord:StopAnimationChannel(2)
+		if npcRecord.ai.currentPlan then
+			for _, action in npcRecord.ai.currentPlan.actions do
+				action:execute(npcRecord)
 			end
 		end
+
+		-- 	if tick() > npcRecord.data.nextMove then
+		-- 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
+		-- 			return
+		-- 		end
+
+		-- 		npcRecord.data.nextMove = tick() + 0.5 + math.random()
+
+		-- 		if math.random() > 0.5 then
+		-- 			--idle
+		-- 			npcRecord:Move(Vector3.zero)
+
+		-- 			if npcRecord.legless then
+		-- 				npcRecord:PlayAnimation("crawlidle", false, 1, 1)
+		-- 			else
+		-- 				npcRecord:PlayAnimation("idle", false, 1, 1)
+		-- 			end
+		-- 		else
+		-- 			--run
+		-- 			local ang = math.random() * math.pi * 2
+		-- 			npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
+
+		-- 			if npcRecord.legless then
+		-- 				npcRecord:PlayAnimation("crawlwalk", false, 1, 1)
+		-- 			else
+		-- 				npcRecord:PlayAnimation("walk", false, 1, 1)
+		-- 			end
+		-- 		end
+
+		-- 		if npcRecord.currentEquipped and not npcRecord.legless then
+		-- 			npcRecord:PlayAnimation("toolhold", false, 2, 1)
+		-- 		else
+		-- 			npcRecord:StopAnimationChannel(2)
+		-- 		end
+		-- 	end
 	end)
 
 	--
