@@ -34,13 +34,21 @@ function module:SpawnNpc(
 	configuration: any,
 	npcType: string,
 	spawnerType: string,
+	defaultStateData: string,
 	originCFrame: CFrame
 )
 	if configuration.thinkHzRate < configuration.replicationHzRate then
 		warn("Setting your thinkHzRate lower than your replication rate will cause stuttering")
 	end
 
-	local npcRecord = lightweightNpcsServerModule:CreateNpc(template, configuration, npcType, spawnerType, originCFrame)
+	local npcRecord = lightweightNpcsServerModule:CreateNpc(
+		template,
+		configuration,
+		npcType,
+		spawnerType,
+		defaultStateData,
+		originCFrame
+	)
 
 	return npcRecord
 end

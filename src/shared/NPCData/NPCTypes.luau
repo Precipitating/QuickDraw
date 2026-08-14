@@ -10,7 +10,6 @@ return {
 		PatrolStayTime = 5,
 		DefaultStateName = "Patrol",
 		AttackStateName = "RangeAttack",
-		DefaultStateData = "1",
 	},
 	Basic = {
 		WeaponName = "Revolver",
@@ -22,7 +21,6 @@ return {
 		PatrolStayTime = 3,
 		DefaultStateName = "Patrol",
 		AttackStateName = "RangeAttack",
-		DefaultStateData = "1",
 	},
 	Shotgunner = {
 		WeaponName = "Coach",
@@ -34,7 +32,6 @@ return {
 		PatrolStayTime = 5,
 		DefaultStateName = "Patrol",
 		AttackStateName = "RangeAttack",
-		DefaultStateData = "1",
 	},
 	Grenadier = {
 		WeaponName = nil,

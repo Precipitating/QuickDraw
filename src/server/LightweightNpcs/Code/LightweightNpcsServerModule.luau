@@ -325,6 +325,7 @@ function lightweightNpcsServerModule:CreateNpc(
 	npcConfig: any,
 	_npcType: string,
 	_faction: string,
+	_defaultStateData: string,
 	originCFrame: CFrame
 ): LightweightNpcTypes.npcRecordType
 	local npcId = GetNextNpcId()
@@ -405,6 +406,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		internal = npcInternal,
 		faction = _faction,
 		npcState = NpcStateModule.Idle,
+		activeMoveThread = nil,
 		legless = false,
 		killedBy = nil,
 		position = originCFrame.Position,
@@ -420,11 +422,12 @@ function lightweightNpcsServerModule:CreateNpc(
 		animator = serverRigTemplate:FindFirstChild("Animator", true) :: Animator?,
 		poses = {},
 		enemies = NPCFactionTypes[_faction],
-		HRP = serverRigTemplate:FindFirstChild("HumanoidRootPart"),
+		hrp = serverRigTemplate:FindFirstChild("HumanoidRootPart"),
 		currentEquipped = nil,
 		storedThrowable = nil,
 		storedWeapon = nil,
 		humanType = HumanTypeEnum.NPC,
+		defaultStateData = _defaultStateData,
 		invincible = true,
 		ai = {},
 		onThink = SignalModule.new(),
@@ -459,6 +462,9 @@ function lightweightNpcsServerModule:CreateNpc(
 	end
 
 	self.npcRecords[npcRecord.npcId] = npcRecord
+	serverRigTemplate:AddTag(_npcType)
+	serverRigTemplate:AddTag(_faction)
+	serverRigTemplate:AddTag("NPC")
 
 	return npcRecord
 end

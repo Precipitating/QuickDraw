@@ -55,11 +55,8 @@ local function InitializeOnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord:AddClientEvent({ id = "Initialize" })
 	NPCWeaponsClass:InitializeWeaponClass(npcRecord)
 	NPCWeaponsClass:EquipWeapon(npcRecord)
-	NPCAI:Initialize(npcRecord)
-
 	NPCHealth:SetInvincibleFor(npcRecord, 5)
-
-	NPCPhysics:Ragdoll(npcRecord, 10)
+	NPCAI:Initialize(npcRecord)
 end
 
 function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)

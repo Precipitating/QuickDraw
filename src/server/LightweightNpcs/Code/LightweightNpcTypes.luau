@@ -61,13 +61,14 @@ export type npcRecordType = {
 	angle: number, --Actual heading
 	targetAngle: number, --target heading
 	velocity: Vector3, --units per second
+	activeMoveThread: any?,
 	isOnGround: boolean, --bool
 	motionVector: Vector3, --setting this controls where the npc will try and move to
 	jump: boolean, --A jump is requested
 
 	--
 	bodyParts: { [number]: { Part: MeshPart, HP: number, State: string } },
-	HRP: BasePart,
+	hrp: BasePart,
 	legless: boolean,
 	killedBy: Player? | Model?,
 	npcType: string?,
@@ -76,6 +77,7 @@ export type npcRecordType = {
 	currentEquipped: any?,
 	storedWeapon: any?,
 	storedThrowable: any?,
+	defaultStateData: any?,
 
 	-- NPC AI conditions
 
@@ -87,10 +89,10 @@ export type npcRecordType = {
 		currentPlan: any?,
 		planStep: number?,
 		actionStarted: boolean?,
+		isNavigating: boolean?,
 		actionResult: boolean?,
 		stateDirty: boolean?,
 		defaultState: string?,
-		defaultStateData: any?,
 	},
 
 	--Methods

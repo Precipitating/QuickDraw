@@ -165,6 +165,7 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 		LightweightNPCConfig,
 		npcType,
 		spawnerType,
+		spawnerModel:GetAttribute("DefaultStateData"),
 		spawnLocation.WorldCFrame
 	)
 	local npcModel = npcRecord.instance
@@ -178,9 +179,6 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 	end
 
 	npcModel.Name = `{npcType}NPC{NPCEvents.CurrentSpawnedNPCS}`
-	npcModel:AddTag(npcType)
-	npcModel:AddTag(spawnerType)
-	npcModel:AddTag("NPC")
 
 	if spawnerModel:GetAttribute("DefaultStateData") then
 		npcModel:SetAttribute("DefaultStateData", spawnerModel:GetAttribute("DefaultStateData"))

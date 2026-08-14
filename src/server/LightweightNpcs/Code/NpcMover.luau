@@ -71,6 +71,7 @@ function module:HandleFallingState(npcRecord: LightweightNpcTypes.npcRecordType,
 	if hitResults then
 		npcRecord.velocity = Vector3.new(npcRecord.velocity.X, 0, npcRecord.velocity.Z)
 		npcRecord.onCrashland:Fire()
+
 		--Make sure we push out a replication asap so we dont "mush" into the ground
 		npcRecord:ForceReplicate()
 	end
