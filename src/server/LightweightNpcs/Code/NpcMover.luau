@@ -72,6 +72,11 @@ function module:HandleFallingState(npcRecord: LightweightNpcTypes.npcRecordType,
 		npcRecord.velocity = Vector3.new(npcRecord.velocity.X, 0, npcRecord.velocity.Z)
 		npcRecord.onCrashland:Fire()
 
+		if npcRecord.ai.jumpRequested then
+			npcRecord.ai.jumpFinishedSignal:Fire()
+			npcRecord.ai.jumpRequested = false
+		end
+
 		--Make sure we push out a replication asap so we dont "mush" into the ground
 		npcRecord:ForceReplicate()
 	end

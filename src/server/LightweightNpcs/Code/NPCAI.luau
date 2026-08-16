@@ -1,6 +1,9 @@
 local CollectionService = game:GetService("CollectionService")
+local PathfindingService = game:GetService("PathfindingService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
+local Human = require(ServerScriptService.Server.Classes.Human.Human)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local Perception = require(ReplicatedStorage.Shared.GoalAI.AI.Perception)
 local Action = require(ReplicatedStorage.Shared.GoalAI.Action)
@@ -14,16 +17,17 @@ local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local NoobPath = require(ReplicatedStorage.Shared.Pathfinding.NoobPath)
+local Path = require(ReplicatedStorage.Shared.Pathfinding.Path)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PatrolData = ServerStorage.PatrolData
-local planner = Planner.new()
+local planner = Planner.new({ performanceMode = true, maxEvaluationsPerTick = 10 })
 local NPCAI = {}
 
 local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType)
 	local enemyInstanceTags = npcRecord.enemies and npcRecord.enemies.EnemyList
 	local perception = npcRecord.ai.perception
-	local perceiverPos = npcRecord.hrp.Position
+	local perceiverPos = npcRecord.position
 	local range = NPCTypes[npcRecord.npcType] and NPCTypes[npcRecord.npcType].EyeRange
 	if not perception or not enemyInstanceTags or not perceiverPos or not range then
 		return nil
@@ -31,7 +35,7 @@ local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType)
 
 	local target = nil
 
-	local nearbyObjects = workspace:GetPartBoundsInRadius(npcRecord.hrp.Position, range)
+	local nearbyObjects = workspace:GetPartBoundsInRadius(npcRecord.position, range)
 
 	for _, part in nearbyObjects do
 		if not part:IsA("BasePart") then
@@ -39,8 +43,17 @@ local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 		for _, tag in enemyInstanceTags do
 			if CollectionService:HasTag(part, tag) and part.Parent then
-				target = part.Parent
-				return target
+				if
+					perception:canSee(
+						npcRecord.position,
+						npcRecord.hrp.CFrame.LookVector,
+						part.Parent:GetPivot().Position,
+						true
+					)
+				then
+					target = part.Parent
+					return target
+				end
 			end
 		end
 	end
@@ -81,14 +94,23 @@ local function GetNextPatrolPoint(npcRecord: LightweightNpcTypes.npcRecordType)
 end
 
 local function SetNextPatrolPoint(agent, currPos, navigation)
-	navigation:cancelPath()
-	local nextWaypoint = GetNextPatrolPoint(agent)
-	local possible = navigation:findPath(currPos, nextWaypoint)
+	local pathfinder = agent.ai.pathfinder
 
-	if possible.pathFound then
-		agent.ai.isNavigating = nextWaypoint
-		navigation:setPath(possible)
+	if not pathfinder then
+		Utility.Warn(`Missing pathfinder`)
+		return false
 	end
+
+	local nextWaypoint = GetNextPatrolPoint(agent)
+
+	local prt = Instance.new("Part", workspace)
+	prt.Anchored = true
+	prt.Position = nextWaypoint
+	prt.Color = Color3.fromRGB(0, 255, 94)
+	prt.CanCollide = false
+
+	pathfinder:Run(nextWaypoint)
+	return true
 end
 local patrol = Action.new({
 	name = "Patrol",
@@ -98,43 +120,22 @@ local patrol = Action.new({
 
 	executeFn = function(agent, context)
 		local navigation = agent.ai.navigation
-		local currPos = agent.hrp and agent.hrp.Position
-		-- 1. Early Exit: Check for Enemies
+		local ai = agent.ai
+
 		local seesTarget = CanSeeEnemy(agent)
 		if seesTarget then
 			agent.ai.worldState:set("hasTarget", seesTarget)
 			agent.ai.worldState:set("patrolling", false)
-			agent.ai.actionStarted = false
-
-			navigation:cancelPath()
-			agent.ai.isNavigating = false
-			return true
-		end
-
-		-- Waypoint set, check and advance until reach destination
-		if agent.ai.isNavigating then
-			-- Returns true if reached last destination
-			if navigation:advanceWaypoint(currPos, 2) then
-				agent.ai.isNavigating = false
-			else
-				-- Not reached end destination
-				local currWaypoint = navigation:getNextWaypoint()
-				local flatDelta = Vector3.new(currWaypoint.X - currPos.X, 0, currWaypoint.Z - currPos.Z)
-				if flatDelta.Magnitude > 0.01 then
-					agent:Move(flatDelta.Unit)
-				end
-				return true
-			end
-		end
-
-		-- Set new patrol point
-		SetNextPatrolPoint(agent, currPos, navigation)
-
-		if not agent.ai.isNavigating then
-			warn(`Cant get next patrol point path`)
+			agent:Move(Vector3.zero)
 			return false
 		end
 
+		if not agent.ai.currentNavigationData then
+			agent.ai.pathfinder:Run(GetNextPatrolPoint(agent))
+			agent.ai.currentNavigationData = true
+		end
+
+		agent.ai.pathfinder:Run()
 		return true
 	end,
 })
@@ -192,18 +193,85 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 				angle = 120,
 			},
 		}),
-		jumpFinished = SignalModule.new(),
-		moveFinished = SignalModule.new(),
 		currentGoal = nil,
 		currentPlan = nil,
 		defaultState = npcData.DefaultStateName,
 		defaultStateData = npcRecord.defaultStateData,
+		currentNavigationIndex = nil,
+		currentNavigationData = nil,
+		jumpFinishedSignal = SignalModule.new(),
+		moveFinishedSignal = SignalModule.new(),
+		jumpRequested = false,
 	}
+
+	npcRecord.ai.pathfinder = NoobPath.new(
+		npcRecord.serverRig,
+		{
+			WaypointSpacing = 10,
+			AgentRadius = 3,
+			AgentHeight = 6,
+			AgentCanClimb = false,
+		} :: Path.AgentParams,
+		-- Custom move function
+		function(targetPos: Vector3)
+			local Break = false
+			local C
+			C = npcRecord.ai.pathfinder.Overide:Connect(function()
+				C:Disconnect()
+				Break = true
+			end)
+
+			task.defer(function()
+				while not Break do
+					local toTarget = targetPos - npcRecord.position
+					local flatDir = Vector3.new(toTarget.X, 0, toTarget.Z)
+					local dist = flatDir.Magnitude
+
+					if dist <= 2 then
+						break
+					end
+
+					npcRecord:Move(flatDir.Unit)
+					task.wait()
+				end
+
+				if not Break then
+					npcRecord.ai.moveFinishedSignal:Fire(true)
+				end
+			end)
+		end,
+		function()
+			if npcRecord.isOnGround then
+				npcRecord.ai.jumpRequested = true
+				npcRecord:Jump()
+			end
+		end,
+		npcRecord.ai.jumpFinishedSignal,
+		npcRecord.ai.moveFinishedSignal
+	)
+	npcRecord.ai.pathfinder.Speed = HumanConstants.WALKSPEED
+	npcRecord.ai.pathfinder.Visualize = true
+
+	npcRecord.ai.moveFinishedSignal:Connect(function()
+		npcRecord:Move(Vector3.zero)
+		warn("MOVE FINISHED")
+	end)
+
+	npcRecord.ai.pathfinder.Reached:Connect(function()
+		warn("GOAL REAHCED")
+
+		if npcRecord.ai.worldState.patrolling then
+			npcRecord.ai.pathfinder:Run(GetNextPatrolPoint(npcRecord))
+		end
+	end)
 
 	npcRecord.ai.navigation = Navigation.Navigation.new({
 		gridSize = 4,
-		maxIterations = 100000,
-		moveSpeed = 6,
+		maxIterations = 10000,
+		moveSpeed = HumanConstants.WALKSPEED,
+		minCoverHeight = 3,
+		heightTolerance = 6,
+		maxSlope = 50,
 	})
 
 	local defaultDesiredState = nil

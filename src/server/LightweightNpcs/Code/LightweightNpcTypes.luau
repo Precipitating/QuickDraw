@@ -42,8 +42,9 @@ export type npcRecordConfiguration = {
 export type npcRecordType = {
 	npcId: number,
 
-	instance: Model?, --Roblox model instance thats displayed on all clients
-	serverRig: Model?, --The hitbox that exists on the server
+	instance: Model, --Roblox model instance thats displayed on all clients
+	serverRig: Model, --The hitbox that exists on the server
+	janitor: any,
 
 	internal: npcRecordInternal, --timers etc
 	configuration: npcRecordConfiguration, --mostly constant
@@ -85,13 +86,13 @@ export type npcRecordType = {
 		worldState: any,
 		perception: any,
 		navigation: any,
+		pathfinder: any,
+		jumpRequested: boolean?,
+		jumpFinishedSignal: any,
+		moveFinishedSignal: any,
 		currentGoal: any?,
 		currentPlan: any?,
-		planStep: number?,
-		actionStarted: boolean?,
-		isNavigating: boolean?,
-		actionResult: boolean?,
-		stateDirty: boolean?,
+		currentNavigationData: {}?,
 		defaultState: string?,
 	},
 

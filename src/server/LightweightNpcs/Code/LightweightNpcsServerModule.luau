@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lightweightNpcsServerModule = {} :: lightweightNpcsServerModuleType
 
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
@@ -400,6 +401,7 @@ function lightweightNpcsServerModule:CreateNpc(
 
 	local npcRecord: LightweightNpcTypes.npcRecordType = {
 		npcId = npcId,
+		janitor = Janitor.new(),
 		serverRig = serverRigTemplate,
 		instance = currentInstance,
 		configuration = npcConfiguration,
@@ -435,6 +437,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		onDeath = SignalModule.new(),
 		onCleanup = SignalModule.new(),
 		onHit = SignalModule.new(),
+
 		onLimbHit = SignalModule.new(),
 		onDisableLimb = SignalModule.new(),
 		onDismemberLimb = SignalModule.new(),
@@ -499,9 +502,15 @@ function lightweightNpcsServerModule:DestroyNpc(npcRecord: LightweightNpcTypes.n
 		npcRecord.instance:Destroy()
 	end
 
+	if npcRecord.ai.pathfinder then
+		npcRecord.ai.pathfinder:Terminate()
+	end
+
 	if npcRecord.serverRig then
 		npcRecord.serverRig:Destroy()
 	end
+
+	npcRecord.janitor:Destroy()
 	self.npcRecords[npcRecord.npcId] = nil
 
 	if self.RemoteEvent then
