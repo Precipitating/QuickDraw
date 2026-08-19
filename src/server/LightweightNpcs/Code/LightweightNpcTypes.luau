@@ -66,6 +66,7 @@ export type npcRecordType = {
 	isOnGround: boolean, --bool
 	motionVector: Vector3, --setting this controls where the npc will try and move to
 	jump: boolean, --A jump is requested
+	busy: boolean,
 
 	--
 	bodyParts: { [number]: { Part: MeshPart, HP: number, State: string } },
@@ -88,6 +89,7 @@ export type npcRecordType = {
 		navigation: any,
 		pathfinder: any,
 		jumpRequested: boolean?,
+		currentMoveIdx: number,
 		jumpFinishedSignal: any,
 		moveFinishedSignal: any,
 		currentGoal: any?,

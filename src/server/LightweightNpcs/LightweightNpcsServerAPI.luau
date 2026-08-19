@@ -16,7 +16,7 @@ function module:CreateConfig()
 		collisionGroup = "NPC",
 		canCollide = true,
 		groundTolerance = 0.5,
-		maximumStepHeight = 3,
+		maximumStepHeight = 5,
 		maximumSlopeHeight = 50,
 		replicationHzRate = 24, -- This is complicated. Higher values are more responsive for motion, and cost more bandwidth
 		thinkHzRate = 30, --How frequently this NPC runs its simulation

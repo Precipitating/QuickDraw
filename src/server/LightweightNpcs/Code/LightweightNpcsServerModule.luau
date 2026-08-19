@@ -301,6 +301,7 @@ local function Move(self: LightweightNpcTypes.npcRecordType, motion: Vector3)
 end
 
 local function Jump(self: LightweightNpcTypes.npcRecordType)
+	warn("Jump called")
 	self.jump = true
 end
 
@@ -431,7 +432,8 @@ function lightweightNpcsServerModule:CreateNpc(
 		humanType = HumanTypeEnum.NPC,
 		defaultStateData = _defaultStateData,
 		invincible = true,
-		ai = {},
+		ai = { currentMoveIdx = 2 },
+		busy = false,
 		onThink = SignalModule.new(),
 		onFellOffMap = SignalModule.new(),
 		onDeath = SignalModule.new(),
@@ -503,7 +505,7 @@ function lightweightNpcsServerModule:DestroyNpc(npcRecord: LightweightNpcTypes.n
 	end
 
 	if npcRecord.ai.pathfinder then
-		npcRecord.ai.pathfinder:Terminate()
+		npcRecord.ai.pathfinder:Destroy()
 	end
 
 	if npcRecord.serverRig then

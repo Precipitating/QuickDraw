@@ -66,6 +66,7 @@ function module:HandleFallingState(npcRecord: LightweightNpcTypes.npcRecordType,
 
 	-- Sweep
 	local hitResults: RaycastResult?
+	castParams.ExcludeInstances = { npcRecord.serverRig }
 	npcRecord.position, hitResults = SweepMove(npcRecord.position, velocity, npcRecord.configuration.motionSize)
 
 	if hitResults then
@@ -86,15 +87,15 @@ function module:ProcessMotionVectorIntoVelocity(npcRecord: LightweightNpcTypes.n
 	local moveVec: Vector3 = MathUtils:FlatVec(npcRecord.motionVector)
 	local mag: number = moveVec.Magnitude
 
-	--if mag > 0 then
-	npcRecord.velocity = MathUtils:GroundAccelerate(
-		moveVec,
-		npcRecord.configuration.walkSpeed,
-		npcRecord.configuration.walkAccel,
-		npcRecord.velocity,
-		dt
-	)
-	--end
+	if mag > 0 then
+		npcRecord.velocity = MathUtils:GroundAccelerate(
+			moveVec,
+			npcRecord.configuration.walkSpeed,
+			npcRecord.configuration.walkAccel,
+			npcRecord.velocity,
+			dt
+		)
+	end
 end
 
 function module:UpdateFacingAngle(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
@@ -142,7 +143,7 @@ function module:HandleWalkingState(npcRecord: LightweightNpcTypes.npcRecordType,
 	if desiredMag > 0.001 then
 		local newPosition: Vector3
 		local hitResults: RaycastResult?
-
+		castParams.ExcludeInstances = { npcRecord.serverRig }
 		newPosition, hitResults = SweepMove(npcRecord.position, velocity, npcRecord.configuration.motionSize)
 		local bumpedInstance = nil
 
@@ -152,15 +153,32 @@ function module:HandleWalkingState(npcRecord: LightweightNpcTypes.npcRecordType,
 
 			local stepupPosition: Vector3
 			local stepupHitResults: RaycastResult?
+			castParams.ExcludeInstances = { npcRecord.serverRig }
 			stepupPosition, stepupHitResults =
 				SweepMove(startPos, velocity, npcRecord.configuration.motionSize, castParams)
+
+			print(
+				string.format(
+					"[STEPUP] hitInstance=%s startPos=(%.2f,%.2f,%.2f) afterFwdSweep=(%.2f,%.2f,%.2f) fwdHit=%s",
+					hitResults.Instance and hitResults.Instance:GetFullName() or "nil",
+					startPos.X,
+					startPos.Y,
+					startPos.Z,
+					stepupPosition.X,
+					stepupPosition.Y,
+					stepupPosition.Z,
+					tostring(stepupHitResults ~= nil)
+				)
+			)
 
 			if stepupHitResults then
 				bumpedInstance = stepupHitResults.Instance
 			end
 
 			if stepupHitResults == nil then
+				local beforeDown = stepupPosition
 				-- Sweep down
+				castParams.ExcludeInstances = { npcRecord.serverRig }
 				stepupPosition, stepupHitResults = SweepMove(
 					stepupPosition,
 					Vector3.new(0, -npcRecord.configuration.maximumStepHeight * 2, 0),
@@ -168,6 +186,18 @@ function module:HandleWalkingState(npcRecord: LightweightNpcTypes.npcRecordType,
 					castParams
 				)
 
+				print(
+					string.format(
+						"[STEPUP-DOWN] before=(%.2f,%.2f,%.2f) after=(%.2f,%.2f,%.2f) downHit=%s",
+						beforeDown.X,
+						beforeDown.Y,
+						beforeDown.Z,
+						stepupPosition.X,
+						stepupPosition.Y,
+						stepupPosition.Z,
+						tostring(stepupHitResults ~= nil)
+					)
+				)
 				if stepupHitResults then
 					newPosition = stepupPosition
 				else
@@ -198,6 +228,7 @@ function module:ProcessMovement(npcRecord: LightweightNpcTypes.npcRecordType, dt
 	-- Start with a "Are we on the ground" check
 	local _dest: Vector3
 	local hitResults: RaycastResult?
+	castParams.ExcludeInstances = { npcRecord.serverRig }
 	_dest, hitResults = SweepMove(
 		npcRecord.position,
 		Vector3.new(0, -npcRecord.configuration.groundTolerance, 0),

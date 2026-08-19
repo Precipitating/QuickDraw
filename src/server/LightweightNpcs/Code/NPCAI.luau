@@ -9,6 +9,7 @@ local Perception = require(ReplicatedStorage.Shared.GoalAI.AI.Perception)
 local Action = require(ReplicatedStorage.Shared.GoalAI.Action)
 local Goal = require(ReplicatedStorage.Shared.GoalAI.Goal)
 local Navigation = require(ReplicatedStorage.Shared.GoalAI.Navigation)
+local PathfindingAdapter = require(ReplicatedStorage.Shared.GoalAI.Navigation.PathfindingAdapter)
 local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local Planner = require(ReplicatedStorage.Shared.GoalAI.Planner)
 local State = require(ReplicatedStorage.Shared.GoalAI.State)
@@ -130,12 +131,97 @@ local patrol = Action.new({
 			return false
 		end
 
-		if not agent.ai.currentNavigationData then
-			agent.ai.pathfinder:Run(GetNextPatrolPoint(agent))
-			agent.ai.currentNavigationData = true
+		if not agent.ai.currentNavigationData and not agent.busy then
+			agent.busy = true
+			local nextDestination = GetNextPatrolPoint(agent)
+			local calcPath = agent.ai.pathfinder:findPath(agent.position, nextDestination)
+
+			if calcPath.success then
+				agent.ai.currentNavigationData = calcPath
+				agent.ai.currentMoveIdx = 2
+				local col = Color3.fromRGB(
+					RandomModule.GetRandomIntBetween(0, 255),
+					RandomModule.GetRandomIntBetween(0, 255),
+					RandomModule.GetRandomIntBetween(0, 255)
+				)
+				for _, wp in calcPath.waypoints do
+					local l = Instance.new("Part", workspace)
+					l.Position = wp.Position
+					l.Anchored = true
+					l.Color = col
+					l.CanCollide = false
+				end
+
+				agent.busy = false
+				return true
+			else
+				agent.busy = false
+				agent:Move(Vector3.zero)
+				return false
+			end
 		end
 
-		agent.ai.pathfinder:Run()
+		local currentPathfindData = agent.ai.currentNavigationData
+		local waypoints = currentPathfindData and currentPathfindData.waypoints
+		if not waypoints then
+			agent:Move(Vector3.zero)
+			return false
+		end
+
+		local nextPos = waypoints and waypoints[agent.ai.currentMoveIdx]
+		if not nextPos then
+			return false
+		end
+
+		local flattened = Vector3.new(nextPos.Position.X, 0, nextPos.Position.Z)
+		local flatAgentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
+		local dist = (flattened - flatAgentPos).Magnitude
+
+		if dist <= 2 then
+			agent.ai.currentMoveIdx += 1
+			nextPos = waypoints[agent.ai.currentMoveIdx]
+
+			if not nextPos then
+				local nextDestination = GetNextPatrolPoint(agent)
+				local calcPath = agent.ai.pathfinder:findPath(agent.position, nextDestination)
+
+				if calcPath.success then
+					agent.ai.currentNavigationData = calcPath
+					agent.ai.currentMoveIdx = 2
+				else
+					agent.ai.currentNavigationData = nil
+					agent:Move(Vector3.zero)
+				end
+
+				return true
+			end
+
+			flattened = Vector3.new(nextPos.Position.X, 0, nextPos.Position.Z)
+		end
+
+		if nextPos.Action == Enum.PathWaypointAction.Jump then
+			if agent.isOnGround then
+				agent:Jump()
+				agent.ai.currentMoveIdx += 1
+			else
+				-- still walking toward the jump point while airborne/not-yet-grounded;
+				-- don't leave motionVector frozen
+				local dir = (flattened - flatAgentPos)
+				if dir.Magnitude > 0.001 then
+					agent:Move(dir.Unit)
+				else
+					agent:Move(Vector3.zero)
+				end
+			end
+		else
+			local dir = (flattened - flatAgentPos)
+			if dir.Magnitude > 0.001 then
+				agent:Move(dir.Unit)
+			else
+				agent:Move(Vector3.zero)
+			end
+		end
+
 		return true
 	end,
 })
@@ -195,6 +281,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		}),
 		currentGoal = nil,
 		currentPlan = nil,
+		currentMoveIdx = 2,
 		defaultState = npcData.DefaultStateName,
 		defaultStateData = npcRecord.defaultStateData,
 		currentNavigationIndex = nil,
@@ -204,67 +291,6 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		jumpRequested = false,
 	}
 
-	npcRecord.ai.pathfinder = NoobPath.new(
-		npcRecord.serverRig,
-		{
-			WaypointSpacing = 10,
-			AgentRadius = 3,
-			AgentHeight = 6,
-			AgentCanClimb = false,
-		} :: Path.AgentParams,
-		-- Custom move function
-		function(targetPos: Vector3)
-			local Break = false
-			local C
-			C = npcRecord.ai.pathfinder.Overide:Connect(function()
-				C:Disconnect()
-				Break = true
-			end)
-
-			task.defer(function()
-				while not Break do
-					local toTarget = targetPos - npcRecord.position
-					local flatDir = Vector3.new(toTarget.X, 0, toTarget.Z)
-					local dist = flatDir.Magnitude
-
-					if dist <= 2 then
-						break
-					end
-
-					npcRecord:Move(flatDir.Unit)
-					task.wait()
-				end
-
-				if not Break then
-					npcRecord.ai.moveFinishedSignal:Fire(true)
-				end
-			end)
-		end,
-		function()
-			if npcRecord.isOnGround then
-				npcRecord.ai.jumpRequested = true
-				npcRecord:Jump()
-			end
-		end,
-		npcRecord.ai.jumpFinishedSignal,
-		npcRecord.ai.moveFinishedSignal
-	)
-	npcRecord.ai.pathfinder.Speed = HumanConstants.WALKSPEED
-	npcRecord.ai.pathfinder.Visualize = true
-
-	npcRecord.ai.moveFinishedSignal:Connect(function()
-		npcRecord:Move(Vector3.zero)
-		warn("MOVE FINISHED")
-	end)
-
-	npcRecord.ai.pathfinder.Reached:Connect(function()
-		warn("GOAL REAHCED")
-
-		if npcRecord.ai.worldState.patrolling then
-			npcRecord.ai.pathfinder:Run(GetNextPatrolPoint(npcRecord))
-		end
-	end)
-
 	npcRecord.ai.navigation = Navigation.Navigation.new({
 		gridSize = 4,
 		maxIterations = 10000,
@@ -272,6 +298,15 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		minCoverHeight = 3,
 		heightTolerance = 6,
 		maxSlope = 50,
+	})
+
+	npcRecord.ai.pathfinder = PathfindingAdapter.new({
+		agentRadius = 3,
+		agentHeight = 6,
+		agentCanJump = true,
+		costs = {
+			{ name = "Plastic", cost = 20 },
+		},
 	})
 
 	local defaultDesiredState = nil
