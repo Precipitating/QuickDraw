@@ -504,10 +504,6 @@ function lightweightNpcsServerModule:DestroyNpc(npcRecord: LightweightNpcTypes.n
 		npcRecord.instance:Destroy()
 	end
 
-	if npcRecord.ai.pathfinder then
-		npcRecord.ai.pathfinder:Destroy()
-	end
-
 	if npcRecord.serverRig then
 		npcRecord.serverRig:Destroy()
 	end

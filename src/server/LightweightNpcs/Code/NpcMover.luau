@@ -10,7 +10,7 @@ local module = {}
 -- 	are repeated a small distance in the air.
 
 local castParams = RaycastParams.new()
-castParams.CollisionGroup = "NpcMovement"
+castParams.CollisionGroup = "NPC"
 castParams.RespectCanCollide = true
 
 export type NpcMover = {

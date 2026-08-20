@@ -12,14 +12,14 @@ type customNpcsServerAPIType = {
 function module:CreateConfig()
 	return {
 		animations = defaultAnims:GetDefaultAnimations(),
-		motionSize = Vector3.new(3, 6, 3),
+		motionSize = Vector3.new(6, 6, 6),
 		collisionGroup = "NPC",
 		canCollide = true,
 		groundTolerance = 0.5,
 		maximumStepHeight = 5,
 		maximumSlopeHeight = 50,
-		replicationHzRate = 24, -- This is complicated. Higher values are more responsive for motion, and cost more bandwidth
-		thinkHzRate = 30, --How frequently this NPC runs its simulation
+		replicationHzRate = 2, -- This is complicated. Higher values are more responsive for motion, and cost more bandwidth
+		thinkHzRate = 10, --How frequently this NPC runs its simulation
 		maxHitPoints = HumanConstants.MAX_HP,
 		walkSpeed = HumanConstants.WALKSPEED, --Same as roblox
 		walkAccel = 20, --Roblox is really high, like 20. 3-4 is much more natural looking

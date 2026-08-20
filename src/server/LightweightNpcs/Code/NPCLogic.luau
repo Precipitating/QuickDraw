@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Planner = require(ReplicatedStorage.Shared.GoalAI.Planner)
+local ServerScriptService = game:GetService("ServerScriptService")
+local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
@@ -12,7 +13,6 @@ local LightweightNpcTypes = require(script.Parent.LightweightNpcTypes)
 local NPCAI = require(script.Parent.NPCAI)
 local NPCPhysics = require(script.Parent.NPCPhysics)
 local NPCPoses = require(script.Parent.NPCPoses)
-local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local NPC_CULL_DISTANCE = 400
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -181,10 +181,41 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			return
 		end
 
-		if npcRecord.ai.currentPlan then
-			for _, action in npcRecord.ai.currentPlan.actions do
-				action:execute(npcRecord)
+		local ai = npcRecord.ai
+
+		-- Replan if state changed or we have no valid plan
+		if ai.worldState:isDirty() or not ai.currentPlan or not ai.currentPlan.success then
+			local plan, selectedGoal = npcRecord.ai.planner:planBestGoal(ai.worldState, npcRecord.ai.goals, npcRecord)
+
+			if plan.success then
+				ai.currentPlan = plan
+				ai.currentGoal = selectedGoal
+				ai.currentActionIndex = 1
 			end
+
+			ai.worldState:markClean()
+		end
+
+		if not ai.currentPlan or not ai.currentPlan.success then
+			return -- nothing achievable right now
+		end
+
+		local currentAction = ai.currentPlan.actions[ai.currentActionIndex]
+		if not currentAction then
+			return -- plan finished; will replan next dirty check, or force one
+		end
+
+		local success = currentAction:execute(npcRecord)
+
+		if success then
+			-- apply this action's effects since nothing else does
+			for key, value in currentAction.effects._data do
+				ai.worldState:set(key, value)
+			end
+			if ai.currentActionIndex + 1 > #ai.currentPlan.actions then
+				return
+			end
+			ai.currentActionIndex += 1
 		end
 
 		-- 	if tick() > npcRecord.data.nextMove then
@@ -348,15 +379,11 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	end)
 
 	InitializeOnSpawn(npcRecord)
-	-- npcRecord.onBumpIntoWall:Connect(function(instance)
-	-- 	--send an event to clients if we bump into something
-	-- 	if npcRecord.instance then
-	-- 		--This costs RECV, but flashes the NPCS white for fun
-	-- 		npcRecord:AddClientEvent({ id = "Bump" })
-	-- 	end
-	-- 	npcRecord:Move(Vector3.zero)
-	-- 	npcRecord:PlayAnimation("idle", false, 1, 1)
-	-- end)
+	npcRecord.onBumpIntoWall:Connect(function(instance)
+		if npcRecord.ai.worldState:get("patrolling") == true then
+			Patrol:TryPathfind(npcRecord, Patrol:GetNextPatrolPoint(npcRecord))
+		end
+	end)
 end
 
 return NPCLogic
