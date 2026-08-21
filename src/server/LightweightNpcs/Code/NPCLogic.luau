@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
@@ -59,6 +60,25 @@ local function InitializeOnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	NPCAI:Initialize(npcRecord)
 end
 
+local function AddWantedTag(npcRecord: LightweightNpcTypes.npcRecordType, attacker: Model? | Player?)
+	if not attacker then
+		return
+	end
+
+	if npcRecord.faction == "Sheriff" then
+		if attacker then
+			if attacker:IsA("Player") then
+				local character = attacker.Character
+				if character then
+					character:AddTag("Wanted")
+				end
+			elseif attacker:IsA("Model") then
+				attacker:AddTag("Wanted")
+			end
+		end
+	end
+end
+
 function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)
 	local canAffectShooter: boolean? = gunShotData.CanAffectShooter
 	local raycastResult: RaycastResult = gunShotData.RaycastResult
@@ -75,6 +95,9 @@ function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gun
 	if attacker == npcRecord.instance and canAffectShooter == false then
 		return
 	end
+
+	-- Add wanted tag if hit sheriff
+	AddWantedTag(npcRecord, attacker)
 
 	npcRecord.onLimbHit:Fire(damage, limbEnum, raycastResult.Position, raycastResult.Normal, attacker)
 end
@@ -152,6 +175,9 @@ function NPCLogic:HitByStatusBullet(npcRecord: LightweightNpcTypes.npcRecordType
 		Utility.Warn("[NPCLogic:HitByStatusBullet] Missing limb reference")
 		return
 	end
+
+	-- Add wanted tag if hit sheriff
+	AddWantedTag(npcRecord, attacker)
 
 	if spreadDuration then
 		task.spawn(function()
@@ -288,6 +314,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		function(
 			damageData: ClassTypes.StatusDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
 		)
+			-- Early returns
 			if npcRecord.npcState == NpcStateModule.Dying then
 				return
 			end
@@ -299,6 +326,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			if npcRecord.invincible then
 				return
 			end
+
+			--
 			local character: Model? = npcRecord.instance
 			local damageType = damageData.Type
 			if damageType == "Shot" then

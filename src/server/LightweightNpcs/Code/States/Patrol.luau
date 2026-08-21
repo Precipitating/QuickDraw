@@ -20,6 +20,8 @@ function Patrol:ExitPatrolState(agent)
 	agent.ai.currentNavigationData = nil
 	agent.ai.currentMoveIdx = nil
 	agent.ai.worldState:set("patrolling", false)
+	agent.ai.currentPlan = nil
+	agent.ai.currentGoal = nil
 end
 
 function Patrol:GetNextPatrolPoint(npcRecord: LightweightNpcTypes.npcRecordType)
@@ -50,9 +52,36 @@ function Patrol:GetNextPatrolPoint(npcRecord: LightweightNpcTypes.npcRecordType)
 	return randomPoint.Position
 end
 function Patrol:TryPathfind(agent, destination)
-	local calcPath = agent.ai.pathfinder:findPath(agent.position, destination)
+	if agent.busy or not destination then
+		return false
+	end
 
+	agent.busy = true
+	local ok, calcPath = pcall(function()
+		return agent.ai.pathfinder:findPath(agent.position, destination)
+	end)
+	agent.busy = false
+
+	if not ok then
+		Utility.Warn(`[TryPathfind] findPath errored: {calcPath}`)
+		agent.ai.currentNavigationData = nil
+		agent:Move(Vector3.zero)
+		return false
+	end
+
+	-- local col = Color3.fromRGB(
+	-- 	RandomModule.GetRandomIntBetween(0, 255),
+	-- 	RandomModule.GetRandomIntBetween(0, 255),
+	-- 	RandomModule.GetRandomIntBetween(0, 255)
+	-- )
 	if calcPath.success then
+		-- for _, path in calcPath.waypoints do
+		-- 	local l = Instance.new("Part", workspace)
+		-- 	l.Color = col
+		-- 	l.Anchored = true
+		-- 	l.CanCollide = false
+		-- 	l.Position = path.Position
+		-- end
 		agent.ai.currentNavigationData = calcPath
 		agent.ai.currentMoveIdx = 2
 		return true
@@ -74,23 +103,34 @@ local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType)
 
 	local target = nil
 
-	local nearbyObjects = workspace:GetPartBoundsInRadius(npcRecord.position, range)
+	local activeHumans = Utility.GetTagInstancesInWorkspace("NPC")
 
-	for _, part in nearbyObjects do
-		if not part:IsA("BasePart") then
-			continue
+	for _, playerCharacter in Utility.GetTagInstancesInWorkspace("Player") do
+		table.insert(activeHumans, playerCharacter)
+	end
+
+	-- prune out of distance characters
+	for idx, humanModel: Model in activeHumans do
+		local dist = (humanModel:GetPivot().Position - npcRecord.position).Magnitude
+
+		if (dist > range) or humanModel == npcRecord.serverRig then
+			-- swap to back and pop
+			activeHumans[idx], activeHumans[#activeHumans] = activeHumans[#activeHumans], activeHumans[idx]
+			table.remove(activeHumans)
 		end
+	end
+
+	for _, model: Model in activeHumans do
 		for _, tag in enemyInstanceTags do
-			if CollectionService:HasTag(part, tag) and part.Parent then
-				if
-					perception:canSee(
-						npcRecord.position,
-						npcRecord.hrp.CFrame.LookVector,
-						part.Parent:GetPivot().Position,
-						true
-					)
-				then
-					target = part.Parent
+			if CollectionService:HasTag(model, tag) then
+				local canSee, _, _ = perception:canSee(
+					npcRecord.position,
+					npcRecord.hrp.CFrame.LookVector,
+					model:GetPivot().Position,
+					true
+				)
+				if canSee then
+					target = model
 					return target
 				end
 			end
@@ -103,18 +143,20 @@ end
 function Patrol:Update(agent)
 	local seesTarget = CanSeeEnemy(agent)
 	if seesTarget then
-		agent.ai.worldState:set("hasTarget", seesTarget)
-		agent:Move(Vector3.zero)
-
+		agent.ai.worldState:set("hasTarget", true)
+		agent.ai.currentTarget = seesTarget
+		warn("AI sees enemy")
+		self:ExitPatrolState(agent)
 		return false
 	end
 
 	-- 1. Set patrol route if none set.
 	if not agent.ai.currentNavigationData and not agent.busy then
-		agent.busy = true
 		local success = self:TryPathfind(agent, self:GetNextPatrolPoint(agent))
-		agent.busy = false
-		return success
+		if not success then
+			self:ExitPatrolState(agent)
+			return false
+		end
 	end
 
 	--
@@ -122,13 +164,19 @@ function Patrol:Update(agent)
 	-- 2. If waypoints not set, the path cannot be navigated
 	local waypoints = agent.ai.currentNavigationData and agent.ai.currentNavigationData.waypoints
 	if not waypoints then
-		agent:Move(Vector3.zero)
-		agent.ai.worldState:set("patrolling", false)
+		if agent.busy then
+			return true
+		end
+		self:ExitPatrolState(agent)
 		return false
 	end
 
 	local nextWaypoint = waypoints[agent.ai.currentMoveIdx]
 	if not nextWaypoint then
+		if agent.busy then
+			return true
+		end
+		self:ExitPatrolState(agent)
 		return false
 	end
 	--
@@ -143,8 +191,12 @@ function Patrol:Update(agent)
 
 		-- 3.1. If no waypoints left, we've reached our destination. Set a new one
 		if not nextWaypoint then
-			self:TryPathfind(agent, self:GetNextPatrolPoint(agent))
-			return true
+			local success = self:TryPathfind(agent, self:GetNextPatrolPoint(agent))
+			if not success then
+				agent:Move(Vector3.zero)
+				return false
+			end
+			return success
 		end
 	end
 

@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 
 local DEBUG_PRINT = true
@@ -91,6 +92,17 @@ return {
 			end
 		end
 		return relevant
+	end,
+	GetTagInstancesInWorkspace = function(tagName: string)
+		local result = {}
+
+		for _, instance in CollectionService:GetTagged(tagName) do
+			if instance:IsDescendantOf(workspace) then
+				table.insert(result, instance)
+			end
+		end
+
+		return result
 	end,
 
 	Log = function(...)

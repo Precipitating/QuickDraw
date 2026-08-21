@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Attack = require(ServerScriptService.Server.LightweightNpcs.Code.States.Attack)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
 local Perception = require(ReplicatedStorage.Shared.GoalAI.AI.Perception)
 local Action = require(ReplicatedStorage.Shared.GoalAI.Action)
@@ -9,6 +10,7 @@ local PathfindingAdapter = require(ReplicatedStorage.Shared.GoalAI.Navigation.Pa
 local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local Planner = require(ReplicatedStorage.Shared.GoalAI.Planner)
 local State = require(ReplicatedStorage.Shared.GoalAI.State)
+local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
@@ -30,22 +32,17 @@ local patrol = Action.new({
 		return Patrol:Update(agent)
 	end,
 })
-local shootGun = Action.new({
-	name = "ShootGun",
-	cost = 2,
-	preconditions = { hasTarget = true },
-	effects = { targetKilled = true },
-
-	executeFn = function(agent, context) end,
-})
-local throwThrowable = Action.new({
-	name = "ThrowThrowable",
+local attack = Action.new({
+	name = "Attack",
 	cost = 1,
 	preconditions = { hasTarget = true },
-	effects = { targetKilled = true },
+	effects = { targetKilled = true, attacking = true },
 
-	executeFn = function(agent, context) end,
+	executeFn = function(agent, context)
+		Attack:Update(agent)
+	end,
 })
+
 local seek = Action.new({
 	name = "Seek",
 	cost = 1,
@@ -64,7 +61,7 @@ local retreat = Action.new({
 	executeFn = function(agent, context) end,
 })
 
-planner:registerActions({ patrol, retreat, seek, throwThrowable, shootGun })
+planner:registerActions({ patrol, retreat, seek, attack })
 
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]
@@ -84,11 +81,13 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 				angle = 120,
 			},
 		}),
+
 		currentGoal = nil,
 		currentPlan = nil,
 		currentMoveIdx = 2,
 		currentActionIndex = 1,
 		planner = planner,
+		currentTarget = nil,
 		defaultState = npcData.DefaultStateName,
 		defaultStateData = npcRecord.defaultStateData,
 		currentNavigationIndex = nil,
@@ -96,6 +95,27 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		goals = nil,
 		jumpRequested = false,
 	}
+	npcRecord.ai.perception:setObstructionCheck(function(from, to)
+		local raycastParams = RaycastParams.new()
+		raycastParams.ExcludeInstances = { npcRecord.serverRig }
+
+		local result = workspace:Raycast(from, to - from)
+
+		if result and result.Instance then
+			local parent = result.Instance.Parent
+			if not parent then
+				return true
+			end
+
+			if parent:HasTag("NPC") or parent:HasTag("Player") then
+				return false
+			else
+				return true
+			end
+		else
+			return nil
+		end
+	end)
 
 	npcRecord.ai.pathfinder = PathfindingAdapter.new({
 		agentRadius = 6,
@@ -110,8 +130,20 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		name = "Patrol",
 		desiredState = { patrolling = true },
 		priority = 1,
+		isValidFn = function(state)
+			return not state:get("patrolling") and not state:get("hasTarget")
+		end,
 	})
-	npcRecord.ai.goals = { patrolGoal }
+
+	local attackGoal = Goal.new({
+		name = "Attack",
+		desiredState = { attacking = true },
+		priority = 2,
+		isValidFn = function(state)
+			return state:get("hasTarget") == true
+		end,
+	})
+	npcRecord.ai.goals = { patrolGoal, attackGoal }
 
 	local plan, selectedGoal = planner:planBestGoal(npcRecord.ai.worldState, npcRecord.ai.goals, npcRecord)
 

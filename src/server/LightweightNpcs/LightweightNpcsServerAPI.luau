@@ -18,7 +18,7 @@ function module:CreateConfig()
 		groundTolerance = 0.5,
 		maximumStepHeight = 5,
 		maximumSlopeHeight = 50,
-		replicationHzRate = 2, -- This is complicated. Higher values are more responsive for motion, and cost more bandwidth
+		replicationHzRate = 10, -- This is complicated. Higher values are more responsive for motion, and cost more bandwidth
 		thinkHzRate = 10, --How frequently this NPC runs its simulation
 		maxHitPoints = HumanConstants.MAX_HP,
 		walkSpeed = HumanConstants.WALKSPEED, --Same as roblox
