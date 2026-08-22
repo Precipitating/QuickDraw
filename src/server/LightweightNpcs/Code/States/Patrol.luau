@@ -17,11 +17,13 @@ end
 
 function Patrol:ExitPatrolState(agent)
 	agent:Move(Vector3.zero)
+	agent.velocity = Vector3.zero
 	agent.ai.currentNavigationData = nil
 	agent.ai.currentMoveIdx = nil
 	agent.ai.worldState:set("patrolling", false)
 	agent.ai.currentPlan = nil
 	agent.ai.currentGoal = nil
+	agent:PlayAnimation("idle", false, 1, 1)
 end
 
 function Patrol:GetNextPatrolPoint(npcRecord: LightweightNpcTypes.npcRecordType)
@@ -92,7 +94,7 @@ function Patrol:TryPathfind(agent, destination)
 	return false
 end
 
-local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType)
+local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	local enemyInstanceTags = npcRecord.enemies and npcRecord.enemies.EnemyList
 	local perception = npcRecord.ai.perception
 	local perceiverPos = npcRecord.position
@@ -123,13 +125,17 @@ local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType)
 	for _, model: Model in activeHumans do
 		for _, tag in enemyInstanceTags do
 			if CollectionService:HasTag(model, tag) then
-				local canSee, _, _ = perception:canSee(
-					npcRecord.position,
+				local targetId = model:GetAttribute("npcId") or model.Name
+				local detected, gain = perception:processVisualDetection(
+					targetId,
+					npcRecord.hrp.Position,
 					npcRecord.hrp.CFrame.LookVector,
-					model:GetPivot().Position,
-					true
+					model:GetPivot().Position
 				)
-				if canSee then
+
+				local awarenessState = perception:getAwarenessState(targetId)
+
+				if detected and awarenessState == "combat" then
 					target = model
 					return target
 				end
@@ -140,8 +146,9 @@ local function CanSeeEnemy(npcRecord: LightweightNpcTypes.npcRecordType)
 	return nil
 end
 
-function Patrol:Update(agent)
-	local seesTarget = CanSeeEnemy(agent)
+function Patrol:Update(agent, context)
+	local dt = context.dt
+	local seesTarget = CanSeeEnemy(agent, dt)
 	if seesTarget then
 		agent.ai.worldState:set("hasTarget", true)
 		agent.ai.currentTarget = seesTarget
@@ -149,7 +156,7 @@ function Patrol:Update(agent)
 		self:ExitPatrolState(agent)
 		return false
 	end
-
+	agent.ai.perception:update(dt)
 	-- 1. Set patrol route if none set.
 	if not agent.ai.currentNavigationData and not agent.busy then
 		local success = self:TryPathfind(agent, self:GetNextPatrolPoint(agent))

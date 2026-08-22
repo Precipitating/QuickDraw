@@ -231,17 +231,21 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			return -- plan finished; will replan next dirty check, or force one
 		end
 
-		local success = currentAction:execute(npcRecord)
+		local context = { dt = dt }
+		local success = currentAction:execute(npcRecord, context)
 
 		if success then
 			-- apply this action's effects since nothing else does
 			for key, value in currentAction.effects._data do
 				ai.worldState:set(key, value)
 			end
-			if ai.currentActionIndex + 1 > #ai.currentPlan.actions then
-				return
+
+			if ai.currentPlan and ai.currentPlan.actions then
+				if ai.currentActionIndex + 1 > #ai.currentPlan.actions then
+					return
+				end
+				ai.currentActionIndex += 1
 			end
-			ai.currentActionIndex += 1
 		end
 
 		-- 	if tick() > npcRecord.data.nextMove then
@@ -344,6 +348,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 					{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 				)
 			end
+			npcRecord:ForceReplicate()
 		end
 	)
 

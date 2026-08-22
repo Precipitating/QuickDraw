@@ -77,6 +77,7 @@ export type npcRecordType = {
 	enemies: { [string]: boolean },
 	faction: string?,
 	currentEquipped: any?,
+	currentEquippedData: any?,
 	storedWeapon: any?,
 	storedThrowable: any?,
 	defaultStateData: any?,
@@ -100,6 +101,7 @@ export type npcRecordType = {
 		currentActionIndex: number?,
 		currentNavigationData: {}?,
 		defaultState: string?,
+		lastShot: number?,
 	},
 
 	--Methods
