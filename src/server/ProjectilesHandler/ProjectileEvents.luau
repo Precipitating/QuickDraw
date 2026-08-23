@@ -43,12 +43,12 @@ type Destroyable = ClassTypes.Destroyable
 local ProjectileRaycastParam = RaycastParams.new()
 ProjectileRaycastParam.CollisionGroup = "Projectile"
 local function GetHumanoidFromHit(instance: Instance): Humanoid?
-	local model = instance:FindFirstAncestorOfClass("Model")
+	local model = instance and (instance:IsA("Model") or instance:FindFirstAncestorOfClass("Model"))
 	if not model then
 		return nil
 	end
 
-	local humanoid = model:FindFirstChildOfClass("Humanoid")
+	local humanoid = instance:FindFirstChild("Humanoid")
 
 	if not humanoid then
 		return nil

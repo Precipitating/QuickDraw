@@ -1,23 +1,13 @@
-local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ServerStorage = game:GetService("ServerStorage")
+local NPCPoses = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPoses)
 local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.NPCWeaponsClass)
-local GunMuzzleData = require(ReplicatedStorage.Shared.GunData.GunMuzzleData)
-local NpcMover = require(ServerScriptService.Server.LightweightNpcs.Code.NpcMover)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
-local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
-local GunsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.GunsEnum)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
-local ThrowablesEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.ThrowablesEnum)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
-local PatrolData = ServerStorage.PatrolData
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-
 local Attack = {}
 
-local function CanStillSeeTarget(agent, dt: number)
+local function CanStillSeeTarget(agent: LightweightNpcTypes.npcRecordType, dt: number)
 	local target = agent.ai.currentTarget
 	if not target then
 		return false
@@ -39,6 +29,7 @@ local function CanStillSeeTarget(agent, dt: number)
 end
 
 local function ExitAttackState(agent)
+	agent.ai.perception:clearAwareness(agent.npcId)
 	agent.ai.currentTarget = nil
 	agent.ai.worldState:set("hasTarget", false)
 	agent:Move(Vector3.zero)
@@ -47,6 +38,7 @@ local function ExitAttackState(agent)
 	agent.ai.currentGoal = nil
 	-- Stop tool holding animation if ran (should be on second animation channel)
 	agent:StopAnimationChannel(2)
+	NPCPoses:ResetPose(agent)
 	agent:PlayAnimation("idle", false, 1, 1)
 end
 
@@ -65,12 +57,19 @@ function Attack:Update(agent, context)
 	local detected, currentState = CanStillSeeTarget(agent, dt)
 	agent.ai.perception:update(dt)
 
-	-- 1.1 Lost sight of target, leave state
-	if currentState == "unaware" and not detected then
+	-- 1.2 Check if target is dead to exit state, so NPC doesn't keep shooting thin air
+	if target:HasTag("Dead") then
 		ExitAttackState(agent)
 		return false
 	end
 	--
+	-- 1.3 Seek state if not combat state
+	if not detected and currentState ~= "combat" then
+		agent.ai.lastSeenTarget = target
+		agent.ai.worldState:set("lostTarget", true)
+		ExitAttackState(agent)
+		return false
+	end
 
 	-- 2. Smoothly rotate to face target
 	local enemyPosition = target:GetPivot().Position
@@ -82,7 +81,7 @@ function Attack:Update(agent, context)
 
 	-- 3. Shoot at target
 
-	if agent.currentEquipped then
+	if agent.currentEquipped and not agent.legless then
 		agent:PlayAnimation("toolhold", false, 2, 1)
 	end
 
@@ -95,33 +94,41 @@ function Attack:Update(agent, context)
 	local currTime = os.clock()
 	local lastShot = currTime - agent.ai.lastShot
 
+	-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! --
 	-- 3.2 If waited long enough, shoot
-	if lastShot >= shotDelay then
-		-- 3.3 Get shoot position on server
 
-		local rightHand = agent.bodyParts[LimbsEnum.RightHand] and agent.bodyParts[LimbsEnum.RightHand].Part
-		if rightHand then
-			local rightHandAttachment: Attachment = rightHand:FindFirstChild("RightGripAttachment")
-			local muzzleCFrame: CFrame = GunMuzzleData[agent.currentEquipped]
-			local finalMuzzleCFrame: CFrame = rightHandAttachment.WorldCFrame * muzzleCFrame:Inverse()
+	if currentState == "combat" then
+		if lastShot >= shotDelay then
+			-- 3.3 Get shoot position on server
 
-			agent.data.shootPoint = finalMuzzleCFrame
+			local rightHand = agent.bodyParts[LimbsEnum.RightHand] and agent.bodyParts[LimbsEnum.RightHand].Part
+			if rightHand then
+				local rightHandAttachment: Attachment = rightHand:FindFirstChild("RightGripAttachment")
+				local muzzleCFrame: CFrame = agent.data.muzzleOffset
+				local finalMuzzleCFrame: CFrame = rightHandAttachment.WorldCFrame
+					* CFrame.new(muzzleCFrame.Position.X, muzzleCFrame.Position.Y, -muzzleCFrame.Position.Z)
 
-			local debug = Instance.new("Part", workspace)
-			debug.Anchored = true
-			debug.CFrame = finalMuzzleCFrame
-			debug.Size = Vector3.new(0.5, 0.5, 0.5)
-			debug.CanCollide = false
-			debug.Transparency = 0.5
+				local targetPos = target:GetPivot().Position
+				agent.data.shootPoint = finalMuzzleCFrame
 
-			if currentWeaponData.GunType == "Shotgun" then
-				NPCWeaponsClass:SpreadShot(agent)
-			else
-				NPCWeaponsClass:SingleShot(agent)
+				local debug = Instance.new("Part", workspace)
+				debug.Anchored = true
+				debug.CFrame = finalMuzzleCFrame
+				debug.Size = Vector3.new(0.5, 0.5, 0.5)
+				debug.CanCollide = false
+				debug.Transparency = 0.5
+				debug.CanQuery = false
+
+				if currentWeaponData.GunType == "Shotgun" then
+					NPCWeaponsClass:SpreadShot(agent, targetPos)
+				else
+					NPCWeaponsClass:SingleShot(agent, targetPos)
+				end
+
+				agent.ai.lastShot = currTime
 			end
-
-			agent.ai.lastShot = currTime
 		end
+	else
 	end
 
 	print(currentWeaponData)

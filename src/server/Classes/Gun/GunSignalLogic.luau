@@ -83,7 +83,7 @@ return {
 				CanAffectShooter = canAffectShooter,
 			}
 
-			-- Handle NPC logic elsewhere, combining it in DamageModule is messy.
+			-- Handle NPC hit logic elsewhere, combining it in DamageModule is messy.
 			if typeof(playerHumanoidOrID) == "number" then
 				humanClass.onHit:Fire(gunShotData)
 				return
@@ -121,18 +121,18 @@ return {
 					or LightweightNpcsServerAPI:GetNpcById(humanoidOrNpcId :: number)
 
 				if not targetClass then
-					warn("[InflictLimbDamage] humanClass invalid")
+					warn("[ApplyLimbStatusDamage] humanClass invalid")
 					return
 				end
 
 				if targetClass.Invincible or targetClass.invincible then
-					warn(`Invincible, not inflicting limb damage`)
+					warn(`Invincible, not applying limb status damage`)
 					return
 				end
 			elseif humanoidType == "Animal" then
 				targetClass = AnimalHandler:GetAnimal(humanoidOrNpcId :: Humanoid)
 				if not targetClass then
-					warn("[InflictLimbDamage] animalClass invalid")
+					warn("[ApplyLimbStatusDamage] animalClass invalid")
 					return
 				end
 			end

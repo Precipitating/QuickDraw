@@ -57,6 +57,8 @@ export type npcRecordType = {
 	playingAnimations: { [number]: NpcAnimationTypes.AnimEntry? }, --Four channels I guess?
 	animator: Animator?,
 	poses: { [string]: AnimationTrack },
+
+	currentPose: string?,
 	--Motion
 	position: Vector3,
 	angle: number, --Actual heading
@@ -96,6 +98,7 @@ export type npcRecordType = {
 		jumpFinishedSignal: any,
 		moveFinishedSignal: any,
 		currentTarget: any?,
+		lastSeenTarget: any?,
 		currentGoal: any?,
 		currentPlan: any?,
 		currentActionIndex: number?,

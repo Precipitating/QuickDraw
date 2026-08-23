@@ -7,7 +7,9 @@ local GunsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.GunsEnum)
 local ThrowablesEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.ThrowablesEnum)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+local WeaponsFolder = ReplicatedStorage.Shared.Templates
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local GunRaycastParam = RaycastParams.new()
 GunRaycastParam.CollisionGroup = "Projectile"
@@ -41,7 +43,7 @@ function NPCWeaponsClass:InitializeWeaponClass(npcRecord: LightweightNpcTypes.np
 	end
 end
 
-function NPCWeaponsClass:SingleShot(agent)
+function NPCWeaponsClass:SingleShot(agent, targetPosition: Vector3)
 	local gunData = agent.currentEquippedData
 	local projectileData = agent.currentEquippedData.ProjectileData
 	local context = nil
@@ -55,9 +57,14 @@ function NPCWeaponsClass:SingleShot(agent)
 		return
 	end
 
+	local dir = (targetPosition - agent.data.shootPoint.Position).Unit
+	local appliedSpreadDir = Utility.GetSingleShotSpreadDir(dir, RandomModule.GetRandomIntBetween(0, 15))
+
+	GunRaycastParam.ExcludeInstances = { agent.serverRig }
+
 	context = ProjectileContext.BulletContext.new({
 		Origin = agent.data.shootPoint.Position,
-		Direction = agent.data.shootPoint.LookVector,
+		Direction = appliedSpreadDir,
 		Speed = gunData.Velocity,
 		RaycastParams = GunRaycastParam,
 	})
@@ -81,7 +88,7 @@ function NPCWeaponsClass:SingleShot(agent)
 	)
 end
 
-function NPCWeaponsClass:SpreadShot(agent)
+function NPCWeaponsClass:SpreadShot(agent, targetPosition: Vector3)
 	local gunData = agent.currentEquippedData
 	local gunName = gunData.Name
 	local pelletCount = gunData.PelletsPerShot
@@ -96,9 +103,11 @@ function NPCWeaponsClass:SpreadShot(agent)
 		warn(`Pellet count not specified for {gunName}`)
 		return
 	end
+	GunRaycastParam.ExcludeInstances = { agent.serverRig }
 
 	for _ = 1, pelletCount do
-		local spreadDir = Utility.GetShotgunSpreadDirection(agent.data.shootPoint.WorldAxis, maxSpreadAngle)
+		local dirToTarget = (targetPosition - agent.data.shootPoint.Position).Unit
+		local spreadDir = Utility.GetShotgunSpreadDirection(dirToTarget, maxSpreadAngle)
 		local context = ProjectileContext.BulletContext.new({
 			Origin = agent.data.shootPoint.Position,
 			Direction = spreadDir,
@@ -121,6 +130,36 @@ function NPCWeaponsClass:SpreadShot(agent)
 	end
 end
 
+function NPCWeaponsClass:GetLocalMuzzleOffset(npcRecord: LightweightNpcTypes.npcRecordType)
+	local weaponId = npcRecord.currentEquipped
+	if not weaponId then
+		Utility.Warn(`[NPCWeaponsClass:GetLocalMuzzleOffset] Missing weapon id`)
+		return
+	end
+	local weaponTool = WeaponsFolder:FindFirstChild(GunsEnum[weaponId])
+
+	if not weaponTool then
+		return
+	end
+
+	local muzzle: Attachment? = weaponTool:FindFirstChild("ShootPoint")
+		or weaponTool:FindFirstChildOfClass("Attachment")
+
+	if not muzzle then
+		Utility.Warn(`[NPCWeaponsClass:GetLocalMuzzleOffset] Missing ShootPoint attachment`)
+		return
+	end
+
+	local handle = weaponTool:FindFirstChild("Handle")
+
+	if not handle then
+		Utility.Warn(`[NPCWeaponsClass:GetLocalMuzzleOffset] Missing handle`)
+		return
+	end
+
+	npcRecord.data.muzzleOffset = handle.CFrame:ToObjectSpace(muzzle.WorldCFrame)
+end
+
 function NPCWeaponsClass:EquipWeapon(npcRecord: LightweightNpcTypes.npcRecordType)
 	if not npcRecord then
 		Utility.Warn("NPC cannot equip weapon, missing valid arguments")
@@ -130,7 +169,11 @@ function NPCWeaponsClass:EquipWeapon(npcRecord: LightweightNpcTypes.npcRecordTyp
 	npcRecord.currentEquipped = npcRecord.storedWeapon
 	npcRecord.currentEquippedData = GunData[GunsEnum[npcRecord.currentEquipped]]
 		or ThrowableData[ThrowablesEnum[npcRecord.currentEquipped]]
-	npcRecord.onPoseChange:Fire("toolhold")
+	self:GetLocalMuzzleOffset(npcRecord)
+
+	npcRecord.onPoseChange:Fire("toolhold", 2)
+
+	-- NOTE: This just attaches the weapon to the NPC on client, its anchored so using humanoid equiped doesn't work.
 	npcRecord:AddClientEvent({ id = "EquipWeapon", weaponToEquip = npcRecord.currentEquipped })
 end
 function NPCWeaponsClass:ReloadWeapon(npcRecord: LightweightNpcTypes.npcRecordType) end

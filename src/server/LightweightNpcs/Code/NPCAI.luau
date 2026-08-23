@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Attack = require(ServerScriptService.Server.LightweightNpcs.Code.States.Attack)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
+local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
 local Perception = require(ReplicatedStorage.Shared.GoalAI.AI.Perception)
 local Action = require(ReplicatedStorage.Shared.GoalAI.Action)
 local Goal = require(ReplicatedStorage.Shared.GoalAI.Goal)
@@ -38,7 +39,7 @@ local attack = Action.new({
 	name = "Attack",
 	cost = 1,
 	preconditions = { hasTarget = true },
-	effects = { targetKilled = true, attacking = true },
+	effects = { attacking = true },
 
 	executeFn = function(agent, context)
 		Utility.Warn(`Entered Attack State`)
@@ -49,10 +50,12 @@ local attack = Action.new({
 local seek = Action.new({
 	name = "Seek",
 	cost = 1,
-	preconditions = { hasTarget = false },
-	effects = { hasTarget = true },
+	preconditions = { hasTarget = false, lostTarget = true },
+	effects = { seeking = true },
 
-	executeFn = function(agent, context) end,
+	executeFn = function(agent, context)
+		Seek:Update(agent, context)
+	end,
 })
 
 local retreat = Action.new({
@@ -76,7 +79,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			hasTarget = false,
 			patrolling = false,
 			seeking = false,
-			targetKilled = false,
+			lostTarget = false,
 			defaultState = npcData.DefaultStateName,
 		}),
 		perception = Perception.new({
@@ -96,6 +99,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		currentActionIndex = 1,
 		planner = planner,
 		currentTarget = nil,
+		lastSeenTarget = nil,
 		defaultState = npcData.DefaultStateName,
 		defaultStateData = npcRecord.defaultStateData,
 		currentNavigationIndex = nil,
@@ -141,14 +145,14 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { patrolling = true },
 		priority = 1,
 		isValidFn = function(state)
-			return not state:get("patrolling") and not state:get("hasTarget")
+			return not state:get("patrolling") and not state:get("hasTarget") and not npcRecord.ai.lastSeenTarget
 		end,
 	})
 
 	local attackGoal = Goal.new({
 		name = "Attack",
 		desiredState = { attacking = true },
-		priority = 2,
+		priority = 3,
 		isValidFn = function(state)
 			return state:get("hasTarget") == true
 		end,
@@ -158,10 +162,10 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { seeking = true },
 		priority = 2,
 		isValidFn = function(state)
-			return state:get("hasTarget") == false and state:get("Seeking")
+			return state:get("hasTarget") == false and not state:get("seeking") and npcRecord.ai.lastSeenTarget
 		end,
 	})
-	npcRecord.ai.goals = { patrolGoal, attackGoal }
+	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal }
 
 	local plan, selectedGoal = planner:planBestGoal(npcRecord.ai.worldState, npcRecord.ai.goals, npcRecord)
 

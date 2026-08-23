@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
@@ -160,7 +161,8 @@ function NPCLogic:AffectLimbAndChildren(
 		-- Will make client NPCs play crawl anims
 		npcRecord.legless = true
 		-- Force crawl server pose so we can somewhat emulate its hitboxes
-		npcRecord.onPoseChange:Fire("crawlidle")
+		npcRecord.onPoseChange:Fire("crawlidle", 1)
+		npcRecord:StopAnimationChannel(2)
 	end
 end
 
@@ -203,9 +205,16 @@ end
 
 function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
+		-- Early exits
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
 			return
 		end
+
+		if npcRecord.hitPoints <= 0 then
+			return
+		end
+
+		--
 
 		local ai = npcRecord.ai
 
@@ -391,6 +400,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		if npcRecord.instance then
 			npcRecord:Move(Vector3.zero)
 			npcRecord:AddClientEvent({ id = "Dead", attacker = npcRecord.killedBy })
+			npcRecord.serverRig:AddTag("Dead")
 			ServerSoundHandler:Play3DOneShotToOthers(
 				nil,
 				"HumanDeathGasp",
@@ -404,18 +414,18 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 	end)
 
-	npcRecord.onPoseChange:Connect(function(poseName: string)
+	npcRecord.onPoseChange:Connect(function(poseName: string, channel: number?)
 		if not npcRecord or not npcRecord.poses or not npcRecord.poses[poseName] then
 			Utility.Warn(`[onPoseChange] Cannot change pose, missing a pose ref`)
 			return
 		end
-		NPCPoses:ChangePose(npcRecord, poseName)
+		NPCPoses:ChangePose(npcRecord, poseName, channel)
 	end)
 
 	InitializeOnSpawn(npcRecord)
 	npcRecord.onBumpIntoWall:Connect(function(instance)
 		if npcRecord.ai.worldState:get("patrolling") == true then
-			Patrol:TryPathfind(npcRecord, Patrol:GetNextPatrolPoint(npcRecord))
+			CommonStateLogic.TryPathfind(npcRecord, Patrol:GetNextPatrolPoint(npcRecord))
 		end
 	end)
 end

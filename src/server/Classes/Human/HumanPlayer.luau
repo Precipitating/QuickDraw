@@ -304,6 +304,11 @@ function HumanPlayer:DestroyLimb(limbName: string)
 	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, 0)
 end
 
+function HumanPlayer:DisableLimb(limbName: string)
+	Human.DisableLimb(self, limbName)
+	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
+end
+
 function HumanPlayer:RevertCrawlState()
 	if not self:IsLegless() then
 		return

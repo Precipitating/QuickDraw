@@ -58,6 +58,18 @@ return {
 		return current
 	end,
 
+	GetSingleShotSpreadDir = function(direction: Vector3, maxSpreadDegrees: number)
+		local randomAngle = math.rad(maxSpreadDegrees) * RandomModule.GetRandom()
+		local randomRotation = RandomModule.GetRandom() * math.pi * 2 -- around the direction axis
+
+		local baseCFrame = CFrame.lookAt(Vector3.zero, direction)
+		local perturbed = baseCFrame
+			* CFrame.Angles(0, 0, randomRotation) -- spin around aim axis
+			* CFrame.Angles(randomAngle, 0, 0) -- tilt by random angle
+
+		return perturbed.LookVector
+	end,
+
 	GetShotgunSpreadDirection = function(baseDirection: Vector3, maxDegrees: number)
 		-- Use a circular spread pattern
 		-- Pick a random angle and random radius within the cone

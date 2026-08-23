@@ -275,6 +275,7 @@ function lightweightNpcsClientModule:StartAnimation(
 		--npcRecord.currentlyPlayingAnimationIndex = animationIndex
 		if trackRecord.track then
 			trackRecord.track:Play()
+			print(`Playing {trackRecord.name}`)
 			npcRecord.playingAnimations[channel] = trackRecord
 			--[[
 			

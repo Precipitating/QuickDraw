@@ -16,7 +16,7 @@ function ServerSoundHandler:Play3DOneShotToOthers(
 		return
 	end
 
-	local closePlayers = Utility.GetClosePlayers(position, config and config.MaxDistance or 100)
+	local closePlayers = Utility.GetClosePlayers(position, config and config.MaxDistance or 300)
 	local payload = {
 		SoundName = soundName,
 		Position = position or Vector3.zero,
