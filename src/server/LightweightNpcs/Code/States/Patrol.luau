@@ -1,23 +1,27 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local ActionResult = require(script.Parent.ActionResult)
 local CommonStateLogic = require(script.Parent.CommonStateLogic)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local PatrolData = ServerStorage.PatrolData
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-
 local Patrol = {}
 
 function Patrol:ExitPatrolState(agent)
+	agent.ai.perception:clearAwareness(agent.npcId)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
 	agent.ai.currentNavigationData = nil
 	agent.ai.currentMoveIdx = nil
-	agent.ai.worldState:set("patrolling", false)
-	agent.ai.currentPlan = nil
-	agent.ai.currentGoal = nil
-	agent:PlayAnimation("idle", false, 1, 1)
+	agent.busy = false
+
+	if not agent.legless then
+		agent:PlayAnimation("idle", false, 1, 1)
+	else
+		agent:PlayAnimation("crawlidle", false, 1, 1)
+	end
 end
 
 function Patrol:GetNextPatrolPoint(npcRecord: LightweightNpcTypes.npcRecordType)
@@ -48,24 +52,39 @@ function Patrol:GetNextPatrolPoint(npcRecord: LightweightNpcTypes.npcRecordType)
 	return randomPoint.Position
 end
 
+function Patrol:TryGetNextPatrolWaypoint(npcRecord: LightweightNpcTypes.npcRecordType)
+	local success = false
+	local beforeRun = os.clock()
+	repeat
+		local now = os.clock()
+		success = CommonStateLogic.TryPathfind(npcRecord, self:GetNextPatrolPoint(npcRecord))
+	until success or (now - beforeRun) > 5
+
+	return success
+end
+
 function Patrol:Update(agent, context)
 	local dt = context.dt
+	if agent.busy then
+		return ActionResult.Running
+	end
+
 	agent.ai.perception:update(dt)
 	local seesTarget = CommonStateLogic.CanSeeEnemy(agent, dt)
 	if seesTarget then
-		agent.ai.worldState:set("hasTarget", true)
 		agent.ai.currentTarget = seesTarget
 		warn("AI sees enemy")
 		self:ExitPatrolState(agent)
-		return false
+		return ActionResult.Success
 	end
 
 	-- 1. Set patrol route if none set.
-	if not agent.ai.currentNavigationData and not agent.busy then
-		local success = CommonStateLogic.TryPathfind(agent, self:GetNextPatrolPoint(agent))
+	if not agent.ai.currentNavigationData then
+		local success = self:TryGetNextPatrolWaypoint(agent)
+
 		if not success then
 			self:ExitPatrolState(agent)
-			return false
+			return ActionResult.Failed
 		end
 	end
 
@@ -74,20 +93,14 @@ function Patrol:Update(agent, context)
 	-- 2. If waypoints not set, the path cannot be navigated
 	local waypoints = agent.ai.currentNavigationData and agent.ai.currentNavigationData.waypoints
 	if not waypoints then
-		if agent.busy then
-			return true
-		end
 		self:ExitPatrolState(agent)
-		return false
+		return ActionResult.Failed
 	end
 
 	local nextWaypoint = waypoints[agent.ai.currentMoveIdx]
 	if not nextWaypoint then
-		if agent.busy then
-			return true
-		end
 		self:ExitPatrolState(agent)
-		return false
+		return ActionResult.Failed
 	end
 	--
 
@@ -101,12 +114,13 @@ function Patrol:Update(agent, context)
 
 		-- 3.1. If no waypoints left, we've reached our destination. Set a new one
 		if not nextWaypoint then
-			local success = CommonStateLogic.TryPathfind(agent, self:GetNextPatrolPoint(agent))
+			local success = self:TryGetNextPatrolWaypoint(agent)
+
 			if not success then
-				agent:Move(Vector3.zero)
-				return false
+				self:ExitPatrolState(agent)
+				return ActionResult.Failed
 			end
-			return success
+			return ActionResult.Running
 		end
 	end
 
@@ -122,9 +136,14 @@ function Patrol:Update(agent, context)
 		end
 	else
 		CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
-		agent:PlayAnimation("walk", false, 1, 1)
+
+		if not agent.legless then
+			agent:PlayAnimation("walk", false, 1, 1)
+		else
+			agent:PlayAnimation("crawlwalk", false, 1, 1)
+		end
 	end
 
-	return true
+	return ActionResult.Running
 end
 return Patrol

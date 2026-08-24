@@ -45,7 +45,8 @@ return {
 	end,
 
 	MoveToward = function(agent, targetPos)
-		local dir = targetPos - agent.position
+		local flatTarget = Vector3.new(targetPos.X, agent.position.Y, targetPos.Z)
+		local dir = flatTarget - agent.position
 		agent:Move(dir.Magnitude > 0.001 and dir.Unit or Vector3.zero)
 	end,
 	MoveTowardFlattened = function(agent, targetPos)

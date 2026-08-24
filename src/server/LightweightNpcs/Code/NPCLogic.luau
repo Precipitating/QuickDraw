@@ -1,8 +1,10 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ActionResult = require(ServerScriptService.Server.LightweightNpcs.Code.States.ActionResult)
 local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
+local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
@@ -210,10 +212,6 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			return
 		end
 
-		if npcRecord.hitPoints <= 0 then
-			return
-		end
-
 		--
 
 		local ai = npcRecord.ai
@@ -241,20 +239,30 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 
 		local context = { dt = dt }
-		local success = currentAction:execute(npcRecord, context)
+		local result = currentAction:execute(npcRecord, context)
 
-		if success then
-			-- apply this action's effects since nothing else does
-			for key, value in currentAction.effects._data do
-				ai.worldState:set(key, value)
-			end
-
+		-- Action complete, meaning apply effects if all actions ran and so next plan should occur.
+		if result == ActionResult.Success then
 			if ai.currentPlan and ai.currentPlan.actions then
-				if ai.currentActionIndex + 1 > #ai.currentPlan.actions then
-					return
-				end
 				ai.currentActionIndex += 1
+
+				if ai.currentActionIndex > #ai.currentPlan.actions then
+					-- apply this action's effects when all steps finished
+					for key, value in currentAction.effects._data do
+						ai.worldState:set(key, value)
+						print(`{key}, {value}`)
+					end
+					ai.currentPlan = nil
+					ai.currentGoal = nil
+					ai.currentActionIndex = 1
+				end
 			end
+		elseif result == ActionResult.Failed then
+			ai.currentPlan = nil
+			ai.currentGoal = nil
+			ai.currentActionIndex = 1
+		elseif result == ActionResult.Running then
+			-- Continue running
 		end
 
 		-- 	if tick() > npcRecord.data.nextMove then
@@ -424,8 +432,24 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 
 	InitializeOnSpawn(npcRecord)
 	npcRecord.onBumpIntoWall:Connect(function(instance)
-		if npcRecord.ai.worldState:get("patrolling") == true then
-			CommonStateLogic.TryPathfind(npcRecord, Patrol:GetNextPatrolPoint(npcRecord))
+		local now = os.clock()
+		local lastBumped = npcRecord.data.lastBumped
+
+		-- reduce bump spam
+		if lastBumped and now - lastBumped <= 1 then
+			return
+		end
+
+		npcRecord.data.lastBumped = now
+
+		if npcRecord.ai.currentGoal.name == "Patrol" then
+			Patrol:TryGetNextPatrolWaypoint(npcRecord)
+		elseif npcRecord.ai.currentGoal.name == "Seek" and npcRecord.ai.lastSeenTarget then
+			local success = Seek:GeneratePathToLastSeenTarget(npcRecord, true)
+
+			if not success then
+				Seek:ExitSeekState(npcRecord)
+			end
 		end
 	end)
 end

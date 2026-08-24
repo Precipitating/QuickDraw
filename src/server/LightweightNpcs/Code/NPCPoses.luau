@@ -19,6 +19,7 @@ function NPCPoses:ResetPose(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.configuration.motionSize = Vector3.new(6, 6, 6)
 	npcRecord.configuration.maximumSlopeAngle = 50
 	npcRecord.configuration.maximumStepHeight = 3
+	npcRecord.currentPose = "idle"
 end
 
 function NPCPoses:ChangePose(npcRecord: LightweightNpcTypes.npcRecordType, poseName: string, channel: number?)
@@ -28,6 +29,7 @@ function NPCPoses:ChangePose(npcRecord: LightweightNpcTypes.npcRecordType, poseN
 	self:ResetPose(npcRecord)
 	npcRecord.poses[poseName]:Play(0.5, 1, 1)
 	npcRecord:PlayAnimation(poseName, false, channel or 1, 1)
+	npcRecord.currentPose = poseName
 
 	if poseName == "crawlidle" then
 		npcRecord.configuration.maximumSlopeAngle = 10

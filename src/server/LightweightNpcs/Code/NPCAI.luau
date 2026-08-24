@@ -24,7 +24,7 @@ local patrol = Action.new({
 	name = "Patrol",
 	cost = 1,
 	preconditions = { hasTarget = false, defaultState = "Patrol" },
-	effects = { patrolling = true },
+	effects = { hasTarget = true },
 	interruptible = true,
 	onInterrupt = function(agent, context)
 		print("Interrupted patrol")
@@ -39,11 +39,11 @@ local attack = Action.new({
 	name = "Attack",
 	cost = 1,
 	preconditions = { hasTarget = true },
-	effects = { attacking = true },
+	effects = { hasTarget = false },
 
 	executeFn = function(agent, context)
 		Utility.Warn(`Entered Attack State`)
-		Attack:Update(agent, context)
+		return Attack:Update(agent, context)
 	end,
 })
 
@@ -51,10 +51,10 @@ local seek = Action.new({
 	name = "Seek",
 	cost = 1,
 	preconditions = { hasTarget = false, lostTarget = true },
-	effects = { seeking = true },
+	effects = { lostTarget = false },
 
 	executeFn = function(agent, context)
-		Seek:Update(agent, context)
+		return Seek:Update(agent, context)
 	end,
 })
 
@@ -77,9 +77,8 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			health = npcRecord.hitPoints,
 			atSafeDistance = true,
 			hasTarget = false,
-			patrolling = false,
-			seeking = false,
 			lostTarget = false,
+			currentAmmo = npcRecord.currentEquippedData.MaxAmmo or 0,
 			defaultState = npcData.DefaultStateName,
 		}),
 		perception = Perception.new({
@@ -88,7 +87,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 				angle = 120,
 			},
 			awareness = {
-				decayRate = 5,
+				decayRate = 10,
 				thresholds = { alert = 60, combat = 80 },
 			},
 		}),
@@ -142,16 +141,16 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	-- GOALS
 	local patrolGoal = Goal.new({
 		name = "Patrol",
-		desiredState = { patrolling = true },
+		desiredState = { hasTarget = true },
 		priority = 1,
 		isValidFn = function(state)
-			return not state:get("patrolling") and not state:get("hasTarget") and not npcRecord.ai.lastSeenTarget
+			return not state:get("hasTarget") and not npcRecord.ai.lastSeenTarget
 		end,
 	})
 
 	local attackGoal = Goal.new({
 		name = "Attack",
-		desiredState = { attacking = true },
+		desiredState = { hasTarget = false },
 		priority = 3,
 		isValidFn = function(state)
 			return state:get("hasTarget") == true
@@ -159,10 +158,10 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	})
 	local seekGoal = Goal.new({
 		name = "Seek",
-		desiredState = { seeking = true },
+		desiredState = { lostTarget = false },
 		priority = 2,
 		isValidFn = function(state)
-			return state:get("hasTarget") == false and not state:get("seeking") and npcRecord.ai.lastSeenTarget
+			return state:get("hasTarget") == false and npcRecord.ai.lastSeenTarget
 		end,
 	})
 	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal }

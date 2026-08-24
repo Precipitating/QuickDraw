@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ActionResult = require(script.Parent.ActionResult)
 local NPCPoses = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPoses)
 local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.NPCWeaponsClass)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
@@ -31,15 +32,16 @@ end
 local function ExitAttackState(agent)
 	agent.ai.perception:clearAwareness(agent.npcId)
 	agent.ai.currentTarget = nil
-	agent.ai.worldState:set("hasTarget", false)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
-	agent.ai.currentPlan = nil
-	agent.ai.currentGoal = nil
 	-- Stop tool holding animation if ran (should be on second animation channel)
 	agent:StopAnimationChannel(2)
 	NPCPoses:ResetPose(agent)
-	agent:PlayAnimation("idle", false, 1, 1)
+	if not agent.legless then
+		agent:PlayAnimation("idle", false, 1, 1)
+	else
+		agent:PlayAnimation("crawlidle", false, 1, 1)
+	end
 end
 
 function Attack:Update(agent, context)
@@ -50,7 +52,7 @@ function Attack:Update(agent, context)
 	-- Early returns
 	if not target then
 		ExitAttackState(agent)
-		return false
+		return ActionResult.Success
 	end
 
 	-- 1. Determine if we can still see the target, and exit if not
@@ -60,7 +62,7 @@ function Attack:Update(agent, context)
 	-- 1.2 Check if target is dead to exit state, so NPC doesn't keep shooting thin air
 	if target:HasTag("Dead") then
 		ExitAttackState(agent)
-		return false
+		return ActionResult.Success
 	end
 	--
 	-- 1.3 Seek state if not combat state
@@ -68,7 +70,7 @@ function Attack:Update(agent, context)
 		agent.ai.lastSeenTarget = target
 		agent.ai.worldState:set("lostTarget", true)
 		ExitAttackState(agent)
-		return false
+		return ActionResult.Success
 	end
 
 	-- 2. Smoothly rotate to face target
@@ -83,12 +85,13 @@ function Attack:Update(agent, context)
 
 	if agent.currentEquipped and not agent.legless then
 		agent:PlayAnimation("toolhold", false, 2, 1)
+		agent.onPoseChange:Fire("toolhold", 2)
 	end
 
 	-- 3.1 Check if we've waited longer than gun's shot delay
 	local currentWeaponData = agent.currentEquippedData
 	if not currentWeaponData then
-		return false
+		return ActionResult.Failed
 	end
 	local shotDelay = currentWeaponData.ShotDelay
 	local currTime = os.clock()
@@ -97,26 +100,24 @@ function Attack:Update(agent, context)
 	-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! --
 	-- 3.2 If waited long enough, shoot
 
-	if currentState == "combat" then
-		if lastShot >= shotDelay then
+	if lastShot >= shotDelay then
+		if currentState == "combat" and detected then
 			-- 3.3 Get shoot position on server
-
 			local rightHand = agent.bodyParts[LimbsEnum.RightHand] and agent.bodyParts[LimbsEnum.RightHand].Part
 			if rightHand then
 				local rightHandAttachment: Attachment = rightHand:FindFirstChild("RightGripAttachment")
-				local muzzleCFrame: CFrame = agent.data.muzzleOffset
-				local finalMuzzleCFrame: CFrame = rightHandAttachment.WorldCFrame
-					* CFrame.new(muzzleCFrame.Position.X, muzzleCFrame.Position.Y, -muzzleCFrame.Position.Z)
+				local muzzleOffset: CFrame = agent.data.muzzleOffset
+				local finalMuzzleCFrame = rightHandAttachment.WorldCFrame * muzzleOffset
+				agent.data.shootPoint = finalMuzzleCFrame
 
 				local targetPos = target:GetPivot().Position
-				agent.data.shootPoint = finalMuzzleCFrame
 
 				local debug = Instance.new("Part", workspace)
 				debug.Anchored = true
+				debug.Material = Enum.Material.Neon
 				debug.CFrame = finalMuzzleCFrame
 				debug.Size = Vector3.new(0.5, 0.5, 0.5)
 				debug.CanCollide = false
-				debug.Transparency = 0.5
 				debug.CanQuery = false
 
 				if currentWeaponData.GunType == "Shotgun" then
@@ -128,13 +129,10 @@ function Attack:Update(agent, context)
 				agent.ai.lastShot = currTime
 			end
 		end
-	else
 	end
 
-	print(currentWeaponData)
-
 	warn("Attacking, awareness:", currentState)
-	return true
+	return ActionResult.Running
 end
 
 return Attack

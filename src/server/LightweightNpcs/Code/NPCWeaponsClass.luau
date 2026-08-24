@@ -171,8 +171,6 @@ function NPCWeaponsClass:EquipWeapon(npcRecord: LightweightNpcTypes.npcRecordTyp
 		or ThrowableData[ThrowablesEnum[npcRecord.currentEquipped]]
 	self:GetLocalMuzzleOffset(npcRecord)
 
-	npcRecord.onPoseChange:Fire("toolhold", 2)
-
 	-- NOTE: This just attaches the weapon to the NPC on client, its anchored so using humanoid equiped doesn't work.
 	npcRecord:AddClientEvent({ id = "EquipWeapon", weaponToEquip = npcRecord.currentEquipped })
 end
