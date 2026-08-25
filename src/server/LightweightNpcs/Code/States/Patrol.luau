@@ -56,9 +56,11 @@ function Patrol:TryGetNextPatrolWaypoint(npcRecord: LightweightNpcTypes.npcRecor
 	local success = false
 	local beforeRun = os.clock()
 	repeat
-		local now = os.clock()
 		success = CommonStateLogic.TryPathfind(npcRecord, self:GetNextPatrolPoint(npcRecord))
-	until success or (now - beforeRun) > 5
+		if not success then
+			task.wait()
+		end
+	until success or (os.clock() - beforeRun) > 5
 
 	return success
 end

@@ -170,14 +170,55 @@ function NPCWeaponsClass:EquipWeapon(npcRecord: LightweightNpcTypes.npcRecordTyp
 	npcRecord.currentEquippedData = GunData[GunsEnum[npcRecord.currentEquipped]]
 		or ThrowableData[ThrowablesEnum[npcRecord.currentEquipped]]
 	self:GetLocalMuzzleOffset(npcRecord)
+	npcRecord.currentWeaponAmmo = npcRecord.currentEquippedData.MaxAmmo
 
 	-- NOTE: This just attaches the weapon to the NPC on client, its anchored so using humanoid equiped doesn't work.
 	npcRecord:AddClientEvent({ id = "EquipWeapon", weaponToEquip = npcRecord.currentEquipped })
 end
-function NPCWeaponsClass:ReloadWeapon(npcRecord: LightweightNpcTypes.npcRecordType) end
+function NPCWeaponsClass:ReloadWeapon(npcRecord: LightweightNpcTypes.npcRecordType)
+	local gunData = npcRecord.currentEquippedData
+	if not gunData then
+		Utility.Warn(`Cannot reload, missing gun data`)
+		return
+	end
+
+	local perBulletReload = gunData.ReloadTimePerBullet
+	local reloadSound = gunData.ReloadSoundName
+	local reloadSoundStart = gunData.ReloadSoundStartName
+	local magazineReload = gunData.ReloadTime
+	local maxAmmo = gunData.MaxAmmo
+
+	if reloadSoundStart then
+		ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, npcRecord.position)
+	end
+
+	if perBulletReload then
+		for _ = 1, maxAmmo do
+			local currentState = npcRecord.ai.currentGoal.name
+			if currentState ~= "Reload" then
+				return
+			end
+			if reloadSoundStart then
+				ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, npcRecord.position)
+			end
+
+			npcRecord.currentWeaponAmmo = math.clamp(npcRecord.currentWeaponAmmo + 1, 0, maxAmmo)
+		end
+	else
+		task.delay(magazineReload, function()
+			local currentState = npcRecord.ai.currentGoal.name
+			if currentState ~= "Reload" then
+				return
+			end
+
+			npcRecord.currentWeaponAmmo = maxAmmo
+		end)
+	end
+end
 
 function NPCWeaponsClass:UnequipAll(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.currentEquipped = nil
+	npcRecord:StopAnimationChannel(2)
 	npcRecord:AddClientEvent({ id = "UnEquipAll" })
 end
 

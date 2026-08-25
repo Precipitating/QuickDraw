@@ -426,7 +426,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		poses = {},
 		enemies = NPCFactionTypes[_faction],
 		hrp = serverRigTemplate:FindFirstChild("HumanoidRootPart"),
-
+		currentWeaponAmmo = 0,
 		currentEquipped = nil,
 		storedThrowable = nil,
 		storedWeapon = nil,

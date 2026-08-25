@@ -443,7 +443,10 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		npcRecord.data.lastBumped = now
 
 		if npcRecord.ai.currentGoal.name == "Patrol" then
-			Patrol:TryGetNextPatrolWaypoint(npcRecord)
+			local success = Patrol:TryGetNextPatrolWaypoint(npcRecord)
+			if not success then
+				Patrol:ExitPatrolState(npcRecord)
+			end
 		elseif npcRecord.ai.currentGoal.name == "Seek" and npcRecord.ai.lastSeenTarget then
 			local success = Seek:GeneratePathToLastSeenTarget(npcRecord, true)
 

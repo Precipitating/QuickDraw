@@ -35,6 +35,21 @@ local patrol = Action.new({
 		return Patrol:Update(agent, context)
 	end,
 })
+local reload = Action.new({
+	name = "Reload",
+	cost = 1,
+	preconditions = { currentAmmo = 0 },
+	effects = { canShoot = true },
+	interruptible = true,
+	onInterrupt = function(agent, context)
+		print("Interrupted patrol")
+	end,
+
+	executeFn = function(agent, context)
+		Utility.Warn(`Entered Patrol State`)
+		return Patrol:Update(agent, context)
+	end,
+})
 local attack = Action.new({
 	name = "Attack",
 	cost = 1,
@@ -78,7 +93,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			atSafeDistance = true,
 			hasTarget = false,
 			lostTarget = false,
-			currentAmmo = npcRecord.currentEquippedData.MaxAmmo or 0,
+			canShoot = true,
 			defaultState = npcData.DefaultStateName,
 		}),
 		perception = Perception.new({
@@ -164,10 +179,20 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			return state:get("hasTarget") == false and npcRecord.ai.lastSeenTarget
 		end,
 	})
-	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal }
+
+	local reloadGoal = Goal.new({
+		name = "Reload",
+		desiredState = { canShoot = true },
+		priority = 3,
+		isValidFn = function(state)
+			return state:get("canShoot") == false
+				and npcRecord.storedWeapon
+				and npcRecord.currentWeaponAmmo <= (npcRecord.currentEquippedData.MaxAmmo * 0.5)
+		end,
+	})
+	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal, reloadGoal }
 
 	local plan, selectedGoal = planner:planBestGoal(npcRecord.ai.worldState, npcRecord.ai.goals, npcRecord)
-
 	if plan.success then
 		npcRecord.ai.currentPlan = plan
 		npcRecord.ai.currentGoal = selectedGoal

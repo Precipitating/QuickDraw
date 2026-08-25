@@ -81,6 +81,7 @@ export type npcRecordType = {
 	currentEquipped: any?,
 	currentEquippedData: any?,
 	storedWeapon: any?,
+	currentWeaponAmmo: number,
 	storedThrowable: any?,
 	defaultStateData: any?,
 

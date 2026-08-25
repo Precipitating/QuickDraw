@@ -225,7 +225,7 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 		nil,
 		`{animalClass.ClassType}Hit`,
 		animalClass.Character:GetPivot().Position,
-		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5), MaxDistance = 300 }
 	)
 	warn(`DAMAGED ANIMAL`)
 end

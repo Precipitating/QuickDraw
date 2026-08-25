@@ -40,7 +40,7 @@ function Gun.new(
 	self.ReloadTime = gunData.ReloadTime or gunData.ReloadTimePerBullet
 	self.MaxAmmo = gunData.MaxAmmo
 	self.ReloadSound = gunData.ReloadSoundName
-	self.ReloadSoundStart = gunData.ReloadSoundStartName
+	self.ReloadSoundStart = gunData.LoadNextRoundName
 	self.MaxAmmoStack = gunData.MaxAmmoStack
 	self.EquipWalkspeedMultiplier = gunData.EquipWalkspeedMultiplier or 1
 	self.CurrentAmmo = gunData.MaxAmmo
@@ -313,7 +313,7 @@ function Gun:Reload()
 	end
 
 	local gunType = self.GunType
-	local reloadSoundStart = self.ReloadSoundStartName
+	local reloadSoundStart = self.LoadNextRoundName
 	local bulletsToReload = self.MaxAmmo - self.CurrentAmmo
 
 	--
