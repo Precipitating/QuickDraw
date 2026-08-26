@@ -2,6 +2,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Attack = require(ServerScriptService.Server.LightweightNpcs.Code.States.Attack)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
+local Provoked = require(ServerScriptService.Server.LightweightNpcs.Code.States.Provoked)
+local Reload = require(ServerScriptService.Server.LightweightNpcs.Code.States.Reload)
 local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
 local Perception = require(ReplicatedStorage.Shared.GoalAI.AI.Perception)
 local Action = require(ReplicatedStorage.Shared.GoalAI.Action)
@@ -38,16 +40,16 @@ local patrol = Action.new({
 local reload = Action.new({
 	name = "Reload",
 	cost = 1,
-	preconditions = { currentAmmo = 0 },
+	preconditions = { canShoot = false },
 	effects = { canShoot = true },
 	interruptible = true,
 	onInterrupt = function(agent, context)
-		print("Interrupted patrol")
+		print("Interrupted reload")
 	end,
 
 	executeFn = function(agent, context)
-		Utility.Warn(`Entered Patrol State`)
-		return Patrol:Update(agent, context)
+		Utility.Warn(`Entered Reload State`)
+		return Reload:Update(agent, context)
 	end,
 })
 local attack = Action.new({
@@ -81,8 +83,18 @@ local retreat = Action.new({
 
 	executeFn = function(agent, context) end,
 })
+local provoked = Action.new({
+	name = "Provoked",
+	cost = 1,
+	preconditions = { provoked = true },
+	effects = { provoked = false },
 
-planner:registerActions({ patrol, retreat, seek, attack })
+	executeFn = function(agent, context)
+		Provoked:Update(agent, context)
+	end,
+})
+
+planner:registerActions({ patrol, retreat, seek, attack, reload, provoked })
 
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]
@@ -185,12 +197,19 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { canShoot = true },
 		priority = 3,
 		isValidFn = function(state)
-			return state:get("canShoot") == false
-				and npcRecord.storedWeapon
-				and npcRecord.currentWeaponAmmo <= (npcRecord.currentEquippedData.MaxAmmo * 0.5)
+			return state:get("canShoot") == false and npcRecord.currentEquipped and npcRecord.currentWeaponAmmo <= 0
 		end,
 	})
-	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal, reloadGoal }
+
+	local provokedGoal = Goal.new({
+		name = "Provoked",
+		desiredState = { provoked = false },
+		priority = 3,
+		isValidFn = function(state)
+			return state:get("provoked") == false
+		end,
+	})
+	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal, reloadGoal, provokedGoal }
 
 	local plan, selectedGoal = planner:planBestGoal(npcRecord.ai.worldState, npcRecord.ai.goals, npcRecord)
 	if plan.success then

@@ -6,6 +6,7 @@ local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Attack = {}
 
 local function CanStillSeeTarget(agent: LightweightNpcTypes.npcRecordType, dt: number)
@@ -53,6 +54,12 @@ function Attack:Update(agent, context)
 	if not target then
 		ExitAttackState(agent)
 		return ActionResult.Success
+	end
+
+	if not agent.ai.worldState:get("canShoot") then
+		Utility.Warn(`No ammo left to attack!`)
+		ExitAttackState(agent)
+		return ActionResult.Failed
 	end
 
 	-- 1. Determine if we can still see the target, and exit if not

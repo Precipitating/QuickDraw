@@ -365,6 +365,15 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 					{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 				)
 			end
+
+			-- aggro
+			if npcRecord.ai.currentGoal.name == "Patrol" then
+				npcRecord.ai.worldState:set("provoked", true)
+				if damageData.Type == "Shot" then
+					npcRecord.data.shotPosition = damageData.ShotPosition
+				end
+			end
+
 			npcRecord:ForceReplicate()
 		end
 	)

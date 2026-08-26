@@ -43,7 +43,7 @@ function NPCWeaponsClass:InitializeWeaponClass(npcRecord: LightweightNpcTypes.np
 	end
 end
 
-function NPCWeaponsClass:SingleShot(agent, targetPosition: Vector3)
+function NPCWeaponsClass:SingleShot(agent: LightweightNpcTypes.npcRecordType, targetPosition: Vector3)
 	local gunData = agent.currentEquippedData
 	local projectileData = agent.currentEquippedData.ProjectileData
 	local context = nil
@@ -80,6 +80,8 @@ function NPCWeaponsClass:SingleShot(agent, targetPosition: Vector3)
 	end
 
 	ProjectileContext.Solver:Fire(context, projectileData)
+	self:UpdateAmmo(agent, -1)
+
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
 		gunData.ShootSoundName,
@@ -88,7 +90,22 @@ function NPCWeaponsClass:SingleShot(agent, targetPosition: Vector3)
 	)
 end
 
-function NPCWeaponsClass:SpreadShot(agent, targetPosition: Vector3)
+function NPCWeaponsClass:UpdateAmmo(agent: LightweightNpcTypes.npcRecordType, value: number)
+	if not agent.currentEquipped or not agent.currentEquippedData then
+		Utility.Warn(`Cannot update ammo, NPC has no weapon equipped or weapon data`)
+		return
+	end
+	local maxAmmo = agent.currentEquippedData.MaxAmmo
+	agent.currentWeaponAmmo = math.clamp(agent.currentWeaponAmmo + value, 0, maxAmmo)
+	local currentAmmo = agent.currentWeaponAmmo
+	if currentAmmo <= 0 then
+		agent.ai.worldState:set("canShoot", false)
+	elseif currentAmmo >= maxAmmo then
+		agent.ai.worldState:set("canShoot", true)
+	end
+end
+
+function NPCWeaponsClass:SpreadShot(agent: LightweightNpcTypes.npcRecordType, targetPosition: Vector3)
 	local gunData = agent.currentEquippedData
 	local gunName = gunData.Name
 	local pelletCount = gunData.PelletsPerShot
@@ -128,6 +145,7 @@ function NPCWeaponsClass:SpreadShot(agent, targetPosition: Vector3)
 			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
 		)
 	end
+	self:UpdateAmmo(agent, -1)
 end
 
 function NPCWeaponsClass:GetLocalMuzzleOffset(npcRecord: LightweightNpcTypes.npcRecordType)
@@ -174,46 +192,6 @@ function NPCWeaponsClass:EquipWeapon(npcRecord: LightweightNpcTypes.npcRecordTyp
 
 	-- NOTE: This just attaches the weapon to the NPC on client, its anchored so using humanoid equiped doesn't work.
 	npcRecord:AddClientEvent({ id = "EquipWeapon", weaponToEquip = npcRecord.currentEquipped })
-end
-function NPCWeaponsClass:ReloadWeapon(npcRecord: LightweightNpcTypes.npcRecordType)
-	local gunData = npcRecord.currentEquippedData
-	if not gunData then
-		Utility.Warn(`Cannot reload, missing gun data`)
-		return
-	end
-
-	local perBulletReload = gunData.ReloadTimePerBullet
-	local reloadSound = gunData.ReloadSoundName
-	local reloadSoundStart = gunData.ReloadSoundStartName
-	local magazineReload = gunData.ReloadTime
-	local maxAmmo = gunData.MaxAmmo
-
-	if reloadSoundStart then
-		ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, npcRecord.position)
-	end
-
-	if perBulletReload then
-		for _ = 1, maxAmmo do
-			local currentState = npcRecord.ai.currentGoal.name
-			if currentState ~= "Reload" then
-				return
-			end
-			if reloadSoundStart then
-				ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, npcRecord.position)
-			end
-
-			npcRecord.currentWeaponAmmo = math.clamp(npcRecord.currentWeaponAmmo + 1, 0, maxAmmo)
-		end
-	else
-		task.delay(magazineReload, function()
-			local currentState = npcRecord.ai.currentGoal.name
-			if currentState ~= "Reload" then
-				return
-			end
-
-			npcRecord.currentWeaponAmmo = maxAmmo
-		end)
-	end
 end
 
 function NPCWeaponsClass:UnequipAll(npcRecord: LightweightNpcTypes.npcRecordType)
