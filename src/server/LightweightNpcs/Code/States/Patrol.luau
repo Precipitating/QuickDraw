@@ -3,7 +3,6 @@ local ServerStorage = game:GetService("ServerStorage")
 local ActionResult = require(script.Parent.ActionResult)
 local CommonStateLogic = require(script.Parent.CommonStateLogic)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
-local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local PatrolData = ServerStorage.PatrolData
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -13,8 +12,6 @@ function Patrol:ExitPatrolState(agent)
 	agent.ai.perception:clearAwareness(agent.npcId)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
-	agent.ai.currentNavigationData = nil
-	agent.ai.currentMoveIdx = nil
 	agent.busy = false
 
 	if not agent.legless then
@@ -58,12 +55,16 @@ function Patrol:TryGetNextPatrolWaypoint(npcRecord: LightweightNpcTypes.npcRecor
 end
 
 function Patrol:Update(agent, context)
+	if agent.data.forceExitState then
+		Utility.Warn(`Force exit state on patrol!`)
+		self:ExitPatrolState(agent)
+		return ActionResult.Success
+	end
 	local dt = context.dt
 	if agent.busy then
 		return ActionResult.Running
 	end
 
-	agent.ai.perception:update(dt)
 	local seesTarget = CommonStateLogic.CanSeeEnemy(agent, dt)
 	if seesTarget then
 		agent.ai.currentTarget = seesTarget

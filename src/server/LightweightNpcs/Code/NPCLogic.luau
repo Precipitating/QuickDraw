@@ -2,8 +2,11 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ActionResult = require(ServerScriptService.Server.LightweightNpcs.Code.States.ActionResult)
+local Attack = require(ServerScriptService.Server.LightweightNpcs.Code.States.Attack)
 local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
+local Provoked = require(ServerScriptService.Server.LightweightNpcs.Code.States.Provoked)
+local Reload = require(ServerScriptService.Server.LightweightNpcs.Code.States.Reload)
 local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
@@ -19,6 +22,7 @@ local NPCPhysics = require(script.Parent.NPCPhysics)
 local NPCPoses = require(script.Parent.NPCPoses)
 local NPC_CULL_DISTANCE = 400
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
+local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local NPCLogic = {}
 
@@ -69,14 +73,10 @@ local function AddWantedTag(npcRecord: LightweightNpcTypes.npcRecordType, attack
 	end
 
 	if npcRecord.faction == "Sheriff" then
-		if attacker then
-			if attacker:IsA("Player") then
-				local character = attacker.Character
-				if character then
-					character:AddTag("Wanted")
-				end
-			elseif attacker:IsA("Model") then
-				attacker:AddTag("Wanted")
+		if attacker:IsA("Player") then
+			local character = attacker.Character
+			if character then
+				character:AddTag("Wanted")
 			end
 		end
 	end
@@ -213,8 +213,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 
 		--
-
 		local ai = npcRecord.ai
+		ai.perception:update(dt)
 
 		-- Replan if state changed or we have no valid plan
 		if ai.worldState:isDirty() or not ai.currentPlan or not ai.currentPlan.success then
@@ -263,6 +263,11 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			ai.currentActionIndex = 1
 		elseif result == ActionResult.Running then
 			-- Continue running
+		end
+
+		if npcRecord.data.forceExitState then
+			npcRecord.data.forceExitState()
+			npcRecord.data.forceExitState = nil
 		end
 
 		-- 	if tick() > npcRecord.data.nextMove then
@@ -367,10 +372,15 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			end
 
 			-- aggro
-			if npcRecord.ai.currentGoal.name == "Patrol" then
-				npcRecord.ai.worldState:set("provoked", true)
-				if damageData.Type == "Shot" then
-					npcRecord.data.shotPosition = damageData.ShotPosition
+			local currentStateName = npcRecord.ai.currentGoal and npcRecord.ai.currentGoal.name
+
+			if currentStateName and currentStateName ~= "Attack" then
+				npcRecord.data.forceExitState = function()
+					npcRecord.ai.worldState:set("provoked", true)
+					if damageData.Type == "Shot" then
+						npcRecord.data.shotPosition = damageData.ShotPosition
+						npcRecord.data.lastProvoked = os.clock()
+					end
 				end
 			end
 
@@ -451,6 +461,12 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 
 		npcRecord.data.lastBumped = now
 
+		-- Attempt to get unstuck through random movements
+		npcRecord:Jump()
+		local ang = RandomModule.GetRandom() * math.pi * 2
+		npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
+
+		-- Retry a waypoint path
 		if npcRecord.ai.currentGoal.name == "Patrol" then
 			local success = Patrol:TryGetNextPatrolWaypoint(npcRecord)
 			if not success then

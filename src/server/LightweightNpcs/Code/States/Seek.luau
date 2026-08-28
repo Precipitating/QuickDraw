@@ -28,15 +28,11 @@ function Seek:LookAroundForTarget(agent: LightweightNpcTypes.npcRecordType, dt: 
 	agent.busy = true
 	for _ = 1, 4 do
 		warn("ROTATIN")
-		agent.targetAngle += math.rad(90)
-		local seesEnemy = CommonStateLogic.CanSeeEnemy(agent, dt)
-		if seesEnemy then
-			agent.ai.worldState:set("hasTarget", true)
-			agent.ai.currentTarget = seesEnemy
-			warn("AI sees enemy")
+		if agent.ai.worldState:get("hasTarget") then
 			agent.busy = false
 			return
 		end
+		agent.targetAngle += math.rad(90)
 		task.wait(1)
 	end
 	agent.busy = false
@@ -58,6 +54,7 @@ function Seek:GeneratePathToLastSeenTarget(agent, forceReset: boolean?)
 
 		-- DEBUG LAST SEEN
 		local p1 = Instance.new("Part", workspace)
+		p1.Name = "lastSeen"
 		p1.Anchored = true
 		p1.Size = Vector3.new(0.5, 0.5, 0.5)
 		p1.Position = lastSeenPos
@@ -103,10 +100,6 @@ function Seek:Update(agent, context)
 	local currentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
 	local dt = context.dt
 
-	if agent.busy then
-		return ActionResult.Running
-	end
-
 	--
 	if not lastSeenTarget then
 		Utility.Warn(`[SEEK] No last seen target, exiting state`)
@@ -115,8 +108,6 @@ function Seek:Update(agent, context)
 	end
 
 	-- 1. Check if we see an enemy, and  go attack state if so
-	local perception = agent.ai.perception
-	perception:update(dt)
 	local seesEnemy = CommonStateLogic.CanSeeEnemy(agent, dt)
 	if seesEnemy then
 		agent.ai.worldState:set("hasTarget", true)
@@ -124,6 +115,10 @@ function Seek:Update(agent, context)
 		warn("AI sees enemy")
 		self:ExitSeekState(agent)
 		return ActionResult.Success
+	end
+
+	if agent.busy then
+		return ActionResult.Running
 	end
 
 	--

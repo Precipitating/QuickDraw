@@ -127,6 +127,7 @@ local function JailSpawn(player: Player?, characterModel: Model?)
 		end
 		CollectionService:RemoveTag(player, "Jailed")
 		ServerData:SetJailed(player, false)
+		ServerData.SetBounty(player, 0)
 		ToggleJailedGUI(player, false)
 		ActiveJailCountdowns[player] = nil
 		characterModel:PivotTo(exitPos.CFrame)

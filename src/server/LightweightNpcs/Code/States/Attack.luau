@@ -30,8 +30,7 @@ local function CanStillSeeTarget(agent: LightweightNpcTypes.npcRecordType, dt: n
 	return detected, awarenessState
 end
 
-local function ExitAttackState(agent)
-	agent.ai.perception:clearAwareness(agent.npcId)
+function Attack:ExitAttackState(agent)
 	agent.ai.currentTarget = nil
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
@@ -46,29 +45,32 @@ local function ExitAttackState(agent)
 end
 
 function Attack:Update(agent, context)
+	if agent.data.forceExitState then
+		self:ExitAttackState(agent)
+		return ActionResult.Failed
+	end
 	-- Target should be a model
 	local target = agent.ai.currentTarget
 	local dt = context.dt
 
 	-- Early returns
 	if not target then
-		ExitAttackState(agent)
+		self:ExitAttackState(agent)
 		return ActionResult.Success
 	end
 
 	if not agent.ai.worldState:get("canShoot") then
-		Utility.Warn(`No ammo left to attack!`)
-		ExitAttackState(agent)
-		return ActionResult.Failed
+		Utility.Warn(`Can't shoot yet!`)
+		self:ExitAttackState(agent)
+		return ActionResult.Success
 	end
 
 	-- 1. Determine if we can still see the target, and exit if not
 	local detected, currentState = CanStillSeeTarget(agent, dt)
-	agent.ai.perception:update(dt)
 
 	-- 1.2 Check if target is dead to exit state, so NPC doesn't keep shooting thin air
 	if target:HasTag("Dead") then
-		ExitAttackState(agent)
+		self:ExitAttackState(agent)
 		return ActionResult.Success
 	end
 	--
@@ -76,7 +78,7 @@ function Attack:Update(agent, context)
 	if not detected and currentState ~= "combat" then
 		agent.ai.lastSeenTarget = target
 		agent.ai.worldState:set("lostTarget", true)
-		ExitAttackState(agent)
+		self:ExitAttackState(agent)
 		return ActionResult.Success
 	end
 
@@ -113,16 +115,16 @@ function Attack:Update(agent, context)
 			local rightHand = agent.bodyParts[LimbsEnum.RightHand] and agent.bodyParts[LimbsEnum.RightHand].Part
 			if rightHand then
 				local rightHandAttachment: Attachment = rightHand:FindFirstChild("RightGripAttachment")
-				local muzzleOffset: CFrame = agent.data.muzzleOffset
-				local finalMuzzleCFrame = rightHandAttachment.WorldCFrame * muzzleOffset
-				agent.data.shootPoint = finalMuzzleCFrame
+				-- local muzzleOffset: CFrame = agent.data.muzzleOffset
+				-- local finalMuzzleCFrame = rightHandAttachment.WorldCFrame * muzzleOffset
+				agent.data.shootPoint = rightHandAttachment.WorldCFrame * CFrame.new(0, 0.5, -1)
 
 				local targetPos = target:GetPivot().Position
 
 				local debug = Instance.new("Part", workspace)
 				debug.Anchored = true
 				debug.Material = Enum.Material.Neon
-				debug.CFrame = finalMuzzleCFrame
+				debug.CFrame = agent.data.shootPoint
 				debug.Size = Vector3.new(0.5, 0.5, 0.5)
 				debug.CanCollide = false
 				debug.CanQuery = false

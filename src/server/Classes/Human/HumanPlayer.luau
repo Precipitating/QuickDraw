@@ -8,6 +8,7 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local HumanLimbGUI = require(ServerScriptService.Server.GUI.HumanLimbGUI)
+local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local MoneyDropHandler = require(ServerScriptService.Server.MoneyDropHandler)
 local ServerData = require(ServerScriptService.Server.ServerData)
 local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
@@ -267,23 +268,38 @@ function HumanPlayer:DropMoney()
 	end
 end
 
-function HumanPlayer:Die(killer: Player?)
+function HumanPlayer:Die(killer: (Player | Model)?)
 	local dead = Human.Die(self)
 
 	if not dead then
 		return
 	end
 
+	if not killer then
+		return
+	end
 	if self.Player == killer then
 		return
 	end
+
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
 	if killer and typeof(killer) ~= "table" then
 		if killer:IsA("Player") then
 			warn("PLAYER KILLED PLAYAH")
 			AwardHandler.AwardPlayerKill(self.Player, killer)
 		else
-			if CollectionService:HasTag(killer, "Sheriff") then
+			local npcId = killer:GetAttribute("npcId")
+
+			if not npcId then
+				return
+			end
+			local npcRecord = LightweightNpcsServerAPI:GetNpcById(npcId)
+
+			if not npcRecord then
+				return
+			end
+
+			if npcRecord.faction == "Sheriff" then
 				warn("SHERIFF KILLED PLAYAH")
 				CollectionService:AddTag(self.Player, "Jailed")
 				ServerData:SetJailed(self.Player, true)

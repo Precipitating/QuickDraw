@@ -6,8 +6,20 @@ local ActionResult = require(script.Parent.ActionResult)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local Reload = {}
-
+function Reload:ExitReloadState(agent: LightweightNpcTypes.npcRecordType)
+	Utility.Warn(`Can shoot now`)
+	agent.data.lastReloaded = nil
+end
 function Reload:Update(agent: LightweightNpcTypes.npcRecordType, context)
+	if agent.data.forceExitState then
+		self:ExitReloadState(agent)
+		if agent.currentWeaponAmmo > 0 then
+			agent.ai.worldState:set("canShoot", true)
+		else
+			agent.ai.worldState:set("canShoot", false)
+		end
+		return ActionResult.Failed
+	end
 	local gunData = agent.currentEquippedData
 	if not gunData then
 		Utility.Warn(`Cannot reload, missing gun data`)
@@ -16,7 +28,7 @@ function Reload:Update(agent: LightweightNpcTypes.npcRecordType, context)
 
 	local maxAmmo = gunData.MaxAmmo
 	if agent.currentWeaponAmmo >= maxAmmo then
-		Utility.Warn(`Can shoot now`)
+		self:ExitReloadState(agent)
 		return ActionResult.Success
 	end
 
@@ -25,11 +37,17 @@ function Reload:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	local reloadSoundStart = gunData.ReloadSoundStartName
 	local magazineReload = gunData.ReloadTime
 
+	if agent.currentEquipped and not agent.legless then
+		agent:PlayAnimation("toolhold", false, 2, 1)
+		agent.onPoseChange:Fire("toolhold", 2)
+	end
+
 	if not agent.data.lastReloaded then
 		agent.data.lastReloaded = os.clock()
 	end
 
-	if (os.clock() - agent.data.lastReloaded) >= (perBulletReload or magazineReload) then
+	local lastReloaded = os.clock() - agent.data.lastReloaded
+	if lastReloaded >= (perBulletReload or magazineReload) then
 		Utility.Warn(`Loading next bullet...`)
 		if reloadSoundStart then
 			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSoundStart, agent.position)

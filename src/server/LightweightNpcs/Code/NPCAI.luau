@@ -1,20 +1,15 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
-local Attack = require(ServerScriptService.Server.LightweightNpcs.Code.States.Attack)
-local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
-local Provoked = require(ServerScriptService.Server.LightweightNpcs.Code.States.Provoked)
-local Reload = require(ServerScriptService.Server.LightweightNpcs.Code.States.Reload)
-local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
+local Attack = require(script.Parent.States.Attack)
+local Patrol = require(script.Parent.States.Patrol)
+local Provoked = require(script.Parent.States.Provoked)
+local Reload = require(script.Parent.States.Reload)
+local Seek = require(script.Parent.States.Seek)
 local Perception = require(ReplicatedStorage.Shared.GoalAI.AI.Perception)
 local Action = require(ReplicatedStorage.Shared.GoalAI.Action)
 local Goal = require(ReplicatedStorage.Shared.GoalAI.Goal)
-local Navigation = require(ReplicatedStorage.Shared.GoalAI.Navigation)
 local PathfindingAdapter = require(ReplicatedStorage.Shared.GoalAI.Navigation.PathfindingAdapter)
-local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local Planner = require(ReplicatedStorage.Shared.GoalAI.Planner)
 local State = require(ReplicatedStorage.Shared.GoalAI.State)
-local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
-local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
@@ -87,10 +82,10 @@ local provoked = Action.new({
 	name = "Provoked",
 	cost = 1,
 	preconditions = { provoked = true },
-	effects = { provoked = false },
+	effects = { provoked = false, hasTarget = true },
 
 	executeFn = function(agent, context)
-		Provoked:Update(agent, context)
+		return Provoked:Update(agent, context)
 	end,
 })
 
@@ -180,7 +175,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { hasTarget = false },
 		priority = 3,
 		isValidFn = function(state)
-			return state:get("hasTarget") == true
+			return state:get("hasTarget")
 		end,
 	})
 	local seekGoal = Goal.new({
@@ -188,25 +183,25 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { lostTarget = false },
 		priority = 2,
 		isValidFn = function(state)
-			return state:get("hasTarget") == false and npcRecord.ai.lastSeenTarget
+			return state:get("lostTarget") and not state:get("hasTarget") and npcRecord.ai.lastSeenTarget
 		end,
 	})
 
 	local reloadGoal = Goal.new({
 		name = "Reload",
 		desiredState = { canShoot = true },
-		priority = 3,
+		priority = 4,
 		isValidFn = function(state)
-			return state:get("canShoot") == false and npcRecord.currentEquipped and npcRecord.currentWeaponAmmo <= 0
+			return not state:get("canShoot") and npcRecord.currentEquipped
 		end,
 	})
 
 	local provokedGoal = Goal.new({
 		name = "Provoked",
 		desiredState = { provoked = false },
-		priority = 3,
+		priority = 4,
 		isValidFn = function(state)
-			return state:get("provoked") == false
+			return state:get("provoked")
 		end,
 	})
 	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal, reloadGoal, provokedGoal }
