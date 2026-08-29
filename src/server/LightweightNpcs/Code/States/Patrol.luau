@@ -9,7 +9,6 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Patrol = {}
 
 function Patrol:ExitPatrolState(agent)
-	agent.ai.perception:clearAwareness(agent.npcId)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
 	agent.busy = false

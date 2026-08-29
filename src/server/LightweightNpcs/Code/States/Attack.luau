@@ -44,7 +44,7 @@ function Attack:ExitAttackState(agent)
 	end
 end
 
-function Attack:Update(agent, context)
+function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	if agent.data.forceExitState then
 		self:ExitAttackState(agent)
 		return ActionResult.Failed
@@ -82,8 +82,23 @@ function Attack:Update(agent, context)
 		return ActionResult.Success
 	end
 
-	-- 2. Smoothly rotate to face target
+	-- 1.4 Return early if not within attack range
 	local enemyPosition = target:GetPivot().Position
+	local minDist = agent.ai.factionData and agent.ai.factionData.MinAttackDistance
+	local maxDist = agent.ai.factionData and agent.ai.factionData.MaxAttackDistance
+
+	if minDist and maxDist then
+		local dist = (enemyPosition - agent.hrp.Position).Magnitude
+		if dist <= minDist or dist >= maxDist then
+			-- too far/close to target, change state to StayInValidRange
+			agent.ai.worldState:set("atSafeDistance", false)
+			self:ExitAttackState(agent)
+			return ActionResult.Success
+		end
+	end
+
+	-- 2. Smoothly rotate to face target
+
 	local dir = enemyPosition - agent.hrp.Position
 	if dir.Magnitude > 0.001 then
 		agent.targetAngle = MathUtils:PlayerVecToAngle(dir)

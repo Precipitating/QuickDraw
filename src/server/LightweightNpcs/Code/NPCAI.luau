@@ -1,4 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local StayInValidRange = require(ServerScriptService.Server.LightweightNpcs.Code.States.StayInValidRange)
 local Attack = require(script.Parent.States.Attack)
 local Patrol = require(script.Parent.States.Patrol)
 local Provoked = require(script.Parent.States.Provoked)
@@ -69,15 +71,17 @@ local seek = Action.new({
 		return Seek:Update(agent, context)
 	end,
 })
-
-local retreat = Action.new({
-	name = "Retreat",
+local stayWithinRange = Action.new({
+	name = "StayWithinRange",
 	cost = 1,
-	preconditions = { hasTarget = true, atSafeDistance = false },
+	preconditions = { atSafeDistance = false },
 	effects = { atSafeDistance = true },
 
-	executeFn = function(agent, context) end,
+	executeFn = function(agent, context)
+		return StayInValidRange:Update(agent, context)
+	end,
 })
+
 local provoked = Action.new({
 	name = "Provoked",
 	cost = 1,
@@ -89,7 +93,7 @@ local provoked = Action.new({
 	end,
 })
 
-planner:registerActions({ patrol, retreat, seek, attack, reload, provoked })
+planner:registerActions({ patrol, stayWithinRange, seek, attack, reload, provoked })
 
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]
@@ -101,6 +105,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			hasTarget = false,
 			lostTarget = false,
 			canShoot = true,
+
 			defaultState = npcData.DefaultStateName,
 		}),
 		perception = Perception.new({
@@ -121,6 +126,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		planner = planner,
 		currentTarget = nil,
 		lastSeenTarget = nil,
+		factionData = npcData,
 		defaultState = npcData.DefaultStateName,
 		defaultStateData = npcRecord.defaultStateData,
 		currentNavigationIndex = nil,
@@ -204,7 +210,16 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			return state:get("provoked")
 		end,
 	})
-	npcRecord.ai.goals = { patrolGoal, attackGoal, seekGoal, reloadGoal, provokedGoal }
+
+	local stayWithinRangeGoal = Goal.new({
+		name = "StayWithinRange",
+		desiredState = { atSafeDistance = true },
+		priority = 4,
+		isValidFn = function(state)
+			return not state:get("atSafeDistance")
+		end,
+	})
+	npcRecord.ai.goals = { patrolGoal, stayWithinRangeGoal, attackGoal, seekGoal, reloadGoal, provokedGoal }
 
 	local plan, selectedGoal = planner:planBestGoal(npcRecord.ai.worldState, npcRecord.ai.goals, npcRecord)
 	if plan.success then

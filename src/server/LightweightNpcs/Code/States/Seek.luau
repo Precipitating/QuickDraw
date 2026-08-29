@@ -12,8 +12,9 @@ function Seek:ExitSeekState(agent: LightweightNpcTypes.npcRecordType)
 	agent.ai.lastSeenTarget = nil
 	agent.configuration.walkSpeed = HumanConstants.WALKSPEED
 	agent.ai.currentNavigationData = nil
-	agent.busy = false
 	agent.ai.currentMoveIdx = 2
+	agent.busy = false
+
 	if not agent.legless then
 		agent:PlayAnimation("idle", false, 1, 1)
 	else
