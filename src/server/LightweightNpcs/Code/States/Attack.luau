@@ -91,6 +91,8 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		local dist = (enemyPosition - agent.hrp.Position).Magnitude
 		if dist <= minDist or dist >= maxDist then
 			-- too far/close to target, change state to StayInValidRange
+			Utility.Warn(`Target out of range, moving`)
+			agent.ai.lastSeenTarget = target
 			agent.ai.worldState:set("atSafeDistance", false)
 			self:ExitAttackState(agent)
 			return ActionResult.Success
@@ -143,6 +145,9 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 				debug.Size = Vector3.new(0.5, 0.5, 0.5)
 				debug.CanCollide = false
 				debug.CanQuery = false
+				task.delay(2, function()
+					debug:Destroy()
+				end)
 
 				if currentWeaponData.GunType == "Shotgun" then
 					NPCWeaponsClass:SpreadShot(agent, targetPos)

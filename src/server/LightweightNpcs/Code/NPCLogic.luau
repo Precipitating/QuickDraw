@@ -8,6 +8,7 @@ local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Pa
 local Provoked = require(ServerScriptService.Server.LightweightNpcs.Code.States.Provoked)
 local Reload = require(ServerScriptService.Server.LightweightNpcs.Code.States.Reload)
 local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
+local StayInValidRange = require(ServerScriptService.Server.LightweightNpcs.Code.States.StayInValidRange)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
@@ -250,7 +251,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 					-- apply this action's effects when all steps finished
 					for key, value in currentAction.effects._data do
 						ai.worldState:set(key, value)
-						print(`{key}, {value}`)
+						print(`Success state: {key}, {value}`)
 					end
 					ai.currentPlan = nil
 					ai.currentGoal = nil
@@ -258,9 +259,16 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				end
 			end
 		elseif result == ActionResult.Failed then
-			ai.currentPlan = nil
-			ai.currentGoal = nil
-			ai.currentActionIndex = 1
+			if ai.currentActionIndex > #ai.currentPlan.actions then
+				-- revert states
+				for key, value in currentAction.effects._data do
+					ai.worldState:set(key, not value)
+					print(`Failed state: {key}, {value}`)
+				end
+				ai.currentPlan = nil
+				ai.currentGoal = nil
+				ai.currentActionIndex = 1
+			end
 		elseif result == ActionResult.Running then
 			-- Continue running
 		end
@@ -461,23 +469,31 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 
 		npcRecord.data.lastBumped = now
 
+		local currentStateName = npcRecord.ai and npcRecord.ai.currentGoal and npcRecord.ai.currentGoal.name
+
+		if not currentStateName then
+			return
+		end
+
 		-- Attempt to get unstuck through random movements
 		npcRecord:Jump()
 		local ang = RandomModule.GetRandom() * math.pi * 2
 		npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
 
 		-- Retry a waypoint path
-		if npcRecord.ai.currentGoal.name == "Patrol" then
+		if currentStateName == "Patrol" then
 			local success = Patrol:TryGetNextPatrolWaypoint(npcRecord)
 			if not success then
 				Patrol:ExitPatrolState(npcRecord)
 			end
-		elseif npcRecord.ai.currentGoal.name == "Seek" and npcRecord.ai.lastSeenTarget then
+		elseif currentStateName == "Seek" and npcRecord.ai.lastSeenTarget then
 			local success = Seek:GeneratePathToLastSeenTarget(npcRecord, true)
 
 			if not success then
 				Seek:ExitSeekState(npcRecord)
 			end
+		elseif currentStateName == "StayWithinRange" then
+			StayInValidRange:GeneratePathWithinRange(npcRecord, true)
 		end
 	end)
 end

@@ -8,11 +8,11 @@ local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Patrol = {}
 
-function Patrol:ExitPatrolState(agent)
+function Patrol:ExitPatrolState(agent: LightweightNpcTypes.npcRecordType)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
 	agent.busy = false
-
+	agent.ai.currentNavigationData = nil
 	if not agent.legless then
 		agent:PlayAnimation("idle", false, 1, 1)
 	else

@@ -9,7 +9,6 @@ local Seek = {}
 function Seek:ExitSeekState(agent: LightweightNpcTypes.npcRecordType)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
-	agent.ai.lastSeenTarget = nil
 	agent.configuration.walkSpeed = HumanConstants.WALKSPEED
 	agent.ai.currentNavigationData = nil
 	agent.ai.currentMoveIdx = 2

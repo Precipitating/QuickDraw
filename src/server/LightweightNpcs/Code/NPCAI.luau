@@ -52,7 +52,7 @@ local reload = Action.new({
 local attack = Action.new({
 	name = "Attack",
 	cost = 1,
-	preconditions = { hasTarget = true },
+	preconditions = { hasTarget = true, atSafeDistance = true },
 	effects = { hasTarget = false },
 
 	executeFn = function(agent, context)
@@ -153,7 +153,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 				return true
 			end
 		else
-			return nil
+			return true
 		end
 	end)
 
@@ -172,7 +172,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { hasTarget = true },
 		priority = 1,
 		isValidFn = function(state)
-			return not state:get("hasTarget") and not npcRecord.ai.lastSeenTarget
+			return not state:get("hasTarget") and not npcRecord.ai.currentTarget
 		end,
 	})
 
@@ -181,7 +181,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { hasTarget = false },
 		priority = 3,
 		isValidFn = function(state)
-			return state:get("hasTarget")
+			return state:get("hasTarget") and state:get("atSafeDistance")
 		end,
 	})
 	local seekGoal = Goal.new({

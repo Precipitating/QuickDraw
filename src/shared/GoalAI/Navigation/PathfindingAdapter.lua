@@ -506,6 +506,7 @@ end
 function PathfindingAdapter:findFlankingPath(
 	currentPosition: Vector3,
 	targetPosition: Vector3,
+	targetDistance: number?,
 	preferLeft: boolean?
 ): (PathResult?, Vector3?)
 	local toTarget = (targetPosition - currentPosition)
@@ -514,7 +515,7 @@ function PathfindingAdapter:findFlankingPath(
 
 	-- Calculate flank positions
 	local flankAngle = math.rad(DEFAULT_FLANK_ANGLE)
-	local flankDistance = distance * 0.7
+	local flankDistance = targetDistance or distance * 0.7
 
 	local leftFlank = targetPosition
 		+ CFrame.fromAxisAngle(Vector3.yAxis, flankAngle):VectorToWorldSpace(-direction) * flankDistance
