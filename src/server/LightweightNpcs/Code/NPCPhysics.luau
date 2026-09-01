@@ -36,6 +36,9 @@ function NPCPhysics:Ragdoll(npcRecord: LightweightNpcTypes.npcRecordType, durati
 	-- Reset if duration
 	if duration then
 		task.delay(duration, function()
+			if npcRecord.npcState == NpcStateModule.Dying or npcRecord.hitPoints <= 0 then
+				return
+			end
 			npcRecord.npcState = NpcStateModule.Running
 			self:ToggleNPCCollision(npcRecord, false)
 		end)
@@ -51,16 +54,11 @@ function NPCPhysics:ApplyImpulse(npcRecord: LightweightNpcTypes.npcRecordType, i
 		return
 	end
 
-	local character = npcRecord.instance
-
-	local hrp: BasePart? = Utility.GetInstance(character, false, "HumanoidRootPart")
-
-	if not hrp then
-		Utility.Warn(`[ NPCPhysics:ApplyImpulse] Missing HRP`)
+	if npcRecord.npcState == NpcStateModule.Ragdolled then
 		return
 	end
 
-	hrp:ApplyImpulse(impulse)
+	npcRecord.knockbackVelocity = (npcRecord.knockbackVelocity or Vector3.zero) + impulse
 end
 
 return NPCPhysics

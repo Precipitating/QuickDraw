@@ -84,6 +84,7 @@ export type npcRecordType = {
 	currentWeaponAmmo: number,
 	storedThrowable: any?,
 	defaultStateData: any?,
+	knockbackVelocity: Vector3,
 
 	-- NPC AI conditions
 

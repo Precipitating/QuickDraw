@@ -2,10 +2,13 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerEffectsDisplayer = require(script.Parent.ServerEffectsDisplayer)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local NPCPhysics = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPhysics)
+local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ProjectileEvents = require(ServerScriptService.Server.ProjectilesHandler.ProjectileEvents)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local DestroyableData = require(ReplicatedStorage.Shared.DestroyableData)
+local NpcState = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 -- Destroyable environmental objects that may produce a unique effect
 local Destroyable = {}
 Destroyable.__index = Destroyable
@@ -44,20 +47,24 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	local parent = damagedObject.Parent
 	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
 	local humanClass = if humanoid then PlayerManager:GetHumanClass(humanoid) else nil
-
-	if not humanClass then
+	local npcClass = parent:GetAttribute("npcId") and LightweightNpcsServerAPI:GetNpcById(parent:GetAttribute("npcId"))
+	if not humanClass and not npcClass then
 		return
 	end
 
-	if humanClass.Dead then
+	if (humanClass and humanClass.Dead) or (npcClass and npcClass.npcState == NpcState.Dying) then
 		return
 	end
 
-	if humanoid:GetState() == Enum.HumanoidStateType.Ragdoll then
+	if
+		(humanoid and humanoid:GetState() == Enum.HumanoidStateType.Ragdoll)
+		or (npcClass and npcClass.npcState == NpcState.Ragdolled)
+	then
 		return
 	end
+	local force = 100
 
-	local root = humanClass.HRP
+	local root = if humanClass then humanClass.HRP else npcClass.hrp
 	if not root then
 		warn(`Destroyable:ApplyHumanExplosionImpulse missing HRP reference!`)
 		return
@@ -65,11 +72,15 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	local dir = (root.Position - self.ModelRef:GetPivot().Position)
 	local dirUpBias = (dir + vector.create(0, 3, 0)).Unit
 
-	local force = 100
-	local impulse = dirUpBias * force * root.AssemblyMass
-
-	humanClass:Ragdoll(3)
-	humanClass:ApplyImpulse(impulse)
+	if humanClass then
+		local impulse = dirUpBias * force * root.AssemblyMass
+		humanClass:Ragdoll(3)
+		humanClass:ApplyImpulse(impulse)
+	elseif npcClass then
+		local impulse = dirUpBias * force
+		NPCPhysics:ApplyImpulse(npcClass, impulse)
+		NPCPhysics:Ragdoll(npcClass, 3)
+	end
 end
 
 function Destroyable:ApplyRadiusDamage()
@@ -80,10 +91,16 @@ function Destroyable:ApplyRadiusDamage()
 	for _, obj in partsInRadius do
 		local hitHumanLimb = ProjectileEvents:BodyPartDamage(obj, self.DestroyableData, self.PlayerWhoDestroyed)
 		if hitHumanLimb then
-			local humanoid = if obj.Parent then obj.Parent:FindFirstChild("Humanoid") else nil
-			if humanoid and not humansHitAlready[humanoid] then
-				self:ApplyHumanExplosionImpulse(obj)
-				humansHitAlready[humanoid] = true
+			local parent = obj.Parent
+			if not parent then
+				return
+			end
+			-- Players only
+			if parent then
+				if not humansHitAlready[parent] then
+					self:ApplyHumanExplosionImpulse(obj)
+					humansHitAlready[parent] = true
+				end
 			end
 		end
 	end

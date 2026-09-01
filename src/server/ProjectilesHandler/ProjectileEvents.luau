@@ -116,7 +116,7 @@ function ProjectileEvents:GunHitDestroyable(hitData, context, raycastResult: Ray
 		return
 	end
 
-	local owner = context.UserData.Result
+	local owner = context.UserData.Owner
 
 	destroyableClass:Damage(hitData.Damage, owner or hitData.Owner)
 
@@ -442,7 +442,8 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 
 	local parent = damagedObject.Parent
 	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
-	local isBodyPart = damagedObject:IsA("MeshPart") and humanoid
+	local npcId = parent:GetAttribute("npcId")
+	local isBodyPart = damagedObject:IsA("MeshPart") and (humanoid or npcId)
 	local humanoidType = self:GetHumanoidType(parent)
 
 	local dmg = explosiveData.BaseDamage or explosiveData.Damage
@@ -455,7 +456,7 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 				effectDuration,
 				dmg,
 				damagedObject,
-				humanoid,
+				humanoid or npcId,
 				initiator,
 				humanoidType,
 				true
@@ -467,7 +468,7 @@ function ProjectileEvents:BodyPartDamage(damagedObject: BasePart?, explosiveData
 					1,
 					dmg,
 					damagedObject,
-					humanoid,
+					humanoid or npcId,
 					initiator,
 					humanoidType,
 					true

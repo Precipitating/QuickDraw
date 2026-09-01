@@ -110,7 +110,7 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	-- 3. Shoot at target
 
 	if agent.currentEquipped and not agent.legless then
-		agent:PlayAnimation("toolhold", false, 2, 1)
+		agent:PlayAnimation("toolhold", false, 2, 2)
 		agent.onPoseChange:Fire("toolhold", 2)
 	end
 

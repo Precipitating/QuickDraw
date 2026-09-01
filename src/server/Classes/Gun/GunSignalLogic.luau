@@ -116,6 +116,8 @@ return {
 
 			local targetClass = nil
 			local target = humanoidOrNpcId :: any
+
+			-- This only affects players as NPCs uses a different class
 			if humanoidType == "Human" then
 				targetClass = PlayerManager:GetHumanClass(target)
 					or LightweightNpcsServerAPI:GetNpcById(humanoidOrNpcId :: number)
@@ -137,6 +139,9 @@ return {
 				end
 			end
 
+			local shooterCharacter = if shooter and shooter:IsA("Player") then shooter.Character else shooter
+			local shotPos = shooterCharacter and shooterCharacter:GetPivot().Position
+
 			local shotData: ClassTypes.StatusDamage = {
 				Type = "Status",
 				SpreadParticle = spreadParticleName,
@@ -145,10 +150,12 @@ return {
 				TargetHuman = targetClass,
 				HumanoidType = humanoidType,
 				LimbHit = limb,
+				ShotPosition = shotPos,
 				Shooter = shooter,
 				CanAffectShooter = canAffectShooter,
 			}
 
+			-- If NPC..
 			if typeof(humanoidOrNpcId) == "number" then
 				targetClass.onHit:Fire(shotData)
 				return

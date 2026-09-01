@@ -12,7 +12,7 @@ local module = {}
 local castParams = RaycastParams.new()
 castParams.CollisionGroup = "NPC"
 castParams.RespectCanCollide = true
-
+local MAX_SWEEP_DISTANCE = 1000 -- stay safely under engine's 1024 cap
 export type NpcMover = {
 	HandleFallingState: (self: NpcMover, npcRecord: LightweightNpcTypes.npcRecordType, dt: number) -> (),
 	ProcessMotionVectorIntoVelocity: (self: NpcMover, npcRecord: LightweightNpcTypes.npcRecordType, dt: number) -> (),
@@ -31,7 +31,10 @@ local function SweepMove(
 	if mag < 0.001 then
 		return origin, nil
 	end
-
+	if mag > MAX_SWEEP_DISTANCE then
+		direction = direction.Unit * MAX_SWEEP_DISTANCE
+		mag = MAX_SWEEP_DISTANCE
+	end
 	local margin = 0.1
 	local castSize = Vector3.new(size.X - margin, size.Y - margin, size.Z - margin) -- Don't use small sizes!
 
@@ -62,7 +65,8 @@ function module:HandleFallingState(npcRecord: LightweightNpcTypes.npcRecordType,
 		npcRecord:ForceReplicate()
 	end
 
-	local velocity = npcRecord.velocity * dt
+	local totalVelocity = npcRecord.velocity + (npcRecord.knockbackVelocity or Vector3.zero)
+	local velocity = totalVelocity * dt
 
 	-- Sweep
 	local hitResults: RaycastResult?
@@ -131,14 +135,14 @@ end
 function module:HandleWalkingState(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	--Ground accelerate
 	self:ProcessMotionVectorIntoVelocity(npcRecord, dt)
-
 	--Facing
 	self:ProcessMotionIntoTargetAngle(npcRecord)
 
 	-- We have our velocity, see if we can update our position now
 	-- Remember we only move the pos to places confirmed by SweepMove
-	local velocity: Vector3 = npcRecord.velocity * dt
-	local desiredMag = Vector3.new(velocity.X, 0, velocity.Z).Magnitude
+	local totalVelocity = npcRecord.velocity + (npcRecord.knockbackVelocity or Vector3.zero)
+	local velocity: Vector3 = totalVelocity * dt
+	local desiredMag = velocity.Magnitude
 
 	if desiredMag > 0.001 then
 		local newPosition: Vector3
@@ -222,6 +226,8 @@ end
 
 function module:ProcessMovement(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 	assert(npcRecord.internal.deleteFlag == false)
+
+	npcRecord.knockbackVelocity = MathUtils:VelocityFriction(npcRecord.knockbackVelocity or Vector3.zero, 0.25, dt)
 
 	npcRecord.isOnGround = false
 

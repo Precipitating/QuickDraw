@@ -22,8 +22,8 @@ function StayInValidRange:ExitStayInValidRangeState(agent: LightweightNpcTypes.n
 	end
 end
 
-function StayInValidRange:GeneratePathWithinRange(agent: LightweightNpcTypes.npcRecordType, forceReset: boolean?)
-	if agent.ai.currentNavigationData and not forceReset then
+function StayInValidRange:GeneratePathWithinRange(agent: LightweightNpcTypes.npcRecordType)
+	if agent.ai.currentNavigationData then
 		return true
 	end
 	agent.busy = true

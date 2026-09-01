@@ -26,6 +26,11 @@ local function RagdollNPC(model: Model?, enabled: boolean)
 
 	if enabled then
 		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+		local hrp = model:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if hrp then
+			hrp.AssemblyLinearVelocity = Vector3.zero
+			hrp.AssemblyAngularVelocity = Vector3.zero
+		end
 	else
 		humanoid:ChangeState(Enum.HumanoidStateType.Running)
 	end

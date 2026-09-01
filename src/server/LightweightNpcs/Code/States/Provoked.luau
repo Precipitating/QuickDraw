@@ -18,6 +18,11 @@ function Provoked:Update(agent: LightweightNpcTypes.npcRecordType, context)
 
 	-- 1. Look towards shoot direction
 	local shotPos = agent.data.shotPosition
+	if not shotPos then
+		Utility.Warn(`Provoked state has no shot position`)
+		return ActionResult.Success
+	end
+
 	local dir = (shotPos - agent.position).Unit
 	agent.targetAngle = MathUtils:PlayerVecToAngle(dir)
 

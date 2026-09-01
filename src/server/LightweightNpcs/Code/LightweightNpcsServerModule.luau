@@ -440,6 +440,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		onDeath = SignalModule.new(),
 		onCleanup = SignalModule.new(),
 		onHit = SignalModule.new(),
+		knockbackVelocity = Vector3.zero,
 
 		onLimbHit = SignalModule.new(),
 		onDisableLimb = SignalModule.new(),

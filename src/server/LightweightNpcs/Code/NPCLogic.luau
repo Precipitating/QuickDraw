@@ -493,7 +493,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				Seek:ExitSeekState(npcRecord)
 			end
 		elseif currentStateName == "StayWithinRange" then
-			StayInValidRange:GeneratePathWithinRange(npcRecord, true)
+			-- Force a new path to be calculated
+			npcRecord.ai.currentNavigationData = nil
 		end
 	end)
 end
