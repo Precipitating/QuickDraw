@@ -1,9 +1,14 @@
+local PhysicsService = game:GetService("PhysicsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
+local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
 local Networker = require(ReplicatedStorage.Packages.Networker).server
@@ -133,6 +138,8 @@ function Inputs:AddBargeCollision(player: Player)
 	collider.CanQuery = false
 	collider.CanTouch = true
 	collider.Name = "BargeCollider"
+
+	collider.CollisionGroup = "Projectile"
 	collider.Transparency = 1
 	local weld: WeldConstraint = Instance.new("WeldConstraint")
 	weld.Name = "BargeWeld"
@@ -141,7 +148,6 @@ function Inputs:AddBargeCollision(player: Player)
 	weld.Parent = character
 
 	collider.CFrame = hrp.CFrame * CFrame.new(0, 0, -3)
-
 	collider.Parent = character
 
 	-- Destruction will remove the connection automatically
@@ -151,9 +157,17 @@ function Inputs:AddBargeCollision(player: Player)
 		end
 		local parent = hitPart.Parent
 		local hitPlayer = parent:FindFirstChild("Humanoid")
+		local hitNPC: LightweightNpcTypes.npcRecordType? = parent:GetAttribute("npcId")
+			and LightweightNpcsServerAPI:GetNpcById(parent:GetAttribute("npcId"))
+
+		-- Ignore if collider touches own player initiating barge
+		if parent == character then
+			warn(parent)
+			return
+		end
 
 		-- Hit environment
-		if not hitPlayer then
+		if not hitPlayer and not hitNPC then
 			local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
 			if not humanClass then
 				return
@@ -166,7 +180,9 @@ function Inputs:AddBargeCollision(player: Player)
 				CanAffectShooter = true,
 				Shooter = player,
 			} :: ClassTypes.BargeDamage
+
 			DamageModule.DamageHuman(data)
+
 			collider:Destroy()
 			weld:Destroy()
 			self.networker:fire(player, "StopBarge", "Environment")
@@ -174,13 +190,9 @@ function Inputs:AddBargeCollision(player: Player)
 			return
 		end
 
-		-- Ignore if collider touches own player initiating barge
-		if parent == character then
-			return
-		end
-
 		-- Hit a player, apply impulse and ragdoll
-		local humanClass = PlayerManager:GetHumanClass(hitPlayer)
+
+		local humanClass = PlayerManager:GetHumanClass(hitPlayer) or hitNPC
 
 		if not humanClass then
 			return
@@ -196,18 +208,31 @@ function Inputs:AddBargeCollision(player: Player)
 		local data = {
 			Damage = HumanConstants.BARGE_DAMAGE,
 			LimbHit = hitPart,
-			TargetHuman = humanClass,
+			TargetHuman = humanClass or hitNPC,
 			CanAffectShooter = false,
 			Shooter = player,
 		} :: ClassTypes.BargeDamage
 
-		if humanClass.Ragdoll then
-			humanClass:Ragdoll(5)
+		if hitPlayer then
+			if humanClass.Ragdoll then
+				humanClass:Ragdoll(5)
+			end
+			task.defer(function()
+				humanClass:ApplyImpulse(dir)
+			end)
+			DamageModule.DamageHuman(data)
+		elseif hitNPC then
+			local impulse = Vector3.new(0, 1, -2) * force
+			hitNPC.onImpulse:Fire(impulse)
+			hitNPC.onRagdoll:Fire(3)
+			hitNPC.onLimbHit:Fire(
+				HumanConstants.BARGE_DAMAGE,
+				LimbsEnum.UpperTorso,
+				hitNPC.hrp.Position,
+				-hitNPC.hrp.CFrame.LookVector,
+				player
+			)
 		end
-		task.defer(function()
-			humanClass:ApplyImpulse(dir)
-		end)
-		DamageModule.DamageHuman(data)
 
 		collider:Destroy()
 		weld:Destroy()

@@ -146,6 +146,7 @@ export type npcRecordType = {
 	onDismemberLimb: SignalModule.Signal,
 	onRagdoll: SignalModule.Signal,
 	onPoseChange: SignalModule.Signal,
+	onImpulse: SignalModule.Signal,
 	onHit: SignalModule.Signal,
 	onLimbHit: SignalModule.Signal,
 	onCrashland: SignalModule.Signal,

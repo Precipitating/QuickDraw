@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerEffectsDisplayer = require(script.Parent.ServerEffectsDisplayer)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local NPCPhysics = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPhysics)
 local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -47,7 +48,8 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	local parent = damagedObject.Parent
 	local humanoid = if parent then parent:FindFirstChild("Humanoid") else nil
 	local humanClass = if humanoid then PlayerManager:GetHumanClass(humanoid) else nil
-	local npcClass = parent:GetAttribute("npcId") and LightweightNpcsServerAPI:GetNpcById(parent:GetAttribute("npcId"))
+	local npcClass: LightweightNpcTypes.npcRecordType = parent:GetAttribute("npcId")
+		and LightweightNpcsServerAPI:GetNpcById(parent:GetAttribute("npcId"))
 	if not humanClass and not npcClass then
 		return
 	end
@@ -64,7 +66,7 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 	end
 	local force = 100
 
-	local root = if humanClass then humanClass.HRP else npcClass.hrp
+	local root = if humanClass then humanClass.HRP else npcClass and npcClass.hrp
 	if not root then
 		warn(`Destroyable:ApplyHumanExplosionImpulse missing HRP reference!`)
 		return
@@ -78,8 +80,8 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 		humanClass:ApplyImpulse(impulse)
 	elseif npcClass then
 		local impulse = dirUpBias * force
-		NPCPhysics:ApplyImpulse(npcClass, impulse)
-		NPCPhysics:Ragdoll(npcClass, 3)
+		npcClass.onImpulse:Fire(impulse)
+		npcClass.onRagdoll:Fire(3)
 	end
 end
 

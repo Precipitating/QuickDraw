@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LightweightNpcTypes = require(script.Parent.LightweightNpcTypes)
 
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
+local Zone = require(ReplicatedStorage.Shared.QuickZone.Classes.Zone)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local NPCPhysics = {}
 
@@ -54,9 +55,12 @@ function NPCPhysics:ApplyImpulse(npcRecord: LightweightNpcTypes.npcRecordType, i
 		return
 	end
 
-	if npcRecord.npcState == NpcStateModule.Ragdolled then
+	if npcRecord.npcState == NpcStateModule.Ragdolled or npcRecord.npcState == NpcStateModule.Dying then
 		return
 	end
+
+	npcRecord:Move(Vector3.zero)
+	npcRecord.velocity = Vector3.zero
 
 	npcRecord.knockbackVelocity = (npcRecord.knockbackVelocity or Vector3.zero) + impulse
 end

@@ -210,6 +210,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
 		-- Early exits
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
+			Utility.Warn("NPC should stop all actions")
 			return
 		end
 
@@ -457,8 +458,22 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		NPCPoses:ChangePose(npcRecord, poseName, channel)
 	end)
 
+	npcRecord.onImpulse:Connect(function(force: Vector3)
+		local lastImpulsed = npcRecord.data and npcRecord.data.lastImpulse
+		if lastImpulsed and lastImpulsed - os.clock() > 1 then
+			return
+		end
+		npcRecord.data.lastImpulse = os.clock()
+
+		NPCPhysics:ApplyImpulse(npcRecord, force)
+	end)
+
 	InitializeOnSpawn(npcRecord)
 	npcRecord.onBumpIntoWall:Connect(function(instance)
+		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
+			Utility.Warn("NPC should stop all actions")
+			return
+		end
 		local now = os.clock()
 		local lastBumped = npcRecord.data.lastBumped
 

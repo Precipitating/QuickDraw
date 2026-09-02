@@ -4,7 +4,7 @@ return {
 		Type = "Explosive",
 		HumanEffect = "Status",
 		Damage = 5,
-		Radius = 10,
+		Radius = 15,
 		SpreadParticle = "Burning",
 		SpreadDuration = 5,
 		DestroyParticle = "Explosion",

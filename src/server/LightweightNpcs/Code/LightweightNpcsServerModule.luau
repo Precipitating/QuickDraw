@@ -450,6 +450,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		onRagdoll = SignalModule.new(),
 		onCrashland = SignalModule.new(),
 		onCullCheck = SignalModule.new(),
+		onImpulse = SignalModule.new(),
 
 		PlayAnimation = PlayAnimation,
 		StopAnimationChannel = StopAnimationChannel,
@@ -525,6 +526,7 @@ function lightweightNpcsServerModule:DestroyNpc(npcRecord: LightweightNpcTypes.n
 	npcRecord.onDisableLimb:Destroy()
 	npcRecord.onDismemberLimb:Destroy()
 	npcRecord.onRagdoll:Destroy()
+	npcRecord.onImpulse:Destroy()
 	npcRecord.onHit:Destroy()
 	npcRecord.onPoseChange:Destroy()
 	npcRecord.onCrashland:Destroy()
