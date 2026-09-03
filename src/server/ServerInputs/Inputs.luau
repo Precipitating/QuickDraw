@@ -1,5 +1,6 @@
 local PhysicsService = game:GetService("PhysicsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
@@ -147,96 +148,99 @@ function Inputs:AddBargeCollision(player: Player)
 	weld.Part1 = collider
 	weld.Parent = character
 
-	collider.CFrame = hrp.CFrame * CFrame.new(0, 0, -3)
+	collider.CFrame = hrp.CFrame * CFrame.new(0, 0, -4)
 	collider.Parent = character
 
-	-- Destruction will remove the connection automatically
-	collider.Touched:Connect(function(hitPart: BasePart)
-		if not hitPart.Parent then
-			return
-		end
-		local parent = hitPart.Parent
-		local hitPlayer = parent:FindFirstChild("Humanoid")
-		local hitNPC: LightweightNpcTypes.npcRecordType? = parent:GetAttribute("npcId")
-			and LightweightNpcsServerAPI:GetNpcById(parent:GetAttribute("npcId"))
+	local onBargeHitConn = nil
+	local BargeOverlapParams = OverlapParams.new()
 
-		-- Ignore if collider touches own player initiating barge
-		if parent == character then
-			warn(parent)
+	BargeOverlapParams.ExcludeInstances = { character }
+
+	onBargeHitConn = RunService.Heartbeat:Connect(function()
+		if not collider or not collider.Parent then
+			onBargeHitConn:Disconnect()
 			return
 		end
 
-		-- Hit environment
-		if not hitPlayer and not hitNPC then
-			local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
-			if not humanClass then
+		local colliderTouched = workspace:GetPartsInPart(collider, BargeOverlapParams)
+
+		for _, hitPart in colliderTouched do
+			local parent = hitPart.Parent
+			if not parent then
+				continue
+			end
+			local hitPlayer = parent:FindFirstChild("Humanoid")
+			local hitNPC: LightweightNpcTypes.npcRecordType? = parent:GetAttribute("npcId")
+				and LightweightNpcsServerAPI:GetNpcById(parent:GetAttribute("npcId"))
+
+			-- Hit environment
+			if not hitPlayer and not hitNPC then
+				local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
+				if not humanClass then
+					return
+				end
+
+				local data = {
+					Type = "Barge",
+					Damage = HumanConstants.BARGE_DAMAGE,
+					LimbHit = character:FindFirstChild("UpperTorso"),
+					TargetHuman = humanClass,
+					CanAffectShooter = true,
+					Shooter = player,
+				} :: ClassTypes.BargeDamage
+
+				DamageModule.DamageHuman(data)
+
+				collider:Destroy()
+				weld:Destroy()
+				self.networker:fire(player, "StopBarge", "Environment")
 				return
 			end
 
+			-- Hit a player, apply impulse and ragdoll
+			local humanClass = PlayerManager:GetHumanClass(hitPlayer) or hitNPC
+			if not humanClass then
+				continue
+			end
+
+			local targetPos = (humanClass.HRP and humanClass.HRP.Position)
+				or (humanClass.hrp and humanClass.hrp.Position)
+			-- Get barge force
+			local force = HumanConstants.BARGE_FORCE
+			local rawDir = (targetPos - hrp.Position)
+			local flattenedDir = vector.create(rawDir.X, 0, rawDir.Z)
+			local pushDirection = flattenedDir.Unit
+			local dir: Vector3 = pushDirection * force
+
 			local data = {
+				Type = "Barge",
 				Damage = HumanConstants.BARGE_DAMAGE,
-				LimbHit = character:FindFirstChild("UpperTorso"),
-				TargetHuman = humanClass,
-				CanAffectShooter = true,
+				LimbHit = hitPart,
+				TargetHuman = humanClass or hitNPC,
+				CanAffectShooter = false,
 				Shooter = player,
 			} :: ClassTypes.BargeDamage
 
-			DamageModule.DamageHuman(data)
+			if hitPlayer then
+				dir *= hitPlayer.HRP.AssemblyMass
+				if humanClass.Ragdoll then
+					humanClass:Ragdoll(5)
+				end
+				task.defer(function()
+					humanClass:ApplyImpulse(dir)
+				end)
+				DamageModule.DamageHuman(data)
+			elseif hitNPC then
+				hitNPC.onHit:Fire(data)
+				hitNPC.onImpulse:Fire(dir * 5)
+				hitNPC.onRagdoll:Fire(5)
+			end
 
 			collider:Destroy()
 			weld:Destroy()
-			self.networker:fire(player, "StopBarge", "Environment")
-
-			return
+			self.networker:fire(player, "StopBarge", "Human")
+			break
 		end
-
-		-- Hit a player, apply impulse and ragdoll
-
-		local humanClass = PlayerManager:GetHumanClass(hitPlayer) or hitNPC
-
-		if not humanClass then
-			return
-		end
-
-		-- Get barge force
-		local force = HumanConstants.BARGE_FORCE
-		local rawDir = (humanClass.HRP.Position - hrp.Position)
-		local flattenedDir = vector.create(rawDir.X, 0, rawDir.Z)
-		local pushDirection = flattenedDir.Unit
-		local dir: Vector3 = pushDirection * force * humanClass.HRP.AssemblyMass
-
-		local data = {
-			Damage = HumanConstants.BARGE_DAMAGE,
-			LimbHit = hitPart,
-			TargetHuman = humanClass or hitNPC,
-			CanAffectShooter = false,
-			Shooter = player,
-		} :: ClassTypes.BargeDamage
-
-		if hitPlayer then
-			if humanClass.Ragdoll then
-				humanClass:Ragdoll(5)
-			end
-			task.defer(function()
-				humanClass:ApplyImpulse(dir)
-			end)
-			DamageModule.DamageHuman(data)
-		elseif hitNPC then
-			local impulse = Vector3.new(0, 1, -2) * force
-			hitNPC.onImpulse:Fire(impulse)
-			hitNPC.onRagdoll:Fire(3)
-			hitNPC.onLimbHit:Fire(
-				HumanConstants.BARGE_DAMAGE,
-				LimbsEnum.UpperTorso,
-				hitNPC.hrp.Position,
-				-hitNPC.hrp.CFrame.LookVector,
-				player
-			)
-		end
-
-		collider:Destroy()
-		weld:Destroy()
-		self.networker:fire(player, "StopBarge", "Human")
 	end)
 end
 

@@ -6,6 +6,7 @@ local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Attack = {}
 
@@ -124,10 +125,21 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	local lastShot = currTime - agent.ai.lastShot
 
 	-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! --
-	-- 3.2 If waited long enough, shoot
+	-- 3.2 If waited long enough, shoot (or throw)
 
 	if lastShot >= shotDelay then
 		if currentState == "combat" and detected then
+			local shouldThrow = RandomModule.GetRandom() <= 0.2
+			local targetPos = target:GetPivot().Position
+
+			if shouldThrow then
+				local thrown = NPCWeaponsClass:ThrowThrowable(agent, targetPos)
+				if thrown then
+					agent.data.lastThrown = os.clock()
+				end
+				return
+			end
+
 			-- 3.3 Get shoot position on server
 			local rightHand = agent.bodyParts[LimbsEnum.RightHand] and agent.bodyParts[LimbsEnum.RightHand].Part
 			if rightHand then
@@ -135,8 +147,6 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 				-- local muzzleOffset: CFrame = agent.data.muzzleOffset
 				-- local finalMuzzleCFrame = rightHandAttachment.WorldCFrame * muzzleOffset
 				agent.data.shootPoint = rightHandAttachment.WorldCFrame * CFrame.new(0, 0.5, -1)
-
-				local targetPos = target:GetPivot().Position
 
 				local debug = Instance.new("Part", workspace)
 				debug.Anchored = true

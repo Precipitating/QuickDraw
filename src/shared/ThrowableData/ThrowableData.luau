@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
-local isServer = game:GetService("RunService"):IsServer()
 local ThrowableData = {
 	Dynamite = {
 		Name = "Dynamite",
@@ -8,7 +7,7 @@ local ThrowableData = {
 		ThrowDelay = 5,
 		Damage = 40,
 		Cost = 100,
-		Velocity = 80,
+		Velocity = 100,
 		Description = "A loaded timed explosive of 3 seconds, doing 40 damage a pellet with 450 fragment counts.",
 		DetonationTime = 3,
 		FragmentCount = 450,

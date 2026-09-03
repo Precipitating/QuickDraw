@@ -2,7 +2,7 @@ return {
 
 	Sniper = {
 		WeaponName = "Winchester",
-		ThrowableName = "Dynamite",
+		ThrowableName = "Molotov",
 		MinAttackDistance = 20,
 		MaxAttackDistance = 200,
 		AttackCooldown = 1,
@@ -13,7 +13,7 @@ return {
 	},
 	Basic = {
 		WeaponName = "Revolver",
-		ThrowableName = "Molotov",
+		ThrowableName = "Dynamite",
 		MinAttackDistance = 10,
 		MaxAttackDistance = 100,
 		AttackCooldown = 0.5,

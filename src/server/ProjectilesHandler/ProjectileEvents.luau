@@ -899,7 +899,11 @@ function ProjectileEvents:Initialize()
 
 	ProjectileContext.VetraSignals.OnSegmentOpen:Connect(function(context, segment)
 		local serverProjectile = context.CosmeticBulletObject
+		local owner = context.UserData.Owner
 		if serverProjectile then
+			if owner and owner:HasTag("NPC") then
+				return
+			end
 			serverProjectile.Transparency = 1
 		end
 	end)

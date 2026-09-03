@@ -107,6 +107,7 @@ export type npcRecordType = {
 		currentNavigationData: any?,
 		factionData: {
 			WeaponName: string,
+			ThrowableName: string,
 			MinAttackDistance: number,
 			MaxAttackDistance: number,
 			AttackCooldown: number,

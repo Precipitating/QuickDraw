@@ -4,6 +4,7 @@ local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundH
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local GunsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.GunsEnum)
+local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local ThrowablesEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.ThrowablesEnum)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -13,6 +14,8 @@ local WeaponsFolder = ReplicatedStorage.Shared.Templates
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local GunRaycastParam = RaycastParams.new()
 GunRaycastParam.CollisionGroup = "Projectile"
+local ThrowableRaycastParam = RaycastParams.new()
+ThrowableRaycastParam.CollisionGroup = "Throwable"
 
 local NPCWeaponsClass = {}
 
@@ -69,7 +72,7 @@ function NPCWeaponsClass:SingleShot(agent: LightweightNpcTypes.npcRecordType, ta
 		RaycastParams = GunRaycastParam,
 	})
 
-	context.UserData.Owner = agent.instance
+	context.UserData.Owner = agent.serverRig
 	context.UserData.Damage = gunData.Damage
 	context.UserData.ProjectileType = "Bullet"
 	context.UserData.GunType = gunData.GunType
@@ -198,6 +201,82 @@ function NPCWeaponsClass:UnequipAll(npcRecord: LightweightNpcTypes.npcRecordType
 	npcRecord.currentEquipped = nil
 	npcRecord:StopAnimationChannel(2)
 	npcRecord:AddClientEvent({ id = "UnEquipAll" })
+end
+
+-- Get angle required for object to hit a position (if possible)
+function NPCWeaponsClass:GetThrowAngle(origin, target, velocity)
+	local diff = target - origin
+	local horizontalDist = vector.magnitude(vector.create(diff.X, 0, diff.Z))
+	local verticalDist = diff.Y
+	local v2 = velocity * velocity
+	local g = workspace.Gravity
+
+	local discriminant = v2 * v2 - g * (g * horizontalDist * horizontalDist + 2 * verticalDist * v2)
+	if discriminant < 0 then
+		return nil, nil -- target out of range for this velocity
+	end
+
+	-- two solutions, low arc and high arc
+	local lowArc = math.atan((v2 - math.sqrt(discriminant)) / (g * horizontalDist))
+	local highArc = math.atan((v2 + math.sqrt(discriminant)) / (g * horizontalDist))
+
+	return lowArc, highArc -- in radians
+end
+
+function NPCWeaponsClass:Throw(
+	npcRecord: LightweightNpcTypes.npcRecordType,
+	throwableData: any,
+	cameraLookVector: Vector3
+)
+	if not throwableData then
+		return false
+	end
+
+	local head = npcRecord.bodyParts[LimbsEnum.Head] and npcRecord.bodyParts[LimbsEnum.Head].Part
+	if not head then
+		return false
+	end
+
+	local launchPos = head.Position + vector.create(0, 2, 0)
+
+	local context = ProjectileContext.BulletContext.new({
+		Origin = launchPos,
+		Direction = cameraLookVector,
+		Speed = throwableData.Velocity,
+		RaycastParams = ThrowableRaycastParam,
+	})
+
+	context.UserData.Class = npcRecord
+	context.UserData.Owner = npcRecord.serverRig
+	context.UserData.ProjectileType = "Throwable"
+	context.UserData.Data = throwableData
+
+	ProjectileContext.Solver:Fire(context, throwableData.ProjectileData)
+
+	return true
+end
+function NPCWeaponsClass:ThrowThrowable(npcRecord: LightweightNpcTypes.npcRecordType, targetPos)
+	local throwableData = ThrowableData[npcRecord.ai.factionData and npcRecord.ai.factionData.ThrowableName]
+	if not throwableData then
+		return false
+	end
+	-- Throw cooldown
+	if npcRecord.data.lastThrown and (os.clock() - npcRecord.data.lastThrown <= throwableData.ThrowDelay) then
+		return false
+	end
+
+	local origin = npcRecord.bodyParts[LimbsEnum.RightHand].Part.Position
+
+	local lowArc, _ = self:GetThrowAngle(origin, targetPos, throwableData.Velocity)
+	if not lowArc then
+		return false
+	end
+
+	local toTargetDir = (targetPos - origin).Unit
+	local throwDirection = (CFrame.new(Vector3.zero, toTargetDir) * CFrame.Angles(lowArc, 0, 0)).LookVector
+
+	local thrown = self:Throw(npcRecord, throwableData, throwDirection)
+	return thrown
 end
 
 return NPCWeaponsClass

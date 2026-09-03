@@ -105,7 +105,6 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			hasTarget = false,
 			lostTarget = false,
 			canShoot = true,
-
 			defaultState = npcData.DefaultStateName,
 		}),
 		perception = Perception.new({

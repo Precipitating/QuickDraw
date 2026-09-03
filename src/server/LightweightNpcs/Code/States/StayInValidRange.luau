@@ -85,10 +85,10 @@ function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, conte
 	local currentDist = (targetPos - currentPos).Magnitude
 
 	-- -- 1. If within range return early
-	-- if currentDist < npcData.MaxAttackDistance and currentDist > npcData.MinAttackDistance then
-	-- 	self:ExitStayInValidRangeState(agent)
-	-- 	return ActionResult.Success
-	-- end
+	if currentDist < npcData.MaxAttackDistance and currentDist > npcData.MinAttackDistance then
+		self:ExitStayInValidRangeState(agent)
+		return ActionResult.Success
+	end
 
 	-- 2. Set path to be in range if not set
 	local success = self:GeneratePathWithinRange(agent)

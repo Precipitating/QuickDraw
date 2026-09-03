@@ -83,6 +83,15 @@ local function AddWantedTag(npcRecord: LightweightNpcTypes.npcRecordType, attack
 	end
 end
 
+local function ResetToDefaultState(npcRecord: LightweightNpcTypes.npcRecordType)
+	local defaultState = npcRecord.ai.worldState:get("defaultState")
+
+	if defaultState == "Patrol" then
+		npcRecord.ai.worldState:set("hasTarget", false)
+		npcRecord.ai.currentTarget = nil
+	end
+end
+
 function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)
 	local canAffectShooter: boolean? = gunShotData.CanAffectShooter
 	local raycastResult: RaycastResult = gunShotData.RaycastResult
@@ -107,6 +116,27 @@ function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gun
 end
 local function IsLimbOut(limb)
 	return limb.State == "Dismembered" or limb.State == "Disabled"
+end
+
+function NPCLogic:HitByBarge(npcRecord: LightweightNpcTypes.npcRecordType, bargeData: ClassTypes.BargeDamage)
+	local damage: number? = bargeData.Damage
+	local limb: BasePart? = bargeData.LimbHit
+	local attacker: Player? | Model? = bargeData.Shooter
+	if not limb then
+		Utility.Warn(`Barge Dmg missing limb hit ref`)
+		return
+	end
+
+	local limbEnum = LimbsEnum[limb.Name]
+	-- Don't hit himself
+	if attacker == npcRecord.instance then
+		return
+	end
+
+	-- Add wanted tag if hit sheriff
+	AddWantedTag(npcRecord, attacker)
+
+	npcRecord.onLimbHit:Fire(damage, limbEnum, nil, nil, attacker)
 end
 
 function NPCLogic:AffectLimbAndChildren(
@@ -211,6 +241,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		-- Early exits
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
 			Utility.Warn("NPC should stop all actions")
+			npcRecord:Move(Vector3.zero)
+			npcRecord.velocity = Vector3.zero
 			return
 		end
 
@@ -232,6 +264,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 
 		if not ai.currentPlan or not ai.currentPlan.success then
+			ResetToDefaultState(npcRecord)
 			return -- nothing achievable right now
 		end
 
@@ -369,6 +402,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				self:HitByGunshot(npcRecord, damageData)
 			elseif damageType == "Status" then
 				self:HitByStatusBullet(npcRecord, damageData)
+			elseif damageType == "Barge" then
+				self:HitByBarge(npcRecord, damageData)
 			end
 
 			if character then
