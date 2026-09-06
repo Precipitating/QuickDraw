@@ -154,6 +154,7 @@ function SpawnHandler:SpawnPlayer(player: Player, loadCharacter: boolean?)
 	local jailed = CollectionService:HasTag(player, "Jailed")
 	if not jailed and ServerData:IsJailed(player) then
 		CollectionService:AddTag(player, "Jailed")
+		CollectionService:RemoveTag(player, "Wanted")
 	end
 
 	if CollectionService:HasTag(player, "Jailed") then

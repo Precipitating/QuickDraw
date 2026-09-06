@@ -17,6 +17,7 @@ function ClientData.Initialize()
 		SoundManager.PlayKeyed("UI", "SmokeDetector")
 	end)
 	CurrencyText.Text = `${DataService:get("currency")}`
+	ClientData.WaitForData()
 end
 
 function ClientData.WaitForData()

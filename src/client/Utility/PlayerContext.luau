@@ -388,7 +388,6 @@ function PlayerContext:SetupCameraShake()
 end
 
 function PlayerContext:Initialize()
-	ClientData.WaitForData()
 	-- Needs reinitializing on respawn
 	Player.CharacterAdded:Connect(function(character: Model)
 		self.OnCharacterAdded(Player, character)

@@ -135,15 +135,33 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 	end
 
 	local character = limbPart.Parent
-	if not character:FindFirstChildOfClass("Humanoid") then
+	local isPlayer = character:FindFirstChild("Humanoid")
+	local isNPC = character:GetAttribute("npcId")
+
+	if not isPlayer and not isNPC then
 		return
 	end
 
-	local hitPlayer = Players:GetPlayerFromCharacter(character)
+	local hitPlayer = if isPlayer
+		then Players:GetPlayerFromCharacter(character)
+		else LightweightNpcsServerAPI:GetNpcById(isNPC)
 
 	local rayParams = RaycastParams.new()
 	rayParams.FilterDescendantsInstances = { character }
 	rayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+	-- Redirect to the replicated storage NPC model if hits NPC for auto replication
+	if isNPC then
+		limbPart = hitPlayer.instance:FindFirstChild(limbPart.Name)
+
+		if not limbPart then
+			return
+		end
+	end
+
+	if limbPart:FindFirstChildOfClass("RopeConstraint") then
+		return
+	end
 
 	-- hit.Normal points back at the shooter, so negate it to get travel direction
 	local travelDir = -hit.Normal
@@ -201,7 +219,7 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 		end
 	end
 
-	if hitPlayer then
+	if isPlayer and hitPlayer then
 		HumanNetwork:ToggleBackpackVisibility(hitPlayer, false, true)
 	end
 
@@ -212,11 +230,11 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 	end
 	local limbAttach = Instance.new("Attachment")
 	limbAttach.Parent = limbPart
-	limbAttach.WorldPosition = hit.Position
+	--limbAttach.WorldPosition = hit.Position
 
 	local endAttach = Instance.new("Attachment")
 	endAttach.Parent = anchorInstance
-	endAttach.WorldPosition = anchorPos
+	--endAttach.WorldPosition = anchorPos
 
 	-- ── Rope ─────────────────────────────────────────────────────────────
 
@@ -229,6 +247,10 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 	rope.Thickness = 0.2
 	rope.Parent = limbPart
 
+	if isNPC then
+		hitPlayer.onRagdoll:Fire(duration)
+	end
+
 	task.delay(duration, function()
 		if limbAttach and limbAttach.Parent then
 			limbAttach:Destroy()
@@ -239,7 +261,7 @@ function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: numbe
 		if rope and rope.Parent then
 			rope:Destroy()
 		end
-		if hitPlayer then
+		if hitPlayer and isPlayer then
 			HumanNetwork:ToggleBackpackVisibility(hitPlayer, true, false)
 		end
 	end)
@@ -268,6 +290,9 @@ function ProjectileEvents:GetHumanoidType(parent)
 end
 
 function ProjectileEvents:FragmentHitHumanoid(raycastResult: RaycastResult, context)
+	if not raycastResult.Instance then
+		return false
+	end
 	local isModel = raycastResult.Instance:FindFirstAncestorOfClass("Model")
 	if not isModel then
 		return false
@@ -305,17 +330,14 @@ function ProjectileEvents:FragmentHitHumanoid(raycastResult: RaycastResult, cont
 			humanoidType,
 			true
 		)
-
-		-- special effects add-on
-		task.spawn(function()
-			if throwableData.Subtype and throwableData.SubtypeEffectDuration then
-				self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, raycastResult)
-			end
-		end)
-
-		return true
 	end
-	return false
+	-- special effects add-on
+	task.spawn(function()
+		if throwableData.Subtype and throwableData.SubtypeEffectDuration then
+			self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, raycastResult)
+		end
+	end)
+	return true
 end
 local function RandomConeDirection(BaseDirection: vector, HalfAngleDeg: number): vector
 	local HalfAngleRad = math_rad(HalfAngleDeg)
@@ -404,11 +426,11 @@ function ProjectileEvents:FragmentHitHumanNPC(hit: RaycastResult, context)
 	end
 
 	-- 	-- special effects add-on
-	-- 	task.spawn(function()
-	-- 		if throwableData.Subtype and throwableData.SubtypeEffectDuration then
-	-- 			self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
-	-- 		end
-	-- 	end)
+	task.spawn(function()
+		if throwableData.Subtype and throwableData.SubtypeEffectDuration then
+			self:HandleSubTypes(throwableData.Subtype, throwableData.SubtypeEffectDuration, hit)
+		end
+	end)
 
 	return true
 end

@@ -92,6 +92,21 @@ local function ResetToDefaultState(npcRecord: LightweightNpcTypes.npcRecordType)
 	end
 end
 
+function NPCLogic:ApplyBulletEffects(npcRecord: LightweightNpcTypes.npcRecordType, bulletObject: BasePart)
+	if not bulletObject or not npcRecord then
+		Utility.Warn(`Cannot apply bullet effect to NPC, missing valid arg`)
+		return
+	end
+
+	if bulletObject:HasTag("CannonBall") then
+		local force = 150
+		local dir: Vector3 = (npcRecord.serverRig:GetPivot().Position - bulletObject.Position).Unit * force
+		print("Impulse dir:", dir, "| Magnitude:", dir.Magnitude)
+		npcRecord.onImpulse:Fire(dir)
+		npcRecord.onRagdoll:Fire(5)
+	end
+end
+
 function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gunShotData: ClassTypes.GunShotDamage)
 	local canAffectShooter: boolean? = gunShotData.CanAffectShooter
 	local raycastResult: RaycastResult = gunShotData.RaycastResult
@@ -113,6 +128,8 @@ function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gun
 	AddWantedTag(npcRecord, attacker)
 
 	npcRecord.onLimbHit:Fire(damage, limbEnum, raycastResult.Position, raycastResult.Normal, attacker)
+
+	self:ApplyBulletEffects(npcRecord, gunShotData.CosmeticBulletObject)
 end
 local function IsLimbOut(limb)
 	return limb.State == "Dismembered" or limb.State == "Disabled"
@@ -495,10 +512,13 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 
 	npcRecord.onImpulse:Connect(function(force: Vector3)
 		local lastImpulsed = npcRecord.data and npcRecord.data.lastImpulse
-		if lastImpulsed and lastImpulsed - os.clock() > 1 then
+		local now = os.clock()
+
+		if lastImpulsed and now - lastImpulsed < 1 then
 			return
 		end
-		npcRecord.data.lastImpulse = os.clock()
+
+		npcRecord.data.lastImpulse = now
 
 		NPCPhysics:ApplyImpulse(npcRecord, force)
 	end)

@@ -161,7 +161,7 @@ function HumanPlayer:InitializeWeaponLoadout()
 	local savedTrapData = ServerData.GetTrapData(self.Player)
 
 	-- Gun
-	self.Inventory:AddWeaponToInventory(savedGunName or "Revolver")
+	self.Inventory:AddWeaponToInventory("CannonGun") --savedGunName or "Revolver")
 	self.Inventory:EquipWeapon("Gun")
 
 	-- self.Inventory:AddWeaponToInventory(
@@ -169,11 +169,12 @@ function HumanPlayer:InitializeWeaponLoadout()
 	-- 	savedThrowableData and savedThrowableData.Ammo or 9
 	-- )
 
-	self.Inventory:AddWeaponToInventory("Dynamite", 100)
+	self.Inventory:AddWeaponToInventory("HookGrenade", 100)
+
 	self.Inventory:EquipWeapon("Throwable")
 
-	-- self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
-	-- self.Inventory:EquipWeapon("Trap")
+	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
+	self.Inventory:EquipWeapon("Trap")
 
 	-- if savedThrowableData then
 	-- 	-- Throwable

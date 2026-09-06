@@ -5,10 +5,13 @@ local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableDa
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
+local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local TrapPlaceables = ReplicatedStorage.Shared.Templates.Traps
 
 local TRAP_PLACE_STUDS_FORWARD = 5
@@ -51,13 +54,14 @@ local TrapActivatedLogic = {
 		_: ClassTypes.Human?,
 		trapModel: Model?,
 		hitPart: BasePart | MeshPart,
-		hitHuman: Human,
+		hitHuman: any?,
 		trapData
 	)
 		local activateSound = trapData.TrapActivatedSoundName
 		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame.Position)
 
 		local data = {
+			Type = "Trap",
 			Damage = trapData.Damage,
 			LimbHit = hitPart,
 			TargetHuman = hitHuman,
@@ -68,8 +72,10 @@ local TrapActivatedLogic = {
 
 		if hitHuman and hitHuman.Player then
 			ServerScreenEffects:ApplyOneShotEffect(hitHuman.Player, "BearTrapInjury")
+			hitHuman:Ragdoll(5)
+		elseif hitHuman.instance then
+			hitHuman.onRagdoll:Fire(5)
 		end
-		hitHuman:Ragdoll(5)
 
 		if trapModel then
 			trapModel:Destroy()
@@ -80,7 +86,7 @@ local TrapActivatedLogic = {
 		trapOwner: ClassTypes.Human,
 		trapModel: BasePart,
 		hitPart: BasePart | MeshPart,
-		hitHuman: Human,
+		hitHuman: any?,
 		trapData
 	)
 		local activateSound = trapData.TrapActivatedSoundName
@@ -112,7 +118,7 @@ local TrapActivatedLogic = {
 		trapOwner: ClassTypes.Human,
 		trapModel: Model,
 		hitPart: BasePart | MeshPart,
-		hitHuman: Human,
+		hitHuman: any?,
 		trapData
 	)
 		if not trapModel or not hitHuman or not trapData then
@@ -127,13 +133,22 @@ local TrapActivatedLogic = {
 			return
 		end
 
+		-- Is NPC, get replicated storage limb for auto replication to client
+		if hitHuman.instance then
+			hitPart = hitHuman.instance:FindFirstChild(hitPart.Name)
+		end
+
 		-- 1 Connect rope from ceiling to hit player part
 		local trapDuration = trapData.Duration
 		-- 1.1 Define hit part attachment
 		-- Limb should have an attachment already, doesn't matter which
 		local limbAttachment = hitPart:FindFirstChildOfClass("Attachment")
 		if not limbAttachment then
-			warn("[RopeTrap] Limb or hit part has no attachment")
+			Utility.Warn("[RopeTrap] Limb or hit part has no attachment")
+			return
+		end
+
+		if hitPart:FindFirstChildOfClass("RopeConstraint") then
 			return
 		end
 
@@ -162,7 +177,11 @@ local TrapActivatedLogic = {
 		end
 
 		-- 3 Ragdoll & destroy
-		hitHuman:Ragdoll(trapDuration)
+		if hitHuman then
+			hitHuman:Ragdoll(trapDuration)
+		else
+			hitHuman.onRagdoll:Fire(trapDuration)
+		end
 		task.delay(trapDuration, function()
 			rope:Destroy()
 			ceilingAttachment:Destroy()
@@ -245,13 +264,15 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 			return
 		end
 
-		local hitHumanoid = hitParent:FindFirstChild("Humanoid")
+		local hitPlayer = hitParent:FindFirstChild("Humanoid")
+		local hitNPC = hitParent:GetAttribute("npcId")
+			and LightweightNpcsServerAPI:GetNpcById(hitParent:GetAttribute("npcId"))
 
-		if not hitHumanoid then
+		if not hitPlayer or not hitNPC then
 			return
 		end
 
-		local hitHuman = HumanRegistry:Get(hitHumanoid)
+		local hitHuman = if hitPlayer then HumanRegistry:Get(hitPlayer) else hitNPC
 
 		if not hitHuman then
 			warn("Trap cannot activate, whatever triggered has no human class")
