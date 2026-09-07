@@ -511,7 +511,10 @@ function lightweightNpcsServerModule:DestroyNpc(npcRecord: LightweightNpcTypes.n
 		npcRecord.serverRig:Destroy()
 	end
 
-	npcRecord.janitor:Destroy()
+	if npcRecord.janitor then
+		npcRecord.janitor:Destroy()
+	end
+
 	self.npcRecords[npcRecord.npcId] = nil
 
 	if self.RemoteEvent then

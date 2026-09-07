@@ -15,10 +15,12 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local GunsFolder = ReplicatedStorage.Shared.Templates
 local BloodFlowEmitter = ReplicatedStorage.Shared.Templates.BloodFlow
 
-local function RagdollNPC(model: Model?, enabled: boolean)
-	if not model then
+local function RagdollNPC(npcRecord: ClientNpcTypes.clientNpcRecordType, enabled: boolean)
+	if not npcRecord then
 		return
 	end
+
+	local model = npcRecord.instance
 	local humanoid: Humanoid? = model:FindFirstChild("Humanoid") :: Humanoid?
 	if not humanoid then
 		return
@@ -37,20 +39,36 @@ local function RagdollNPC(model: Model?, enabled: boolean)
 	humanoid:Move(Vector3.zero)
 	local isDead = humanoid:GetState() == Enum.HumanoidStateType.Dead
 
-	for _, part in model:GetDescendants() do
-		if part:IsA("AnimationConstraint") then
-			part.Enabled = not enabled
-		elseif part:IsA("BallSocketConstraint") and isDead then
-			part.MaxFrictionTorque = 10
-		end
+	if isDead then
+		return
+	end
 
-		if part:IsA("BasePart") then
-			part.CollisionGroup = if enabled then "Ragdoll" else "NPC"
+	local gun = model:FindFirstChildOfClass("Tool")
 
-			if part.Parent and part.Parent:IsA("Tool") then
-				part.CanCollide = not enabled
+	if gun then
+		for _, part in gun:GetChildren() do
+			if not part:IsA("BasePart") then
+				continue
 			end
+			part.CanCollide = not enabled
 		end
+	end
+
+	for limbID, part in npcRecord.bodyParts do
+		if npcRecord.disabledLimbs[limbID] then
+			continue
+		end
+
+		local animConstraint: AnimationConstraint? = part:FindFirstChildOfClass("AnimationConstraint")
+		local ballSocketConstraint: BallSocketConstraint? = part:FindFirstChildOfClass("BallSocketConstraint")
+
+		if animConstraint then
+			animConstraint.Enabled = not enabled
+		end
+		if ballSocketConstraint then
+			ballSocketConstraint.MaxFrictionTorque = if enabled then 0 else 10
+		end
+		part.CollisionGroup = if enabled then "Ragdoll" else "NPC"
 	end
 end
 
@@ -74,11 +92,11 @@ local function SetupNPCRagdoll(npcRecord: ClientNpcTypes.clientNpcRecordType)
 
 	humanoid.StateChanged:Connect(function(previous: Enum.HumanoidStateType, new: Enum.HumanoidStateType)
 		if new == Enum.HumanoidStateType.Physics then
-			RagdollNPC(model, true)
+			RagdollNPC(npcRecord, true)
 			return
 		end
 		if previous == Enum.HumanoidStateType.Physics then
-			RagdollNPC(model, false)
+			RagdollNPC(npcRecord, false)
 			return
 		end
 	end)
@@ -353,6 +371,8 @@ local StateEvents = {
 			if isBleeding then
 				isBleeding.Enabled = false
 			end
+
+			npcRecord.disabledLimbs[limbId] = false
 		end
 	end,
 
@@ -437,6 +457,8 @@ local StateEvents = {
 		ballSocketConstraint.LimitsEnabled = false
 		ballSocketConstraint.MaxFrictionTorque = 0
 
+		npcRecord.disabledLimbs[partToDisable] = true
+
 		-- Chain disable
 		local hasChain = CommonNPCData.LIMB_CHAIN[partToDisable]
 		if hasChain then
@@ -452,6 +474,8 @@ local StateEvents = {
 					childBallSocketConstraint.LimitsEnabled = false
 					childBallSocketConstraint.MaxFrictionTorque = 0
 				end
+
+				npcRecord.disabledLimbs[partID] = true
 			end
 		end
 	end,
@@ -522,7 +546,15 @@ local StateEvents = {
 			return
 		end
 
-		RagdollNPC(model, true)
+		local humanoid = model:FindFirstChild("Humanoid")
+
+		if not humanoid then
+			Utility.Warn(`Cannt ragdoll, missing humanoid`)
+			return
+		end
+
+		Utility.Warn(`NPC SHOULD RAGDOLL`)
+		RagdollNPC(npcRecord, true)
 
 		if not duration then
 			return
@@ -532,7 +564,10 @@ local StateEvents = {
 			if not model or npcRecord.isDead then
 				return
 			end
-			RagdollNPC(model, false)
+
+			Utility.Warn(`NPC STOP RAGDOLL`)
+
+			RagdollNPC(npcRecord, false)
 		end)
 	end,
 }

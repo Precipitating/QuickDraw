@@ -44,6 +44,10 @@ function Inputs:ConnectSprint(input: InputObject)
 			return
 		end
 
+		if PlayerContext.IsBusy then
+			return
+		end
+
 		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 and not PlayerContext.Humanoid.Sit then
 			if PlayerContext.IsMoving then
 				self.networker:fire("ToggleSprint", true)
@@ -75,7 +79,7 @@ function Inputs:ConnectRoll(input: InputObject)
 			return
 		end
 
-		if PlayerContext.IsCharging then
+		if PlayerContext.IsBusy then
 			return
 		end
 
@@ -131,6 +135,10 @@ end
 function Inputs:ConnectOnJump()
 	UserInputService.JumpRequest:Connect(function()
 		if not PlayerContext.CanJump then
+			return
+		end
+
+		if PlayerContext.IsBusy then
 			return
 		end
 		PlayerContext.CanJump = false

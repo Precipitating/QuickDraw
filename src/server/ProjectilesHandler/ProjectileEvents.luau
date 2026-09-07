@@ -828,7 +828,7 @@ function ProjectileEvents:OnProjectileHitReceiveServer(context, result: RaycastR
 	elseif data.ProjectileType == "Throwable" then
 		local throwableData = data.Data
 
-		self:HandleThrowableLanding(throwableData, result, data.Class.Owner, function(hitPos)
+		self:HandleThrowableLanding(throwableData, result, data.Class.Owner or data.Owner, function(hitPos)
 			if cosmeticBullet then
 				cosmeticBullet:Destroy()
 			end

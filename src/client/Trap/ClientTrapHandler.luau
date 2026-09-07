@@ -32,7 +32,7 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 	end
 
 	humanoid.WalkSpeed = 0
-
+	PlayerContext.IsBusy = true
 	local placeAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("PlaceDownTrap")
 	local placeMarkerConn = placeAnim:GetMarkerReachedSignal("Placed"):Once(function()
 		if humanoid.Health >= 0 then
@@ -55,6 +55,7 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 
 	--
 	placeAnim.Stopped:Once(function()
+		PlayerContext.IsBusy = false
 		if placeMarkerConn then
 			placeMarkerConn:Disconnect()
 		end

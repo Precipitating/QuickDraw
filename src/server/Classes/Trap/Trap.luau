@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -6,6 +7,7 @@ local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
+local Attack = require(ServerScriptService.Server.LightweightNpcs.Code.States.Attack)
 local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffects)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
@@ -16,6 +18,7 @@ local TrapPlaceables = ReplicatedStorage.Shared.Templates.Traps
 
 local TRAP_PLACE_STUDS_FORWARD = 5
 local TRAP_PLACE_STUDS_DOWN = 10
+local CHECK_RATE = 0.1 -- 10 times/sec
 
 local function TrapPlacementHasRoof(
 	origin: Vector3,
@@ -51,7 +54,7 @@ end
 
 local TrapActivatedLogic = {
 	BearTrap = function(
-		_: ClassTypes.Human?,
+		trapOwner: ClassTypes.Human?,
 		trapModel: Model?,
 		hitPart: BasePart | MeshPart,
 		hitHuman: any?,
@@ -65,15 +68,16 @@ local TrapActivatedLogic = {
 			Damage = trapData.Damage,
 			LimbHit = hitPart,
 			TargetHuman = hitHuman,
+			Shooter = trapOwner,
 			CanAffectShooter = false,
 		} :: ClassTypes.TrapDamage
 
-		DamageModule.DamageHuman(data)
-
 		if hitHuman and hitHuman.Player then
+			DamageModule.DamageHuman(data)
 			ServerScreenEffects:ApplyOneShotEffect(hitHuman.Player, "BearTrapInjury")
 			hitHuman:Ragdoll(5)
 		elseif hitHuman.instance then
+			hitHuman.onHit:Fire(data)
 			hitHuman.onRagdoll:Fire(5)
 		end
 
@@ -254,33 +258,48 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 
 	local trapOwner = self.Owner
 	local hitCollisionConn = nil
-	hitCollisionConn = trapCollider.Touched:Connect(function(hitPart: BasePart)
-		if not TrapActivatedLogic[trapName] then
+	local accumulator = 0
+
+	hitCollisionConn = RunService.Heartbeat:Connect(function(dt: number)
+		accumulator += dt
+
+		if accumulator < CHECK_RATE then
 			return
 		end
 
-		local hitParent = hitPart and hitPart.Parent
-		if not hitParent then
+		accumulator -= CHECK_RATE
+
+		local partsHit = workspace:GetPartsInPart(trapCollider)
+
+		for _, partHit in partsHit do
+			if not TrapActivatedLogic[trapName] then
+				return
+			end
+
+			local hitParent = partHit and partHit.Parent
+			if not hitParent then
+				return
+			end
+
+			local hitPlayer = hitParent:FindFirstChild("Humanoid")
+			local hitNPC = hitParent:GetAttribute("npcId")
+				and LightweightNpcsServerAPI:GetNpcById(hitParent:GetAttribute("npcId"))
+
+			if not hitPlayer and not hitNPC then
+				return
+			end
+
+			local hitHuman = if hitPlayer then HumanRegistry:Get(hitPlayer) else hitNPC
+
+			if not hitHuman then
+				warn("Trap cannot activate, whatever triggered has no human class")
+				return
+			end
+
+			TrapActivatedLogic[trapName](trapOwner, trapCollider.Parent, partHit, hitHuman, trapData)
+			hitCollisionConn:Disconnect()
 			return
 		end
-
-		local hitPlayer = hitParent:FindFirstChild("Humanoid")
-		local hitNPC = hitParent:GetAttribute("npcId")
-			and LightweightNpcsServerAPI:GetNpcById(hitParent:GetAttribute("npcId"))
-
-		if not hitPlayer or not hitNPC then
-			return
-		end
-
-		local hitHuman = if hitPlayer then HumanRegistry:Get(hitPlayer) else hitNPC
-
-		if not hitHuman then
-			warn("Trap cannot activate, whatever triggered has no human class")
-			return
-		end
-
-		TrapActivatedLogic[trapName](trapOwner, trapCollider.Parent, hitPart, hitHuman, trapData)
-		hitCollisionConn:Disconnect()
 	end)
 end
 

@@ -100,8 +100,8 @@ function NPCLogic:ApplyBulletEffects(npcRecord: LightweightNpcTypes.npcRecordTyp
 
 	if bulletObject:HasTag("CannonBall") then
 		local force = 150
-		local dir: Vector3 = (npcRecord.serverRig:GetPivot().Position - bulletObject.Position).Unit * force
-		print("Impulse dir:", dir, "| Magnitude:", dir.Magnitude)
+		local dir: Vector3 = bulletObject.CFrame.LookVector * force
+		--local dirUpBias = dir + Vector3.new(0, 3, 0)
 		npcRecord.onImpulse:Fire(dir)
 		npcRecord.onRagdoll:Fire(5)
 	end
@@ -130,6 +130,22 @@ function NPCLogic:HitByGunshot(npcRecord: LightweightNpcTypes.npcRecordType, gun
 	npcRecord.onLimbHit:Fire(damage, limbEnum, raycastResult.Position, raycastResult.Normal, attacker)
 
 	self:ApplyBulletEffects(npcRecord, gunShotData.CosmeticBulletObject)
+end
+
+function NPCLogic:HitByTrap(npcRecord: LightweightNpcTypes.npcRecordType, trapData: ClassTypes.TrapDamage)
+	local damageInflicted = trapData.Damage
+	local limbHit = trapData.LimbHit
+	local attacker = trapData.Shooter
+
+	if attacker then
+		if attacker.Player then
+			attacker = attacker.Player
+		end
+
+		AddWantedTag(npcRecord, attacker)
+	end
+
+	npcRecord.onLimbHit:Fire(damageInflicted, LimbsEnum[limbHit.Name], nil, nil, attacker)
 end
 local function IsLimbOut(limb)
 	return limb.State == "Dismembered" or limb.State == "Disabled"
@@ -211,7 +227,7 @@ function NPCLogic:AffectLimbAndChildren(
 		-- Will make client NPCs play crawl anims
 		npcRecord.legless = true
 		-- Force crawl server pose so we can somewhat emulate its hitboxes
-		npcRecord.onPoseChange:Fire("crawlidle", 1)
+		npcRecord.onPoseChange:Fire("crawlidle", 0.3)
 		npcRecord:StopAnimationChannel(2)
 	end
 end
@@ -421,6 +437,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				self:HitByStatusBullet(npcRecord, damageData)
 			elseif damageType == "Barge" then
 				self:HitByBarge(npcRecord, damageData)
+			elseif damageType == "Trap" then
+				self:HitByTrap(npcRecord, damageData)
 			end
 
 			if character then
@@ -514,7 +532,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		local lastImpulsed = npcRecord.data and npcRecord.data.lastImpulse
 		local now = os.clock()
 
-		if lastImpulsed and now - lastImpulsed < 1 then
+		if lastImpulsed and now - lastImpulsed < 0.5 then
 			return
 		end
 

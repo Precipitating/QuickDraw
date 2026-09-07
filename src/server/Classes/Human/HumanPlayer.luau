@@ -286,9 +286,10 @@ function HumanPlayer:Die(killer: (Player | Model)?)
 	-- shooter should get a money reward for killing, but not if they've somehow killed themselves.
 	if killer and typeof(killer) ~= "table" then
 		if killer:IsA("Player") then
-			warn("PLAYER KILLED PLAYAH")
+			Utility.Warn(`PLAYER KILLED PLAYER`)
 			AwardHandler.AwardPlayerKill(self.Player, killer)
 		else
+			Utility.Warn(`NPC KILLED PLAYER`)
 			local npcId = killer:GetAttribute("npcId")
 
 			if not npcId then
