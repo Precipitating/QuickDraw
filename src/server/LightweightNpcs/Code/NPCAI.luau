@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Hunt = require(ServerScriptService.Server.LightweightNpcs.Code.States.Hunt)
 local StayInValidRange = require(ServerScriptService.Server.LightweightNpcs.Code.States.StayInValidRange)
 local Attack = require(script.Parent.States.Attack)
 local Patrol = require(script.Parent.States.Patrol)
@@ -93,7 +94,18 @@ local provoked = Action.new({
 	end,
 })
 
-planner:registerActions({ patrol, stayWithinRange, seek, attack, reload, provoked })
+local hunt = Action.new({
+	name = "Hunt",
+	cost = 1,
+	preconditions = { defaultState = "hunt" },
+	effects = { hasTarget = true },
+
+	executeFn = function(agent, context)
+		return Hunt:Update(agent, context)
+	end,
+})
+
+planner:registerActions({ patrol, stayWithinRange, seek, attack, reload, provoked, hunt })
 
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]
@@ -218,7 +230,17 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			return not state:get("atSafeDistance")
 		end,
 	})
-	npcRecord.ai.goals = { patrolGoal, stayWithinRangeGoal, attackGoal, seekGoal, reloadGoal, provokedGoal }
+
+	-- This is a state that should not change when entered
+	local huntGoal = Goal.new({
+		name = "Hunt",
+		desiredState = { hitPoints = 0 },
+		priority = 4,
+		isValidFn = function(state)
+			return state:get("defaultState") == "Hunt"
+		end,
+	})
+	npcRecord.ai.goals = { patrolGoal, stayWithinRangeGoal, attackGoal, seekGoal, reloadGoal, provokedGoal, huntGoal }
 
 	local plan, selectedGoal = planner:planBestGoal(npcRecord.ai.worldState, npcRecord.ai.goals, npcRecord)
 	if plan.success then

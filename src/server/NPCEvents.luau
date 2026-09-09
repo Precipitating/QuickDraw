@@ -1,12 +1,15 @@
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local LightweightNPCModule = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local Queue = require(ReplicatedStorage.Shared.Classes.Queue)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
+local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local NPCFactionTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.NPCFactionTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local NPCHealth = require(ServerScriptService.Server.LightweightNpcs.Code.NPCHealth)
 local NPCLogic = require(ServerScriptService.Server.LightweightNpcs.Code.NPCLogic)
@@ -77,46 +80,6 @@ local function CanSpawn(spawnerType: string): boolean
 	return spawnedType < maxAllowed
 end
 
-local function AddHumanNPCClass(lightweightNPCClass, classType: string)
-	local humanModel = lightweightNPCClass.instance
-	local humanoid = humanModel:FindFirstChildOfClass("Humanoid")
-	if not humanoid then
-		warn("NPC has no humanoid! Ensure visuals/physics are handled correctly.")
-	end
-
-	local humanNPC = nil
-	local factionType = nil
-
-	if not TargetList:isEmpty() then
-		local mercenaryTarget = TargetList:dequeue()
-		factionType = "Mercenary"
-		humanModel.Name = `Mercenary{NPCEvents.CurrentSpawnedNPCS}`
-		CollectionService:AddTag(humanModel, "Mercenary")
-
-		humanNPC = PlayerManager:AddHumanClassNPC(
-			lightweightNPCClass,
-			humanoid,
-			"Grenadier",
-			factionType,
-			{ DefaultStateData = { Target = mercenaryTarget.Character } }
-		)
-		humanNPC.AI.EnemyList = { [mercenaryTarget.Name] = true }
-	elseif CollectionService:HasTag(humanModel, "Sheriff") then
-		factionType = "Sheriff"
-		humanNPC = PlayerManager:AddHumanClassNPC(lightweightNPCClass, humanoid, classType, factionType)
-		humanModel.Name = `Sheriff{NPCEvents.CurrentSpawnedNPCS}`
-		humanNPC.AI.EnemyList = { Bandit = true, Wanted = true }
-	else
-		factionType = "Bandit"
-		humanNPC = PlayerManager:AddHumanClassNPC(lightweightNPCClass, humanoid, classType, factionType)
-		humanNPC.AI.EnemyList = { Player = true, Sheriff = true, Animal = true }
-	end
-
-	humanNPC.Faction = factionType
-
-	return humanNPC
-end
-
 local function GetNPCModel(spawnerType: string)
 	if spawnerType == "Bandit" then
 		return NPCModels:FindFirstChild(BanditModels[RandomModule.GetRandomIntBetween(1, #BanditModels)])
@@ -154,22 +117,52 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 		return
 	end
 
-	local npcTemplateModel = GetNPCModel(spawnerType, spawnerModel:GetTags())
+	local npcTemplateModel = if TargetList:isEmpty()
+		then GetNPCModel(spawnerType, spawnerModel:GetTags())
+		else GetNPCModel("Mercenary", spawnerModel:GetTags())
+
 	if not npcTemplateModel then
 		return
 	end
 
-	-- Spawn NPC
-	local npcRecord = LightweightNPCModule:SpawnNpc(
-		npcTemplateModel,
-		LightweightNPCConfig,
-		npcType,
-		spawnerType,
-		spawnerModel:GetAttribute("DefaultStateData"),
-		spawnLocation.WorldCFrame
-	)
+	-- Change NPC type if target list exists, meaning mercenary will spawn
+
+	local npcRecord = nil
+	if not TargetList:isEmpty() then
+		local mercenaryTarget = TargetList:dequeue()
+		npcType = "Mercenary"
+
+		npcRecord = LightweightNPCModule:SpawnNpc(
+			npcTemplateModel,
+			LightweightNPCConfig,
+			"Grenadier",
+			"Mercenary",
+			spawnerModel:GetAttribute("DefaultStateData"),
+			spawnLocation.WorldCFrame
+		)
+
+		local targetPlayer = Players:FindFirstChild(mercenaryTarget.Name)
+		if not targetPlayer then
+			Utility.Warn(`Mercenary error: Cannot get target's player instance`)
+			NPCHealth:UpdateHealth(npcRecord, -9999)
+			return
+		end
+		npcRecord.enemies = { [mercenaryTarget.Name] = true }
+		npcRecord.ai.currentTarget = targetPlayer.Character
+		npcRecord.ai.worldState:set("hasTarget", true)
+	else
+		-- Spawn NPC
+		npcRecord = LightweightNPCModule:SpawnNpc(
+			npcTemplateModel,
+			LightweightNPCConfig,
+			npcType,
+			spawnerType,
+			spawnerModel:GetAttribute("DefaultStateData"),
+			spawnLocation.WorldCFrame
+		)
+	end
+
 	local npcModel = npcRecord.instance
-	npcRecord.data.nextMove = 0
 
 	-- Main NPC logic goes here, syncs to client
 	NPCLogic:OnSpawn(npcRecord)
@@ -183,8 +176,6 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 	if spawnerModel:GetAttribute("DefaultStateData") then
 		npcModel:SetAttribute("DefaultStateData", spawnerModel:GetAttribute("DefaultStateData"))
 	end
-
-	--AddHumanNPCClass(npcClass, npcType)
 
 	-- Update state counters
 	NPCEvents.CurrentSpawnedNPCS = math.clamp(NPCEvents.CurrentSpawnedNPCS + 1, 0, NPCEvents.MaxNPCSAllowed)

@@ -8,7 +8,7 @@ ServerData.Leaderstats = nil
 function ServerData.Initialize()
 	DataService:init({
 		template = {
-			currency = 0,
+			currency = 99999,
 			bounty = 0,
 			bank = 0,
 			lastJoinedTime = nil,

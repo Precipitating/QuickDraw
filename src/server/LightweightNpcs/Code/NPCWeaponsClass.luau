@@ -188,6 +188,11 @@ function NPCWeaponsClass:EquipWeapon(npcRecord: LightweightNpcTypes.npcRecordTyp
 	end
 
 	npcRecord.currentEquipped = npcRecord.storedWeapon
+
+	if not npcRecord.currentEquipped then
+		return
+	end
+
 	npcRecord.currentEquippedData = GunData[GunsEnum[npcRecord.currentEquipped]]
 		or ThrowableData[ThrowablesEnum[npcRecord.currentEquipped]]
 	self:GetLocalMuzzleOffset(npcRecord)

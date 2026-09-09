@@ -67,6 +67,56 @@ local function CanStillSeeEnemy(agent: LightweightNpcTypes.npcRecordType, target
 	return false
 end
 
+function StayInValidRange:MoveTowardsWaypoints(agent: LightweightNpcTypes.npcRecordType, context, onFinished: () -> ())
+	local wp = agent.ai and agent.ai.currentNavigationData and agent.ai.currentNavigationData.waypoints
+	local currentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
+	local target = agent.ai.lastSeenTarget
+	local targetPos = target and target:GetPivot().Position
+
+	if not wp or not currentPos or not target or not targetPos then
+		return
+	end
+
+	local nextWaypoint = wp[agent.ai.currentMoveIdx]
+	local flattenedNextWaypoint = Vector3.new(nextWaypoint.Position.X, 0, nextWaypoint.Position.Z)
+
+	-- Move towards waypoint
+	if (flattenedNextWaypoint - currentPos).Magnitude <= 2 then
+		agent.ai.currentMoveIdx += 1
+		nextWaypoint = wp[agent.ai.currentMoveIdx]
+
+		-- Finished pathfinding
+		if not nextWaypoint then
+			Utility.Warn(`PATHFIND FINISHED ON VALID RANGE`)
+			onFinished()
+			return
+		end
+	else
+		-- 5.2 Move towards current waypoint target
+		if nextWaypoint.Action == Enum.PathWaypointAction.Jump then
+			if agent.isOnGround then
+				agent:Jump()
+				agent.ai.currentMoveIdx += 1
+			else
+				CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
+			end
+		else
+			-- Run
+			agent.configuration.walkSpeed = if not agent.legless
+
+				then HumanConstants.SPRINT_SPEED
+				else HumanConstants.WALKSPEED
+
+			if not agent.legless then
+				agent:PlayAnimation("run", false, 1, 1)
+			else
+				agent:PlayAnimation("crawlwalk", false, 1, 1)
+			end
+			CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
+		end
+	end
+end
+
 function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	if agent.busy then
 		return ActionResult.Running
@@ -117,46 +167,11 @@ function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, conte
 	end
 
 	--
-	local nextWaypoint = wp[agent.ai.currentMoveIdx]
-	local flattenedNextWaypoint = Vector3.new(nextWaypoint.Position.X, 0, nextWaypoint.Position.Z)
-
-	-- Move towards waypoint
-	if (flattenedNextWaypoint - currentPos).Magnitude <= 2 then
-		agent.ai.currentMoveIdx += 1
-		nextWaypoint = wp[agent.ai.currentMoveIdx]
-
-		-- Finished pathfinding
-		if not nextWaypoint then
-			Utility.Warn(`PATHFIND FINISHED ON VALID RANGE`)
-			self:ExitStayInValidRangeState(agent)
-			CanStillSeeEnemy(agent, targetPos, context.dt)
-			agent.busy = false
-			return ActionResult.Success
-		end
-	else
-		-- 5.2 Move towards current waypoint target
-		if nextWaypoint.Action == Enum.PathWaypointAction.Jump then
-			if agent.isOnGround then
-				agent:Jump()
-				agent.ai.currentMoveIdx += 1
-			else
-				CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
-			end
-		else
-			-- Run
-			agent.configuration.walkSpeed = if not agent.legless
-
-				then HumanConstants.SPRINT_SPEED
-				else HumanConstants.WALKSPEED
-
-			if not agent.legless then
-				agent:PlayAnimation("run", false, 1, 1)
-			else
-				agent:PlayAnimation("crawlwalk", false, 1, 1)
-			end
-			CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
-		end
-	end
+	self:MoveTowardsWaypoints(agent, context, function()
+		self:ExitStayInValidRangeState(agent)
+		CanStillSeeEnemy(agent, targetPos, context.dt)
+		agent.busy = false
+	end)
 
 	return ActionResult.Running
 end

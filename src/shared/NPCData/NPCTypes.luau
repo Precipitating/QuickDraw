@@ -43,7 +43,7 @@ return {
 		AttackCooldown = 3,
 		EyeRange = 120,
 		PatrolStayTime = 2,
-		DefaultStateName = "Stalk",
+		DefaultStateName = "Hunt",
 		AttackStateName = "RangeAttack",
 	},
 
