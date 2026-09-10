@@ -16,7 +16,7 @@ function Hunt:ExitHuntState(agent: LightweightNpcTypes.npcRecordType)
 	agent.ai.currentTarget = nil
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
-	NPCHealth:UpdateHealth(agent, 99999)
+	NPCHealth:UpdateHealth(agent, -99999)
 end
 
 function Hunt:Update(agent: LightweightNpcTypes.npcRecordType, context)
@@ -38,7 +38,7 @@ function Hunt:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	-- Early returns
 	if not target then
 		self:ExitHuntState(agent)
-		return ActionResult.Success
+		return ActionResult.Failed
 	end
 
 	-- 1.2 Check if target is dead to exit state, so NPC doesn't keep shooting thin air
@@ -57,6 +57,7 @@ function Hunt:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		if dist <= minDist or dist >= maxDist then
 			-- too far/close to target, change state to StayInValidRange
 			Utility.Warn(`Target out of range, moving`)
+			agent.ai.lastSeenTarget = agent.ai.currentTarget
 			StayInValidRange:GeneratePathWithinRange(agent)
 			return ActionResult.Running
 		end
@@ -64,17 +65,25 @@ function Hunt:Update(agent: LightweightNpcTypes.npcRecordType, context)
 
 	-- IN POSITION TO THROW
 	-- 2. Smoothly rotate to face target
+	agent:Move(Vector3.zero)
+	agent.velocity = Vector3.zero
+	if not agent.legless then
+		agent:PlayAnimation("idle", false, 1, 1)
+	else
+		agent:PlayAnimation("crawlidle", false, 1, 1)
+	end
+
+	if agent.storedThrowable and not agent.legless then
+		agent:PlayAnimation("toolhold", false, 2, 2)
+		agent.onPoseChange:Fire("toolhold", 2)
+	end
+
 	local dir = enemyPosition - agent.hrp.Position
 	if dir.Magnitude > 0.001 then
 		agent.targetAngle = MathUtils:PlayerVecToAngle(dir)
 	end
 	--
 	-- 3. Throw at target
-
-	if agent.storedThrowable and not agent.legless then
-		agent:PlayAnimation("toolhold", false, 2, 2)
-		agent.onPoseChange:Fire("toolhold", 2)
-	end
 
 	local thrown = NPCWeaponsClass:ThrowThrowable(agent, enemyPosition)
 	if thrown then

@@ -3,4 +3,5 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 
 return {
 	RemovePlayerClass = Signal.new(),
+	ReduceNPCCounter = Signal.new(),
 }

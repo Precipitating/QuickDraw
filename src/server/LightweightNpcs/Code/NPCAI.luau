@@ -97,8 +97,8 @@ local provoked = Action.new({
 local hunt = Action.new({
 	name = "Hunt",
 	cost = 1,
-	preconditions = { defaultState = "hunt" },
-	effects = { hasTarget = true },
+	preconditions = { hasTarget = true },
+	effects = { hasTarget = false },
 
 	executeFn = function(agent, context)
 		return Hunt:Update(agent, context)
@@ -174,6 +174,9 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		agentCanJump = true,
 		costs = {
 			{ name = "Plastic", cost = math.huge },
+			{ name = "SmoothPlastic", cost = math.huge },
+			{ name = "Wood", cost = math.huge },
+			{ name = "WoodPlanks", cost = math.huge },
 		},
 	})
 
@@ -234,10 +237,10 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	-- This is a state that should not change when entered
 	local huntGoal = Goal.new({
 		name = "Hunt",
-		desiredState = { hitPoints = 0 },
-		priority = 4,
+		desiredState = { hasTarget = false },
+		priority = 5,
 		isValidFn = function(state)
-			return state:get("defaultState") == "Hunt"
+			return state:get("defaultState") == "Hunt" and state:get("hasTarget")
 		end,
 	})
 	npcRecord.ai.goals = { patrolGoal, stayWithinRangeGoal, attackGoal, seekGoal, reloadGoal, provokedGoal, huntGoal }

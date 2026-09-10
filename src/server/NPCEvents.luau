@@ -39,7 +39,7 @@ NPCEvents.NPCTypesSpawned = {
 }
 
 NPCEvents.ActiveHumanNPCS = {}
-NPCEvents.SecondsToSpawnNPC = 120
+NPCEvents.SecondsToSpawnNPC = 20
 NPCEvents.CurrentSpawnedNPCS = 0
 
 local MAX_TYPE_OFFSET = 3
@@ -148,8 +148,11 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 			return
 		end
 		npcRecord.enemies = { [mercenaryTarget.Name] = true }
-		npcRecord.ai.currentTarget = targetPlayer.Character
-		npcRecord.ai.worldState:set("hasTarget", true)
+		task.defer(function()
+			npcRecord.ai.currentTarget = targetPlayer.Character
+			npcRecord.ai.worldState:set("hasTarget", true)
+			npcRecord.ai.worldState:set("atSafeDistance", false)
+		end)
 	else
 		-- Spawn NPC
 		npcRecord = LightweightNPCModule:SpawnNpc(

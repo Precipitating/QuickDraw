@@ -1,14 +1,9 @@
-local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ActionResult = require(ServerScriptService.Server.LightweightNpcs.Code.States.ActionResult)
-local Attack = require(ServerScriptService.Server.LightweightNpcs.Code.States.Attack)
-local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
-local Provoked = require(ServerScriptService.Server.LightweightNpcs.Code.States.Provoked)
-local Reload = require(ServerScriptService.Server.LightweightNpcs.Code.States.Reload)
 local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
-local StayInValidRange = require(ServerScriptService.Server.LightweightNpcs.Code.States.StayInValidRange)
+local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
@@ -518,6 +513,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				AwardHandler.AwardNPCKill(npcRecord.killedBy)
 			end
 		end
+
+		PlayerSignals.ReduceNPCCounter:Fire(npcRecord.serverRig, npcRecord.faction)
 	end)
 
 	npcRecord.onPoseChange:Connect(function(poseName: string, channel: number?)
@@ -580,7 +577,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			if not success then
 				Seek:ExitSeekState(npcRecord)
 			end
-		elseif currentStateName == "StayWithinRange" then
+		elseif currentStateName == "StayWithinRange" or currentStateName == "Hunt" then
 			-- Force a new path to be calculated
 			npcRecord.ai.currentNavigationData = nil
 		end

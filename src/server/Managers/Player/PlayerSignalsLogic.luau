@@ -25,4 +25,17 @@ return {
 
 		print(`Human class removed`)
 	end),
+
+	PlayerSignals.ReduceNPCCounter:Connect(function(npcModel: Model, npcFaction: string)
+		if not npcFaction then
+			return
+		end
+
+		for key, _ in NPCEvents.NPCTypesSpawned do
+			if npcModel:HasTag(key) then
+				NPCEvents.NPCTypesSpawned[key] = math.max(0, NPCEvents.NPCTypesSpawned[key] - 1)
+				break
+			end
+		end
+	end),
 }
