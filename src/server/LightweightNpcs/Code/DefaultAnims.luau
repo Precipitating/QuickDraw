@@ -34,6 +34,12 @@ function module:GetDefaultAnimations(): NpcAnimationTypes.FinalAnimTable
 		["toolhold"] = {
 			{ id = "http://www.roblox.com/asset/?id=507768375", weight = 1 },
 		},
+		["standupfront"] = {
+			{ id = "http://www.roblox.com/asset/?id=96465958556803", weight = 1 },
+		},
+		["standupback"] = {
+			{ id = "http://www.roblox.com/asset/?id=124920579546618", weight = 1 },
+		},
 	}
 
 	return NpcAnimationTypes:BuildFinalAnimationTable(animNames)

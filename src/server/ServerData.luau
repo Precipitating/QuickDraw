@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local DataService = require(ReplicatedStorage.Packages.DataService).server
 
 local ServerData = {}
@@ -24,6 +25,7 @@ function ServerData.Initialize()
 		useMock = true,
 		resetData = true,
 	})
+	Utility.Warn(`[Server data loaded]`)
 end
 
 function ServerData.WaitForPlayerData(player: Player)

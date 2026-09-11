@@ -3,6 +3,7 @@ local LightweightNpcTypes = require(script.Parent.LightweightNpcTypes)
 
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local Zone = require(ReplicatedStorage.Shared.QuickZone.Classes.Zone)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local NPCPhysics = {}
 
@@ -40,6 +41,10 @@ function NPCPhysics:Ragdoll(npcRecord: LightweightNpcTypes.npcRecordType, durati
 			if npcRecord.npcState == NpcStateModule.Dying or npcRecord.hitPoints <= 0 then
 				return
 			end
+
+			local frontOrBack = if RandomModule.GetRandom() > 0.5 then "standupfront" else "standupback"
+			npcRecord:PlayAnimation(frontOrBack, false, 1, 1)
+			task.wait(1.2)
 			npcRecord.npcState = NpcStateModule.Running
 			self:ToggleNPCCollision(npcRecord, false)
 		end)
