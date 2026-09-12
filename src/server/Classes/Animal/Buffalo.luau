@@ -6,6 +6,10 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationHandler)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
+local NPCHealth = require(ServerScriptService.Server.LightweightNpcs.Code.NPCHealth)
+local NPCPhysics = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPhysics)
+local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -23,7 +27,7 @@ function Buffalo.new(model: Model?)
 	end
 	self.ChargeDistance = 150
 	self.ChargeForce = 200
-	self.ClassType = "Buffalo"
+	self.Type = "Buffalo"
 
 	self.BodyParts = {
 		Head = Utility.GetInstance(model, false, "Head"),
@@ -95,36 +99,53 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 				local parent = hitPart.Parent
 				warn(`Buffalo hit {hitPart}`)
 				local humanoid = parent:FindFirstChildOfClass("Humanoid")
+				local npcId = hitPart.Parent and hitPart.Parent:GetAttribute("npcId")
 				if
 					parent
-					and humanoid
+					and (humanoid or npcId)
 					and (CollectionService:HasTag(parent, "NPC") or CollectionService:HasTag(parent, "Player"))
 				then
 					local humanClass = PlayerManager:GetHumanClass(humanoid)
-					if not humanClass or not hitPart then
+
+					local npcClass: LightweightNpcTypes.npcRecordType? = npcId
+						and LightweightNpcsServerAPI:GetNpcById(npcId)
+					if (not humanClass and not npcClass) or not hitPart then
 						return
 					end
 
 					local data = {
+						Type = "Barge",
 						Damage = HumanConstants.BUFFALO_DAMAGE,
 						LimbHit = hitPart,
-						TargetHuman = humanClass,
+						TargetHuman = humanClass or npcClass,
 						CanAffectShooter = false,
 						Shooter = self.Character,
 					} :: ClassTypes.BargeDamage
 
-					DamageModule.DamageHuman(data)
-					ServerScreenEffects:ApplyOneShotEffect(humanClass.Player, "BullRam")
+					-- Hits player:
+					if humanClass then
+						DamageModule.DamageHuman(data)
+						ServerScreenEffects:ApplyOneShotEffect(humanClass.Player, "BullRam")
 
-					if humanClass.Ragdoll then
-						humanClass:Ragdoll(5)
+						if humanClass.Ragdoll then
+							humanClass:Ragdoll(5)
+						end
+					elseif npcClass then
+						npcClass.onHit:Fire(data)
+						if npcClass.onRagdoll then
+							npcClass.onRagdoll:Fire(5)
+						end
 					end
 
 					local dir = (self.HRP.CFrame.LookVector + vector.create(0, 0.3, 0)).Unit
 						* self.HRP.AssemblyMass
 						* self.ChargeForce
 					task.defer(function()
-						humanClass:ApplyImpulse(dir)
+						if humanClass then
+							humanClass:ApplyImpulse(dir)
+						elseif npcClass then
+							npcClass.onImpulse:Fire(dir)
+						end
 					end)
 				else
 					self:UpdateHealth(-HumanConstants.BUFFALO_DAMAGE)

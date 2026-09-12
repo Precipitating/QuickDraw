@@ -268,7 +268,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
 		-- Early exits
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
-			Utility.Warn("NPC should stop all actions")
+			--Utility.Warn("NPC should stop all actions")
 			npcRecord:Move(Vector3.zero)
 			npcRecord.velocity = Vector3.zero
 			return
@@ -488,13 +488,14 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 		npcRecord.npcState = NpcStateModule.Dying
 		warn("onDeath called")
-
+		NPCPoses:ResetPose(npcRecord)
 		-- Change collision group so its untouchable
 		for _, bodyPart in npcRecord.bodyParts do
 			local part = bodyPart.Part
 			if not part then
 				continue
 			end
+			part.Color = Color3.fromRGB(255, 0, 0)
 
 			part.CollisionGroup = "Dead"
 		end
@@ -541,7 +542,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	InitializeOnSpawn(npcRecord)
 	npcRecord.onBumpIntoWall:Connect(function(instance)
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
-			Utility.Warn("NPC should stop all actions")
+			--Utility.Warn("NPC should stop all actions")
 			return
 		end
 		local now = os.clock()

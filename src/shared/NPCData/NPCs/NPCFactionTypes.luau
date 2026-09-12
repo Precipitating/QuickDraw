@@ -1,4 +1,4 @@
 return {
-	Bandit = { EnemyList = { "Player", "Sheriff", "Mercenary" } },
-	Sheriff = { EnemyList = { "Bandit", "Wanted" } },
+	Bandit = { EnemyList = { "Player", "Sheriff", "Mercenary", "Animal" } },
+	Sheriff = { EnemyList = { "Bandit", "Wanted", "Animal" } },
 }

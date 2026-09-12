@@ -76,6 +76,9 @@ return {
 		for _, playerCharacter in Utility.GetTagInstancesInWorkspace("Player") do
 			table.insert(candidates, playerCharacter)
 		end
+		for _, animalModels in Utility.GetTagInstancesInWorkspace("Animal") do
+			table.insert(candidates, animalModels)
+		end
 
 		for _, model: Model in candidates do
 			if model == npcRecord.serverRig or model:HasTag("Dead") then

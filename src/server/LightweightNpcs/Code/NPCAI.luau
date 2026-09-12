@@ -31,7 +31,7 @@ local patrol = Action.new({
 	end,
 
 	executeFn = function(agent, context)
-		Utility.Warn(`Entered Patrol State`)
+		--Utility.Warn(`Entered Patrol State`)
 		return Patrol:Update(agent, context)
 	end,
 })
@@ -169,8 +169,8 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	end)
 
 	npcRecord.ai.pathfinder = PathfindingAdapter.new({
-		agentRadius = 6,
-		agentHeight = 6,
+		agentRadius = 2,
+		agentHeight = 5,
 		agentCanJump = true,
 		costs = {
 			{ name = "Plastic", cost = math.huge },

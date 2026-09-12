@@ -386,12 +386,13 @@ function AI:CheckSurroundingsForEnemy()
 		local parent = part.Parent
 		local hrp = parent and parent:FindFirstChild("HumanoidRootPart")
 		local humanoid = parent and parent:FindFirstChild("Humanoid")
+		local npc = parent and parent:GetAttribute("npcId")
 
 		if CollectionService:HasTag(parent, "Dead") then
 			continue
 		end
 
-		if not hrp or not humanoid or not self:TargetIsEnemy(parent) then
+		if not hrp or (not humanoid and not npc) or not self:TargetIsEnemy(parent) then
 			continue
 		end
 
@@ -422,8 +423,9 @@ function AI:CheckLineOfSight()
 	local hrp = self.Owner.HRP.Position
 	local LineOfSightParams = OverlapParams.new()
 	LineOfSightParams.ExcludeInstances = { self.Owner.Character }
+	LineOfSightParams.CollisionGroup = "LineOfSightEnemies"
 
-	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.EyeRange)
+	local foundParts = workspace:GetPartBoundsInRadius(hrp, self.EyeRange, LineOfSightParams)
 	return foundParts
 end
 function AI:PathFindTo(targetPos: Vector3)
