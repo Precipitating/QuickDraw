@@ -97,6 +97,7 @@ function Animal:DeathRagdoll()
 
 	self.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
 	self.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+	self.Ragdolled = true
 
 	-- Disable constraints
 	for _, instance in self.Character:GetDescendants() do
@@ -130,10 +131,11 @@ function Animal:Die(killer: Player?)
 	self.Dead = true
 	self.Humanoid.EvaluateStateMachine = false
 	self:DeathRagdoll()
+	self:ToggleTorsoAimer(false)
 
 	CollectionService:AddTag(self.Character, "Dead")
 
-	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.ClassType}Dead`, self.Character:GetPivot().Position, nil)
+	ServerSoundHandler:Play3DOneShotToOthers(nil, `{self.Type}Dead`, self.Character:GetPivot().Position, nil)
 
 	if killer and killer:IsA("Player") then
 		AwardHandler.AwardAnimalKill(self.Type, killer)
@@ -150,7 +152,10 @@ end
 
 function Animal:ToggleTorsoAimer(enable: boolean)
 	local torsoAimer = self.TorsoAimer
-	assert(torsoAimer, "[Animal:ToggleTorsoAimer] torsoAimer is nil")
+	if not torsoAimer then
+		return
+	end
+
 	if torsoAimer.Enabled == enable then
 		return
 	end

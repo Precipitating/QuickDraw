@@ -84,20 +84,19 @@ return {
 			if model == npcRecord.serverRig or model:HasTag("Dead") then
 				continue
 			end
-
+			local modelPos = model:GetPivot().Position
+			if (modelPos - perceiverPos).Magnitude > rangeSq ^ 0.5 then
+				continue
+			end
 			local isEnemy = false
 			for _, tag in enemyInstanceTags do
 				if model:HasTag(tag) then
+					Utility.Warn(`NPC saw enemy {tag}`)
 					isEnemy = true
 					break
 				end
 			end
 			if not isEnemy then
-				continue
-			end
-
-			local modelPos = model:GetPivot().Position
-			if (modelPos - perceiverPos).Magnitude > rangeSq ^ 0.5 then
 				continue
 			end
 

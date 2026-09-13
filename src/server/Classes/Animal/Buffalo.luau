@@ -47,6 +47,10 @@ function Buffalo:ChargeUpRun(target: Model? | BasePart?, onComplete: () -> ())
 
 	self.Janitor:Add(
 		RunService.Heartbeat:Connect(function()
+			if self.Ragdolled or self.Dead then
+				self.Janitor:Remove("LookAtConn")
+				return
+			end
 			if os.clock() - self.ChargeStartTime >= self.WaitTimeBeforeCharge then
 				warn("Charge ready")
 				self.Janitor:Remove("LookAtConn")
@@ -130,23 +134,23 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 						if humanClass.Ragdoll then
 							humanClass:Ragdoll(5)
 						end
+						local dir = (self.HRP.CFrame.LookVector + vector.create(0, 0.3, 0)).Unit
+							* self.HRP.AssemblyMass
+							* self.ChargeForce
+						task.defer(function()
+							if humanClass then
+								humanClass:ApplyImpulse(dir)
+							end
+						end)
 					elseif npcClass then
 						npcClass.onHit:Fire(data)
-						if npcClass.onRagdoll then
-							npcClass.onRagdoll:Fire(5)
-						end
+						local dirForNPC = self.HRP.CFrame.LookVector * self.ChargeForce
+						npcClass.onImpulse:Fire(dirForNPC, function()
+							if npcClass.onRagdoll then
+								npcClass.onRagdoll:Fire(5)
+							end
+						end)
 					end
-
-					local dir = (self.HRP.CFrame.LookVector + vector.create(0, 0.3, 0)).Unit
-						* self.HRP.AssemblyMass
-						* self.ChargeForce
-					task.defer(function()
-						if humanClass then
-							humanClass:ApplyImpulse(dir)
-						elseif npcClass then
-							npcClass.onImpulse:Fire(dir)
-						end
-					end)
 				else
 					self:UpdateHealth(-HumanConstants.BUFFALO_DAMAGE)
 				end

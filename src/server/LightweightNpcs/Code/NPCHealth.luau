@@ -52,36 +52,29 @@ function NPCHealth:UpdateLimbHealth(
 	-- 1. Update Limb HP
 	limbData.HP = math.clamp(hp + damageTaken, HumanConstants.LIMB_DISMEMBER_HP, maxLimbHP)
 
-	-- 2. Determine if we need to dismember/disable a limb and call it
+	-- 2. Crucial-limb kill check
+	local isLethalHit = false
+	if limbData.HP <= HumanConstants.LIMB_DISABLE_HP and CommonNPCData.CRUCIAL_LIMBS[limbHit] then
+		npcRecord.killedBy = attacker
+		npcRecord.hitPoints = 0
+		isLethalHit = true
+	end
+
+	-- 3. Determine if we need to dismember/disable a limb and call it
 	if limbData.HP <= HumanConstants.LIMB_DISMEMBER_HP then
 		if CommonNPCData.SAFE_LIMBS_FROM_DISMEMBERING[limbHit] then
 			return
 		end
 		npcRecord.onDismemberLimb:Fire(limbHit)
-		--
-		ServerSoundHandler:Play3DOneShotToOthers(
-			nil,
-			"LimbDismember",
-			npcRecord.instance and npcRecord.instance:GetPivot().Position,
-			{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
-		)
 	elseif limbData.HP <= HumanConstants.LIMB_DISABLE_HP then
-		if CommonNPCData.CRUCIAL_LIMBS[limbHit] then
-			npcRecord.killedBy = attacker
-			npcRecord.hitPoints = 0
-			return
-		end
 		if CommonNPCData.SAFE_LIMBS_FROM_DISABLING[limbHit] then
 			return
 		end
 		npcRecord.onDisableLimb:Fire(limbHit)
-		--
-		ServerSoundHandler:Play3DOneShotToOthers(
-			nil,
-			"BoneSnap",
-			npcRecord.instance and npcRecord.instance:GetPivot().Position,
-			{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
-		)
+	end
+
+	if isLethalHit then
+		return
 	end
 end
 

@@ -65,7 +65,7 @@ function AI:Initialize()
 	self.StateMachine:AddState("Dead", Dead.new(self.StateMachine, self))
 
 	self.NoobPath.Trapped:Connect(function()
-		if self.Owner.Humanoid:GetState() ~= Enum.HumanoidStateType.Climbing then -- Climbing is slower than usual
+		if self.Owner and self.Owner.Humanoid and self.Owner.Humanoid:GetState() ~= Enum.HumanoidStateType.Climbing then -- Climbing is slower than usual
 			self.NoobPath.Jump() -- Jump to unstuck
 		end
 		self.NoobPath:Run()

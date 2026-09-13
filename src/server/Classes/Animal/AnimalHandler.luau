@@ -10,7 +10,7 @@ local AnimalLimit = 20
 local ActiveAnimalsCount = 0
 local AnimalsFolder = ReplicatedStorage.Shared.NPCData.NPCs.Animals.Models:GetChildren()
 local AnimalSpawns = ReplicatedStorage.Shared.NPCData.NPCs.Animals.SpawnAreas:GetChildren()
-local AnimalDelay = 300
+local AnimalDelay = 20
 local ActiveAnimals = {}
 
 function AnimalHandler:GetAnimal(key: Humanoid)

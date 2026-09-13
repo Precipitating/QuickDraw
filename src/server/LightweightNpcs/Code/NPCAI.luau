@@ -107,6 +107,20 @@ local hunt = Action.new({
 
 planner:registerActions({ patrol, stayWithinRange, seek, attack, reload, provoked, hunt })
 
+function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
+	local ai = npcRecord.ai
+	ai.currentTarget = nil
+	ai.lastSeenTarget = nil
+	ai.currentMoveIdx = 2
+	ai.currentActionIndex = 1
+	ai.currentNavigationIndex = nil
+	ai.currentNavigationData = nil
+
+	ai.worldState:set("atSafeDistance", true)
+	ai.worldState:set("hasTarget", false)
+	ai.worldState:set("lostTarget", false)
+	ai.worldState:set("canShoot", true)
+end
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]
 
@@ -158,7 +172,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 				return true
 			end
 
-			if parent:HasTag("NPC") or parent:HasTag("Player") then
+			if parent:HasTag("NPC") or parent:HasTag("Player") or parent:HasTag("Animal") then
 				return false
 			else
 				return true

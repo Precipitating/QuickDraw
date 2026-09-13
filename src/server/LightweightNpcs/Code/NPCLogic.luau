@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ActionResult = require(ServerScriptService.Server.LightweightNpcs.Code.States.ActionResult)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
@@ -79,12 +80,7 @@ local function AddWantedTag(npcRecord: LightweightNpcTypes.npcRecordType, attack
 end
 
 local function ResetToDefaultState(npcRecord: LightweightNpcTypes.npcRecordType)
-	local defaultState = npcRecord.ai.worldState:get("defaultState")
-
-	if defaultState == "Patrol" then
-		npcRecord.ai.worldState:set("hasTarget", false)
-		npcRecord.ai.currentTarget = nil
-	end
+	NPCAI:ResetWorldState(npcRecord)
 end
 
 function NPCLogic:ApplyBulletEffects(npcRecord: LightweightNpcTypes.npcRecordType, bulletObject: BasePart)
@@ -97,8 +93,9 @@ function NPCLogic:ApplyBulletEffects(npcRecord: LightweightNpcTypes.npcRecordTyp
 		local force = 150
 		local dir: Vector3 = bulletObject.CFrame.LookVector * force
 		--local dirUpBias = dir + Vector3.new(0, 3, 0)
-		npcRecord.onImpulse:Fire(dir)
-		npcRecord.onRagdoll:Fire(5)
+		npcRecord.onImpulse:Fire(dir, function()
+			npcRecord.onRagdoll:Fire(5)
+		end)
 	end
 end
 
@@ -378,6 +375,12 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 
 	--
 	npcRecord.onDismemberLimb:Connect(function(limbToDestroy: number)
+		ServerSoundHandler:Play3DOneShotToOthers(
+			nil,
+			"LimbDismember",
+			npcRecord.instance and npcRecord.instance:GetPivot().Position,
+			{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+		)
 		self:AffectLimbAndChildren(npcRecord, limbToDestroy, "Dismembered", "DismemberLimb")
 	end)
 
@@ -402,6 +405,13 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				normal = shotPosNormal,
 				attacker = attacker,
 			})
+
+			ServerSoundHandler:Play3DOneShotToOthers(
+				nil,
+				"BoneSnap",
+				npcRecord.instance and npcRecord.instance:GetPivot().Position,
+				{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+			)
 		end
 	)
 
@@ -526,7 +536,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		NPCPoses:ChangePose(npcRecord, poseName, channel)
 	end)
 
-	npcRecord.onImpulse:Connect(function(force: Vector3)
+	npcRecord.onImpulse:Connect(function(force: Vector3, onComplete: (() -> ())?)
 		local lastImpulsed = npcRecord.data and npcRecord.data.lastImpulse
 		local now = os.clock()
 
@@ -537,6 +547,12 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		npcRecord.data.lastImpulse = now
 
 		NPCPhysics:ApplyImpulse(npcRecord, force)
+
+		if onComplete then
+			task.defer(function()
+				onComplete()
+			end)
+		end
 	end)
 
 	InitializeOnSpawn(npcRecord)
@@ -548,8 +564,8 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		local now = os.clock()
 		local lastBumped = npcRecord.data.lastBumped
 
-		-- reduce bump spam
-		if lastBumped and now - lastBumped <= 1 then
+		-- reduce bump spam, tries again in 0.5 secs
+		if lastBumped and now - lastBumped <= 0.5 then
 			return
 		end
 
@@ -561,10 +577,16 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			return
 		end
 
-		-- Attempt to get unstuck through random movements
+		-- Attempt to get unstuck through random movements, moves for 1s
 		npcRecord:Jump()
-		local ang = RandomModule.GetRandom() * math.pi * 2
-		npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
+		task.spawn(function()
+			local now = os.clock()
+			local ang = RandomModule.GetRandom() * math.pi * 2
+			while (os.clock() - now) < 1 do
+				npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
+				RunService.Heartbeat:Wait()
+			end
+		end)
 
 		-- Retry a waypoint path
 		if currentStateName == "Patrol" then
