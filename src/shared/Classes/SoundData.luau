@@ -749,6 +749,12 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "UI",
 	},
+	Heal = {
+		SoundId = "rbxassetid://138805102878520",
+		Volume = 1,
+		PlaybackSpeed = 1,
+		Group = "SFX",
+	},
 }
 
 -- Default group volumes

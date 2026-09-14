@@ -7,8 +7,6 @@ local RunLoop = false
 local CheckTime = 1
 local RenderDistance = 150
 --
-local DefaultAnims = ReplicatedStorage.Shared.AnimationData.DefaultAnimations
-local CrawlAnims = ReplicatedStorage.Shared.AnimationData.CrawlAnimations
 local BuffaloAnims = ReplicatedStorage.Shared.AnimationData.BuffaloAnimations
 local HorseAnims = ReplicatedStorage.Shared.AnimationData.HorseAnimations
 --

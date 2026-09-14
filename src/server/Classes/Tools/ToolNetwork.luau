@@ -5,9 +5,9 @@ local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerM
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 
 type Human = ClassTypes.Human
-local ServerTrapNetwork = {}
+local ToolNetwork = {}
 
-function ServerTrapNetwork.ReduceTrapAmmo(player: Player)
+function ToolNetwork.ReduceTrapAmmo(player: Player)
 	if not player then
 		return
 	end
@@ -28,7 +28,7 @@ function ServerTrapNetwork.ReduceTrapAmmo(player: Player)
 	trap:UpdateAmmo(-1)
 end
 
-function ServerTrapNetwork:PlaceDownTrap(player: Player)
+function ToolNetwork:PlaceDownTrap(player: Player)
 	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
 
 	if not humanClass then
@@ -48,9 +48,6 @@ function ServerTrapNetwork:PlaceDownTrap(player: Player)
 	return trap:Place()
 end
 
-ServerTrapNetwork.networker = Networker.new(
-	"TrapNetwork",
-	ServerTrapNetwork,
-	{ ServerTrapNetwork.ReduceTrapAmmo, ServerTrapNetwork.PlaceDownTrap }
-)
-return ServerTrapNetwork
+ToolNetwork.networker =
+	Networker.new("ToolNetwork", ToolNetwork, { ToolNetwork.ReduceTrapAmmo, ToolNetwork.PlaceDownTrap })
+return ToolNetwork

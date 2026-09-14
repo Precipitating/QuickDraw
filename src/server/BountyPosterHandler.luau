@@ -40,7 +40,6 @@ local function GetPosterRefs(posterClone: Model)
 	return gui, imageLabel, nameLabel, bountyLabel
 end
 
--- Extracted: both branches did identical label writes, now one place
 local function ApplyPosterData(posterClone: Model, player: Player, bounty: number): boolean
 	local _, imageLabel, nameLabel, bountyLabel = GetPosterRefs(posterClone)
 	if not imageLabel or not nameLabel or not bountyLabel then

@@ -131,8 +131,12 @@ function Human.new(humanoid: Humanoid?): Human
 	local character = humanoid:FindFirstAncestorOfClass("Model")
 	assert(character, "Human.new: character cannot be nil")
 
-	local rootPart = humanoid.RootPart or character:FindFirstChild("HumanoidRootPart")
+	local rootPart: BasePart = humanoid.RootPart or character:FindFirstChild("HumanoidRootPart")
 	assert(rootPart, "Human.new: character must contain a HumanoidRootPart")
+
+	rootPart.CanCollide = false
+	rootPart.CanQuery = false
+	rootPart.CanTouch = false
 
 	local self = setmetatable({}, Human)
 	self.Janitor = Janitor.new()

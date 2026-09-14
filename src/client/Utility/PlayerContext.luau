@@ -5,7 +5,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local ClientData = require(script.Parent.Parent.ClientData)
 local ClientUtility = require(script.Parent.ClientUtility)
 local CoreGUIHandler = require(script.Parent.CoreGUIHandler)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
@@ -160,6 +159,7 @@ function PlayerContext:UpdateLimbsGUIHP(limbPartName: string, healthPercent: num
 	end
 	local limb = self.LimbHPModel:WaitForChild(limbPartName, 5)
 	if not limb then
+		Utility.Warn(`Cannot update {limbPartName} on limbHPGui, missing part`)
 		return
 	end
 
