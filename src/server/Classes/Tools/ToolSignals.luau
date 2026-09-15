@@ -3,4 +3,5 @@ local Signal = require(ReplicatedStorage.Packages.Signal)
 
 return {
 	ConnectTrapSignal = Signal.new(),
+	ConnectHealItemSignal = Signal.new(),
 }

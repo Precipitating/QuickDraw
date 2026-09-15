@@ -120,6 +120,7 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	ai.worldState:set("hasTarget", false)
 	ai.worldState:set("lostTarget", false)
 	ai.worldState:set("canShoot", true)
+	ai.worldState:set("provoked", false)
 end
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]

@@ -175,6 +175,7 @@ function HumanPlayer:InitializeWeaponLoadout()
 
 	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
 	self.Inventory:EquipWeapon("Trap")
+	self.Inventory:AddItem("Bandage", 1, 1, true)
 
 	-- if savedThrowableData then
 	-- 	-- Throwable
@@ -317,6 +318,9 @@ function HumanPlayer:OnHit(damage: number, damageMultiplier: number, limbName: s
 	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
 end
 
+function HumanPlayer:HealInjuredPart(healAmount: number)
+	Human.HealInjuredPart(self, healAmount)
+end
 function HumanPlayer:DestroyLimb(limbName: string)
 	Human.DestroyLimb(self, limbName)
 	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, 0)

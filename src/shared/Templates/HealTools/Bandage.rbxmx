@@ -2,9 +2,9 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Tool" referent="RBXB2461400CB23456A82D4B9EA62F947E4">
+	<Item class="Tool" referent="RBX85418478749646898D05AE7EFECF1EC3">
 		<Properties>
-			<bool name="CanBeDropped">true</bool>
+			<bool name="CanBeDropped">false</bool>
 			<bool name="Enabled">true</bool>
 			<CoordinateFrame name="Grip">
 				<X>0</X>
@@ -73,7 +73,7 @@
 			<int64 name="SourceAssetId">-1</int64>
 			<SharedString name="Tags">19KH6sNTL6SjxWBKWlMIFg==</SharedString>
 		</Properties>
-		<Item class="MeshPart" referent="RBX7FEA864D895947D4BE39A673C7C55AA2">
+		<Item class="MeshPart" referent="RBX632232BE71874AFBB9152837F77E73D0">
 			<Properties>
 				<bool name="DoubleSided">false</bool>
 				<bool name="HasJointOffset">false</bool>

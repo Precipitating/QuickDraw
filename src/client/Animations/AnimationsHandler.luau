@@ -7,10 +7,12 @@ local AnimationsHandler = {}
 AnimationsHandler.networker = Networker.new("AnimationNetwork", AnimationsHandler)
 
 -- [animation name] = [Animation]
+-- Specify which animations to load
 local LoadedAnimations = {
 	Roll = true,
 	Kick = true,
 	PlaceDownTrap = true,
+	BandageHeal = true,
 	CrouchDig = true,
 	Drill = true,
 	BargeRun = true,

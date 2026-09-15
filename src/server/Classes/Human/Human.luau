@@ -75,6 +75,16 @@ local BallSocketMaxFrictionTorques = {
 	RightUpperArm = 50.275,
 }
 
+local Legs = {
+	"LeftUpperLeg",
+	"LeftLowerLeg",
+	"LeftFoot",
+
+	"RightUpperLeg",
+	"RightLowerLeg",
+	"RightFoot",
+}
+
 local BodyParts = {
 	Head = true,
 
@@ -393,6 +403,61 @@ function Human:ApplyRollForce()
 	end)
 end
 
+-- Picks and heals a random limb
+-- This only can heal disabled and intact limbs, not dismembered
+-- For basic heal consumables like a bandage
+function Human:HealInjuredPart(healAmount: number)
+	for key, bodyPart in self.BodyParts do
+		if bodyPart:GetAttribute("Destroyed") then
+			continue
+		end
+
+		if not self.LimbHealth[key] then
+			continue
+		end
+
+		if self.LimbHealth[key] >= LimbHealth[key] then
+			continue
+		end
+
+		-- Heal limb and overall health
+		self.LimbHealth[key] =
+			math.clamp(self.LimbHealth[key] + healAmount, HumanConstants.LIMB_DISMEMBER_HP, LimbHealth[key])
+		self.Health = math.clamp(self.Health + healAmount, 0, HumanConstants.MAX_HP)
+
+		-- Disable limb ragdolling if limb healed enough
+		if self.LimbHealth[key] > HumanConstants.LIMB_DISABLE_HP and self.DisabledBodyParts[key] then
+			self.DisabledBodyParts[key] = false
+
+			bodyPart.CanQuery = true
+			bodyPart.CanTouch = true
+			local animationConstraint: AnimationConstraint? =
+				bodyPart:FindFirstChildWhichIsA("AnimationConstraint", true)
+			local ballSocket: BallSocketConstraint? = bodyPart:FindFirstChildOfClass("BallSocketConstraint")
+
+			if animationConstraint then
+				animationConstraint.Enabled = true
+			end
+
+			if ballSocket then
+				ballSocket.LimitsEnabled = true
+				ballSocket.MaxFrictionTorque = BallSocketMaxFrictionTorques[key]
+			end
+		end
+
+		return true
+	end
+	return false
+end
+
+function Human:CanStandUp()
+	for _, legPartName in Legs do
+		if self.DisabledBodyParts[legPartName] then
+			return false
+		end
+	end
+	return true
+end
 function Human:HealAll()
 	-- reset limb constraints and hp
 	for key, bodyPart in self.BodyParts do

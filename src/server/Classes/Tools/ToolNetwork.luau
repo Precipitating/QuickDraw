@@ -1,6 +1,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ToolsData = require(ReplicatedStorage.Shared.Classes.ToolsData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
+local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 
@@ -48,6 +50,47 @@ function ToolNetwork:PlaceDownTrap(player: Player)
 	return trap:Place()
 end
 
-ToolNetwork.networker =
-	Networker.new("ToolNetwork", ToolNetwork, { ToolNetwork.ReduceTrapAmmo, ToolNetwork.PlaceDownTrap })
+function ToolNetwork:HealPlayerFromTool(player: Player)
+	if not player then
+		return false
+	end
+
+	local humanClass = HumanRegistry:GetFromPlayer(player)
+	if not humanClass then
+		return false
+	end
+
+	local character = player.Character
+
+	local tool = character:FindFirstChildOfClass("Tool")
+	if not tool then
+		return false
+	end
+
+	if not tool:HasTag("HealItem") then
+		return false
+	end
+
+	local toolData = ToolsData[tool.Name]
+	if not toolData then
+		return false
+	end
+
+	if toolData.HealAmount then
+		local success = humanClass:HealInjuredPart(toolData.HealAmount)
+
+		if success then
+			humanClass.Inventory:RemoveItem(tool.Name)
+			tool:Destroy()
+		end
+	end
+
+	return false
+end
+
+ToolNetwork.networker = Networker.new(
+	"ToolNetwork",
+	ToolNetwork,
+	{ ToolNetwork.ReduceTrapAmmo, ToolNetwork.PlaceDownTrap, ToolNetwork.HealPlayerFromTool }
+)
 return ToolNetwork

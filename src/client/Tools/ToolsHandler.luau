@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local ToolsData = require(ReplicatedStorage.Shared.Classes.ToolsData)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local PopupHandler = require(script.Parent.Parent.GUI.PopupHandler)
@@ -60,6 +61,42 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 	return thrown
 end
 
+local function ApplyHeal(healTool: Tool, healSound: string, healAnimName: string)
+	PlayerContext.IsBusy = true
+	PlayerContext.Humanoid.WalkSpeed = 0
+	local healAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation(healAnimName)
+
+	local fullyCompleteConn = healAnim:GetMarkerReachedSignal("Finished"):Once(function()
+		if not PlayerContext.Humanoid or PlayerContext.Humanoid.Health <= 0 then
+			return
+		end
+		local healed = ToolsHandler.networker:fetch("HealPlayerFromTool", healTool)
+
+		if healed then
+			SoundManager.PlayKeyed("SFX", healSound)
+		else
+			SoundManager.PlayKeyed("SFX", "Error")
+		end
+
+		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
+			PlayerContext.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+		end
+		PlayerContext.IsBusy = false
+	end)
+
+	--
+	healAnim.Stopped:Once(function()
+		PlayerContext.IsBusy = false
+		if fullyCompleteConn then
+			fullyCompleteConn:Disconnect()
+		end
+
+		if PlayerContext.Humanoid and PlayerContext.Humanoid.Health > 0 then
+			PlayerContext.Humanoid.WalkSpeed = HumanConstants.WALKSPEED
+		end
+	end)
+end
+
 function ToolsHandler:ConnectTrap(trap: Tool)
 	local trapData = TrapData[trap.Name]
 	if not trapData then
@@ -69,6 +106,20 @@ function ToolsHandler:ConnectTrap(trap: Tool)
 
 	CommonToolLogic:ConnectConsumableTool(trap, trapData.HoldTime, trapData, function()
 		PlaceDownTrap(trap, trapData.PlaceSoundName)
+	end)
+
+	return true
+end
+
+function ToolsHandler:ConnectHealTool(healTool: Tool)
+	local healData = ToolsData[healTool.Name]
+	if not healData then
+		Utility.Warn(`Missing heal data for client to connect`)
+		return false
+	end
+
+	CommonToolLogic:ConnectConsumableTool(healTool, healData.HoldTime, healData, function()
+		ApplyHeal(healTool, healData.ActivateSound, healData.AnimationName)
 	end)
 
 	return true

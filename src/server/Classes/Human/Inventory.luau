@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ToolsData = require(ReplicatedStorage.Shared.Classes.ToolsData)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
@@ -214,7 +215,7 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?, maxQuan
 	return true
 end
 
-function Inventory:AddItem(name: string, amount: number?, itemWeight: number?): boolean
+function Inventory:AddItem(name: string, amount: number?, itemWeight: number?, isTool: boolean?): boolean
 	local items = self.Items
 	if not items then
 		warn("Cannot add item to inventory, items table missing")
@@ -250,6 +251,21 @@ function Inventory:AddItem(name: string, amount: number?, itemWeight: number?): 
 			Quantity = amountToAdd,
 			BaseWeight = singleItemWeight,
 		}
+	end
+
+	-- An inventory item, add it to backpack if so
+	if isTool then
+		local tool = WeaponTools:FindFirstChild(name, true)
+		if tool then
+			local clone = tool:Clone()
+			local player = self.Owner.Player
+			local backpack = player.Backpack
+			clone.Parent = backpack
+
+			if clone:HasTag("HealItem") then
+				ToolSignals.ConnectHealItemSignal:Fire(self.Owner.Player, clone)
+			end
+		end
 	end
 
 	self.OccupiedSlots = math.clamp(self.OccupiedSlots + totalTransactionWeight, 0, self.MaxSlots)
