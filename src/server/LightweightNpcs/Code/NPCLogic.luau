@@ -498,7 +498,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 		npcRecord.npcState = NpcStateModule.Dying
 		warn("onDeath called")
-		NPCPoses:ResetPose(npcRecord)
+		--NPCPoses:ResetPose(npcRecord)
 		-- Change collision group so its untouchable
 		for _, bodyPart in npcRecord.bodyParts do
 			local part = bodyPart.Part
@@ -577,33 +577,38 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			return
 		end
 
-		-- Attempt to get unstuck through random movements, moves for 1s
-		npcRecord:Jump()
-		task.spawn(function()
-			local now = os.clock()
-			local ang = RandomModule.GetRandom() * math.pi * 2
-			while (os.clock() - now) < 1 do
-				npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
-				RunService.Heartbeat:Wait()
+		-- Attempt to get unstuck via random impulses behind/left/right
+		local impulseDir = nil
+		if RandomModule.GetRandom() > 0.5 then
+			impulseDir = -npcRecord.hrp.CFrame.LookVector
+		else
+			if RandomModule.GetRandom() > 0.5 then
+				impulseDir = npcRecord.hrp.CFrame.RightVector
+			else
+				impulseDir = -npcRecord.hrp.CFrame.RightVector
+			end
+		end
+
+		npcRecord.hrp.Anchored = false
+		npcRecord.onImpulse:Fire(impulseDir * 50, function()
+			npcRecord.hrp.Anchored = true
+			-- Retry a waypoint path
+			if currentStateName == "Patrol" then
+				local success = Patrol:TryGetNextPatrolWaypoint(npcRecord)
+				if not success then
+					Patrol:ExitPatrolState(npcRecord)
+				end
+			elseif currentStateName == "Seek" and npcRecord.ai.lastSeenTarget then
+				local success = Seek:GeneratePathToLastSeenTarget(npcRecord, true)
+
+				if not success then
+					Seek:ExitSeekState(npcRecord)
+				end
+			elseif currentStateName == "StayWithinRange" or currentStateName == "Hunt" then
+				-- Force a new path to be calculated
+				npcRecord.ai.currentNavigationData = nil
 			end
 		end)
-
-		-- Retry a waypoint path
-		if currentStateName == "Patrol" then
-			local success = Patrol:TryGetNextPatrolWaypoint(npcRecord)
-			if not success then
-				Patrol:ExitPatrolState(npcRecord)
-			end
-		elseif currentStateName == "Seek" and npcRecord.ai.lastSeenTarget then
-			local success = Seek:GeneratePathToLastSeenTarget(npcRecord, true)
-
-			if not success then
-				Seek:ExitSeekState(npcRecord)
-			end
-		elseif currentStateName == "StayWithinRange" or currentStateName == "Hunt" then
-			-- Force a new path to be calculated
-			npcRecord.ai.currentNavigationData = nil
-		end
 	end)
 end
 

@@ -41,6 +41,7 @@ function Attack:ExitAttackState(agent)
 	if not agent.legless then
 		agent:PlayAnimation("idle", false, 1, 1)
 	else
+		agent.onPoseChange:Fire("crawlidle")
 		agent:PlayAnimation("crawlidle", false, 1, 1)
 	end
 end

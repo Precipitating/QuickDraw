@@ -23,7 +23,7 @@ local NPCAI = {}
 local patrol = Action.new({
 	name = "Patrol",
 	cost = 1,
-	preconditions = { hasTarget = false, defaultState = "Patrol" },
+	preconditions = { hasTarget = false },
 	effects = { hasTarget = true },
 	interruptible = true,
 	onInterrupt = function(agent, context)
@@ -113,6 +113,7 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	ai.lastSeenTarget = nil
 	ai.currentMoveIdx = 2
 	ai.currentActionIndex = 1
+	npcRecord.busy = false
 	ai.currentNavigationIndex = nil
 	ai.currentNavigationData = nil
 
@@ -121,6 +122,15 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	ai.worldState:set("lostTarget", false)
 	ai.worldState:set("canShoot", true)
 	ai.worldState:set("provoked", false)
+	local plan, selectedGoal = npcRecord.ai.planner:planBestGoal(ai.worldState, npcRecord.ai.goals, npcRecord)
+
+	if plan.success then
+		ai.currentPlan = plan
+		ai.currentGoal = selectedGoal
+		ai.currentActionIndex = 1
+	end
+
+	ai.worldState:markClean()
 end
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]
@@ -201,7 +211,9 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { hasTarget = true },
 		priority = 1,
 		isValidFn = function(state)
-			return not state:get("hasTarget") and not npcRecord.ai.currentTarget
+			return not state:get("hasTarget")
+				and not npcRecord.ai.currentTarget
+				and npcData.DefaultStateName == "Patrol"
 		end,
 	})
 

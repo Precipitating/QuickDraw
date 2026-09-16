@@ -4,8 +4,7 @@ local RunService = game:GetService("RunService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
-local HoldingLMBStart = false
-local HoldingLMB = false
+
 local HOLD_TRIGGER_TIME = 0.5
 
 local CommonToolLogic = {}
@@ -19,7 +18,11 @@ function CommonToolLogic:ConnectConsumableTool(tool: Tool, holdTime: number, too
 		return
 	end
 
-	local holdGUI: ScreenGui = PlayerContext.PlayerGui and PlayerContext.PlayerGui:WaitForChild("PlaceGUI", 3)
+	while not PlayerContext.PlayerGui do
+		task.wait()
+	end
+
+	local holdGUI: ScreenGui = PlayerContext.PlayerGui:WaitForChild("PlaceGUI")
 	if not holdGUI then
 		warn("Missing HoldGUI")
 		return

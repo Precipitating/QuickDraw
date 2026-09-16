@@ -82,6 +82,7 @@ function ToolNetwork:HealPlayerFromTool(player: Player)
 		if success then
 			humanClass.Inventory:RemoveItem(tool.Name)
 			tool:Destroy()
+			return true
 		end
 	end
 

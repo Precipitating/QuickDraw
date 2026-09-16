@@ -257,13 +257,14 @@ function Inventory:AddItem(name: string, amount: number?, itemWeight: number?, i
 	if isTool then
 		local tool = WeaponTools:FindFirstChild(name, true)
 		if tool then
-			local clone = tool:Clone()
-			local player = self.Owner.Player
-			local backpack = player.Backpack
-			clone.Parent = backpack
-
-			if clone:HasTag("HealItem") then
-				ToolSignals.ConnectHealItemSignal:Fire(self.Owner.Player, clone)
+			for i = 1, amountToAdd do
+				local clone = tool:Clone()
+				local player = self.Owner.Player
+				local backpack = player.Backpack
+				clone.Parent = backpack
+				if clone:HasTag("HealItem") then
+					ToolSignals.ConnectHealItemSignal:Fire(self.Owner.Player, clone)
+				end
 			end
 		end
 	end

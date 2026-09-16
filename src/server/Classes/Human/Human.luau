@@ -445,7 +445,7 @@ function Human:HealInjuredPart(healAmount: number)
 			end
 		end
 
-		return true
+		return key
 	end
 	return false
 end

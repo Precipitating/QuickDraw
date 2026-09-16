@@ -24,8 +24,6 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 		return false
 	end
 
-	humanoid.WalkSpeed = 0
-	PlayerContext.IsBusy = true
 	local placeAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("PlaceDownTrap")
 	local placeMarkerConn = placeAnim:GetMarkerReachedSignal("Placed"):Once(function()
 		if humanoid.Health >= 0 then
@@ -62,8 +60,6 @@ local function PlaceDownTrap(trap: Tool?, placeSoundName: string)
 end
 
 local function ApplyHeal(healTool: Tool, healSound: string, healAnimName: string)
-	PlayerContext.IsBusy = true
-	PlayerContext.Humanoid.WalkSpeed = 0
 	local healAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation(healAnimName)
 
 	local fullyCompleteConn = healAnim:GetMarkerReachedSignal("Finished"):Once(function()
@@ -105,6 +101,8 @@ function ToolsHandler:ConnectTrap(trap: Tool)
 	end
 
 	CommonToolLogic:ConnectConsumableTool(trap, trapData.HoldTime, trapData, function()
+		PlayerContext.Humanoid.WalkSpeed = 0
+		PlayerContext.IsBusy = true
 		PlaceDownTrap(trap, trapData.PlaceSoundName)
 	end)
 
@@ -119,6 +117,8 @@ function ToolsHandler:ConnectHealTool(healTool: Tool)
 	end
 
 	CommonToolLogic:ConnectConsumableTool(healTool, healData.HoldTime, healData, function()
+		PlayerContext.IsBusy = true
+		PlayerContext.Humanoid.WalkSpeed = 0
 		ApplyHeal(healTool, healData.ActivateSound, healData.AnimationName)
 	end)
 
