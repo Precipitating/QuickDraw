@@ -57,7 +57,7 @@ function Reload:Update(agent: LightweightNpcTypes.npcRecordType, context)
 			ServerSoundHandler:Play3DOneShotToOthers(nil, reloadSound, agent.position)
 		end
 
-		NPCWeaponsClass:UpdateAmmo(agent, 1)
+		NPCWeaponsClass:UpdateAmmo(agent, if not magazineReload then 1 else gunData.MaxAmmo)
 		Utility.Warn(`{agent.currentWeaponAmmo}`)
 
 		agent.data.lastReloaded = os.clock()

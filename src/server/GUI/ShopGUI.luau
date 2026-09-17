@@ -1,10 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ToolsData = require(ReplicatedStorage.Shared.Classes.ToolsData)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local CommonGUIFunctions = require(script.Parent.CommonGUIFunctions)
 local PopupGUI = require(script.Parent.PopupGUI)
 local ShopCosts = require(script.Parent.ShopCosts)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local PurchasePrices = require(ReplicatedStorage.Shared.PurchasePrices)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
@@ -126,6 +128,8 @@ function ShopGUI:BuyItem(player: Player, productName: string, productCost: numbe
 		success = BuyConsumableWeapon(player, human, productName, "Throwable")
 	elseif TrapData[productName] then
 		success = BuyConsumableWeapon(player, human, productName, "Trap")
+	elseif ToolsData[productName] then
+		success = human.Inventory and human.Inventory:AddItem(productName, 1, 1, true)
 	end
 
 	if soundName then
@@ -174,9 +178,30 @@ function ShopGUI:BuyHorse(player: Player, horseType: string, horseSellerNPC: Mod
 
 	return true
 end
-ShopGUI.networker = Networker.new(
-	"ShopNetwork",
-	ShopGUI,
-	{ ShopGUI.BuyItem, ShopGUI.OnGUIClose, ShopGUI.OnGUIOpen, ShopGUI.BuyRefillAmmo, ShopGUI.BuyHorse }
-)
+
+function ShopGUI:HealPlayerFully(player: Player)
+	local human = PlayerManager:GetHumanClassFromPlayer(player)
+	if not human then
+		warn("Can't heal, human class missing")
+		return false
+	end
+
+	local money = ServerData.GetMoney(player)
+	if money >= PurchasePrices.MEDIC_COST then
+		ServerData.UpdateMoney(player, -PurchasePrices.MEDIC_COST)
+		human:HealAll()
+		return true
+	else
+		return false
+	end
+end
+
+ShopGUI.networker = Networker.new("ShopNetwork", ShopGUI, {
+	ShopGUI.BuyItem,
+	ShopGUI.OnGUIClose,
+	ShopGUI.OnGUIOpen,
+	ShopGUI.BuyRefillAmmo,
+	ShopGUI.BuyHorse,
+	ShopGUI.HealPlayerFully,
+})
 return ShopGUI

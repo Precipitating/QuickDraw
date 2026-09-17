@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ToolsData = require(ReplicatedStorage.Shared.Classes.ToolsData)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)

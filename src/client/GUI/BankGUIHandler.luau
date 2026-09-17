@@ -35,6 +35,7 @@ function BankGUIHandler:CloseGUI(gui: ScreenGui, bg: Frame, linkedPrompt: Proxim
 		CoreGUIHandler.ToggleBackpackVisibility(true)
 		self.networker:fire("OnGUIClose")
 		linkedPrompt.Enabled = true
+		PlayerContext.IsBusy = false
 	end)
 end
 

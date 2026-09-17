@@ -671,6 +671,18 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
+	MedicGreeting = {
+		SoundId = "rbxassetid://77622409446285",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	MedicExit = {
+		SoundId = "rbxassetid://106579543238342",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
 
 	-- Main Menu
 	LetsGo = {

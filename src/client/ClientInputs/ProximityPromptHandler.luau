@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local DoctorGUIHandler = require(script.Parent.Parent.GUI.DoctorGUIHandler)
 local GUIEffects = require(script.Parent.Parent.GUI.GUIEffects)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -100,11 +101,20 @@ local PROMPT_HANDLERS = {
 		end
 		ProximityPromptHandler.networker:fire("CashPickedUp", prompt)
 	end,
-	["MedicPrompt"] = function(_: Player, prompt: ProximityPrompt)
+	["MedicPrompt"] = function(player: Player, prompt: ProximityPrompt)
 		if PlayerContext.IsBusy then
 			return
 		end
-		ProximityPromptHandler.networker:fire("HealPlayer", prompt)
+
+		if player.PlayerGui:FindFirstChild("DoctorGUI") then
+			return
+		end
+		local doctorGUI = GUI.DoctorGUI:Clone()
+		doctorGUI.Parent = player.PlayerGui
+		doctorGUI.Enabled = true
+		PlayerContext.IsBusy = true
+		SoundManager.PlayKeyed("Voiceline", "MedicGreeting")
+		DoctorGUIHandler:ConnectShopGUI(doctorGUI, prompt, "MedicExit")
 	end,
 	["LootPrompt"] = function(_: Player, prompt: ProximityPrompt)
 		if PlayerContext.IsBusy then

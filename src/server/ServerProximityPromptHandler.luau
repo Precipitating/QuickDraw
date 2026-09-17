@@ -30,24 +30,6 @@ function ServerProximityPromptHandler:CashPickedUp(player: Player, prompt: Proxi
 	end
 end
 
-function ServerProximityPromptHandler:HealPlayer(player: Player, prompt: ProximityPrompt)
-	local human = PlayerManager:GetHumanClassFromPlayer(player)
-	if not human then
-		warn("Can't heal, human class missing")
-		return
-	end
-
-	local money = ServerData.GetMoney(player)
-
-	if money >= PurchasePrices.MEDIC_COST then
-		ServerData.UpdateMoney(player, -PurchasePrices.MEDIC_COST)
-		human:HealAll()
-		ServerSoundHandler:PlaySoundTo(player, "MedicBuy")
-	else
-		ServerSoundHandler:PlaySoundTo(player, "Error")
-	end
-end
-
 function ServerProximityPromptHandler:LootPickup(player: Player, lootType: string, prompt: ProximityPrompt?)
 	LootHandler:PickupLoot(player, lootType, prompt)
 end
@@ -91,7 +73,6 @@ end
 
 ServerProximityPromptHandler.networker = Networker.new("ProximityPromptNetwork", ServerProximityPromptHandler, {
 	ServerProximityPromptHandler.CashPickedUp,
-	ServerProximityPromptHandler.HealPlayer,
 	ServerProximityPromptHandler.LootPickup,
 	ServerProximityPromptHandler.HorseMount,
 })
