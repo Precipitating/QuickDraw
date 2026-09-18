@@ -34,6 +34,7 @@ function module:SpawnNpc(
 	configuration: any,
 	npcType: string,
 	spawnerType: string,
+	areaSpawned: string,
 	defaultStateData: string,
 	originCFrame: CFrame
 )
@@ -46,6 +47,7 @@ function module:SpawnNpc(
 		configuration,
 		npcType,
 		spawnerType,
+		areaSpawned,
 		defaultStateData,
 		originCFrame
 	)

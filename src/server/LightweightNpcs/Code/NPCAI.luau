@@ -122,15 +122,6 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	ai.worldState:set("lostTarget", false)
 	ai.worldState:set("canShoot", true)
 	ai.worldState:set("provoked", false)
-	local plan, selectedGoal = npcRecord.ai.planner:planBestGoal(ai.worldState, npcRecord.ai.goals, npcRecord)
-
-	if plan.success then
-		ai.currentPlan = plan
-		ai.currentGoal = selectedGoal
-		ai.currentActionIndex = 1
-	end
-
-	ai.worldState:markClean()
 end
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]

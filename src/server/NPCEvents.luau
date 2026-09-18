@@ -6,14 +6,11 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local LightweightNPCModule = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local Queue = require(ReplicatedStorage.Shared.Classes.Queue)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
-local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
-local NPCFactionTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.NPCFactionTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local NPCHealth = require(ServerScriptService.Server.LightweightNpcs.Code.NPCHealth)
 local NPCLogic = require(ServerScriptService.Server.LightweightNpcs.Code.NPCLogic)
-local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
 local NPCModels = ReplicatedStorage.Shared.NPCData.NPCs.Humans
 local NPCList = ReplicatedStorage.Shared.NPCData.NPCs.Humans
@@ -28,26 +25,26 @@ local TargetList = Queue.new()
 type HumanPlayer = ClassTypes.HumanPlayer
 
 local NPCEvents = {}
-NPCEvents.MaxNPCSAllowed = 30
+NPCEvents.MaxNPCSAllowed = 100
 NPCEvents.MaxNPCTypesAllowed = {
 	Sheriff = 15,
 	Bandit = 15,
 }
 NPCEvents.NPCTypesSpawned = {
-	Sheriff = 0,
-	Bandit = 0,
+	Main = { Sheriff = 0, Bandit = 0 },
+	SandTown = { Sheriff = 0, Bandit = 0 },
+	BanditBase = { Sheriff = 0, Bandit = 0 },
 }
 
-NPCEvents.ActiveHumanNPCS = {}
 NPCEvents.SecondsToSpawnNPC = 120
 NPCEvents.CurrentSpawnedNPCS = 0
 
 local MAX_TYPE_OFFSET = 3
 
-local function IsNPCTypeOverloading(npcType: string): boolean
-	local currentTypeSpawnCount = NPCEvents.NPCTypesSpawned[npcType] or 0
+local function IsNPCTypeOverloading(npcType: string, location: string): boolean
+	local currentTypeSpawnCount = NPCEvents.NPCTypesSpawned[location][npcType] or 0
 
-	for currNpcType, spawnCount in NPCEvents.NPCTypesSpawned do
+	for currNpcType, spawnCount in NPCEvents.NPCTypesSpawned[location] do
 		if currNpcType == npcType then
 			continue
 		end
@@ -59,7 +56,7 @@ local function IsNPCTypeOverloading(npcType: string): boolean
 	return false
 end
 
-local function CanSpawn(spawnerType: string): boolean
+local function CanSpawn(spawnerType: string, location: string): boolean
 	if not spawnerType then
 		return false
 	end
@@ -67,13 +64,13 @@ local function CanSpawn(spawnerType: string): boolean
 		return false
 	end
 
-	local spawnedType = NPCEvents.NPCTypesSpawned[spawnerType]
+	local spawnedType = NPCEvents.NPCTypesSpawned[location][spawnerType]
 	local maxAllowed = NPCEvents.MaxNPCTypesAllowed[spawnerType]
 
 	if not spawnedType or not maxAllowed then
 		return false
 	end
-	if IsNPCTypeOverloading(spawnerType) then
+	if IsNPCTypeOverloading(spawnerType, location) then
 		return false
 	end
 
@@ -113,7 +110,8 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 	end
 
 	local spawnerType = spawnerModel:GetAttribute("SpawnerType")
-	if not CanSpawn(spawnerType) then
+	local areaLocation = spawnerModel:GetAttribute("Location")
+	if not CanSpawn(spawnerType, areaLocation) then
 		return
 	end
 
@@ -137,6 +135,7 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 			LightweightNPCConfig,
 			"Grenadier",
 			"Mercenary",
+			areaLocation,
 			spawnerModel:GetAttribute("DefaultStateData"),
 			spawnLocation.WorldCFrame
 		)
@@ -160,6 +159,7 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 			LightweightNPCConfig,
 			npcType,
 			spawnerType,
+			areaLocation,
 			spawnerModel:GetAttribute("DefaultStateData"),
 			spawnLocation.WorldCFrame
 		)
@@ -182,9 +182,12 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 
 	-- Update state counters
 	NPCEvents.CurrentSpawnedNPCS = math.clamp(NPCEvents.CurrentSpawnedNPCS + 1, 0, NPCEvents.MaxNPCSAllowed)
-	if NPCEvents.NPCTypesSpawned[spawnerType] then
-		NPCEvents.NPCTypesSpawned[spawnerType] =
-			math.clamp(NPCEvents.NPCTypesSpawned[spawnerType] + 1, 0, NPCEvents.MaxNPCTypesAllowed[spawnerType])
+	if NPCEvents.NPCTypesSpawned[areaLocation][spawnerType] then
+		NPCEvents.NPCTypesSpawned[areaLocation][spawnerType] = math.clamp(
+			NPCEvents.NPCTypesSpawned[areaLocation][spawnerType] + 1,
+			0,
+			NPCEvents.MaxNPCTypesAllowed[spawnerType]
+		)
 	end
 end
 

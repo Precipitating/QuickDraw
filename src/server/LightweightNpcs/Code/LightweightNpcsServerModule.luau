@@ -327,6 +327,7 @@ function lightweightNpcsServerModule:CreateNpc(
 	npcConfig: any,
 	_npcType: string,
 	_faction: string,
+	_location: string,
 	_defaultStateData: string,
 	originCFrame: CFrame
 ): LightweightNpcTypes.npcRecordType
@@ -473,6 +474,7 @@ function lightweightNpcsServerModule:CreateNpc(
 	serverRigTemplate:AddTag(_npcType)
 	serverRigTemplate:AddTag(_faction)
 	serverRigTemplate:AddTag("NPC")
+	serverRigTemplate:SetAttribute("Location", _location)
 
 	return npcRecord
 end

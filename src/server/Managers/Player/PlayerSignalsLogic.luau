@@ -1,5 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local NPCEvents = require(ServerScriptService.Server.NPCEvents)
 local PlayerManager = require(script.Parent.PlayerManager)
 local PlayerSignals = require(script.Parent.PlayerSignals)
@@ -16,8 +18,12 @@ return {
 			NPCEvents.CurrentSpawnedNPCS -= 1
 
 			for key, _ in NPCEvents.NPCTypesSpawned do
-				if CollectionService:HasTag(humanoid.Parent, key) then
-					NPCEvents.NPCTypesSpawned[key] = math.max(0, NPCEvents.NPCTypesSpawned[key] - 1)
+				local parent = humanoid.Parent
+				if not parent then
+					continue
+				end
+				if CollectionService:HasTag(parent, key) then
+					NPCEvents.NPCTypesSpawned[parent][key] = math.max(0, NPCEvents.NPCTypesSpawned[parent][key] - 1)
 					break
 				end
 			end
@@ -30,12 +36,19 @@ return {
 		if not npcFaction then
 			return
 		end
+		local npcLocation = npcModel:GetAttribute("Location")
+		if not npcLocation then
+			Utility.Warn(`NPC missing location attribute to reduce NPC counter`)
+			return
+		end
 
-		for key, _ in NPCEvents.NPCTypesSpawned do
+		for key, _ in NPCEvents.NPCTypesSpawned[npcLocation] do
 			if npcModel:HasTag(key) then
-				NPCEvents.NPCTypesSpawned[key] = math.max(0, NPCEvents.NPCTypesSpawned[key] - 1)
+				NPCEvents.NPCTypesSpawned[npcLocation][key] =
+					math.max(0, NPCEvents.NPCTypesSpawned[npcLocation][key] - 1)
 				break
 			end
 		end
+		Utility.Warn(`NPC counter reduced -1 from location {npcLocation}`)
 	end),
 }
