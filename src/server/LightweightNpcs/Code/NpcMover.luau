@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 local module = {}
 -- Basic ultralightweight character controller
@@ -161,7 +162,7 @@ function module:HandleWalkingState(npcRecord: LightweightNpcTypes.npcRecordType,
 			stepupPosition, stepupHitResults =
 				SweepMove(startPos, velocity, npcRecord.configuration.motionSize, castParams)
 
-			print(
+			Utility.Warn(
 				string.format(
 					"[STEPUP] hitInstance=%s startPos=(%.2f,%.2f,%.2f) afterFwdSweep=(%.2f,%.2f,%.2f) fwdHit=%s",
 					hitResults.Instance and hitResults.Instance:GetFullName() or "nil",

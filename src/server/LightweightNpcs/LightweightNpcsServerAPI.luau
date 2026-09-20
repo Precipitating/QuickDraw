@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local module = {}
 
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local defaultAnims = require(game.ServerScriptService.Server.LightweightNpcs.Code.DefaultAnims)
 local lightweightNpcsServerModule = require(script.Parent.Code.LightweightNpcsServerModule)
 
@@ -39,7 +40,7 @@ function module:SpawnNpc(
 	originCFrame: CFrame
 )
 	if configuration.thinkHzRate < configuration.replicationHzRate then
-		warn("Setting your thinkHzRate lower than your replication rate will cause stuttering")
+		Utility.Warn("Setting your thinkHzRate lower than your replication rate will cause stuttering")
 	end
 
 	local npcRecord = lightweightNpcsServerModule:CreateNpc(

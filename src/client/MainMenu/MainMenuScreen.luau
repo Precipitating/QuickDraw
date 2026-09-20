@@ -45,7 +45,7 @@ end
 local function LoadStartGUIS()
 	local currencyGUI = Utility.GetInstance(GUIs, true, "CurrencyGUI")
 	if not currencyGUI then
-		warn("Missing currency GUI")
+		Utility.Warn("Missing currency GUI")
 		return
 	end
 	currencyGUI = currencyGUI:Clone()
@@ -78,7 +78,7 @@ local function LoadMenuGUI()
 		ClientUtility.ToggleControls(true)
 		ZoneHandler:Initialize()
 		NPCHandler:InitializeNPCDialogue()
-		warn("DONE")
+		Utility.Warn("DONE")
 	end)
 
 	startButton.MouseEnter:Connect(function()
@@ -111,7 +111,7 @@ function MainMenuScreen:InitializeShowdownScene()
 	local cameraPos = Utility.GetInstance(scene, true, "CameraPos")
 
 	if not cameraPos then
-		warn("Missing camera position")
+		Utility.Warn("Missing camera position")
 		return
 	end
 
@@ -124,7 +124,7 @@ function MainMenuScreen:InitializeShowdownScene()
 	end)
 
 	if not ok then
-		warn("Failed to apply appearance:", result)
+		Utility.Warn("Failed to apply appearance:", result)
 	end
 	local playerAnimator: Animator = Utility.GetInstance(playerHumanoid, true, "Animator")
 	local cowboyAnimator: Animator = Utility.GetInstance(cowboyHumanoid, true, "Animator")

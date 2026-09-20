@@ -154,17 +154,17 @@ function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, conte
 		return ActionResult.Success
 	end
 	-- DEBUG
-	for _, path in wp do
-		local p2 = Instance.new("Part", workspace)
-		p2.Anchored = true
-		p2.Size = Vector3.new(0.5, 0.5, 0.5)
-		p2.Position = path.Position
-		p2.CanCollide = false
-		p2.Color = Color3.fromRGB(0, 255, 0)
-		task.delay(10, function()
-			p2:Destroy()
-		end)
-	end
+	-- for _, path in wp do
+	-- 	local p2 = Instance.new("Part", workspace)
+	-- 	p2.Anchored = true
+	-- 	p2.Size = Vector3.new(0.5, 0.5, 0.5)
+	-- 	p2.Position = path.Position
+	-- 	p2.CanCollide = false
+	-- 	p2.Color = Color3.fromRGB(0, 255, 0)
+	-- 	task.delay(10, function()
+	-- 		p2:Destroy()
+	-- 	end)
+	-- end
 
 	--
 	self:MoveTowardsWaypoints(agent, context, function()

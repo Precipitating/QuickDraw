@@ -14,7 +14,7 @@ function CommonToolLogic:ConnectConsumableTool(tool: Tool, holdTime: number, too
 		return
 	end
 	if not toolData then
-		warn("Tool data doesn't exist")
+		Utility.Warn("Tool data doesn't exist")
 		return
 	end
 
@@ -24,7 +24,7 @@ function CommonToolLogic:ConnectConsumableTool(tool: Tool, holdTime: number, too
 
 	local holdGUI: ScreenGui = PlayerContext.PlayerGui:WaitForChild("PlaceGUI")
 	if not holdGUI then
-		warn("Missing HoldGUI")
+		Utility.Warn("Missing HoldGUI")
 		return
 	end
 
@@ -54,7 +54,7 @@ function CommonToolLogic:ConnectConsumableTool(tool: Tool, holdTime: number, too
 
 	PlayerContext.janitor:Add(
 		tool.Equipped:Connect(function()
-			warn("Tool connected: " .. tool.Name)
+			Utility.Warn("Tool connected: " .. tool.Name)
 
 			local holdingLMBStart: number? = nil
 			local holdingLMB = false
@@ -103,7 +103,7 @@ function CommonToolLogic:ConnectConsumableTool(tool: Tool, holdTime: number, too
 	)
 
 	PlayerContext.janitor:Add(tool.Unequipped:Connect(function()
-		warn("Tool disconnected: " .. tool.Name)
+		Utility.Warn("Tool disconnected: " .. tool.Name)
 		PlayerContext.janitor:Remove(innerKey)
 		resetHoldState()
 	end))

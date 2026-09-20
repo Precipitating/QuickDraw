@@ -14,7 +14,7 @@ local EffectsLimiter = RateLimiter.new(10)
 -- Send these effects down to client to emit
 function ServerEffectsDisplayer:DisplayDestroyParticle(destroyableParticleName: string, position: Vector3)
 	if not destroyableParticleName or not position then
-		warn(`[ServerEffectsDisplayer:DisplayDestroyParticle] one argument is nil!`)
+		Utility.Warn(`[ServerEffectsDisplayer:DisplayDestroyParticle] one argument is nil!`)
 		return
 	end
 
@@ -58,7 +58,7 @@ function ServerEffectsDisplayer:DisplayProjectileMark(name: string, raycastResul
 	})
 
 	if not serializedBuf then
-		warn(err)
+		Utility.Warn(err)
 		return
 	end
 	-- RaycastResult does not serialize to client, so do it manually via table
@@ -79,7 +79,7 @@ function ServerEffectsDisplayer:DisplayBloodHit(position: Vector3?, normal: Vect
 	})
 
 	if not serializedBuf then
-		warn(err)
+		Utility.Warn(err)
 		return
 	end
 	self.networker:fire(closePlayers, "DisplayBloodHitFromServer", serializedBuf)
@@ -88,7 +88,7 @@ end
 -- Fired from client to display to other players their muzzle flash.
 function ServerEffectsDisplayer:DisplayMuzzleFlashToOthers(player: Player?, gunTool: Tool?)
 	if not gunTool then
-		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
+		Utility.Warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
 	if not EffectsLimiter:TryConsume() then
@@ -115,12 +115,12 @@ end
 -- Second parameter is used for compatibility with turrets, as they dont use tools
 function ServerEffectsDisplayer:DisplayMuzzleFlash(gun: Tool? | Model?, gunName: string?)
 	if not gun then
-		warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
+		Utility.Warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
 		return
 	end
 	local shotPos = gun:FindFirstChild("Frame", true) or gun
 	if not shotPos then
-		warn("[ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
+		Utility.Warn("[ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
 		return
 	end
 

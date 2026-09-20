@@ -78,14 +78,14 @@ local function SetupNPCRagdoll(npcRecord: ClientNpcTypes.clientNpcRecordType)
 	end
 	local model = npcRecord.instance
 	if not model then
-		warn("NPC ragdoll cannot be set up on client, missing model")
+		Utility.Warn("NPC ragdoll cannot be set up on client, missing model")
 		return
 	end
 
 	local humanoid = model:WaitForChild("Humanoid", 3)
 
 	if not humanoid then
-		warn("NPC ragdoll cannot be set up on client, missing humanoid")
+		Utility.Warn("NPC ragdoll cannot be set up on client, missing humanoid")
 		return
 	end
 	humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
@@ -159,13 +159,13 @@ local function AttachGunToHand(npcRecord: ClientNpcTypes.clientNpcRecordType, gu
 end
 local function SetNPCDead(character: Model?)
 	if not character then
-		warn("[SetupNPCDeath] NPC missing model")
+		Utility.Warn("[SetupNPCDeath] NPC missing model")
 		return
 	end
 	local humanoid = character:WaitForChild("Humanoid", 3) :: Humanoid?
 
 	if not humanoid then
-		warn("[SetupNPCDeath] NPC missing humanoid")
+		Utility.Warn("[SetupNPCDeath] NPC missing humanoid")
 		return
 	end
 
@@ -228,14 +228,14 @@ local function HitLimb(
 
 	local model = npcRecord.instance
 	if not model then
-		warn("Missing npc model for hit limb")
+		Utility.Warn("Missing npc model for hit limb")
 		return
 	end
 
 	local limb = model:FindFirstChild(limbHit)
 
 	if not limb then
-		warn("Missing npc limb reference for hit limb")
+		Utility.Warn("Missing npc limb reference for hit limb")
 		return
 	end
 
@@ -268,7 +268,7 @@ local function SetupBloodEmitters(npcRecords: ClientNpcTypes.clientNpcRecordType
 			then lowerTorso:FindFirstChild(attachmentName)
 			else upperTorso:FindFirstChild(attachmentName)
 		if not attachment then
-			warn("Attachment not found")
+			Utility.Warn("Attachment not found")
 			continue
 		end
 		local bloodEmitter: ParticleEmitter = BloodFlowEmitter:Clone()

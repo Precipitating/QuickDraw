@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local BaseState = require(script.Parent.BaseState)
 
 local Stalk = setmetatable({}, BaseState)
@@ -36,9 +37,9 @@ function Stalk:MoveToTarget(target)
 end
 
 function Stalk:Enter(previous, StalkData)
-	warn(`[SERVER] {self.Owner.Name} Entered Stalk from {previous}`)
+	Utility.Warn(`[SERVER] {self.Owner.Name} Entered Stalk from {previous}`)
 	if not StalkData then
-		warn("No target data, dying")
+		Utility.Warn("No target data, dying")
 		self.Owner:Die(nil)
 		return
 	end
@@ -72,11 +73,11 @@ function Stalk:Enter(previous, StalkData)
 			return
 		end
 		if not success then
-			warn("Stalk pathfind failed, trying again")
+			Utility.Warn("Stalk pathfind failed, trying again")
 			Stalk:MoveToTarget(target)
 			return
 		end
-		warn("Reached")
+		Utility.Warn("Reached")
 
 		if target and not CollectionService:HasTag(target, "Dead") then
 			local targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position

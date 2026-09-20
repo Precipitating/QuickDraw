@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local SplineClass = require(ReplicatedStorage.Shared.SplineClass)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local TrainPaths = ReplicatedStorage.Shared.Paths.TrainPaths
 local TrainPositions = {}
 local CreatedSpline = nil
@@ -19,6 +20,7 @@ local StationPoints = {}
 local Stopped = false
 local CurrentSpeed = SPEED
 local TrainPosRemote = ReplicatedStorage.Shared.Remote.TrainPositionRemote
+local TrainSoundRemote = ReplicatedStorage.Shared.Remote.TrainChangeSoundRemote
 local TrainPosSchema = SeraSchemas.TrainPositionSchema
 
 local TrainHandler = {}
@@ -55,10 +57,11 @@ function TrainHandler:Run(active: boolean)
 	end
 
 	local distance = CARRIAGE_OFFSET
+	TrainSoundRemote:FireAllClients("17682395597")
 
 	LoopConn = RunService.Heartbeat:Connect(function(dt)
 		if not TrainModel then
-			warn("No train found on server")
+			Utility.Warn("No train found on server")
 			return
 		end
 		local trainPos = TrainModel:GetPivot().Position
@@ -67,7 +70,15 @@ function TrainHandler:Run(active: boolean)
 			if not stop.Triggered and not stop.Cooldown and (trainPos - stop.Position).Magnitude < 10 then
 				stop.Triggered = true
 				Stopped = true
+				TrainSoundRemote:FireAllClients("8234786003")
+
+				-- Warn sound that train is leaving
+				task.delay(stop.StopFor - 6, function()
+					TrainSoundRemote:FireAllClients("113442706404365", true)
+				end)
+
 				task.delay(stop.StopFor, function()
+					TrainSoundRemote:FireAllClients("17682395597")
 					Stopped = false
 					stop.Cooldown = true
 					task.delay(COOLDOWN_TIME, function()
@@ -117,7 +128,7 @@ function TrainHandler:Initialize()
 	end
 	TrainModel = workspace:FindFirstChild("ServerTrain")
 	if not TrainModel then
-		warn("No train found on server")
+		Utility.Warn("No train found on server")
 		return
 	end
 

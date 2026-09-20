@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local LootHandler = require(script.Parent.LootHandler)
 local PurchasePrices = require(ReplicatedStorage.Shared.PurchasePrices)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ServerData = require(script.Parent.ServerData)
@@ -19,7 +20,7 @@ function ServerProximityPromptHandler:CashPickedUp(player: Player, prompt: Proxi
 	local cashRegistered = parent:GetAttribute("Cash")
 
 	if not cashRegistered then
-		warn("Cash pickup has no Cash attribute")
+		Utility.Warn("Cash pickup has no Cash attribute")
 		return
 	end
 
@@ -42,26 +43,26 @@ function ServerProximityPromptHandler:HorseMount(player: Player, prompt: Proximi
 	local vehicleSeat = prompt.Parent and prompt.Parent:FindFirstChildOfClass("VehicleSeat")
 
 	if not vehicleSeat then
-		warn("Horse has no vehicle seat")
+		Utility.Warn("Horse has no vehicle seat")
 		prompt.Enabled = true
 		return
 	end
 	local character = player.Character
 	if not character then
-		warn("[ServerProximityPromptHandler:HorseMount] Missing character?")
+		Utility.Warn("[ServerProximityPromptHandler:HorseMount] Missing character?")
 		prompt.Enabled = true
 		return
 	end
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
 	if not humanoid then
-		warn("[ServerProximityPromptHandler:HorseMount] Missing humanoid")
+		Utility.Warn("[ServerProximityPromptHandler:HorseMount] Missing humanoid")
 		prompt.Enabled = true
 		return
 	end
 	local distance = (character.PrimaryPart.Position - vehicleSeat.Position).Magnitude
 
 	if distance > 10 then
-		warn(`{player.Name} tried to mount horse but not close enough.`)
+		Utility.Warn(`{player.Name} tried to mount horse but not close enough.`)
 		prompt.Enabled = true
 		return
 	end

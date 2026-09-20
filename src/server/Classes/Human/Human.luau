@@ -201,7 +201,7 @@ function Human:SetupMovementDetector()
 end
 function Human:SetupAttributes()
 	if not self.Character then
-		warn("Cannot setup human attributes, character model missing")
+		Utility.Warn("Cannot setup human attributes, character model missing")
 		return
 	end
 	self.Character:SetAttribute("Legless", false)
@@ -209,7 +209,7 @@ end
 
 function Human:IsLegless()
 	if not self.Character then
-		warn("Cannot get legless state, character model missing")
+		Utility.Warn("Cannot get legless state, character model missing")
 		return
 	end
 
@@ -218,7 +218,7 @@ end
 
 function Human:UpdateLeglessState(isLegless: boolean)
 	if not self.Character then
-		warn("Cannot update legless state, missing character")
+		Utility.Warn("Cannot update legless state, missing character")
 		return
 	end
 
@@ -289,7 +289,7 @@ function Human:SetInvincible(isInvincible: boolean, excludeFromCooldown: boolean
 		and self.LastInvincible
 		and (os.time() - self.LastInvincible) < HumanConstants.GUI_INTERACTION_INVINCIBILITY_COOLDOWN
 	then
-		warn("Cooldown, not setting invincible")
+		Utility.Warn("Cooldown, not setting invincible")
 		return
 	end
 
@@ -530,7 +530,7 @@ function Human:AssignBodyParts(tagName: string)
 end
 
 function Human:SimulateDefaultLimbs()
-	warn("[Human:SimulateDefaultLimbs] Base class called!")
+	Utility.Warn("[Human:SimulateDefaultLimbs] Base class called!")
 end
 
 -- ragdoll when player's state is equal to any CharacterStates
@@ -564,7 +564,7 @@ function Human:Die(shooter: Player?)
 	if self.Humanoid then
 		self.Humanoid.Health = 0
 	else
-		warn(`[Human:Die] Missing humanoid, so can't kill`)
+		Utility.Warn(`[Human:Die] Missing humanoid, so can't kill`)
 		return false
 	end
 	self.Dead = true
@@ -604,7 +604,7 @@ function Human:FixCrawlADS()
 end
 
 function Human:SetCrawlState()
-	warn("Ran SetCrawlState base class, you shouldn't be able to see this")
+	Utility.Warn("Ran SetCrawlState base class, you shouldn't be able to see this")
 end
 
 function Human:MakeLimbFloppy(limbPart)
@@ -680,7 +680,7 @@ function Human:SetupBloodEmitters()
 			then lowerTorso:FindFirstChild(attachmentName)
 			else upperTorso:FindFirstChild(attachmentName)
 		if not attachment then
-			warn("Attachment not found")
+			Utility.Warn("Attachment not found")
 			continue
 		end
 
@@ -780,7 +780,7 @@ function Human:OnDeath()
 end
 
 function Human:Ragdoll(duration: number, force: Vector3?)
-	warn("Human:Ragdoll BASE CLASS, YOU SHOULD NOT SEE THIS")
+	Utility.Warn("Human:Ragdoll BASE CLASS, YOU SHOULD NOT SEE THIS")
 end
 
 --[=[

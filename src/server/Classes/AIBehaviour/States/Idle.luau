@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local BaseState = require(script.Parent.BaseState)
 
 local Idle = setmetatable({}, BaseState)
@@ -10,7 +12,7 @@ function Idle.new(machine, ai)
 end
 
 function Idle:Enter(previous)
-	warn(`[SERVER] {self.Owner.Name} Entered Idle from {previous}`)
+	Utility.Warn(`[SERVER] {self.Owner.Name} Entered Idle from {previous}`)
 end
 
 function Idle:Update(dt) end

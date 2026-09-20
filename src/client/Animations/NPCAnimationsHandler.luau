@@ -1,6 +1,7 @@
 --
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 --
 local RunLoop = false
@@ -71,12 +72,14 @@ function NPCAnimationsHandler:AddNPCAnimationController(character: Model)
 		local controller = nil
 		local humanoid = character:WaitForChild("Humanoid", 10)
 		if not humanoid then
-			warn(`[NPCAnimationsHandler:AddNPCAnimationController] humanoid missing, can't initialize NPC animation`)
+			Utility.Warn(
+				`[NPCAnimationsHandler:AddNPCAnimationController] humanoid missing, can't initialize NPC animation`
+			)
 			return
 		end
 		local hrp = character:WaitForChild("HumanoidRootPart", 10)
 		if not hrp then
-			warn(
+			Utility.Warn(
 				`[NPCAnimationsHandler:AddNPCAnimationController] HumanoidRootPart missing, can't initialize NPC animation`
 			)
 			return

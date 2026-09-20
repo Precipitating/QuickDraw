@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 local StateMachine = {}
 StateMachine.__index = StateMachine
@@ -55,7 +57,7 @@ function StateMachine:Transition(toStateName, data)
 
 	if self.CurrentState then
 		if self.CurrentState.Name == toStateName then
-			warn(`Attempting to go to same state {toStateName}, denied`)
+			Utility.Warn(`Attempting to go to same state {toStateName}, denied`)
 			return false
 		end
 		if not self.CurrentState:CanTransition(toStateName) then

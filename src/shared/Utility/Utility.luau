@@ -1,8 +1,10 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
-local DEBUG_PRINT = true
+local DEBUG_PRINT = false
 
+local isServer = RunService:IsServer()
 local _print = print
 local _warn = warn
 local _error = error
@@ -125,7 +127,8 @@ return {
 
 	Warn = function(...)
 		if DEBUG_PRINT then
-			_warn(...)
+			local isServerTxt = if isServer then "[SERVER]" else "[CLIENT]"
+			_warn(`{isServerTxt} {...}`)
 		end
 	end,
 

@@ -30,7 +30,7 @@ local RandomHorseMaterialList = {
 }
 function Horse.new(model: Model?)
 	if not model then
-		warn("Horse class missing model!")
+		Utility.Warn("Horse class missing model!")
 		return
 	end
 	local horseType = model:GetAttribute("HorseType")
@@ -64,7 +64,7 @@ function Horse.new(model: Model?)
 		BackRightLowerLeg = Utility.GetInstance(model, false, "BRLL"),
 	}
 	if not self.Seat then
-		warn("Horse missing seat!")
+		Utility.Warn("Horse missing seat!")
 		return
 	end
 	if not self.LinearVelocity then

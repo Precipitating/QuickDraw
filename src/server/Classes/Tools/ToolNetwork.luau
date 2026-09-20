@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ToolsData = require(ReplicatedStorage.Shared.Classes.ToolsData)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -16,14 +17,14 @@ function ToolNetwork.ReduceTrapAmmo(player: Player)
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 
 	if not humanClass then
-		warn("Can't deduce ammo, human class missing")
+		Utility.Warn("Can't deduce ammo, human class missing")
 		return
 	end
 
 	local trap = humanClass.Inventory and humanClass.Inventory:GetTrap()
 
 	if not trap then
-		warn(`Can't reduce trap ammo,{player.Name} has no trap assigned`)
+		Utility.Warn(`Can't reduce trap ammo,{player.Name} has no trap assigned`)
 		return
 	end
 

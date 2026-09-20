@@ -169,7 +169,7 @@ end
 function PlayerContext:SetupLimbGUI()
 	-- Get references
 	if not self.Player or not self.Character then
-		--warn("[SetupLimbGUI] Missing character/Player ref")
+		--Utility.Warn("[SetupLimbGUI] Missing character/Player ref")
 		return
 	end
 
@@ -350,7 +350,7 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 	PlayerContext.ApplyMouseLock(true)
 	UserInputService.MouseIconEnabled = false
 
-	--warn("Local character references updated!")
+	--Utility.Warn("Local character references updated!")
 end
 
 local function SetupWind()

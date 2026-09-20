@@ -4,6 +4,7 @@ local Networker = require(ReplicatedStorage.Packages.Networker).server
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local ServerData = require(script.Parent.ServerData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local OreData = require(ServerScriptService.Server.Ore.OreData)
 local QuestHandler = require(ServerScriptService.Server.Quests.QuestHandler)
@@ -27,7 +28,7 @@ local TombStoneLootPool = {
 	{ value = "RopeTrap", weight = 20 },
 }
 
-local TOMBSTONE_RESPAWN_TIME = 300
+local TOMBSTONE_RESPAWN_TIME = 600
 local TOMBSTONE_CASH_REWARD_CHANCE = 0.05
 local TOMBSTONE_CASH_REWARD_MAX = 500
 local LootHandler = {}
@@ -105,23 +106,23 @@ function LootHandler:PickupLoot(player: Player, lootType: string, prompt: Proxim
 	elseif lootType == "Ore" then
 		local inventory = human.Inventory
 		if not inventory then
-			warn("Ore looting: Missing human inventory")
+			Utility.Warn("Ore looting: Missing human inventory")
 			return false
 		end
 
 		if not prompt then
-			warn("Ore looting: Missing prompt")
+			Utility.Warn("Ore looting: Missing prompt")
 			return false
 		end
 
 		if not inventory.AddItem then
-			warn("Ore looting: Missing AddItem function")
+			Utility.Warn("Ore looting: Missing AddItem function")
 			return false
 		end
 
 		local oreName = prompt:GetAttribute("Type")
 		if not oreName then
-			warn("Ore looting: Missing ore name (check if prompt has Attribute called Type)")
+			Utility.Warn("Ore looting: Missing ore name (check if prompt has Attribute called Type)")
 			return false
 		end
 		local success = inventory:AddItem(oreName, 1)
@@ -144,13 +145,13 @@ function LootHandler:SellAllOres(player: Player)
 	local human = PlayerManager:GetHumanClassFromPlayer(player)
 	local moneyMade = 0
 	if not human then
-		warn("Cannot sell ore, human class missing")
+		Utility.Warn("Cannot sell ore, human class missing")
 		return false
 	end
 
 	local inventory = human.Inventory
 	if not inventory then
-		warn("Cannot sell ore, inventory class missing")
+		Utility.Warn("Cannot sell ore, inventory class missing")
 		return false
 	end
 

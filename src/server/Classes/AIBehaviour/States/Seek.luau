@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
@@ -102,10 +103,10 @@ function Seek:LookAroundAndReact(ai)
 end
 
 function Seek:Enter(previous, seekData)
-	warn(`[SERVER] {self.Owner.Name} Entered Seek from {previous}`)
+	Utility.Warn(`[SERVER] {self.Owner.Name} Entered Seek from {previous}`)
 
 	if not seekData then
-		warn("No last seen target, back to default state")
+		Utility.Warn("No last seen target, back to default state")
 		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		return
 	end
@@ -143,30 +144,30 @@ function Seek:Enter(previous, seekData)
 	self:MoveToLastSeenLocation(target)
 
 	if not self.AI or not self.AI.NoobPath or not self.AI.NoobPath.Reached then
-		warn("Seek pathfind failed, probably dead")
+		Utility.Warn("Seek pathfind failed, probably dead")
 		return
 	end
 	-- 2. Wait until destination reached
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		if not success or not self.Owner then
-			warn("Seek pathfind failed, returning to default state")
+			Utility.Warn("Seek pathfind failed, returning to default state")
 			self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 			return
 		end
 
 		--
-		warn("Reached")
+		Utility.Warn("Reached")
 		self:LookAroundAndReact(ai)
 	end))
 
 	self.Janitor:Add(self.AI.NoobPath.Trapped:Connect(function(trapType: string)
-		warn(`Seek pathfind failed, returning to default state: {trapType}`)
+		Utility.Warn(`Seek pathfind failed, returning to default state: {trapType}`)
 		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		return
 	end))
 
 	self.Janitor:Add(self.AI.NoobPath.Error:Connect(function(errorType: string)
-		warn(`NPC seek error: {errorType}`)
+		Utility.Warn(`NPC seek error: {errorType}`)
 		self.Machine:Transition(self.AI.DefaultState.Name, self.AI.DefaultState.Data)
 		return
 	end))

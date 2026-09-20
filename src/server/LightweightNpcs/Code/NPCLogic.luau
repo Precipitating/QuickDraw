@@ -1,5 +1,4 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ActionResult = require(ServerScriptService.Server.LightweightNpcs.Code.States.ActionResult)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
@@ -18,8 +17,8 @@ local NPCAI = require(script.Parent.NPCAI)
 local NPCPhysics = require(script.Parent.NPCPhysics)
 local NPCPoses = require(script.Parent.NPCPoses)
 local NPC_CULL_DISTANCE = 400
+local BUMP_DELAY = 1
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
-local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local NPCLogic = {}
 
@@ -394,7 +393,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				return
 			end
 			local totalDmg = damage * (LimbDamageMultiplier[limbHit] or 1)
-			warn(LimbsEnum[limbHit])
+			Utility.Warn(LimbsEnum[limbHit])
 
 			NPCHealth:UpdateLimbHealth(npcRecord, limbHit, -totalDmg, attacker)
 			NPCHealth:UpdateHealth(npcRecord, -totalDmg, attacker)
@@ -425,7 +424,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				return
 			end
 			if not damageData.Type then
-				warn("NPC On Hit: Missing damage type")
+				Utility.Warn("NPC On Hit: Missing damage type")
 				return
 			end
 
@@ -497,7 +496,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			return
 		end
 		npcRecord.npcState = NpcStateModule.Dying
-		warn("onDeath called")
+		Utility.Warn("onDeath called")
 		--NPCPoses:ResetPose(npcRecord)
 		-- Change collision group so its untouchable
 		for _, bodyPart in npcRecord.bodyParts do
@@ -540,7 +539,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		local lastImpulsed = npcRecord.data and npcRecord.data.lastImpulse
 		local now = os.clock()
 
-		if lastImpulsed and now - lastImpulsed < 0.5 then
+		if lastImpulsed and now - lastImpulsed < BUMP_DELAY then
 			return
 		end
 
@@ -565,7 +564,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		local lastBumped = npcRecord.data.lastBumped
 
 		-- reduce bump spam, tries again in 0.5 secs
-		if lastBumped and now - lastBumped <= 0.5 then
+		if lastBumped and now - lastBumped <= BUMP_DELAY then
 			return
 		end
 

@@ -57,7 +57,7 @@ function StaminaBarGUI:Connect(player: Player, humanoid: Humanoid?)
 		playerClass.Stamina = currentStamina
 	end))
 
-	warn(`{player.DisplayName}'s stamina bar connected!`)
+	Utility.Warn(`{player.DisplayName}'s stamina bar connected!`)
 end
 
 return StaminaBarGUI

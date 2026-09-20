@@ -8,7 +8,7 @@ local MoneyDropHandler = {}
 
 function MoneyDropHandler.DropMoney(position: Vector3, amount: number)
 	if not amount then
-		warn("[MoneyDropHandler.DropMoney] No amount specified")
+		Utility.Warn("[MoneyDropHandler.DropMoney] No amount specified")
 		return
 	end
 

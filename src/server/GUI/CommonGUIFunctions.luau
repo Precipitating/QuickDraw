@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local CommonGUIFunctions = {}
 
@@ -14,7 +15,7 @@ function CommonGUIFunctions:OnGUIOpen(player: Player, npcModel: Model)
 	end
 
 	if (player.Character:GetPivot().Position - npcModel:GetPivot().Position).Magnitude > 10 then
-		warn(`{player.Name} is too far from NPC`)
+		Utility.Warn(`{player.Name} is too far from NPC`)
 		return
 	end
 

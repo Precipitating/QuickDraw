@@ -8,6 +8,7 @@ local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -89,7 +90,7 @@ function DamageModule:ApplyStatusDamage(statusDamageData: ClassTypes.StatusDamag
 	local targetHuman = statusDamageData.TargetHuman
 
 	if not humanoidType then
-		warn("[ApplyStatusDamage]: Missing humanoid type")
+		Utility.Warn("[ApplyStatusDamage]: Missing humanoid type")
 		return
 	end
 
@@ -187,7 +188,7 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 	-- Status Damage does not have RaycastResult, so it will only display blood if we do.
 	local raycastResult = (damageData :: any).RaycastResult
 	if not animalClass then
-		warn("Missing animal class.")
+		Utility.Warn("Missing animal class.")
 		return
 	end
 
@@ -227,7 +228,7 @@ function DamageModule.DamageAnimal(damageData: ClassTypes.GunShotDamage | ClassT
 		animalClass.Character:GetPivot().Position,
 		{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5), MaxDistance = 300 }
 	)
-	warn(`DAMAGED ANIMAL`)
+	Utility.Warn(`DAMAGED ANIMAL`)
 end
 function DamageModule.DamageHuman(
 	damageData: ClassTypes.StatusDamage | ClassTypes.GunShotDamage | ClassTypes.TrapDamage | ClassTypes.BargeDamage
@@ -244,12 +245,12 @@ function DamageModule.DamageHuman(
 		return
 	end
 	if human.Invincible then
-		warn("invicible, cant hit")
+		Utility.Warn("invicible, cant hit")
 		return
 	end
 
 	if not damageData.CanAffectShooter and damageData.Shooter == (human and human.Player) then
-		warn("Player attempted to shoot themself, denied")
+		Utility.Warn("Player attempted to shoot themself, denied")
 		return
 	end
 
@@ -259,7 +260,7 @@ function DamageModule.DamageHuman(
 	local shotPos = if damageData.Type == "Shot" then damageData.ShotPosition else nil
 	local cosmeticBulletObj = damageData.CosmeticBulletObject
 	if not hitObj then
-		warn("[DamageHuman] Invalid hit object")
+		Utility.Warn("[DamageHuman] Invalid hit object")
 		return
 	end
 

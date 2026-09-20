@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local AnimalAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.AnimalAttack)
 local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local AI = require(script.Parent.AI)
@@ -175,7 +176,7 @@ function AnimalAI:Attack(target: Model? | BasePart?, onComplete: () -> ())
 	end
 
 	if self.Owner.Attack then
-		warn("Animal attack called")
+		Utility.Warn("Animal attack called")
 		self.Owner:Attack(target, onComplete)
 	end
 end

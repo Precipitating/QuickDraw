@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local CoreGUIHandler = {}
 
 local BackpackVisibilityLocked = false
@@ -8,7 +10,7 @@ function CoreGUIHandler.ToggleBackpackVisibility(state: boolean, locked: boolean
 		return
 	end
 
-	warn(`[CLIENT] Backpack visibility state = {state}`)
+	Utility.Warn(`[CLIENT] Backpack visibility state = {state}`)
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, state)
 
 	if locked ~= nil then

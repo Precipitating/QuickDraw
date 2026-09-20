@@ -2,9 +2,10 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local LootSpawner = {}
 local MaxLootSpawnsAllowed = 10
-local LootSpawnTime = 300
+local LootSpawnTime = 600
 local LootSpawnAreas = ServerStorage.LootSpawnAreas:GetChildren()
 local LootItems = ServerStorage.LootItems:GetChildren()
 local CHECK_RADIUS = 5
@@ -45,7 +46,7 @@ end
 
 function LootSpawner:SpawnLoot()
 	if #LootItems <= 0 or #LootSpawnAreas <= 0 then
-		warn("Loot spawning missing spawn or item template")
+		Utility.Warn("Loot spawning missing spawn or item template")
 		return
 	end
 
@@ -69,7 +70,7 @@ function LootSpawner:SpawnLoot()
 	-- 1. Get random loot item mesh
 	local lootItem: MeshPart = LootItems[RandomModule.GetRandomIntBetween(1, #LootItems)]
 	if not lootItem then
-		warn("Loot item missing")
+		Utility.Warn("Loot item missing")
 		return
 	end
 

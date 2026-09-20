@@ -20,7 +20,7 @@ local function CanStillSeeTarget(agent: LightweightNpcTypes.npcRecordType, dt: n
 	local currentTargetPosition = target:GetPivot().Position
 
 	local targetId = target:GetAttribute("npcId") or target.Name
-	local detected, gain = perception:processVisualDetection(
+	local detected, _ = perception:processVisualDetection(
 		targetId,
 		agent.hrp.Position,
 		agent.hrp.CFrame.LookVector,
@@ -149,16 +149,16 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 				-- local finalMuzzleCFrame = rightHandAttachment.WorldCFrame * muzzleOffset
 				agent.data.shootPoint = rightHandAttachment.WorldCFrame * CFrame.new(0, 0.5, -1)
 
-				local debug = Instance.new("Part", workspace)
-				debug.Anchored = true
-				debug.Material = Enum.Material.Neon
-				debug.CFrame = agent.data.shootPoint
-				debug.Size = Vector3.new(0.5, 0.5, 0.5)
-				debug.CanCollide = false
-				debug.CanQuery = false
-				task.delay(2, function()
-					debug:Destroy()
-				end)
+				-- local debug = Instance.new("Part", workspace)
+				-- debug.Anchored = true
+				-- debug.Material = Enum.Material.Neon
+				-- debug.CFrame = agent.data.shootPoint
+				-- debug.Size = Vector3.new(0.5, 0.5, 0.5)
+				-- debug.CanCollide = false
+				-- debug.CanQuery = false
+				-- task.delay(2, function()
+				-- 	debug:Destroy()
+				-- end)
 
 				if currentWeaponData.GunType == "Shotgun" then
 					NPCWeaponsClass:SpreadShot(agent, targetPos)
@@ -171,7 +171,7 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		end
 	end
 
-	warn("Attacking, awareness:", currentState)
+	Utility.Warn("Attacking, awareness:", currentState)
 	return ActionResult.Running
 end
 

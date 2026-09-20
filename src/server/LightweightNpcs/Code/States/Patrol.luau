@@ -67,7 +67,7 @@ function Patrol:Update(agent, context)
 	local seesTarget = CommonStateLogic.CanSeeEnemy(agent, dt)
 	if seesTarget then
 		agent.ai.currentTarget = seesTarget
-		warn("AI sees enemy")
+		Utility.Warn("AI sees enemy")
 		self:ExitPatrolState(agent)
 		return ActionResult.Success
 	end

@@ -15,7 +15,7 @@ Turret.__index = Turret
 function Turret.new(modelRef: Model?)
 	local self = setmetatable({}, Turret)
 	if not modelRef then
-		warn("Turret cannot be initialized! missing model argument!")
+		Utility.Warn("Turret cannot be initialized! missing model argument!")
 		return
 	end
 	self.Janitor = Janitor.new()
@@ -24,13 +24,13 @@ function Turret.new(modelRef: Model?)
 	--
 	self.WeaponData = GunData[self.Type]
 	if not self.WeaponData then
-		warn("Wrong weapon data for Turret, check if its in GunData & correct name")
+		Utility.Warn("Wrong weapon data for Turret, check if its in GunData & correct name")
 		return
 	end
 
 	self.RadiusPart = Utility.GetInstance(modelRef, false, "Radius").Value
 	if not self.RadiusPart then
-		warn("Radius not defined for turret, check its object value")
+		Utility.Warn("Radius not defined for turret, check its object value")
 		return
 	end
 	--
@@ -231,7 +231,7 @@ end
 
 function Turret:ActivateMuzzleFlash()
 	if not self.MuzzleFlash then
-		warn("Muzzle flash reference missing, can't activate")
+		Utility.Warn("Muzzle flash reference missing, can't activate")
 		return
 	end
 
@@ -261,12 +261,12 @@ function Turret:SingleShot()
 	local projectileData = self.ProjectileData
 	local context = nil
 	if not projectileData then
-		warn("Projectile data invalid, can't shoot")
+		Utility.Warn("Projectile data invalid, can't shoot")
 		return
 	end
 
 	if not ProjectileContext.Solver then
-		warn("ProjectileContext Solver reference missing in Turret class")
+		Utility.Warn("ProjectileContext Solver reference missing in Turret class")
 		return
 	end
 
@@ -283,7 +283,7 @@ function Turret:SingleShot()
 	context.UserData.GunType = self.GunType
 
 	if not context then
-		warn("Singleshot context is invalid")
+		Utility.Warn("Singleshot context is invalid")
 		return
 	end
 
@@ -296,11 +296,11 @@ function Turret:SpreadShot()
 	local projectileData = self.WeaponData.ProjectileData
 
 	if not projectileData then
-		warn("Vetra projectile data is missing!")
+		Utility.Warn("Vetra projectile data is missing!")
 		return
 	end
 	if not pelletCount then
-		warn(`Pellet count not specified for {self.Type}`)
+		Utility.Warn(`Pellet count not specified for {self.Type}`)
 		return
 	end
 

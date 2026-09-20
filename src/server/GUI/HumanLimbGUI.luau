@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local HumanLimbGUIHandler = {}
 
@@ -15,7 +16,7 @@ function HumanLimbGUIHandler:UpdateLimbGUIHP(player: Player, limbName: string, l
 	end
 
 	self.networker:fire(player, "UpdateLimbGUIHP", buf)
-	warn("Update limb gui hp")
+	Utility.Warn("Update limb gui hp")
 end
 
 HumanLimbGUIHandler.networker = Networker.new("HumanLimbGUINetwork", HumanLimbGUIHandler)

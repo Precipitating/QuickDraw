@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
@@ -14,7 +15,7 @@ function ThrowableHandler:GetAmmo(player: Player)
 	local throwable: Throwable? = humanClass.Inventory:GetThrowable()
 
 	if not throwable then
-		warn("Throwable is nil!")
+		Utility.Warn("Throwable is nil!")
 		return nil
 	end
 
@@ -26,7 +27,7 @@ function ThrowableHandler:OnClientThrow(player: Player)
 	local throwable: Throwable? = humanClass.Inventory:GetThrowable()
 
 	if not throwable then
-		warn("Throwable is nil!")
+		Utility.Warn("Throwable is nil!")
 		return
 	end
 

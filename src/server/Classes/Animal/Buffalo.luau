@@ -22,7 +22,7 @@ Buffalo.__index = Buffalo
 function Buffalo.new(model: Model?)
 	local self = setmetatable(Animal.new(model, "Buffalo", true), Buffalo)
 	if not model then
-		warn("Buffalo missing model")
+		Utility.Warn("Buffalo missing model")
 		return
 	end
 	self.ChargeDistance = 150
@@ -41,7 +41,7 @@ end
 
 function Buffalo:ChargeUpRun(target: Model? | BasePart?, onComplete: () -> ())
 	if not target then
-		warn(`[LookAtTargetFor] Missing target reference`)
+		Utility.Warn(`[LookAtTargetFor] Missing target reference`)
 		return
 	end
 
@@ -52,7 +52,7 @@ function Buffalo:ChargeUpRun(target: Model? | BasePart?, onComplete: () -> ())
 				return
 			end
 			if os.clock() - self.ChargeStartTime >= self.WaitTimeBeforeCharge then
-				warn("Charge ready")
+				Utility.Warn("Charge ready")
 				self.Janitor:Remove("LookAtConn")
 				onComplete()
 				return
@@ -72,7 +72,7 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 	end
 
 	if not target then
-		warn("Buffalo missing target, can't attack!")
+		Utility.Warn("Buffalo missing target, can't attack!")
 		return
 	end
 
@@ -101,7 +101,7 @@ function Buffalo:Attack(target: Model? | BasePart?, onComplete: () -> ())
 		self.Janitor:Add(
 			collider.Touched:Once(function(hitPart: BasePart)
 				local parent = hitPart.Parent
-				warn(`Buffalo hit {hitPart}`)
+				Utility.Warn(`Buffalo hit {hitPart}`)
 				local humanoid = parent:FindFirstChildOfClass("Humanoid")
 				local npcId = hitPart.Parent and hitPart.Parent:GetAttribute("npcId")
 				if

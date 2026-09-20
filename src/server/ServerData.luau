@@ -33,7 +33,7 @@ function ServerData.WaitForPlayerData(player: Player)
 end
 
 function DataService:onPlayerInit(player: Player, data): ()
-	warn(player.Name .. " has initialized with data:", data)
+	Utility.Warn(player.Name .. " has initialized with data:", data)
 	data.lastJoinedTime = os.time() -- We can directly modify data since no connections exist yet.
 end
 
@@ -43,7 +43,7 @@ end
 
 function ServerData.UpdateMoney(player: Player, amount: number)
 	DataService:update(player, "currency", function(currentAmt)
-		warn(`{player.Name} should have {currentAmt + amount}`)
+		Utility.Warn(`{player.Name} should have {currentAmt + amount}`)
 		return currentAmt + amount
 	end)
 end
@@ -72,7 +72,7 @@ function ServerData:SetupLeaderboard(player: Player)
 	ServerData.Leaderstats = leaderstats
 
 	DataService:getChangedSignal(player, { "bounty" }):Connect(function(newBounty)
-		warn(`[SERVER] NEW BOUNTY SHOULD BE {newBounty}`)
+		Utility.Warn(`[SERVER] NEW BOUNTY SHOULD BE {newBounty}`)
 		bounty.Value = newBounty
 	end)
 end

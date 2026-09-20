@@ -5,6 +5,7 @@ local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local SplineClass = require(ReplicatedStorage.Shared.SplineClass)
 local Templates = ReplicatedStorage.Shared.Templates
 local TrainPosRemote = ReplicatedStorage.Shared.Remote.TrainPositionRemote
+local TrainSoundRemote = ReplicatedStorage.Shared.Remote.TrainChangeSoundRemote
 local TrainPosSchema = SeraSchemas.TrainPositionSchema
 local TrainPaths = ReplicatedStorage.Shared.Paths.TrainPaths
 
@@ -13,6 +14,8 @@ local TrainHandler = {}
 local TrainTemplate = nil
 local CarriageTemplate = nil
 local ClientSpline = nil
+local AudioSource: AudioPlayer? = nil
+local OneShotAudioSource: AudioPlayer? = nil
 
 local CARRIAGE_OFFSET = 78
 local ServerDistance = 0
@@ -41,6 +44,8 @@ function TrainHandler:Initialize()
 
 	TrainTemplate.PrimaryPart = TrainTemplate:FindFirstChild("BASE", true)
 	CarriageTemplate.PrimaryPart = CarriageTemplate:FindFirstChild("BASE", true)
+	AudioSource = CarriageTemplate:FindFirstChild("Source")
+	OneShotAudioSource = TrainTemplate:FindFirstChild("OneShotSource")
 
 	local trainRope = TrainTemplate:FindFirstChildOfClass("RopeConstraint")
 	local carriageAttachPoint = CarriageTemplate:FindFirstChild("AttachPoint", true)
@@ -74,6 +79,24 @@ function TrainHandler:Initialize()
 		if math.abs(ClientDistance - ServerDistance) > SNAP_THRESHOLD then
 			ClientDistance = ServerDistance
 		end
+	end)
+
+	-- Change looped sounds
+	TrainSoundRemote.OnClientEvent:Connect(function(soundID: string, oneShot: boolean?)
+		if not AudioSource then
+			return
+		end
+		if not OneShotAudioSource then
+			return
+		end
+
+		if oneShot then
+			OneShotAudioSource.Asset = `rbxassetid://{soundID}`
+			OneShotAudioSource.TimePosition = 0
+			OneShotAudioSource:Play()
+		end
+
+		AudioSource.Asset = `rbxassetid://{soundID}`
 	end)
 
 	RunService.RenderStepped:Connect(function(dt)

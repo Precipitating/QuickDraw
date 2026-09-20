@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local ServerData = require(ServerScriptService.Server.ServerData)
 local QuestData = require(ReplicatedStorage.Shared.Quests.QuestData)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local QUEST_GIVER_DISTANCE_REQUIREMENT = 10
 local QuestHandler = {}
 
@@ -30,13 +31,13 @@ function QuestHandler:ProgressQuest(
 		local questData = QuestData[questBaseName][questNumber]
 
 		if not questData then
-			warn(`Cannot progress {questName}, data doesn't exist in table`)
+			Utility.Warn(`Cannot progress {questName}, data doesn't exist in table`)
 			continue
 		end
 
 		local questType = questData.QuestType
 		if not questType then
-			warn(`Cannot progress {questName}, quest type missing from table`)
+			Utility.Warn(`Cannot progress {questName}, quest type missing from table`)
 			continue
 		end
 
@@ -63,7 +64,7 @@ function QuestHandler:AddQuest(player: Player, questName: string, questGiverNPC:
 	local character = player.Character
 
 	if not character then
-		warn("Can't add a new quest, player character is missing")
+		Utility.Warn("Can't add a new quest, player character is missing")
 		return false
 	end
 
@@ -71,7 +72,7 @@ function QuestHandler:AddQuest(player: Player, questName: string, questGiverNPC:
 		(character:GetPivot().Position - questGiverNPC:GetPivot().Position).Magnitude
 		> QUEST_GIVER_DISTANCE_REQUIREMENT
 	then
-		warn("Player too far from quest giver to add quest!")
+		Utility.Warn("Player too far from quest giver to add quest!")
 		return false
 	end
 
@@ -80,7 +81,7 @@ function QuestHandler:AddQuest(player: Player, questName: string, questGiverNPC:
 	local currentQuests = ServerData.GetActiveQuests(player)
 
 	if not questData then
-		warn(`Cannot add new quest, {questName} is not a valid quest`)
+		Utility.Warn(`Cannot add new quest, {questName} is not a valid quest`)
 		return false
 	end
 

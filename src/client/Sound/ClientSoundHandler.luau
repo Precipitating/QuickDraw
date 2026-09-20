@@ -3,6 +3,7 @@ local Networker = require(ReplicatedStorage.Packages.Networker).client
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayOneShotSchema = SeraSchemas.Play3DOneShotSchema
 
 export type PlayOptions = SoundManager.PlayOptions
@@ -14,7 +15,7 @@ function ClientSoundHandler:PlayKeyed(key: string, name: string, options: PlayOp
 end
 
 function ClientSoundHandler:PlayOneShot(name: string, options: PlayOptions?)
-	warn(name)
+	Utility.Warn(name)
 	SoundManager.Play(name, options)
 end
 

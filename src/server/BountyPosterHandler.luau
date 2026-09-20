@@ -19,7 +19,7 @@ local function SetAvatarThumbnail(imageLabel: ImageLabel, userId: number)
 	if ok and content then
 		imageLabel.Image = content
 	else
-		warn(`Failed to fetch avatar thumbnail for {userId}: {content}`)
+		Utility.Warn(`Failed to fetch avatar thumbnail for {userId}: {content}`)
 	end
 end
 
@@ -43,7 +43,7 @@ end
 local function ApplyPosterData(posterClone: Model, player: Player, bounty: number): boolean
 	local _, imageLabel, nameLabel, bountyLabel = GetPosterRefs(posterClone)
 	if not imageLabel or not nameLabel or not bountyLabel then
-		warn("Bounty poster missing label references")
+		Utility.Warn("Bounty poster missing label references")
 		return false
 	end
 

@@ -68,7 +68,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
 	if CollectionService:HasTag(player, "FirstLoad") then
-		warn("Player first loaded, setting invincible forever until game loaded")
+		Utility.Warn("Player first loaded, setting invincible forever until game loaded")
 		self:SetInvincible(true, true)
 	else
 		self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
@@ -203,7 +203,7 @@ function HumanPlayer:SetInCombat(InCombat: boolean)
 	Human.SetInCombat(self, InCombat)
 	local InCombatGUI = Utility.GetInstance(self.Player, false, "PlayerGui", "InCombatGUI")
 	if not InCombatGUI then
-		warn("Cannot enable In Combat GUI, missing playerGUI reference")
+		Utility.Warn("Cannot enable In Combat GUI, missing playerGUI reference")
 		return
 	end
 
@@ -303,7 +303,7 @@ function HumanPlayer:Die(killer: (Player | Model)?)
 			end
 
 			if npcRecord.faction == "Sheriff" then
-				warn("SHERIFF KILLED PLAYAH")
+				Utility.Warn("SHERIFF KILLED PLAYAH")
 				CollectionService:AddTag(self.Player, "Jailed")
 				ServerData:SetJailed(self.Player, true)
 			end
@@ -379,7 +379,7 @@ function HumanPlayer:SetCrawlState()
 	end
 
 	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
-		warn("Should be crawling")
+		Utility.Warn("Should be crawling")
 
 		HumanSignals.RagdollClient:Fire(self.Player, 3)
 		print("Both legs disabled")
@@ -398,7 +398,7 @@ function HumanPlayer:SetCrawlState()
 
 		self:UpdateLeglessState(true)
 
-		warn(`Player should be legless now`)
+		Utility.Warn(`Player should be legless now`)
 	end
 end
 function HumanPlayer:HealAll()

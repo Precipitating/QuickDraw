@@ -1,4 +1,3 @@
-local PhysicsService = game:GetService("PhysicsService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -8,7 +7,6 @@ local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
-local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 
@@ -20,7 +18,7 @@ function Inputs:ApplyJumpDrain(player: Player)
 	local humanoid = humanClass.Humanoid
 
 	if not humanoid then
-		warn("Missing humanoid reference to apply jump drain, probably dead")
+		Utility.Warn("Missing humanoid reference to apply jump drain, probably dead")
 		return false
 	end
 	if humanClass:IsLegless() then
@@ -117,20 +115,20 @@ end
 
 function Inputs:AddBargeCollision(player: Player)
 	if not player then
-		warn(`Cannot initialize barge colliders, player ref missing`)
+		Utility.Warn(`Cannot initialize barge colliders, player ref missing`)
 		return
 	end
 
 	local character = player.Character
 
 	if not character then
-		warn(`Cannot initialize barge colliders, character ref missing`)
+		Utility.Warn(`Cannot initialize barge colliders, character ref missing`)
 		return
 	end
 
 	local hrp = character:FindFirstChild("HumanoidRootPart")
 	if not hrp then
-		warn(`Cannot initialize barge colliders, HRP missing`)
+		Utility.Warn(`Cannot initialize barge colliders, HRP missing`)
 		return
 	end
 
@@ -246,14 +244,14 @@ end
 
 function Inputs:DestroyBargeCollision(player: Player)
 	if not player then
-		warn(`Cannot initialize barge colliders, player ref missing`)
+		Utility.Warn(`Cannot initialize barge colliders, player ref missing`)
 		return
 	end
 
 	local character = player.Character
 
 	if not character then
-		warn(`Cannot remove barge colliders, character ref missing`)
+		Utility.Warn(`Cannot remove barge colliders, character ref missing`)
 		return
 	end
 

@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local HumanNPC = require(ServerScriptService.Server.Classes.Human.HumanNPC)
 local HumanPlayer = require(ServerScriptService.Server.Classes.Human.HumanPlayer)
@@ -9,7 +11,7 @@ local PlayerManager = {}
 
 function PlayerManager:AddHumanClass(player: Player)
 	if not player then
-		warn(`Attempting to add a Human class, but player is {player}`)
+		Utility.Warn(`Attempting to add a Human class, but player is {player}`)
 		return
 	end
 	local character = player.Character

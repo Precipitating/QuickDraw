@@ -4,6 +4,7 @@ local Stack = require(ReplicatedStorage.Shared.Classes.Stack)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Fallback = require(ServerScriptService.Server.Classes.AIBehaviour.States.Fallback)
 local Patrol = require(ServerScriptService.Server.Classes.AIBehaviour.States.Patrol)
 local RangeAttack = require(ServerScriptService.Server.Classes.AIBehaviour.States.RangeAttack)
@@ -109,7 +110,7 @@ function RangeAI:Attack()
 		currentGun:Reload()
 	else
 		currentGun:ShootGun()
-		warn(`{self.Owner.Name} should shoot!`)
+		Utility.Warn(`{self.Owner.Name} should shoot!`)
 		local recoil = GunData[self.WeaponName].GunRecoil
 		handle:ApplyImpulseAtPosition(handle.AssemblyMass * UP * recoil, shootPoint.WorldPosition)
 	end

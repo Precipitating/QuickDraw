@@ -34,7 +34,7 @@ end
 function PopupHandler:NewPopup(duration: number, text: string)
 	local playerGUI = PlayerContext.PlayerGui
 	if not playerGUI then
-		warn("No popup, player gui ref missing")
+		Utility.Warn("No popup, player gui ref missing")
 		return
 	end
 	local newPopup = PopupImg:Clone()

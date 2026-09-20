@@ -26,14 +26,14 @@ local function InitializeOreTable()
 
 		-- Ensure all the ores data keys exist
 		if not weight or not worth then
-			warn("Check OreData, missing a key")
+			Utility.Warn("Check OreData, missing a key")
 			return
 		end
 
 		-- ensure ores folder exists in ServerStorage
 		local oresFolder = ServerStorage:FindFirstChild("Ores")
 		if not oresFolder then
-			warn("Missing ores folder in serverstorage?")
+			Utility.Warn("Missing ores folder in serverstorage?")
 			return
 		end
 
@@ -41,7 +41,7 @@ local function InitializeOreTable()
 		local oreInstance = oresFolder:FindFirstChild(key)
 
 		if not oreInstance then
-			warn(`{key} instance doesn't exist in Ores folder (serverstorage)`)
+			Utility.Warn(`{key} instance doesn't exist in Ores folder (serverstorage)`)
 			continue
 		end
 
@@ -52,7 +52,7 @@ end
 
 local function GetOreSpawnPoint(chosenAttachment: Attachment?)
 	if not chosenAttachment then
-		warn("Ore spawn attachment not specified")
+		Utility.Warn("Ore spawn attachment not specified")
 		return
 	end
 

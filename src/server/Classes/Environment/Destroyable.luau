@@ -10,6 +10,7 @@ local ProjectileEvents = require(ServerScriptService.Server.ProjectilesHandler.P
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local DestroyableData = require(ReplicatedStorage.Shared.DestroyableData)
 local NpcState = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 -- Destroyable environmental objects that may produce a unique effect
 local Destroyable = {}
 Destroyable.__index = Destroyable
@@ -20,6 +21,7 @@ function Destroyable.new(object: Instance)
 	local self = setmetatable({}, Destroyable)
 	local data = DestroyableData[object.Name]
 	self.DestroyableData = data
+
 	self.ModelRef = object
 	self.Name = object.Name
 	self.Health = data.Health
@@ -68,7 +70,7 @@ function Destroyable:ApplyHumanExplosionImpulse(damagedObject: BasePart)
 
 	local root = if humanClass then humanClass.HRP else npcClass and npcClass.hrp
 	if not root then
-		warn(`Destroyable:ApplyHumanExplosionImpulse missing HRP reference!`)
+		Utility.Warn(`Destroyable:ApplyHumanExplosionImpulse missing HRP reference!`)
 		return
 	end
 	local dir = (root.Position - self.ModelRef:GetPivot().Position)

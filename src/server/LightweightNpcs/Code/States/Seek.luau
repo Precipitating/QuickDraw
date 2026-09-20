@@ -27,7 +27,7 @@ function Seek:LookAroundForTarget(agent: LightweightNpcTypes.npcRecordType, dt: 
 	agent.velocity = Vector3.zero
 	agent.busy = true
 	for _ = 1, 4 do
-		warn("ROTATIN")
+		Utility.Warn("ROTATIN")
 		if agent.ai.worldState:get("hasTarget") then
 			agent.busy = false
 			return
@@ -37,6 +37,7 @@ function Seek:LookAroundForTarget(agent: LightweightNpcTypes.npcRecordType, dt: 
 	end
 	agent.busy = false
 end
+
 function Seek:GeneratePathToLastSeenTarget(agent, forceReset: boolean?)
 	local currentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
 	local lastSeenTarget = agent.ai.lastSeenTarget
@@ -53,17 +54,17 @@ function Seek:GeneratePathToLastSeenTarget(agent, forceReset: boolean?)
 		end
 
 		-- DEBUG LAST SEEN
-		local p1 = Instance.new("Part", workspace)
-		p1.Name = "lastSeen"
-		p1.Anchored = true
-		p1.Size = Vector3.new(0.5, 0.5, 0.5)
-		p1.Position = lastSeenPos
-		p1.CanCollide = false
-		p1.Color = Color3.fromRGB(0, 47, 255)
+		-- local p1 = Instance.new("Part", workspace)
+		-- p1.Name = "lastSeen"
+		-- p1.Anchored = true
+		-- p1.Size = Vector3.new(0.5, 0.5, 0.5)
+		-- p1.Position = lastSeenPos
+		-- p1.CanCollide = false
+		-- p1.Color = Color3.fromRGB(0, 47, 255)
 
-		task.delay(5, function()
-			p1:Destroy()
-		end)
+		-- task.delay(5, function()
+		-- 	p1:Destroy()
+		-- end)
 
 		local flankPath = agent.ai.pathfinder:findFlankingPath(currentPos, lastSeenPos)
 		if not flankPath then
@@ -80,17 +81,17 @@ function Seek:GeneratePathToLastSeenTarget(agent, forceReset: boolean?)
 		agent.ai.currentNavigationData = flankPath
 
 		-- DEBUG
-		for _, path in flankPath.waypoints do
-			local p2 = Instance.new("Part", workspace)
-			p2.Anchored = true
-			p2.Size = Vector3.new(0.5, 0.5, 0.5)
-			p2.Position = path.Position
-			p2.CanCollide = false
-			p2.Color = Color3.fromRGB(0, 255, 0)
-			task.delay(5, function()
-				p2:Destroy()
-			end)
-		end
+		-- for _, path in flankPath.waypoints do
+		-- 	local p2 = Instance.new("Part", workspace)
+		-- 	p2.Anchored = true
+		-- 	p2.Size = Vector3.new(0.5, 0.5, 0.5)
+		-- 	p2.Position = path.Position
+		-- 	p2.CanCollide = false
+		-- 	p2.Color = Color3.fromRGB(0, 255, 0)
+		-- 	task.delay(5, function()
+		-- 		p2:Destroy()
+		-- 	end)
+		-- end
 	end
 	return true
 end
@@ -112,7 +113,7 @@ function Seek:Update(agent, context)
 	if seesEnemy then
 		agent.ai.worldState:set("hasTarget", true)
 		agent.ai.currentTarget = seesEnemy
-		warn("AI sees enemy")
+		Utility.Warn("AI sees enemy")
 		self:ExitSeekState(agent)
 		return ActionResult.Success
 	end

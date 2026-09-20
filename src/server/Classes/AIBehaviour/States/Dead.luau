@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local BaseState = require(script.Parent.BaseState)
 
 local Dead = setmetatable({}, BaseState)
@@ -10,7 +12,7 @@ function Dead.new(machine, ai)
 end
 
 function Dead:Enter(previous)
-	warn("Entered Dead from", previous)
+	Utility.Warn("Entered Dead from", previous)
 	if self.AI and self.AI.Destroy then
 		self.AI:Destroy()
 	end

@@ -1,6 +1,8 @@
 local DataStoreService = game:GetService("DataStoreService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PopupGUI = require(script.Parent.GUI.PopupGUI)
 local ServerData = require(script.Parent.ServerData)
 
@@ -25,6 +27,7 @@ ProductFunctions[3594526329] = function(_, player)
 	PopupGUI:NewPopup(player, 3, `Added $5000 to bank!`)
 	return true
 end
+
 ProductFunctions[3594526328] = function(_, player)
 	ServerData.UpdateBank(player, 10000)
 	PopupGUI:NewPopup(player, 3, `Added $10,000 to bank!`)
@@ -60,7 +63,7 @@ local function ProcessReceipt(receiptInfo)
 		local handler = ProductFunctions[productId]
 		local ok, errorMsg = pcall(handler, receiptInfo, player)
 		if not ok then
-			warn(errorMsg)
+			Utility.Warn(errorMsg)
 			return Enum.ProductPurchaseDecision.NotProcessedYet
 		end
 	end

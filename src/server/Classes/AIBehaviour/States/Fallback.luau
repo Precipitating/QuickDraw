@@ -6,6 +6,7 @@ local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
@@ -28,7 +29,7 @@ function Fallback:FindFallbackPosition(human, target)
 
 	-- 1.1 (TERMINATION) If we can't find a fallback position, got to attack state (shoots at current position)
 	if not safePos then
-		warn("Cornered, shoot from current position, ignoring distance requirements")
+		Utility.Warn("Cornered, shoot from current position, ignoring distance requirements")
 		self.Machine:Transition(self.AI.AttackState.Name, { Target = target, Cornered = true })
 		return false
 	end
@@ -76,7 +77,7 @@ function Fallback:AimNPCTowards(ownerClass, targetPos: Vector3, target, eyeTarge
 		if isInLineOfSight and not CollectionService:HasTag(target, "Dead") then
 			self.Machine:Transition(self.AI.AttackState.Name, { Target = target })
 		else
-			warn("Can't see target falling back, SEEKIN")
+			Utility.Warn("Can't see target falling back, SEEKIN")
 			self.Machine:Transition("Seek", { Target = target })
 		end
 	end
@@ -86,7 +87,7 @@ end
 
 function Fallback:PathFindToFallbackPosition(human: HumanNPC | Animal, target, targetPos: Vector3?)
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
-		warn("arrived fallback pos")
+		Utility.Warn("arrived fallback pos")
 		-- get updated target position
 
 		if not success then
@@ -103,7 +104,7 @@ function Fallback:PathFindToFallbackPosition(human: HumanNPC | Animal, target, t
 				else nil
 
 			if not NPCAimArm then
-				warn("Right arm missing, NPC probably dead")
+				Utility.Warn("Right arm missing, NPC probably dead")
 				return
 			end
 			-- 3.1. Aim arm & torso towards last seen pos and wait until finished rotating
@@ -126,12 +127,12 @@ function Fallback:PathFindToFallbackPosition(human: HumanNPC | Animal, target, t
 	end))
 
 	self.Janitor:Add(self.AI.NoobPath.Trapped:Connect(function(trapType: string)
-		warn(`NPC pathfind stuck: {trapType}`)
+		Utility.Warn(`NPC pathfind stuck: {trapType}`)
 		self.Machine:Transition("Seek", { Target = target })
 		return
 	end))
 	self.Janitor:Add(self.AI.NoobPath.Error:Connect(function(errorType: string)
-		warn(`NPC pathfind error: {errorType}`)
+		Utility.Warn(`NPC pathfind error: {errorType}`)
 		self.Machine:Transition("Seek", { Target = target })
 		return
 	end))
@@ -145,7 +146,7 @@ function Fallback:StopReloading(human: HumanNPC)
 end
 
 function Fallback:Enter(previous, fallbackData)
-	warn(`{self.Owner.Name} Entered Fallback from {previous}`)
+	Utility.Warn(`{self.Owner.Name} Entered Fallback from {previous}`)
 	while self.Owner.IsRagdolled do
 		task.wait(1)
 	end

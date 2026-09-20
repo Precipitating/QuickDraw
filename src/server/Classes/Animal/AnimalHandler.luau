@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Animal = require(script.Parent.Animal)
 local Buffalo = require(script.Parent.Buffalo)
 local Horse = require(script.Parent.Horse)
@@ -43,10 +44,10 @@ function AnimalHandler:Initialize()
 	-- 		local animalType = model:GetAttribute("Type")
 	-- 		if animalType == "Buffalo" then
 	-- 			ActiveAnimals[humanoid] = Buffalo.new(model, "Buffalo")
-	-- 			warn(`Buffalo class initialized for {model.Name}`)
+	-- 			Utility.Warn(`Buffalo class initialized for {model.Name}`)
 	-- 		else
 	-- 			ActiveAnimals[humanoid] = Animal.new(model, animalType)
-	-- 			warn(`Animal class initialized for {model.Name}`)
+	-- 			Utility.Warn(`Animal class initialized for {model.Name}`)
 	-- 		end
 	-- 		ActiveAnimalsCount = math.max(0, ActiveAnimalsCount + 1)
 
@@ -61,13 +62,13 @@ function AnimalHandler:Initialize()
 
 			if animalType == "Buffalo" then
 				ActiveAnimals[humanoid] = Buffalo.new(animalModel)
-				warn(`Buffalo class initialized for {animalModel.Name}`)
+				Utility.Warn(`Buffalo class initialized for {animalModel.Name}`)
 			elseif animalType == "Horse" then
 				ActiveAnimals[humanoid] = Horse.new(animalModel)
-				warn(`Horse class initialized for {animalModel.Name}`)
+				Utility.Warn(`Horse class initialized for {animalModel.Name}`)
 			else
 				ActiveAnimals[humanoid] = Animal.new(animalModel, animalType, true)
-				warn(`Animal class initialized for {animalModel.Name}`)
+				Utility.Warn(`Animal class initialized for {animalModel.Name}`)
 			end
 			ActiveAnimalsCount = math.max(0, ActiveAnimalsCount + 1)
 			animalModel.Name = `{animalModel.Name}{ActiveAnimalsCount}`
@@ -76,11 +77,11 @@ function AnimalHandler:Initialize()
 
 	CollectionService:GetInstanceRemovedSignal("Animal"):Connect(function(animalModel)
 		local humanoid = animalModel:FindFirstChild("Humanoid")
-		warn(`Animal class removed: {animalModel.Name}`)
+		Utility.Warn(`Animal class removed: {animalModel.Name}`)
 		if humanoid then
 			ActiveAnimals[humanoid]:Destroy()
 			ActiveAnimals[humanoid] = nil
-			warn(`Animal class destroyed for {animalModel.Name}`)
+			Utility.Warn(`Animal class destroyed for {animalModel.Name}`)
 			ActiveAnimalsCount = math.max(0, ActiveAnimalsCount - 1)
 		end
 	end)

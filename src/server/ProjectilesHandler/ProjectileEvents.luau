@@ -1,5 +1,4 @@
 local CollectionService = game:GetService("CollectionService")
-local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
@@ -7,6 +6,7 @@ local GeneralProjectilesData = require(ReplicatedStorage.Shared.GeneralProjectil
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ProjectileContext = require(script.Parent.ProjectileContext)
@@ -125,7 +125,7 @@ end
 
 function ProjectileEvents:ApplyHookSubEffect(hit: RaycastResult, duration: number)
 	if not hit or not duration then
-		warn("ApplyHookSubEffect: missing arguments")
+		Utility.Warn("ApplyHookSubEffect: missing arguments")
 		return
 	end
 
@@ -365,7 +365,7 @@ function ProjectileEvents:FragmentHitDestroyable(hit: RaycastResult, context)
 	if isDestroyable then
 		local destroyableClass = DestroyableManager:GetDestroyable(instance)
 		if not destroyableClass then
-			warn("[FragmentHitDestroyable] Destroyable class is not valid?")
+			Utility.Warn("[FragmentHitDestroyable] Destroyable class is not valid?")
 			return
 		end
 
@@ -440,12 +440,12 @@ function ProjectileEvents:FragmentHitEnvironment(hit: RaycastResult, context)
 	local explosiveType = throwableData.Type
 
 	if not explosiveType then
-		warn("Can't spawn fragment environment hit effect, missing ExplosiveType")
+		Utility.Warn("Can't spawn fragment environment hit effect, missing ExplosiveType")
 		return
 	end
 
 	if not hit then
-		warn(`[ProjectileEvents:FragmentHitEnvironment] Missing raycastResult`)
+		Utility.Warn(`[ProjectileEvents:FragmentHitEnvironment] Missing raycastResult`)
 		return
 	end
 
@@ -585,7 +585,7 @@ end
 -- For throwables
 function ProjectileEvents:SpawnFragments(raycastResult: RaycastResult, owner, throwableData)
 	if not raycastResult then
-		warn(`[SERVER] Can't spawn fragments, raycast result is nil`)
+		Utility.Warn(`[SERVER] Can't spawn fragments, raycast result is nil`)
 		return
 	end
 
@@ -620,7 +620,7 @@ end
 
 function ProjectileEvents:OnThrowImpact(impactParticleName: string, landPos: Vector3)
 	if not Effects[impactParticleName] then
-		warn("[Throwable:OnThrowImpact] Effect not valid to spawn")
+		Utility.Warn("[Throwable:OnThrowImpact] Effect not valid to spawn")
 		return
 	end
 
@@ -698,7 +698,7 @@ function ProjectileEvents:GetGunDataForOwner(owner: Player)
 
 	local gunData = GunData[gunName]
 	if not gunData then
-		warn("GunData missing from OnProjectileHitReceivePlayer")
+		Utility.Warn("GunData missing from OnProjectileHitReceivePlayer")
 		return nil
 	end
 
@@ -714,13 +714,13 @@ function ProjectileEvents:GetThrowableDataForOwner(owner: Player)
 
 	local currentThrowable = human.Inventory and human.Inventory:GetThrowable()
 	if not currentThrowable then
-		warn("CurrentThrowable not valid")
+		Utility.Warn("CurrentThrowable not valid")
 		return nil
 	end
 
 	local throwableData = ThrowableData[currentThrowable.Name]
 	if not throwableData then
-		warn("ThrowableData missing for: " .. tostring(currentThrowable.Name))
+		Utility.Warn("ThrowableData missing for: " .. tostring(currentThrowable.Name))
 		return nil
 	end
 
@@ -778,7 +778,7 @@ function ProjectileEvents:OnProjectileHitReceivePlayer(context, result: RaycastR
 	if not result then
 		return
 	end
-	warn(`OnHit fired by player. Hit object: {result.Instance.Name}`)
+	Utility.Warn(`OnHit fired by player. Hit object: {result.Instance.Name}`)
 
 	local owner = context.UserData.Owner
 	local cosmeticBullet = context.CosmeticBulletObject
@@ -903,7 +903,7 @@ local function ApplyBulletsWhizz(context)
 					closestPathPoint,
 					{ Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 				)
-				warn("Whizzed past " .. player.Name .. " once!")
+				Utility.Warn("Whizzed past " .. player.Name .. " once!")
 			end
 		end
 	end
@@ -916,7 +916,7 @@ function ProjectileEvents:Initialize()
 	end)
 
 	ProjectileContext.Net.OnFireRejected:Connect(function(player, reason)
-		warn(`Rejected projectile hit because of {reason}`)
+		Utility.Warn(`Rejected projectile hit because of {reason}`)
 	end)
 
 	ProjectileContext.VetraSignals.OnSegmentOpen:Connect(function(context, segment)
@@ -953,7 +953,7 @@ function ProjectileEvents:Initialize()
 	-- players firing from client
 	ProjectileContext.Net.OnValidatedHit:Connect(function(player, context, result, velocity, impactForce)
 		if not result or not result.Instance then
-			warn(`Client shot didn't hit anything`)
+			Utility.Warn(`Client shot didn't hit anything`)
 			return
 		end
 		self:OnProjectileHitReceivePlayer(context, result)

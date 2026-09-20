@@ -1,5 +1,6 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
 
 local PlayerContext = require(script.Parent.Utility.PlayerContext)
@@ -10,7 +11,7 @@ HumanNetwork.networker = Networker.new("HumanNetwork", HumanNetwork)
 
 function HumanNetwork:RagdollClient(ragdollTime: number)
 	if not PlayerContext.Humanoid then
-		warn("Can't ragdoll on client, humanoid missing")
+		Utility.Warn("Can't ragdoll on client, humanoid missing")
 		return
 	end
 	local Inputs = require(script.Parent.ClientInputs.Inputs)

@@ -32,7 +32,7 @@ function ServerSoundHandler:Play3DOneShotToOthers(
 
 	local buf, err = Sera.DeltaSerialize(SeraSchemas.Play3DOneShotSchema, payload)
 	if not buf then
-		warn(err)
+		Utility.Warn(err)
 		return
 	end
 
@@ -68,7 +68,7 @@ function ServerSoundHandler:Play3DNPCVoiceline(
 
 	local buf, err = Sera.DeltaSerialize(SeraSchemas.Play3DNPCVoicelineSchema, payload)
 	if not buf then
-		warn(err)
+		Utility.Warn(err)
 		return
 	end
 

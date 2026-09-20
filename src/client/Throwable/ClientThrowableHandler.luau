@@ -5,6 +5,7 @@ local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 
 local ClientThrowableHandler = {}
@@ -17,12 +18,13 @@ ThrowableRaycastParams.FilterType = Enum.RaycastFilterType.Exclude
 local LastThrown = 0
 
 function ClientThrowableHandler:Throw(throwable: Tool)
-	warn("throw called")
+	Utility.Warn("throw called")
 	local cameraLookVector = workspace.CurrentCamera.CFrame.LookVector
 	ThrowableRaycastParams.ExcludeInstances = { throwable, PlayerContext.Character }
 	local head = PlayerContext.BodyParts["Head"]
 	local launchPos = head.Position + vector.create(0, 2, 0)
 	local throwableData = ThrowableData[throwable.Name]
+
 	local context = ClientVetraContext.Vetra.BulletContext.new({
 		Origin = launchPos,
 		Direction = cameraLookVector,
@@ -51,7 +53,7 @@ function ClientThrowableHandler:ConnectThrowable(throwable: Tool?)
 	if not throwable then
 		error("Can't connect throwable, tool reference not valid!")
 	end
-	warn(`[CLIENT] Connecting {throwable.Name}`)
+	Utility.Warn(`[CLIENT] Connecting {throwable.Name}`)
 
 	OuterJanitor:Add(throwable.Equipped:Connect(function(_: Mouse)
 		InnerJanitor:Cleanup() -- clear previous equip if any
@@ -83,7 +85,7 @@ function ClientThrowableHandler:ConnectThrowable(throwable: Tool?)
 	end))
 
 	OuterJanitor:Add(throwable.Unequipped:Connect(function()
-		warn(`[CLIENT] Disconnecting {throwable.Name} connection`)
+		Utility.Warn(`[CLIENT] Disconnecting {throwable.Name} connection`)
 		InnerJanitor:Cleanup()
 	end))
 

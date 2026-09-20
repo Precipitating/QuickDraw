@@ -4,6 +4,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local HumanNetwork = require(ServerScriptService.Server.Classes.Human.HumanNetwork)
 local ServerData = require(ServerScriptService.Server.ServerData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local SpawnLocations = ReplicatedStorage.Shared.Templates.SpawnLocations
 local SpawnHandler = {}
 local ActiveJailCountdowns = {}
@@ -12,7 +13,7 @@ local JAIL_TIME = 60
 
 local function NormalSpawn(player: Player)
 	if not player or not player.Character then
-		warn("Can't spawn, character model missing")
+		Utility.Warn("Can't spawn, character model missing")
 		return
 	end
 
@@ -30,7 +31,7 @@ local function NormalSpawn(player: Player)
 			end
 			if part.Parent and CollectionService:HasTag(part.Parent, "Player") then
 				if not CollectionService:HasTag(part, "Dead") and not CollectionService:HasTag(part.Parent, "Dead") then
-					warn(`Player found on {spawn.Name}, ignoring.`)
+					Utility.Warn(`Player found on {spawn.Name}, ignoring.`)
 					occupied = true
 					break
 				end
@@ -43,7 +44,7 @@ local function NormalSpawn(player: Player)
 	end
 
 	if #safeLocations <= 0 then
-		warn("All spawns occupied, falling back to random spawn")
+		Utility.Warn("All spawns occupied, falling back to random spawn")
 		characterModel:PivotTo(spawnLocations[math.random(1, #spawnLocations)].CFrame)
 		return
 	end
@@ -59,7 +60,7 @@ local function ToggleJailedGUI(player: Player?, active: boolean)
 	local playerGUI = player.PlayerGui
 	local jailedGUI: ScreenGui? = playerGUI:FindFirstChild("JailedGUI")
 	if not jailedGUI then
-		warn("Missing JailedGUI reference")
+		Utility.Warn("Missing JailedGUI reference")
 		return
 	end
 
@@ -87,7 +88,7 @@ function SpawnHandler:ResetTimerIfJailed(player: Player?)
 
 	local hasActiveDelay = ActiveJailCountdowns[player]
 	if hasActiveDelay then
-		warn("Reset jail timer")
+		Utility.Warn("Reset jail timer")
 		task.cancel(hasActiveDelay)
 		ActiveJailCountdowns[player] = nil
 	end
@@ -95,17 +96,17 @@ end
 
 local function JailSpawn(player: Player?, characterModel: Model?)
 	if not player then
-		warn("Can't spawn to jail, player ref missing")
+		Utility.Warn("Can't spawn to jail, player ref missing")
 		return
 	end
 	if not characterModel then
-		warn("Can't spawn, character model missing")
+		Utility.Warn("Can't spawn, character model missing")
 		return
 	end
 	local JailSpawns = CollectionService:GetTagged("JailSpawn")
 
 	if not JailSpawns or #JailSpawns <= 0 then
-		warn("Jail spawns dont exist")
+		Utility.Warn("Jail spawns dont exist")
 		return
 	end
 
@@ -122,7 +123,7 @@ local function JailSpawn(player: Player?, characterModel: Model?)
 	ActiveJailCountdowns[player] = task.delay(JAIL_TIME, function()
 		local exitPos = chosenSpawn:WaitForChild("JailExit", 10)
 		if not exitPos then
-			warn("Missing Exit Pos for jail")
+			Utility.Warn("Missing Exit Pos for jail")
 			return
 		end
 		CollectionService:RemoveTag(player, "Jailed")
@@ -147,7 +148,7 @@ function SpawnHandler:SpawnPlayer(player: Player, loadCharacter: boolean?)
 
 	local characterModel = player.Character
 	if not characterModel then
-		warn("Can't teleport player to spawn, missing model")
+		Utility.Warn("Can't teleport player to spawn, missing model")
 		return
 	end
 
@@ -158,7 +159,7 @@ function SpawnHandler:SpawnPlayer(player: Player, loadCharacter: boolean?)
 	end
 
 	if CollectionService:HasTag(player, "Jailed") then
-		warn("Jail spawn")
+		Utility.Warn("Jail spawn")
 		JailSpawn(player, characterModel)
 	else
 		NormalSpawn(player)

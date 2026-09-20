@@ -116,6 +116,8 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.busy = false
 	ai.currentNavigationIndex = nil
 	ai.currentNavigationData = nil
+	ai.currentPlan = nil
+	ai.currentGoal = nil
 
 	ai.worldState:set("atSafeDistance", true)
 	ai.worldState:set("hasTarget", false)
@@ -185,7 +187,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	end)
 
 	npcRecord.ai.pathfinder = PathfindingAdapter.new({
-		agentRadius = 2,
+		agentRadius = 3,
 		agentHeight = 5,
 		agentCanJump = true,
 		costs = {
@@ -202,9 +204,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { hasTarget = true },
 		priority = 1,
 		isValidFn = function(state)
-			return not state:get("hasTarget")
-				and not npcRecord.ai.currentTarget
-				and npcData.DefaultStateName == "Patrol"
+			return not state:get("hasTarget") and npcData.DefaultStateName == "Patrol"
 		end,
 	})
 
@@ -268,6 +268,8 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		npcRecord.ai.currentPlan = plan
 		npcRecord.ai.currentGoal = selectedGoal
 	end
+
+	self:ResetWorldState(npcRecord)
 end
 
 return NPCAI

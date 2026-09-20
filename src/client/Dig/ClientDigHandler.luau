@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGUIHandler = require(script.Parent.Parent.Utility.CoreGUIHandler)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimationsHandler = require(script.Parent.Parent.Animations.AnimationsHandler)
 local ClientUtility = require(script.Parent.Parent.Utility.ClientUtility)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
@@ -14,7 +15,7 @@ local DigSoundLoop = nil
 function ClientDigHandler:StartDigging(animName: string, soundName: string)
 	local humanoid: Humanoid? = PlayerContext.Humanoid
 	if not humanoid then
-		warn("Can't dig, missing humanoid ref")
+		Utility.Warn("Can't dig, missing humanoid ref")
 		return
 	end
 

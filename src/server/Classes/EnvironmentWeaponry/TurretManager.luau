@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Turret = require(script.Parent.Turret)
 local TurretManager = {}
 local ActiveTurrets = {}
@@ -14,7 +16,7 @@ function TurretManager:Unregister(turretModel)
 	local exists = ActiveTurrets[turretModel]
 
 	if exists then
-		warn("Removing turret...")
+		Utility.Warn("Removing turret...")
 		ActiveTurrets[turretModel]:Destroy()
 		ActiveTurrets[turretModel] = nil
 	end

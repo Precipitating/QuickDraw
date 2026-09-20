@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 --  ────── Vetra Variables ──────
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local EffectsDisplayer = require(script.Parent.Parent.VisualEffectsHandler.EffectsDisplayer)
 local Vetra = require(ReplicatedStorage.Shared.Vetra)
 local VetraNet = require(ReplicatedStorage.Shared.Vetra.VetraNet)
@@ -15,7 +16,7 @@ local lastUpdateTime = {}
 
 local function Initialize()
 	Signals.OnHit:Connect(function(context, result: RaycastResult?, _velocity)
-		warn("[CLIENT] onHit called")
+		Utility.Warn("[CLIENT] onHit called")
 		if not result then
 			return
 		end
@@ -54,7 +55,7 @@ local function Initialize()
 		if not result then
 			return
 		end
-		warn("[CLIENT] onPierce called")
+		Utility.Warn("[CLIENT] onPierce called")
 		EffectsDisplayer:TryDisplayProjectileMark(context, result)
 	end)
 end

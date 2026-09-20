@@ -9,6 +9,7 @@ local AnimationHandler = require(ServerScriptService.Server.Animation.AnimationH
 local AwardHandler = require(ServerScriptService.Server.AwardHandler.AwardHandler)
 local NPC_CULL_RADIUS = 200
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local RangeAI = require(ServerScriptService.Server.Classes.AIBehaviour.RangeAI)
 local Human = require(script.Parent.Human)
 
@@ -28,6 +29,7 @@ function HumanNPC.new(lightweightNPCClass, humanoid: Humanoid, classType: string
 	self.TorsoAimer = self:InitializeTorsoAimer()
 	self.AI = RangeAI.new(self, classType, optionalData)
 	self.CurrentTrack = nil
+
 	self.NoiseSeed = RandomModule.GetRandom() * 1000
 	self.VoicelineSound = self:SetupVoicelineSound()
 	self.CrawlAnimTrack = nil
@@ -43,7 +45,7 @@ function HumanNPC.new(lightweightNPCClass, humanoid: Humanoid, classType: string
 	self:SetupServerAnims()
 	self:SetInvincibleFor(HumanConstants.ON_SPAWN_INVICIBILITY_TIME, true)
 
-	warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
+	Utility.Warn(`[SERVER] New human class initiated for NPC {self.Character.Name}`)
 	return self :: any
 end
 
@@ -211,7 +213,7 @@ function HumanNPC:SetCrawlState()
 	end
 
 	if (parts["LeftUpperLeg"] or parts["LeftLowerLeg"]) and (parts["RightUpperLeg"] or parts["RightLowerLeg"]) then
-		warn("Should be crawling")
+		Utility.Warn("Should be crawling")
 
 		self:Ragdoll(3)
 
@@ -235,7 +237,7 @@ function HumanNPC:SetCrawlState()
 
 		self:UpdateLeglessState(true)
 
-		warn(`{self.Character.Name} should be legless now`)
+		Utility.Warn(`{self.Character.Name} should be legless now`)
 	end
 end
 function HumanNPC:ToggleTorsoAimer(enable: boolean)
@@ -251,7 +253,7 @@ function HumanNPC:ToggleTorsoAimer(enable: boolean)
 		torsoAimer.CFrame = CFrame.identity
 	end
 
-	--warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
+	--Utility.Warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 function HumanNPC:AimRightArmTowards(target)
 	-- 1. Early exits & Guard rails
@@ -283,7 +285,7 @@ function HumanNPC:AimRightArmTowards(target)
 
 	-- Safety check if target type was invalid
 	if not targetPos then
-		warn("AimRightArmTowards received an invalid target.")
+		Utility.Warn("AimRightArmTowards received an invalid target.")
 		return false
 	end
 

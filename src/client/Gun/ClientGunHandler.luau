@@ -83,15 +83,15 @@ function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
 	local rightArm: MeshPart = gunHolderModel:WaitForChild("RightUpperArm", 10) :: MeshPart
 
 	if not handle then
-		warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get Handle`)
+		Utility.Warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get Handle`)
 		return
 	end
 	if not shootPoint then
-		warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get shootPoint`)
+		Utility.Warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get shootPoint`)
 		return
 	end
 	if not rightArm then
-		warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get right upper arm`)
+		Utility.Warn(`[ClientGunHandler:ApplyGunRecoil()] failed to get right upper arm`)
 		return
 	end
 
@@ -221,7 +221,7 @@ end
 
 local function CastBarrelRay(crosshairBB: BillboardGui, gunTool: Tool, shootPoint: Attachment)
 	if not shootPoint then
-		warn("Casting ray failed, shootpoint nil")
+		Utility.Warn("Casting ray failed, shootpoint nil")
 		return
 	end
 	local gunName = gunTool.Name
@@ -476,7 +476,7 @@ function ClientGunHandler:ShootGun(gunTool: Tool, gunData)
 	-- get shooting point (for non ADS)
 	local shootAttachment: Attachment? = Utility.GetInstance(gunTool, true, "ShootPoint")
 	if not shootAttachment then
-		warn("[CLIENT] Missing gun shoot attachment of current tool")
+		Utility.Warn("[CLIENT] Missing gun shoot attachment of current tool")
 		return
 	end
 
@@ -501,12 +501,12 @@ function ClientGunHandler:ConnectAmmoGUI(gun: Tool)
 	local currentAmmoLabel: TextLabel = Utility.GetInstance(gui, true, "BG", "CurrentAmmo")
 	local ammoReserveLabel: TextLabel = Utility.GetInstance(gui, true, "BG", "AmmoReserve")
 	if not currentAmmo or not ammoReserve then
-		warn("Client missing gun's Int Values")
+		Utility.Warn("Client missing gun's Int Values")
 		return
 	end
 
 	if not currentAmmoLabel or not ammoReserveLabel then
-		warn("Client missing ammo gui labels")
+		Utility.Warn("Client missing ammo gui labels")
 		return
 	end
 	local currAmmo, _, ammoReserves = GunNetwork:fetch("GetAmmoCount")
@@ -515,14 +515,14 @@ function ClientGunHandler:ConnectAmmoGUI(gun: Tool)
 
 	self.janitor:Add(gun:GetAttributeChangedSignal("CurrentAmmo"):Connect(function()
 		if not currentAmmoLabel then
-			warn("Missing current ammo label")
+			Utility.Warn("Missing current ammo label")
 			return
 		end
 		currentAmmoLabel.Text = tostring(gun:GetAttribute("CurrentAmmo"))
 	end))
 	self.janitor:Add(gun:GetAttributeChangedSignal("AmmoReserve"):Connect(function()
 		if not ammoReserveLabel then
-			warn("Missing current ammo reserve label")
+			Utility.Warn("Missing current ammo reserve label")
 			return
 		end
 		ammoReserveLabel.Text = tostring(gun:GetAttribute("AmmoReserve"))
@@ -532,7 +532,7 @@ end
 function ClientGunHandler:ToggleAmmoGUI(enabled: boolean)
 	local gui: ScreenGui = Utility.GetInstance(PlayerContext.PlayerGui, true, "Ammo")
 	if not gui then
-		warn("Missing Ammo GUI ref!")
+		Utility.Warn("Missing Ammo GUI ref!")
 		return
 	end
 
@@ -566,7 +566,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 	if not gunTool then
 		error("Can't connect guns, tool reference not valid!")
 	end
-	warn(`[CLIENT] Connecting {gunTool.Name}`)
+	Utility.Warn(`[CLIENT] Connecting {gunTool.Name}`)
 
 	if GunEquipConn and GunDisconnectConn then
 		GunEquipConn:Disconnect()
@@ -658,7 +658,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 	end)
 
 	GunDisconnectConn = gunTool.Unequipped:Connect(function()
-		warn(`[CLIENT] Disconnecting {gunTool.Name} connection`)
+		Utility.Warn(`[CLIENT] Disconnecting {gunTool.Name} connection`)
 		self:ToggleAmmoGUI(false)
 		HoldingRMB = false
 		ContextActionService:UnbindAction("ADSAction")
@@ -674,7 +674,7 @@ function ClientGunHandler:ConnectGun(gunTool: Tool?)
 end
 
 function ClientGunHandler:DisconnectGun()
-	warn("Gun disconnected!")
+	Utility.Warn("Gun disconnected!")
 	if HoldingRMB then
 		ClientGunHandler.CancelADS()
 	end

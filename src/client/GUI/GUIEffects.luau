@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local GUIEffects = {}
 local PopInInfo = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
 local PopOutInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
@@ -17,7 +19,7 @@ end
 
 function GUIEffects:IsPopOpenOrOpening(parent: any): boolean
 	if not parent then
-		warn("Cannot pop in, parent ref is nil")
+		Utility.Warn("Cannot pop in, parent ref is nil")
 		return false
 	end
 

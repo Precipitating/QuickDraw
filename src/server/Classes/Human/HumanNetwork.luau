@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local HumanNetwork = {}
@@ -20,7 +21,7 @@ function HumanNetwork:GetCurrentGunName(player: Player)
 
 	local currentGun = human.Inventory:GetGun()
 	if not currentGun then
-		warn("Error getting current gun")
+		Utility.Warn("Error getting current gun")
 		return nil
 	end
 

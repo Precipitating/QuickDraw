@@ -96,12 +96,12 @@ function Gun:SingleShot()
 	local projectileData = GunData[self.Name].ProjectileData
 	local context = nil
 	if not projectileData then
-		warn("Projectile data invalid, can't shoot")
+		Utility.Warn("Projectile data invalid, can't shoot")
 		return
 	end
 
 	if not ProjectileContext.Solver then
-		warn("ProjectileContext Solver reference missing in Gun class")
+		Utility.Warn("ProjectileContext Solver reference missing in Gun class")
 		return
 	end
 
@@ -118,7 +118,7 @@ function Gun:SingleShot()
 	context.UserData.GunType = self.GunType
 
 	if not context then
-		warn("Singleshot context is invalid")
+		Utility.Warn("Singleshot context is invalid")
 		return
 	end
 
@@ -132,11 +132,11 @@ function Gun:SpreadShot()
 	local projectileData = GunData[gunName].ProjectileData
 
 	if not projectileData then
-		warn("Vetra projectile data is missing!")
+		Utility.Warn("Vetra projectile data is missing!")
 		return
 	end
 	if not pelletCount then
-		warn(`Pellet count not specified for {gunName}`)
+		Utility.Warn(`Pellet count not specified for {gunName}`)
 		return
 	end
 
@@ -211,7 +211,7 @@ end
 
 function Gun:ActivateMuzzleFlash()
 	if not self.MuzzleFlash then
-		warn("Muzzle flash reference missing, can't activate")
+		Utility.Warn("Muzzle flash reference missing, can't activate")
 		return
 	end
 
@@ -272,7 +272,7 @@ function Gun:ReloadAsMagazine(bulletsToReload: number)
 	local character = self.HumanClassRef and self.HumanClassRef.Character
 
 	if not character then
-		warn("[Gun:ReloadAsMagazine] failed: Missing character ref")
+		Utility.Warn("[Gun:ReloadAsMagazine] failed: Missing character ref")
 		return
 	end
 
@@ -308,7 +308,7 @@ function Gun:Reload()
 	local gunName = self.Name
 	local gunData = if gunName then GunData[gunName] else nil
 	if not gunData then
-		warn("[Gun:Reload] Missing gun data ")
+		Utility.Warn("[Gun:Reload] Missing gun data ")
 		return
 	end
 

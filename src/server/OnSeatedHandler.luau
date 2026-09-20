@@ -1,10 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Networker = require(ReplicatedStorage.Packages.Networker).server
 local OnSeatedHandler = {}
 
 function OnSeatedHandler:InformClientIfSeated(player: Player, seatType: string, seat: VehicleSeat? | Seat?)
 	if not seat then
-		warn("[OnSeatedHandler:InformClientIfSeated] Missing seat instance")
+		Utility.Warn("[OnSeatedHandler:InformClientIfSeated] Missing seat instance")
 		return
 	end
 	if seat.Occupant then

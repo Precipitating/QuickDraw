@@ -16,7 +16,7 @@ function Animal.new(model: Model?, type: string, requiresAI: boolean?)
 	assert(type, "Missing animal type")
 	local animalData = AnimalData[type]
 	if not animalData then
-		warn("Animal type does not exist!")
+		Utility.Warn("Animal type does not exist!")
 		return
 	end
 
@@ -65,7 +65,7 @@ function Animal:InitializeTorsoAimer()
 	aimer.Responsiveness = 150
 	aimer.Enabled = false
 	aimer.Parent = self.HRP
-	warn()
+	Utility.Warn()
 	return aimer
 end
 
@@ -81,7 +81,7 @@ end
 function Animal:UpdateHealth(value: number, hitBy: Player?)
 	self.Health = math.clamp(self.Health + value, 0, self.MaxHP)
 
-	warn("Animal HP =" .. self.Health)
+	Utility.Warn("Animal HP =" .. self.Health)
 	if self.Health <= 0 then
 		self:Die(hitBy)
 	end
@@ -147,7 +147,7 @@ function Animal:Die(killer: Player?)
 end
 
 function Animal:Attack(target: Model? | BasePart)
-	warn("Animal Attack base class function called. You should not see this")
+	Utility.Warn("Animal Attack base class function called. You should not see this")
 end
 
 function Animal:ToggleTorsoAimer(enable: boolean)
@@ -166,7 +166,7 @@ function Animal:ToggleTorsoAimer(enable: boolean)
 		torsoAimer.CFrame = CFrame.identity
 	end
 
-	--warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
+	--Utility.Warn(`TorsoAimer new state = {torsoAimer.Enabled}`)
 end
 
 function Animal:SetFlattenedTorsoAimer(targetCFrame: CFrame)

@@ -21,7 +21,7 @@ Inputs.networker = Networker.new("InputNetwork", Inputs)
 
 local function FaceTowardsMovementDirection()
 	if not PlayerContext.Humanoid then
-		warn("Can't rotate character towards movement dir, missing player Humanoid")
+		Utility.Warn("Can't rotate character towards movement dir, missing player Humanoid")
 		return
 	end
 
@@ -118,7 +118,7 @@ function Inputs:ConnectKick(input: InputObject)
 
 		local kickAnim: AnimationTrack = AnimationsHandler.PlayCustomAnimation("Kick")
 		if not kickAnim then
-			warn("Kick animation missing, restoring state")
+			Utility.Warn("Kick animation missing, restoring state")
 			return
 		end
 
@@ -317,7 +317,7 @@ function Inputs:ConnectQuests(input: InputObject)
 
 	local gui = Utility.GetInstance(PlayerContext.PlayerGui, true, "QuestsGUI")
 	if not gui then
-		warn("Cannot get QuestGUI reference!")
+		Utility.Warn("Cannot get QuestGUI reference!")
 		return
 	end
 	PlayerContext.ApplyMouseLock(false)

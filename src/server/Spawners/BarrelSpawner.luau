@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local BarrelSpawner = {}
 local BarrelLocationsArray = ServerStorage.Environment.BarrelLocations:GetChildren()
 local BarrelLocations = ServerStorage.Environment.BarrelLocations
@@ -41,7 +42,7 @@ function BarrelSpawner.SpawnBarrel(barrelName: string?, position: Vector3?)
 	end
 
 	if not barrelInstance or not randomLocation then
-		warn("Can't spawn barrel, missing position or instance")
+		Utility.Warn("Can't spawn barrel, missing position or instance")
 		return
 	end
 
@@ -75,12 +76,12 @@ end
 -- Start server loop
 function BarrelSpawner.Initialize()
 	CollectionService:GetInstanceAddedSignal("Barrel"):Connect(function(barrel: Model)
-		warn(`{barrel.Name} spawned`)
+		Utility.Warn(`{barrel.Name} spawned`)
 		CurrentBarrelsSpawned += 1
 	end)
 
 	CollectionService:GetInstanceRemovedSignal("Barrel"):Connect(function(barrel: Model)
-		warn(`{barrel.Name} destroyed`)
+		Utility.Warn(`{barrel.Name} destroyed`)
 		CurrentBarrelsSpawned -= 1
 		local barrelSpawnLoc = barrel:GetAttribute("SpawnLocationName")
 		if not barrelSpawnLoc then

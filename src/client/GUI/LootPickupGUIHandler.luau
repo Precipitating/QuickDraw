@@ -28,7 +28,7 @@ end
 
 function LootPickupGUIHandler:ConnectGUI(pickupType: string, chosenLoot: string)
 	if not pickupType or not chosenLoot then
-		warn("[LootPickupGUIHandler:ConnectGUI] Missing arguments")
+		Utility.Warn("[LootPickupGUIHandler:ConnectGUI] Missing arguments")
 		return
 	end
 	local confirmGUI = GUI.BuyConfirmationGUI

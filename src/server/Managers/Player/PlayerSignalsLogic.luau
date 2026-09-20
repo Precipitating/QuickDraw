@@ -14,7 +14,7 @@ return {
 		PlayerManager:RemoveHumanClass(humanoid)
 
 		if humanoid.Parent and CollectionService:HasTag(humanoid.Parent, "NPC") then
-			warn("NPC DESTROYED")
+			Utility.Warn("NPC DESTROYED")
 			NPCEvents.CurrentSpawnedNPCS -= 1
 
 			for key, _ in NPCEvents.NPCTypesSpawned do
@@ -46,6 +46,7 @@ return {
 			if npcModel:HasTag(key) then
 				NPCEvents.NPCTypesSpawned[npcLocation][key] =
 					math.max(0, NPCEvents.NPCTypesSpawned[npcLocation][key] - 1)
+				NPCEvents.CurrentSpawnedNPCS -= 1
 				break
 			end
 		end

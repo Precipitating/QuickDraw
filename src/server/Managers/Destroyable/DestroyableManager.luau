@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local DestroyableManager = {}
 DestroyableManager.Destroyables = {}
 
@@ -7,7 +9,7 @@ end
 
 function DestroyableManager:RemoveDestroyable(instance: Instance)
 	if not self.Destroyables[instance] then
-		warn("Failed to remove destroyable class, not valid")
+		Utility.Warn("Failed to remove destroyable class, not valid")
 		return
 	end
 	self.Destroyables[instance] = nil

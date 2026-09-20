@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
@@ -19,7 +20,7 @@ function AnimalAttack.new(machine, ai)
 end
 
 function AnimalAttack:Enter(previous, targetData: any)
-	warn(`[SERVER] {self.Owner.Name} Entered AnimalAttack from {previous}`)
+	Utility.Warn(`[SERVER] {self.Owner.Name} Entered AnimalAttack from {previous}`)
 	while self.Owner.IsRagdolled do
 		task.wait(1)
 	end

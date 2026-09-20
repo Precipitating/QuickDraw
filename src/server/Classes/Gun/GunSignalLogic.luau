@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AnimalHandler = require(ServerScriptService.Server.Classes.Animal.AnimalHandler)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
@@ -51,12 +53,12 @@ return {
 			canAffectShooter: boolean?
 		)
 			if not hitObj then
-				warn("[GunSignals.PlayerHit] Hit object reference invalid")
+				Utility.Warn("[GunSignals.PlayerHit] Hit object reference invalid")
 				return
 			end
 
 			if not playerHumanoidOrID then
-				warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
+				Utility.Warn("[GunSignals.PlayerHit] playerHumanoid  reference invalid")
 				return
 			end
 			local humanClass = nil --
@@ -106,11 +108,11 @@ return {
 			canAffectShooter: boolean?
 		)
 			if not limb then
-				warn("[GunSignals.PlayerHit] Limb reference invalid")
+				Utility.Warn("[GunSignals.PlayerHit] Limb reference invalid")
 				return
 			end
 			if not humanoidOrNpcId then
-				warn("[GunSignals.PlayerHit] humanoid reference invalid")
+				Utility.Warn("[GunSignals.PlayerHit] humanoid reference invalid")
 				return
 			end
 
@@ -123,18 +125,18 @@ return {
 					or LightweightNpcsServerAPI:GetNpcById(humanoidOrNpcId :: number)
 
 				if not targetClass then
-					warn("[ApplyLimbStatusDamage] humanClass invalid")
+					Utility.Warn("[ApplyLimbStatusDamage] humanClass invalid")
 					return
 				end
 
 				if targetClass.Invincible or targetClass.invincible then
-					warn(`Invincible, not applying limb status damage`)
+					Utility.Warn(`Invincible, not applying limb status damage`)
 					return
 				end
 			elseif humanoidType == "Animal" then
 				targetClass = AnimalHandler:GetAnimal(humanoidOrNpcId :: Humanoid)
 				if not targetClass then
-					warn("[ApplyLimbStatusDamage] animalClass invalid")
+					Utility.Warn("[ApplyLimbStatusDamage] animalClass invalid")
 					return
 				end
 			end

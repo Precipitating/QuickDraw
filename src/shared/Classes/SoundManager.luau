@@ -9,6 +9,8 @@ local SoundService = game:GetService("SoundService")
 
 local TweenService = game:GetService("TweenService")
 local ContentProvider = game:GetService("ContentProvider")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local SoundData = require(script.Parent.SoundData)
 
 -------------------------------------------------
@@ -156,7 +158,7 @@ end
 --- Initialize the SoundManager. Call once on client startup.
 function SoundManager.Init()
 	if _initialized then
-		warn("[SoundManager] Already initialized.")
+		Utility.Warn("[SoundManager] Already initialized.")
 		return
 	end
 
@@ -221,7 +223,7 @@ function SoundManager.Play(name: string, options: PlayOptions?): Sound?
 
 	if not sound then
 		-- Pool exhausted — optionally create overflow instance
-		warn("[SoundManager] Pool exhausted for: " .. name .. ". Creating overflow instance.")
+		Utility.Warn("[SoundManager] Pool exhausted for: " .. name .. ". Creating overflow instance.")
 		sound = _createSoundInstance(name .. "_overflow", config)
 		table.insert(_soundPools[name], sound)
 	end
@@ -463,12 +465,12 @@ end
 function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound, options: PlayOptions?)
 	local opts: PlayOptions = options or {}
 	if not soundInstance then
-		warn(`[Play3DNPCVoiceline] missing soundInstance reference of {soundName}`)
+		Utility.Warn(`[Play3DNPCVoiceline] missing soundInstance reference of {soundName}`)
 		return
 	end
 
 	if not SoundData.Sounds[soundName] then
-		warn("[Play3DNPCVoiceline] Sound name invalid")
+		Utility.Warn("[Play3DNPCVoiceline] Sound name invalid")
 		return
 	end
 

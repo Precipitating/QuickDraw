@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -22,7 +23,7 @@ function ServerGunHandler:Reload(player: Player?)
 
 	local currentGun: Gun? = humanClass.Inventory:GetGun()
 	if not currentGun then
-		warn("[Reload] human class gun missing ref")
+		Utility.Warn("[Reload] human class gun missing ref")
 		return
 	end
 
@@ -33,7 +34,7 @@ function ServerGunHandler:IsGunJammed(player: Player)
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 	local gun = humanClass and humanClass.Inventory and humanClass.Inventory:GetGun()
 	if not gun or not humanClass then
-		warn("Attempt gun jam failure, missing references")
+		Utility.Warn("Attempt gun jam failure, missing references")
 		return nil
 	end
 
@@ -47,13 +48,13 @@ function ServerGunHandler:GunJamIfRolled(player: Player)
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 	local gun = humanClass and humanClass.Inventory and humanClass.Inventory:GetGun()
 	if not gun or not humanClass then
-		warn("Attempt gun jam failure, missing references")
+		Utility.Warn("Attempt gun jam failure, missing references")
 		return
 	end
 
 	local gunData = GunData[gun.Name]
 	if not gunData then
-		warn("Attempt gun jam failure, missing gun data")
+		Utility.Warn("Attempt gun jam failure, missing gun data")
 		return
 	end
 
@@ -71,13 +72,13 @@ function ServerGunHandler:UnjamGun(player: Player)
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 	local gun = humanClass.Inventory and humanClass.Inventory:GetGun()
 	if not gun or not humanClass then
-		warn("Attempt gun jam failure, missing references")
+		Utility.Warn("Attempt gun jam failure, missing references")
 		return
 	end
 
 	local gunData = GunData[gun.Name]
 	if not gunData then
-		warn("Attempt gun unjam failure, missing gun data")
+		Utility.Warn("Attempt gun unjam failure, missing gun data")
 		return
 	end
 
@@ -120,23 +121,23 @@ function ServerGunHandler:StopReloadingServer(player: Player)
 	end
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 	if not humanClass then
-		warn(`[ServerGunHandler:StopReloadingClient] Missing human class ref`)
+		Utility.Warn(`[ServerGunHandler:StopReloadingClient] Missing human class ref`)
 		return
 	end
 	local inventory = humanClass and humanClass.Inventory
 	if not inventory then
-		warn(`[ServerGunHandler:StopReloadingClient] Missing human inventory ref`)
+		Utility.Warn(`[ServerGunHandler:StopReloadingClient] Missing human inventory ref`)
 		return
 	end
 
 	local currentGun = inventory:GetGun()
 	if not currentGun then
-		warn(`[ServerGunHandler:StopReloadingClient] Missing currentGun ref`)
+		Utility.Warn(`[ServerGunHandler:StopReloadingClient] Missing currentGun ref`)
 		return
 	end
 
 	if not currentGun.StopReloading then
-		warn(`[ServerGunHandler:StopReloadingClient] Missing StopReloading function method`)
+		Utility.Warn(`[ServerGunHandler:StopReloadingClient] Missing StopReloading function method`)
 		return
 	end
 	currentGun:StopReloading(false)
@@ -148,14 +149,14 @@ function ServerGunHandler:ReduceGunAmmo(player: Player)
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 
 	if not humanClass then
-		warn("Can't deduce ammo, human class missing")
+		Utility.Warn("Can't deduce ammo, human class missing")
 		return
 	end
 
 	local gun = humanClass.Inventory and humanClass.Inventory:GetGun()
 
 	if not gun then
-		warn(`Can't reduce gun ammo,{player.Name} has no gun assigned`)
+		Utility.Warn(`Can't reduce gun ammo,{player.Name} has no gun assigned`)
 		return
 	end
 

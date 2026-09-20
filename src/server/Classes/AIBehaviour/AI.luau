@@ -6,6 +6,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local NoobPath = require(ReplicatedStorage.Shared.Pathfinding.NoobPath)
 local Path = require(ReplicatedStorage.Shared.Pathfinding.Path)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Dead = require(ServerScriptService.Server.Classes.AIBehaviour.States.Dead)
 local Idle = require(ServerScriptService.Server.Classes.AIBehaviour.States.Idle)
 local Seek = require(ServerScriptService.Server.Classes.AIBehaviour.States.Seek)
@@ -22,6 +23,7 @@ type AgentParams = Path.AgentParams
 type Animal = ClassTypes.Animal
 
 local AI = {}
+
 AI.__index = AI
 
 function AI.new(owner: Human | Animal, classType: string)
@@ -72,7 +74,7 @@ function AI:Initialize()
 	end)
 
 	self.NoobPath.Error:Connect(function()
-		warn("[SERVER] NPC errored on pathfinding, defaulting to default state")
+		Utility.Warn("[SERVER] NPC errored on pathfinding, defaulting to default state")
 		self.StateMachine:Transition(self.DefaultState.Name, self.DefaultState.Data)
 	end)
 end
@@ -108,11 +110,11 @@ function AI:IsTargetInView(originPos: Vector3, target: BasePart | Model, useFOV:
 			targetPos = target.Position
 			targetAncestor = target:FindFirstAncestorOfClass("Model") or target
 		else
-			warn("AI:IsTargetInView - Unsupported instance type:", target.ClassName)
+			Utility.Warn("AI:IsTargetInView - Unsupported instance type:", target.ClassName)
 			return false
 		end
 	else
-		warn("AI:IsTargetInView - Invalid target type:", typeof(target))
+		Utility.Warn("AI:IsTargetInView - Invalid target type:", typeof(target))
 		return false
 	end
 
@@ -198,7 +200,7 @@ function AI:AlignOrientLookAround()
 	local torsoAimer = self.Owner.TorsoAimer
 
 	if not torsoAimer then
-		warn("[AI:AlignOrientLookAround] Missing torso aimer reference")
+		Utility.Warn("[AI:AlignOrientLookAround] Missing torso aimer reference")
 		return false
 	end
 
@@ -231,7 +233,7 @@ function AI:LookAround()
 	local targetFound = nil
 
 	self.Owner:ToggleTorsoAimer(true)
-	warn("Toggled torso")
+	Utility.Warn("Toggled torso")
 
 	targetFound = self:AlignOrientLookAround()
 
@@ -243,7 +245,7 @@ function AI:LookAround()
 end
 
 function AI:Attack(target: Model? | BasePart?)
-	warn("Base class AI Attack() Called!")
+	Utility.Warn("Base class AI Attack() Called!")
 end
 
 -- Check if target has a tag that is considered an enemy to the AI

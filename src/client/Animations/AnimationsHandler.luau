@@ -35,7 +35,7 @@ end
 function AnimationsHandler.PlayCustomAnimation(name: string, speed: number?)
 	local animationInstance = LoadedAnimations[name]
 	if not animationInstance then
-		warn(`Can't play custom animation {name}, missing from table`)
+		Utility.Warn(`Can't play custom animation {name}, missing from table`)
 		return
 	end
 
@@ -54,7 +54,7 @@ end
 function AnimationsHandler.StopCustomAnimation(name: string)
 	local animationInstance = LoadedAnimations[name]
 	if not animationInstance then
-		warn(`Can't stop custom animation {name}, missing from table`)
+		Utility.Warn(`Can't stop custom animation {name}, missing from table`)
 		return
 	end
 

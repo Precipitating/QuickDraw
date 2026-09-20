@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local PatrolData = ServerStorage.PatrolData
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local BaseState = require(script.Parent.BaseState)
 
 local Patrol = setmetatable({}, BaseState)
@@ -17,7 +18,7 @@ function Patrol.new(machine, ai)
 end
 
 function Patrol:Enter(previous, patrolData)
-	warn(`[SERVER] {self.Owner.Name} Entered Patrol from {previous}`)
+	Utility.Warn(`[SERVER] {self.Owner.Name} Entered Patrol from {previous}`)
 	self.PatrolData = PatrolData[patrolData]
 	self.Machine:Start()
 end

@@ -27,7 +27,7 @@ end
 
 function QuestGUIHandler:PopulateWithObtainedQuests(parent, questDataFrame)
 	if not parent or not questDataFrame then
-		warn(`[PopulateWithObtainedQuests] Missing arguments validity`)
+		Utility.Warn(`[PopulateWithObtainedQuests] Missing arguments validity`)
 		return
 	end
 

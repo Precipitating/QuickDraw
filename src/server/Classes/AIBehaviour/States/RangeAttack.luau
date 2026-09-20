@@ -2,6 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local AI = require(ServerScriptService.Server.Classes.AIBehaviour.AI)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
@@ -21,7 +22,7 @@ function RangeAttack.new(machine, ai)
 end
 
 function RangeAttack:Enter(previous, targetData: any)
-	warn(`[SERVER] {self.Owner.Name} Entered RangeAttack from {previous}`)
+	Utility.Warn(`[SERVER] {self.Owner.Name} Entered RangeAttack from {previous}`)
 	while self.Owner.IsRagdolled do
 		task.wait(1)
 	end
@@ -67,7 +68,7 @@ function RangeAttack:Update(dt)
 		then human.BodyParts["RightUpperArm"]
 		else nil
 	if not NPCAimArm then
-		warn("Right arm missing, NPC probably dead")
+		Utility.Warn("Right arm missing, NPC probably dead")
 		return
 	end
 	local inRange = ai:CorrectRangePosition(targetPos)

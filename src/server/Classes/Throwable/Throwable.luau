@@ -4,6 +4,7 @@ local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local ProjectileContext = require(script.Parent.Parent.Parent.ProjectilesHandler.ProjectileContext)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 local Throwable = {}
 
@@ -104,7 +105,7 @@ function Throwable:Destroy()
 	self.Janitor:Destroy()
 	self.Owner = nil
 	setmetatable(self, nil)
-	warn("Throwable class destroyed")
+	Utility.Warn("Throwable class destroyed")
 end
 
 return Throwable

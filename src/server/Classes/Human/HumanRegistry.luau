@@ -13,7 +13,7 @@ end
 
 function HumanRegistry:Remove(humanoid: Humanoid)
 	if not self.HumanClasses[humanoid] then
-		warn(`Can't remove player from table as it doesn't exist`)
+		Utility.Warn(`Can't remove player from table as it doesn't exist`)
 		return
 	end
 	self.HumanClasses[humanoid] = nil
@@ -21,11 +21,11 @@ end
 
 function HumanRegistry:Get(humanoid: Humanoid?)
 	if not humanoid then
-		warn(`Get argument 'humanoid' is invalid`)
+		Utility.Warn(`Get argument 'humanoid' is invalid`)
 		return
 	end
 	if not self.HumanClasses[humanoid] then
-		warn(`Get invalid key`)
+		Utility.Warn(`Get invalid key`)
 		return
 	end
 	return self.HumanClasses[humanoid]
@@ -39,12 +39,12 @@ function HumanRegistry:GetFromPlayer(player: Player)
 	local humanoid: Humanoid? = Utility.GetInstance(character, false, "Humanoid")
 
 	if not humanoid then
-		warn("[HumanRegistry:GetFromPlayer] Humanoid is nil")
+		Utility.Warn("[HumanRegistry:GetFromPlayer] Humanoid is nil")
 		return
 	end
 	local humanClass = self:Get(humanoid)
 	if not humanClass then
-		warn("[HumanRegistry:GetFromPlayer] Reference to humanClass is nil, probably died")
+		Utility.Warn("[HumanRegistry:GetFromPlayer] Reference to humanClass is nil, probably died")
 		return
 	end
 	return humanClass, humanoid

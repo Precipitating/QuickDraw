@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PoolHandler = require(script.Parent.Parent.Pools.PoolHandler)
 local Particles = ReplicatedStorage.Shared.Effects
 local EffectsDisplayer = {}
@@ -77,7 +78,7 @@ function EffectsDisplayer:DisplayProjectileMarkFromServer(buffer, raycastInstanc
 	local data = Sera.Deserialize(SeraSchemas.DisplayProjectileMarkSchema, buffer)
 
 	if not data then
-		warn("[DisplayProjectileMarkFromServer] deserialize failed")
+		Utility.Warn("[DisplayProjectileMarkFromServer] deserialize failed")
 		return
 	end
 
@@ -87,7 +88,7 @@ function EffectsDisplayer:DisplayProjectileMarkFromServer(buffer, raycastInstanc
 end
 function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastResult)
 	if not result then
-		warn("Client received an invalid RaycastResult when showing a projectile mark!")
+		Utility.Warn("Client received an invalid RaycastResult when showing a projectile mark!")
 		return
 	end
 
@@ -121,7 +122,7 @@ end
 
 function EffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
 	if not gunTool then
-		warn("Client gunTool invalid")
+		Utility.Warn("Client gunTool invalid")
 		return
 	end
 
@@ -155,7 +156,7 @@ end
 -- for destroyables
 function EffectsDisplayer:DisplayDestroyParticle(buffer)
 	if not buffer then
-		warn(`[CLIENT] Can't show explosion particle, missing explosion buffer`)
+		Utility.Warn(`[CLIENT] Can't show explosion particle, missing explosion buffer`)
 		return
 	end
 	local data = Sera.Deserialize(SeraSchemas.DisplayDestroySchema, buffer)
@@ -180,7 +181,7 @@ end
 function EffectsDisplayer:DisplaySpreadParticle(buffer, parent: BasePart)
 	local data = Sera.Deserialize(SeraSchemas.DisplaySpreadParticleSchema, buffer)
 	if not data.DestroyableParticleName then
-		warn(`[CLIENT] Can't show explosion particle, missing explosion name data`)
+		Utility.Warn(`[CLIENT] Can't show explosion particle, missing explosion name data`)
 		return
 	end
 	if not parent then
@@ -227,7 +228,7 @@ function EffectsDisplayer:DisplayBloodHitFromServer(buffer)
 	local data = Sera.Deserialize(SeraSchemas.DisplayBloodHitSchema, buffer)
 
 	if not data then
-		warn("Cannot deserialize blood hit")
+		Utility.Warn("Cannot deserialize blood hit")
 		return
 	end
 

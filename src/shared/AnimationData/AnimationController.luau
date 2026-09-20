@@ -26,7 +26,9 @@ By: Cassie (@GoulStorm)
 Version: 1.1.4
 ]]
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local runService = game:GetService("RunService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 export type AnimationName =
 	"Idle"
@@ -259,7 +261,7 @@ function controller.RegisterAnimation(
 	override: boolean?
 ): ()
 	if not override and self:GetRegister(indexName) then
-		warn(`Animation "{indexName}" is already registered.`)
+		Utility.Warn(`Animation "{indexName}" is already registered.`)
 		return
 	end
 
@@ -339,7 +341,7 @@ function controller.Load(self: AnimateController): ()
 		local register = self:GetRegister(animName)
 
 		if not register then
-			warn(`Attempt to play unregistered animation: {animName}.`)
+			Utility.Warn(`Attempt to play unregistered animation: {animName}.`)
 			return
 		end
 
@@ -371,7 +373,7 @@ function controller.Load(self: AnimateController): ()
 		local register = self:GetRegister(animName)
 
 		if not register then
-			warn(`Attempt to play unregistered animation: {animName}.`)
+			Utility.Warn(`Attempt to play unregistered animation: {animName}.`)
 			return
 		end
 

@@ -4,6 +4,7 @@ local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local HumanTypeEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.HumanTypeEnum)
 local ThrowableData = require(ReplicatedStorage.Shared.ThrowableData.ThrowableData)
 local TrapData = require(ReplicatedStorage.Shared.TrapData.TrapData)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local Gun = require(ServerScriptService.Server.Classes.Gun.Gun)
 local GunSignals = require(ServerScriptService.Server.Classes.Gun.GunSignals)
@@ -72,14 +73,14 @@ function Inventory:RemoveWeapon(weaponType: string)
 	local humanoid = self.Owner and self.Owner.Humanoid
 
 	if not storedWeapon or not character or not humanoid then
-		warn("[Inventory:RemoveThrowable] Missing throwable, character, or humanoid")
+		Utility.Warn("[Inventory:RemoveThrowable] Missing throwable, character, or humanoid")
 		return false
 	end
 
 	if self.Owner.HumanType == HumanTypeEnum.Player then
 		local backpack = self.Owner.Player:FindFirstChild("Backpack")
 		if not backpack then
-			warn("[Inventory:RemoveWeapon] Missing backpack")
+			Utility.Warn("[Inventory:RemoveWeapon] Missing backpack")
 			return false
 		end
 
@@ -102,19 +103,19 @@ function Inventory:CanEquip()
 	local bodyParts = self.Owner.BodyParts
 	local disabledBodyParts = self.Owner.DisabledBodyParts
 	if not bodyParts then
-		warn("Missing bodyparts reference, cannot equip gun!")
+		Utility.Warn("Missing bodyparts reference, cannot equip gun!")
 		return false
 	end
 
 	-- Ensure the right arm exists
 	if not bodyParts.RightUpperArm or not bodyParts.RightLowerArm or not bodyParts.RightHand then
-		warn("Right arm is gone, cannot equip gun!")
+		Utility.Warn("Right arm is gone, cannot equip gun!")
 		return false
 	end
 
 	-- Ensure the right arm is not disabled
 	if disabledBodyParts["RightUpperArm"] or disabledBodyParts["RightLowerArm"] or disabledBodyParts["RightHand"] then
-		warn("Right arm is disabled, cannot equip gun!")
+		Utility.Warn("Right arm is disabled, cannot equip gun!")
 		return false
 	end
 
@@ -134,12 +135,12 @@ function Inventory:EquipWeapon(weaponType: string)
 	end
 	local weapon = self.StoredWeapons[weaponType]
 	if not weapon then
-		warn("Weapon not in inventory")
+		Utility.Warn("Weapon not in inventory")
 		return false
 	end
 	local ownerType = self.Owner and self.Owner.HumanType
 	if not ownerType then
-		warn("[Inventory:EquipWeapon] Failed to get owner type")
+		Utility.Warn("[Inventory:EquipWeapon] Failed to get owner type")
 		return false
 	end
 
@@ -164,7 +165,7 @@ function Inventory:EquipWeapon(weaponType: string)
 		tool.Parent = character
 		weapon:InitializeAmmoValues()
 	else
-		warn("Can't equip weapon, invalid human type")
+		Utility.Warn("Can't equip weapon, invalid human type")
 		return false
 	end
 
@@ -175,13 +176,13 @@ end
 -- Just stores to inventory, nothing will occur physically
 function Inventory:AddWeaponToInventory(name: string, quantity: number?, maxQuantity: number?)
 	if self:IsFull() then
-		warn(`Inventory full, can't add {name}`)
+		Utility.Warn(`Inventory full, can't add {name}`)
 		return false
 	end
 
 	local weaponClone = WeaponTools:FindFirstChild(name, true)
 	if not weaponClone then
-		warn("[Inventory:EquipWeapon] Can't equip weapon, template doesnt exist")
+		Utility.Warn("[Inventory:EquipWeapon] Can't equip weapon, template doesnt exist")
 		return false
 	end
 	weaponClone = weaponClone:Clone()
@@ -206,7 +207,7 @@ function Inventory:AddWeaponToInventory(name: string, quantity: number?, maxQuan
 		self.StoredWeapons["Trap"] = Trap.new(name, self.Owner, quantity, weaponClone)
 		self.StoredWeapons["Trap"].Janitor:Add(weaponClone)
 	else
-		warn(`{name} is an invalid weapon to add to inventory!`)
+		Utility.Warn(`{name} is an invalid weapon to add to inventory!`)
 		return false
 	end
 
@@ -217,7 +218,7 @@ end
 function Inventory:AddItem(name: string, amount: number?, itemWeight: number?, isTool: boolean?): boolean
 	local items = self.Items
 	if not items then
-		warn("Cannot add item to inventory, items table missing")
+		Utility.Warn("Cannot add item to inventory, items table missing")
 		return false
 	end
 
@@ -234,7 +235,7 @@ function Inventory:AddItem(name: string, amount: number?, itemWeight: number?, i
 
 	-- Capacity Check
 	if self:IsFull() or self:GetAvailableSlotCount() < totalTransactionWeight then
-		warn("Not enough available slots, can't pickup")
+		Utility.Warn("Not enough available slots, can't pickup")
 		-- Make sure PopupGUI exists on the server or use a RemoteEvent here!
 		if PopupGUI and self.Owner and self.Owner.Player then
 			PopupGUI:NewPopup(self.Owner.Player, 2, "Not enough inventory space to pickup!")

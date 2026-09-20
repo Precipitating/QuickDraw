@@ -94,7 +94,7 @@ local TrapActivatedLogic = {
 		local activateSound = trapData.TrapActivatedSoundName
 		local explosiveData = ThrowableData[trapData.AttachedExplosive]
 		if not explosiveData then
-			warn("Tripmine missing explosive data")
+			Utility.Warn("Tripmine missing explosive data")
 			return
 		end
 		ServerSoundHandler:Play3DOneShotToOthers(nil, activateSound, hitPart.CFrame.Position)
@@ -201,7 +201,7 @@ function Trap.new(trapName: string, humanRef: Human, ammo: number?, tool: Tool?)
 	local self = setmetatable({}, Trap)
 	local trapData = TrapData[trapName]
 	if not trapData then
-		warn("Trap class initialization failed: Trap name is invalid")
+		Utility.Warn("Trap class initialization failed: Trap name is invalid")
 		return
 	end
 	self.Janitor = Janitor.new()
@@ -244,13 +244,13 @@ end
 function Trap:ConnectTrap(trapCollider: BasePart)
 	local trapName = self.Name
 	if not trapCollider or not trapName then
-		warn("[ConnectTrap] a parameter is nil")
+		Utility.Warn("[ConnectTrap] a parameter is nil")
 		return
 	end
 
 	local trapData = TrapData[trapName]
 	if not trapData then
-		warn("[ConnectTrap] Trap name is not valid ")
+		Utility.Warn("[ConnectTrap] Trap name is not valid ")
 		return
 	end
 
@@ -290,7 +290,7 @@ function Trap:ConnectTrap(trapCollider: BasePart)
 			local hitHuman = if hitPlayer then HumanRegistry:Get(hitPlayer) else hitNPC
 
 			if not hitHuman then
-				warn("Trap cannot activate, whatever triggered has no human class")
+				Utility.Warn("Trap cannot activate, whatever triggered has no human class")
 				return
 			end
 

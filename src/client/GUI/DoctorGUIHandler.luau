@@ -35,9 +35,10 @@ function DoctorGUIHandler:ConnectInformationToolTip(product: ImageButton)
 
 	local tooltipGUI = Utility.GetInstance(PlayerContext.PlayerGui, true, "ShopToolTipGUI")
 	if not tooltipGUI then
-		warn("Missing ShopToolTipGUI screen gui")
+		Utility.Warn("Missing ShopToolTipGUI screen gui")
 		return
 	end
+
 	local tooltip: Frame? = Utility.GetInstance(PlayerContext.PlayerGui, true, "ShopToolTipGUI", "ShopToolTip")
 
 	if not tooltip then

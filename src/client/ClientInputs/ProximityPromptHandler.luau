@@ -6,6 +6,7 @@ local GUIEffects = require(script.Parent.Parent.GUI.GUIEffects)
 local ClientDigHandler = require(script.Parent.Parent.Dig.ClientDigHandler)
 local PlayerContext = require(script.Parent.Parent.Utility.PlayerContext)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ShopGUIHandler = require(script.Parent.Parent.GUI.ShopGUIHandler)
 local BankGUIHandler = require(script.Parent.Parent.GUI.BankGUIHandler)
 local MercenaryGUIHandler = require(script.Parent.Parent.GUI.MercenaryGUIHandler)
@@ -52,10 +53,11 @@ local PROMPT_HANDLERS = {
 
 		local bg = bank:WaitForChild("BG", 3)
 		if not bg then
-			warn("Missing BG from BankGUI")
+			Utility.Warn("Missing BG from BankGUI")
 			return
 		end
 		--
+
 		bank.Parent = player.PlayerGui
 		bank.Enabled = true
 		PlayerContext.IsBusy = true
@@ -79,7 +81,7 @@ local PROMPT_HANDLERS = {
 		--
 		local bg = mercGUI:WaitForChild("BG", 3)
 		if not bg then
-			warn("Missing BG from MercenaryGUI")
+			Utility.Warn("Missing BG from MercenaryGUI")
 			return
 		end
 		--

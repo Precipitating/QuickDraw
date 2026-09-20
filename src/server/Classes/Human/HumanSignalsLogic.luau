@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local HumanNetwork = require(script.Parent.HumanNetwork)
 local StaminaBarGUI = require(ServerScriptService.Server.GUI.StaminaBarGUI)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
@@ -17,7 +19,7 @@ return {
 	end),
 	HumanSignals.ApplyImpulseToClient:Connect(function(player: Player, target, force: Vector3, position: Vector3)
 		if not target then
-			warn("[ApplyImpulseToClient] missing target or is nil")
+			Utility.Warn("[ApplyImpulseToClient] missing target or is nil")
 			return
 		end
 

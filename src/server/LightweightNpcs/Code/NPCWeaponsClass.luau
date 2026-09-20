@@ -51,12 +51,12 @@ function NPCWeaponsClass:SingleShot(agent: LightweightNpcTypes.npcRecordType, ta
 	local projectileData = agent.currentEquippedData.ProjectileData
 	local context = nil
 	if not projectileData then
-		warn("Projectile data invalid, can't shoot")
+		Utility.Warn("Projectile data invalid, can't shoot")
 		return
 	end
 
 	if not ProjectileContext.Solver then
-		warn("ProjectileContext Solver reference missing in Gun class")
+		Utility.Warn("ProjectileContext Solver reference missing in Gun class")
 		return
 	end
 
@@ -78,7 +78,7 @@ function NPCWeaponsClass:SingleShot(agent: LightweightNpcTypes.npcRecordType, ta
 	context.UserData.GunType = gunData.GunType
 
 	if not context then
-		warn("Singleshot context is invalid")
+		Utility.Warn("Singleshot context is invalid")
 		return
 	end
 
@@ -116,11 +116,11 @@ function NPCWeaponsClass:SpreadShot(agent: LightweightNpcTypes.npcRecordType, ta
 	local projectileData = gunData.ProjectileData
 
 	if not projectileData then
-		warn("Vetra projectile data is missing!")
+		Utility.Warn("Vetra projectile data is missing!")
 		return
 	end
 	if not pelletCount then
-		warn(`Pellet count not specified for {gunName}`)
+		Utility.Warn(`Pellet count not specified for {gunName}`)
 		return
 	end
 	GunRaycastParam.ExcludeInstances = { agent.serverRig }
