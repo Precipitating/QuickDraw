@@ -5,6 +5,7 @@ local MainMenuScreen = require(script.MainMenu.MainMenuScreen)
 
 local ClientUtility = require(script.Utility.ClientUtility)
 local CoreGUIHandler = require(script.Utility.CoreGUIHandler)
+require(script.Weather.TomsWeatherScript.Weather.Initialize)()
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 require(script.ClientData).Initialize()
 require(script.VisualEffectsHandler.EffectsDisplayer)
