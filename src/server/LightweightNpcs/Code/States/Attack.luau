@@ -3,6 +3,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ActionResult = require(script.Parent.ActionResult)
 local NPCPoses = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPoses)
 local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.NPCWeaponsClass)
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
@@ -80,6 +81,13 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	if not detected and currentState ~= "combat" then
 		agent.ai.lastSeenTarget = target
 		agent.ai.worldState:set("lostTarget", true)
+
+		ServerSoundHandler:Play3DNPCVoiceline(
+			nil,
+			`RangedAILostSight1{agent.npcType}`,
+			agent.npcSound,
+			{ MaxDistance = 100 }
+		)
 		self:ExitAttackState(agent)
 		return ActionResult.Success
 	end
@@ -91,7 +99,24 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 
 	if minDist and maxDist then
 		local dist = (enemyPosition - agent.hrp.Position).Magnitude
+
+		-- If too far/too close, play specific voicelines
 		if dist <= minDist or dist >= maxDist then
+			if dist <= minDist then
+				ServerSoundHandler:Play3DNPCVoiceline(
+					nil,
+					`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
+					agent.npcSound,
+					{ MaxDistance = 100 }
+				)
+			else
+				ServerSoundHandler:Play3DNPCVoiceline(
+					nil,
+					`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
+					agent.npcSound,
+					{ MaxDistance = 100 }
+				)
+			end
 			-- too far/close to target, change state to StayInValidRange
 			Utility.Warn(`Target out of range, moving`)
 			agent.ai.lastSeenTarget = target
@@ -101,8 +126,14 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		end
 	end
 
+	-- 1.1 Play voiceline
+	ServerSoundHandler:Play3DNPCVoiceline(
+		nil,
+		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{self.npcType}`,
+		agent.npcSound,
+		{ MaxDistance = 100 }
+	)
 	-- 2. Smoothly rotate to face target
-
 	local dir = enemyPosition - agent.hrp.Position
 	if dir.Magnitude > 0.001 then
 		agent.targetAngle = MathUtils:PlayerVecToAngle(dir)

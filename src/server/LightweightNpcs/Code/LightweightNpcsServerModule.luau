@@ -365,6 +365,8 @@ function lightweightNpcsServerModule:CreateNpc(
 	currentInstance.Parent = game.ReplicatedStorage
 	currentInstance:SetAttribute("npcId", npcId)
 
+	local soundInstance = Instance.new("Sound")
+	soundInstance.Parent = currentInstance
 	-- Extract Yaw angle (ground rotation) in radians from originCFrame
 	local _, yawAngle, _ = originCFrame:ToOrientation()
 
@@ -404,6 +406,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		npcId = npcId,
 		janitor = Janitor.new(),
 		serverRig = serverRigTemplate,
+		npcSound = soundInstance,
 		instance = currentInstance,
 		configuration = npcConfiguration,
 		internal = npcInternal,
