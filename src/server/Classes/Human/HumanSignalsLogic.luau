@@ -17,18 +17,20 @@ return {
 	HumanSignals.AdjustGrayscale:Connect(function(player: Player, saturationTarget: number)
 		HumanNetwork.networker:fire(player, "AdjustGrayscale", saturationTarget)
 	end),
-	HumanSignals.ApplyImpulseToClient:Connect(function(player: Player, target, force: Vector3, position: Vector3)
-		if not target then
-			Utility.Warn("[ApplyImpulseToClient] missing target or is nil")
-			return
-		end
+	HumanSignals.ApplyImpulseToClient:Connect(
+		function(player: Player, target, force: Vector3, position: Vector3, type: string?)
+			if not target then
+				Utility.Warn("[ApplyImpulseToClient] missing target or is nil")
+				return
+			end
 
-		if not player then
-			HumanNetwork.networker:fireAll("ApplyImpulse", target, force, position)
-		else
-			HumanNetwork.networker:fire(player, "ApplyImpulse", target, force, position)
+			if not player then
+				HumanNetwork.networker:fireAll("ApplyImpulse", target, force, position, type)
+			else
+				HumanNetwork.networker:fire(player, "ApplyImpulse", target, force, position, type)
+			end
 		end
-	end),
+	),
 
 	HumanSignals.SetShooterInCombat:Connect(function(player: Player)
 		if not player then

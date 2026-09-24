@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local HumanSignals = require(ServerScriptService.Server.Classes.Human.HumanSignals)
 local ActionResult = require(script.Parent.ActionResult)
 local NPCPoses = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPoses)
 local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.NPCWeaponsClass)
@@ -197,6 +198,13 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 					NPCWeaponsClass:SingleShot(agent, targetPos)
 				end
 
+				HumanSignals.ApplyImpulseToClient:Fire(
+					nil,
+					agent.instance,
+					Vector3.new(0, 1, 0) * currentWeaponData.GunRecoil,
+					rightHand.Position - Vector3.new(0, 1, 0),
+					"NPCRecoil"
+				)
 				agent.ai.lastShot = currTime
 			end
 		end

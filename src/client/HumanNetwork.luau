@@ -1,5 +1,6 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ClientGunHandler = require(script.Parent.Gun.ClientGunHandler)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
 
@@ -29,8 +30,17 @@ function HumanNetwork:RagdollClient(ragdollTime: number)
 	end)
 end
 
-function HumanNetwork:ApplyImpulse(target, force: Vector3, position: Vector3?)
+function HumanNetwork:ApplyImpulse(target, force: Vector3, position: Vector3?, type: string?)
 	if not target then
+		return
+	end
+
+	-- Apply NPC gun recoil visual
+	if type then
+		if type == "NPCRecoil" then
+			local npcModel = target
+			ClientGunHandler:ApplyGunRecoil(npcModel:FindFirstChildOfClass("Tool"), type)
+		end
 		return
 	end
 

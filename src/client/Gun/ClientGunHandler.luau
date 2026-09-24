@@ -1,4 +1,5 @@
 local ContextActionService = game:GetService("ContextActionService")
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -74,7 +75,10 @@ function ClientGunHandler:StopReloading()
 	GunNetwork:fire("StopReloadingServer")
 end
 
-function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
+function ClientGunHandler:ApplyGunRecoil(gunTool: Tool, type: string?)
+	if not gunTool then
+		return
+	end
 	local handle: Part? = gunTool:WaitForChild("Handle") :: Part
 	local shootPoint: Attachment? = gunTool:WaitForChild("ShootPoint") :: Attachment
 	local gunHolderModel: Model? = gunTool:FindFirstAncestorOfClass("Model")
@@ -98,7 +102,9 @@ function ClientGunHandler:ApplyGunRecoil(gunTool: Tool)
 	handle:ApplyImpulseAtPosition(vector.create(0, 1, 0) * GunData[gunTool.Name].GunRecoil, shootPoint.WorldPosition)
 
 	-- also make camera flick up via springs
-	RecoilSpring:impulse(GunData[gunTool.Name].CameraRecoil)
+	if not type then
+		RecoilSpring:impulse(GunData[gunTool.Name].CameraRecoil)
+	end
 end
 local function StopCurrentTween()
 	if ADSTween then
