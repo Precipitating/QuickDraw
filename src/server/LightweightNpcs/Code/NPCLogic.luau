@@ -489,6 +489,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 
 	npcRecord.onRagdoll:Connect(function(duration: number?, onChanged: (() -> ())?)
 		NPCPhysics:Ragdoll(npcRecord, duration, onChanged)
+		npcRecord:ForceReplicate()
 	end)
 
 	npcRecord.onDeath:Connect(function()
@@ -525,6 +526,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 
 		PlayerSignals.ReduceNPCCounter:Fire(npcRecord.serverRig, npcRecord.faction)
+		npcRecord:ForceReplicate()
 	end)
 
 	npcRecord.onPoseChange:Connect(function(poseName: string, channel: number?)
@@ -533,6 +535,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			return
 		end
 		NPCPoses:ChangePose(npcRecord, poseName, channel)
+		npcRecord:ForceReplicate()
 	end)
 
 	npcRecord.onImpulse:Connect(function(force: Vector3, onComplete: (() -> ())?)
@@ -552,6 +555,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				onComplete()
 			end)
 		end
+		npcRecord:ForceReplicate()
 	end)
 
 	InitializeOnSpawn(npcRecord)
@@ -608,6 +612,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				npcRecord.ai.currentNavigationData = nil
 			end
 		end)
+		npcRecord:ForceReplicate()
 	end)
 end
 
