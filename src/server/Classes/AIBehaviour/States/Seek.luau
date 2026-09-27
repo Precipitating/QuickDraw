@@ -94,7 +94,7 @@ function Seek:LookAroundAndReact(ai)
 				nil,
 				`RangedAILostSight1{self.AI.Type}`,
 				self.Owner.VoicelineSound,
-				{ MaxDistance = 200 }
+				{ MaxDistance = 150 }
 			)
 		end
 
@@ -134,7 +134,7 @@ function Seek:Enter(previous, seekData)
 			nil,
 			`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
 			self.Owner.VoicelineSound,
-			{ MaxDistance = 200 }
+			{ MaxDistance = 150 }
 		)
 	elseif classType == "Animal" then
 		ai:ChangeWalkSpeed(self.Owner.AttackRunSpeed)

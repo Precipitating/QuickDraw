@@ -474,16 +474,20 @@ function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound
 		return
 	end
 
+	-- Strip sound name number, as theres variations we dont want spammed
+	local stripped = (soundName:gsub("%d+", ""))
+
 	local config = SoundData.Sounds[soundName]
 	local model = soundInstance:FindFirstAncestorOfClass("Model")
 	local modelName: string? = if model and model.Name then model.Name else ""
-	local keyName = `{soundName}{modelName}`
+	local keyName = `{stripped}{modelName}`
 	local soundCooldown = GROUP_COOLDOWN_TIME[config.Group]
 	if
 		_lastPlayed[keyName]
 		and (workspace:GetServerTimeNow() - _lastPlayed[keyName])
 			< if soundCooldown then soundCooldown else DEFAULT_SOUND_COOLDOWN_TIME
 	then
+		Utility.Warn(`{soundName} cooldown`)
 		return
 	end
 
@@ -499,6 +503,7 @@ function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound
 	soundInstance.PlaybackSpeed = opts.Pitch or config.PlaybackSpeed or 1
 	soundInstance:Play()
 	_lastPlayed[keyName] = workspace:GetServerTimeNow()
+	Utility.Warn(`{soundName} should play`)
 end
 
 --- Play a sound at a world position (attaches to a temporary part)

@@ -39,7 +39,7 @@ function Provoked:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	local seesTarget = CommonStateLogic.CanSeeEnemy(agent, dt)
 	-- 3.1 If so, return success, meaning provoked = false, and let the plan go to Attack state
 	if seesTarget then
-		agent.ai.currentTarget = seesTarget
+		agent.ai.currentTarget = nil
 		Utility.Warn("Provoked AI sees enemy")
 		return ActionResult.Success
 	end

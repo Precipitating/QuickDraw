@@ -1,6 +1,9 @@
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ClientGunHandler = require(script.Parent.Gun.ClientGunHandler)
+local StarterPlayer = game:GetService("StarterPlayer")
+local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
+local LightweightNpcsClientModule =
+	require(StarterPlayer.StarterPlayerScripts.Client.LightweightNpcsClient.Code.LightweightNpcsClientModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local CoreGUIHandler = require(script.Parent.Utility.CoreGUIHandler)
 
@@ -39,7 +42,24 @@ function HumanNetwork:ApplyImpulse(target, force: Vector3, position: Vector3?, t
 	if type then
 		if type == "NPCRecoil" then
 			local npcModel = target
-			ClientGunHandler:ApplyGunRecoil(npcModel:FindFirstChildOfClass("Tool"), type)
+			if not npcModel then
+				return
+			end
+			local npcRecord = LightweightNpcsClientModule.npcRecords[target:GetAttribute("npcId")]
+			if not npcRecord then
+				return
+			end
+
+			-- Apply visual impulse
+			local gunName: string? = npcModel:FindFirstChildOfClass("Tool")
+				and npcModel:FindFirstChildOfClass("Tool").Name
+			local gunData = GunData[gunName]
+			if not gunData then
+				return
+			end
+			npcRecord.recoilSpring:impulse(gunData.GunRecoil)
+
+			--ClientGunHandler:ApplyNPCRecoil(npcModel:FindFirstChild("RightUpperArm")
 		end
 		return
 	end

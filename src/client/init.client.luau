@@ -22,7 +22,7 @@ local function WaitForPlayerLoad()
 	ClientUtility.ToggleControls(false)
 	CoreGUIHandler.ToggleBackpackVisibility(false)
 	SoundManager.Init()
-	SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5 })
+	SoundManager.PlayKeyed("Music", "MainTheme", { FadeIn = 0.5, Volume = 0.5 })
 
 	-- ensure loading screen finished loading
 	repeat

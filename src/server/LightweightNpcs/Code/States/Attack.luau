@@ -87,7 +87,7 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 			nil,
 			`RangedAILostSight1{agent.npcType}`,
 			agent.npcSound,
-			{ MaxDistance = 100 }
+			{ MaxDistance = 150 }
 		)
 		self:ExitAttackState(agent)
 		return ActionResult.Success
@@ -108,14 +108,14 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 					nil,
 					`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
 					agent.npcSound,
-					{ MaxDistance = 100 }
+					{ MaxDistance = 150 }
 				)
 			else
 				ServerSoundHandler:Play3DNPCVoiceline(
 					nil,
 					`RangedAITooFar{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
 					agent.npcSound,
-					{ MaxDistance = 100 }
+					{ MaxDistance = 150 }
 				)
 			end
 			-- too far/close to target, change state to StayInValidRange
@@ -130,9 +130,9 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	-- 1.1 Play voiceline
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
-		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{self.npcType}`,
+		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
 		agent.npcSound,
-		{ MaxDistance = 100 }
+		{ MaxDistance = 150 }
 	)
 	-- 2. Smoothly rotate to face target
 	local dir = enemyPosition - agent.hrp.Position

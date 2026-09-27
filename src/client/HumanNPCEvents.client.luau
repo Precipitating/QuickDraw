@@ -115,6 +115,7 @@ local function StoreBodyParts(npcRecord: ClientNpcTypes.clientNpcRecordType)
 		end
 
 		npcRecord.bodyParts[LimbsEnum[part.Name]] = part
+
 		part.CollisionGroup = "NPC"
 	end
 end

@@ -59,7 +59,7 @@ local function CanStillSeeEnemy(agent: LightweightNpcTypes.npcRecordType, target
 	-- 3. Check if we can see any enemies
 	local seesTarget = CommonStateLogic.CanSeeEnemy(agent, dt)
 	if seesTarget then
-		agent.ai.currentTarget = seesTarget
+		agent.ai.currentTarget = nil
 		agent.ai.worldState:set("hasTarget", true)
 		return true
 	end

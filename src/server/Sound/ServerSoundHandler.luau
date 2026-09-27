@@ -50,6 +50,9 @@ function ServerSoundHandler:Play3DNPCVoiceline(
 	NPCSoundInstance: Sound?,
 	config
 )
+	if not NPCSoundInstance then
+		return
+	end
 	if not SoundLimiter:TryConsume() then
 		return
 	end
@@ -72,10 +75,18 @@ function ServerSoundHandler:Play3DNPCVoiceline(
 		return
 	end
 
-	if playerToExclude then
-		self.networker:fireAllExcept(playerToExclude, "Play3DNPCVoiceline", buf, NPCSoundInstance)
-	else
-		self.networker:fireAll("Play3DNPCVoiceline", buf, NPCSoundInstance)
+	local parent = NPCSoundInstance.Parent
+	if not parent then
+		return
+	end
+	local closePlayers = Utility.GetClosePlayers(parent:GetPivot().Position, config and config.MaxDistance or 200)
+
+	for _, player in closePlayers do
+		if player == playerToExclude then
+			continue
+		end
+
+		self.networker:fire(player, "Play3DNPCVoiceline", buf, NPCSoundInstance)
 	end
 end
 

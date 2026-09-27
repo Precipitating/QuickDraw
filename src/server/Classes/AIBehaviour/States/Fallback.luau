@@ -167,7 +167,7 @@ function Fallback:Enter(previous, fallbackData)
 			nil,
 			`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{self.AI.Type}`,
 			self.Owner.VoicelineSound,
-			{ MaxDistance = 100 }
+			{ MaxDistance = 150 }
 		)
 	end
 

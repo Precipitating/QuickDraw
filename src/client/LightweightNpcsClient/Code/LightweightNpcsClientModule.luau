@@ -2,6 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local lightweightNpcsClientModule = {} :: lightweightNpcsClientModuleType
 
+local Ripple = require(ReplicatedStorage.Packages.Ripple)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MessageId = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.MessageId)
 local ReadBuffer = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.ReadBuffer)
@@ -9,6 +10,7 @@ local ClientNpcTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.Lightweight
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local PositionBits = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.PositionBits)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 
 lightweightNpcsClientModule.onNpcLoad = SignalModule.new()
 
@@ -21,7 +23,6 @@ type lightweightNpcsClientModuleType = {
 
 	--Methods (: call notation on everything)
 	--Init: (self: customNPCsType) -> (),
-
 	Heartbeat: (self: lightweightNpcsClientModuleType, dt: number) -> (),
 
 	ProcessNewServerTime: (self: lightweightNpcsClientModuleType, newServerTime: number) -> (),
@@ -48,25 +49,18 @@ type lightweightNpcsClientModuleType = {
 }
 
 local config = {
-	doDebugPrinting = true,
 	resetTimeTolerance = 0.4,
 	maxBufferSize = 10,
 	bufferFluxEstimation = 0.004, --adds Xms of ping flux tolerance
 	rotationOffset = math.rad(180),
 }
 
-local _print = print
 local function print(...)
-	if config.doDebugPrinting then
-		_print(...)
-	end
+	Utility.Warn(...)
 end
 
-local _warn = warn
 local function warn(...)
-	if config.doDebugPrinting then
-		_warn(...)
-	end
+	Utility.Warn(...)
 end
 
 function lightweightNpcsClientModule:ProcessCustomClientEvent(message: any)
@@ -216,6 +210,11 @@ local function Init()
 						[LimbsEnum.Head] = true,
 					},
 					bodyParts = {},
+					recoilSpring = Ripple.createSpring(0, {
+						start = true,
+						dampingRatio = 0.6,
+						frequency = 5,
+					}),
 					disabledLimbs = {},
 					humanoid = model:FindFirstChild("Humanoid") :: Humanoid?,
 					timeline = {},
@@ -227,6 +226,16 @@ local function Init()
 					onCustomEvent = SignalModule.new(),
 					loaded = false,
 				}
+				npcRecord.recoilSpring:onChange(function(angle)
+					local rightArm = npcRecord.bodyParts[LimbsEnum.RightLowerArm]
+					local constraint: AnimationConstraint? = rightArm
+						and rightArm:FindFirstChild("RightElbow") :: AnimationConstraint?
+					if not rightArm or not constraint then
+						return
+					end
+
+					constraint.Transform = CFrame.Angles(-math.rad(angle), 0, 0)
+				end)
 
 				--Assumes we have a primaryPart
 				if npcRecord.instance.PrimaryPart then
@@ -234,6 +243,15 @@ local function Init()
 				end
 
 				lightweightNpcsClientModule.npcRecords[npcRecord.npcId] = npcRecord
+
+				-- Assign bodyparts
+				for _, part in npcRecord.instance:GetChildren() do
+					if part:IsA("MeshPart") then
+						if LimbsEnum[part.Name] then
+							npcRecord.bodyParts[LimbsEnum[part.Name]] = part
+						end
+					end
+				end
 				return
 			end
 		end)

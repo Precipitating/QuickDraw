@@ -109,17 +109,18 @@ planner:registerActions({ patrol, stayWithinRange, seek, attack, reload, provoke
 
 function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	local ai = npcRecord.ai
-	ai.currentTarget = nil
 	ai.lastSeenTarget = nil
 	ai.currentMoveIdx = 2
 	ai.currentActionIndex = 1
 	npcRecord.busy = false
+	ai.currentTarget = nil
 	ai.currentNavigationIndex = nil
 	ai.currentNavigationData = nil
 	ai.currentPlan = nil
 	ai.currentGoal = nil
 
 	ai.worldState:set("atSafeDistance", true)
+
 	ai.worldState:set("hasTarget", false)
 	ai.worldState:set("lostTarget", false)
 	ai.worldState:set("canShoot", true)
@@ -153,8 +154,8 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		currentMoveIdx = 2,
 		currentActionIndex = 1,
 		planner = planner,
-		currentTarget = nil,
 		lastSeenTarget = nil,
+		currentTarget = nil,
 		factionData = npcData,
 		defaultState = npcData.DefaultStateName,
 		defaultStateData = npcRecord.defaultStateData,
@@ -204,7 +205,9 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		desiredState = { hasTarget = true },
 		priority = 1,
 		isValidFn = function(state)
-			return not state:get("hasTarget") and npcData.DefaultStateName == "Patrol"
+			return state:get("hasTarget") == false
+				and npcRecord.ai.currentTarget == nil
+				and npcData.DefaultStateName == "Patrol"
 		end,
 	})
 

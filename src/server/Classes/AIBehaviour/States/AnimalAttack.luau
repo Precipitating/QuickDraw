@@ -32,7 +32,7 @@ function AnimalAttack:Enter(previous, targetData: any)
 		nil,
 		`AnimalAIAttack{self.AI.Type}`,
 		self.Owner.VoicelineSound,
-		{ MaxDistance = 100, Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
+		{ MaxDistance = 150, Pitch = RandomModule.GetRandomDecimalBetween(0.5, 1.5) }
 	)
 
 	local target = self.Target

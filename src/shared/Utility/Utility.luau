@@ -2,7 +2,7 @@ local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
-local DEBUG_PRINT = false
+local DEBUG_PRINT = true
 
 local isServer = RunService:IsServer()
 local _print = print
