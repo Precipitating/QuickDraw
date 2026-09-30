@@ -112,7 +112,7 @@ function Seek:Update(agent, context)
 	local seesEnemy = CommonStateLogic.CanSeeEnemy(agent, dt)
 	if seesEnemy then
 		agent.ai.worldState:set("hasTarget", true)
-		agent.ai.currentTarget = seesEnemy
+		CommonStateLogic.SetCurrentTarget(agent, seesEnemy)
 		Utility.Warn("AI sees enemy")
 		self:ExitSeekState(agent)
 		return ActionResult.Success

@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ActionResult = require(ServerScriptService.Server.LightweightNpcs.Code.States.ActionResult)
+local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
 local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
@@ -498,6 +499,7 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 		npcRecord.npcState = NpcStateModule.Dying
 		Utility.Warn("onDeath called")
+		CommonStateLogic.SetCurrentTarget(npcRecord, nil)
 		--NPCPoses:ResetPose(npcRecord)
 		-- Change collision group so its untouchable
 		for _, bodyPart in npcRecord.bodyParts do

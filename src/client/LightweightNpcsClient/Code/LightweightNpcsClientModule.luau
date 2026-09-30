@@ -1,5 +1,6 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local lightweightNpcsClientModule = {} :: lightweightNpcsClientModuleType
 
 local Ripple = require(ReplicatedStorage.Packages.Ripple)
@@ -226,6 +227,7 @@ local function Init()
 					onCustomEvent = SignalModule.new(),
 					loaded = false,
 				}
+
 				npcRecord.recoilSpring:onChange(function(angle)
 					local rightArm = npcRecord.bodyParts[LimbsEnum.RightLowerArm]
 					local constraint: AnimationConstraint? = rightArm
@@ -234,7 +236,8 @@ local function Init()
 						return
 					end
 
-					constraint.Transform = CFrame.Angles(-math.rad(angle), 0, 0)
+					constraint.Transform = CFrame.Angles(angle, 0, 0)
+					Utility.Warn(constraint.Transform)
 				end)
 
 				--Assumes we have a primaryPart

@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local HumanSignals = require(ServerScriptService.Server.Classes.Human.HumanSignals)
 local ActionResult = require(script.Parent.ActionResult)
+local CommonStateLogic = require(script.Parent.CommonStateLogic)
 local NPCPoses = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPoses)
 local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.NPCWeaponsClass)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
@@ -13,7 +14,7 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Attack = {}
 
 local function CanStillSeeTarget(agent: LightweightNpcTypes.npcRecordType, dt: number)
-	local target = agent.ai.currentTarget
+	local target = CommonStateLogic.GetCurrentTarget(agent)
 	if not target then
 		return false
 	end
@@ -34,7 +35,7 @@ local function CanStillSeeTarget(agent: LightweightNpcTypes.npcRecordType, dt: n
 end
 
 function Attack:ExitAttackState(agent)
-	agent.ai.currentTarget = nil
+	CommonStateLogic.SetCurrentTarget(agent, nil)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
 	-- Stop tool holding animation if ran (should be on second animation channel)
@@ -54,7 +55,7 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		return ActionResult.Failed
 	end
 	-- Target should be a model
-	local target = agent.ai.currentTarget
+	local target = CommonStateLogic.GetCurrentTarget(agent)
 	local dt = context.dt
 
 	-- Early returns

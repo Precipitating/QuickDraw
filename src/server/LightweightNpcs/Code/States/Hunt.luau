@@ -2,18 +2,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local NPCHealth = require(ServerScriptService.Server.LightweightNpcs.Code.NPCHealth)
 local ActionResult = require(script.Parent.ActionResult)
+local CommonStateLogic = require(script.Parent.CommonStateLogic)
 local StayInValidRange = require(script.Parent.StayInValidRange)
-local NPCPoses = require(ServerScriptService.Server.LightweightNpcs.Code.NPCPoses)
 local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.NPCWeaponsClass)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
-local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
-local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local Hunt = {}
 
 function Hunt:ExitHuntState(agent: LightweightNpcTypes.npcRecordType)
-	agent.ai.currentTarget = nil
+	CommonStateLogic.SetCurrentTarget(agent, nil)
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
 	NPCHealth:UpdateHealth(agent, -99999)
@@ -32,7 +30,7 @@ function Hunt:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		return ActionResult.Running
 	end
 	-- Target should be a model
-	local target = agent.ai.currentTarget
+	local target = CommonStateLogic.GetCurrentTarget(agent)
 	local dt = context.dt
 
 	-- Early returns
@@ -57,7 +55,7 @@ function Hunt:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		if dist <= minDist or dist >= maxDist then
 			-- too far/close to target, change state to StayInValidRange
 			Utility.Warn(`Target out of range, moving`)
-			agent.ai.lastSeenTarget = agent.ai.currentTarget
+			agent.ai.lastSeenTarget = CommonStateLogic.GetCurrentTarget(agent)
 			StayInValidRange:GeneratePathWithinRange(agent)
 			return ActionResult.Running
 		end

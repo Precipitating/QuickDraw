@@ -57,6 +57,14 @@ return {
 		agent:Move(dir.Magnitude > 0.001 and dir.Unit or Vector3.zero)
 	end,
 
+	SetCurrentTarget = function(agent: LightweightNpcTypes.npcRecordType, target: Instance?)
+		agent.serverRig:SetAttribute("CurrentTarget", target)
+	end,
+	GetCurrentTarget = function(agent: LightweightNpcTypes.npcRecordType)
+		local exists = agent.serverRig:GetAttribute("CurrentTarget")
+		return exists and exists:Get()
+	end,
+
 	CanSeeEnemy = function(npcRecord: LightweightNpcTypes.npcRecordType, dt: number)
 		local enemyInstanceTags = npcRecord.enemies and npcRecord.enemies.EnemyList
 		local perception = npcRecord.ai.perception

@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 local Hunt = require(ServerScriptService.Server.LightweightNpcs.Code.States.Hunt)
 local StayInValidRange = require(ServerScriptService.Server.LightweightNpcs.Code.States.StayInValidRange)
 local Attack = require(script.Parent.States.Attack)
@@ -17,7 +18,7 @@ local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 
-local planner = Planner.new({ performanceMode = true, maxEvaluationsPerTick = 10 })
+local planner = Planner.new({ maxEvaluationsPerTick = 10 })
 local NPCAI = {}
 
 local patrol = Action.new({
@@ -113,7 +114,7 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	ai.currentMoveIdx = 2
 	ai.currentActionIndex = 1
 	npcRecord.busy = false
-	ai.currentTarget = nil
+	CommonStateLogic.SetCurrentTarget(npcRecord, nil)
 	ai.currentNavigationIndex = nil
 	ai.currentNavigationData = nil
 	ai.currentPlan = nil
@@ -155,7 +156,6 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		currentActionIndex = 1,
 		planner = planner,
 		lastSeenTarget = nil,
-		currentTarget = nil,
 		factionData = npcData,
 		defaultState = npcData.DefaultStateName,
 		defaultStateData = npcRecord.defaultStateData,
@@ -206,7 +206,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		priority = 1,
 		isValidFn = function(state)
 			return state:get("hasTarget") == false
-				and npcRecord.ai.currentTarget == nil
+				and not CommonStateLogic.GetCurrentTarget(npcRecord)
 				and npcData.DefaultStateName == "Patrol"
 		end,
 	})

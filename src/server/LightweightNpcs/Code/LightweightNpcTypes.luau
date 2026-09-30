@@ -100,7 +100,6 @@ export type npcRecordType = {
 		currentMoveIdx: number,
 		jumpFinishedSignal: any,
 		moveFinishedSignal: any,
-		currentTarget: any?,
 		lastSeenTarget: any?,
 		currentGoal: any?,
 		currentPlan: any?,

@@ -11,6 +11,7 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local NPCHealth = require(ServerScriptService.Server.LightweightNpcs.Code.NPCHealth)
 local NPCLogic = require(ServerScriptService.Server.LightweightNpcs.Code.NPCLogic)
+local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 
 local NPCModels = ReplicatedStorage.Shared.NPCData.NPCs.Humans
 local NPCList = ReplicatedStorage.Shared.NPCData.NPCs.Humans
@@ -36,7 +37,7 @@ NPCEvents.NPCTypesSpawned = {
 	BanditBase = { Sheriff = 0, Bandit = 0 },
 }
 
-NPCEvents.SecondsToSpawnNPC = 120
+NPCEvents.SecondsToSpawnNPC = 10
 NPCEvents.CurrentSpawnedNPCS = 0
 
 local MAX_TYPE_OFFSET = 3
@@ -148,7 +149,7 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 		end
 		npcRecord.enemies = { [mercenaryTarget.Name] = true }
 		task.defer(function()
-			npcRecord.ai.currentTarget = targetPlayer.Character
+			CommonStateLogic.SetCurrentTarget(npcRecord, targetPlayer.Character)
 			npcRecord.ai.worldState:set("hasTarget", true)
 			npcRecord.ai.worldState:set("atSafeDistance", false)
 		end)
