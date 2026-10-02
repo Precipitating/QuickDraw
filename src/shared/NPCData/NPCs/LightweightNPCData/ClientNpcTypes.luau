@@ -4,6 +4,7 @@ local SignalModule = require(script.Parent.Utils.Signal)
 local NpcAnimationTypes = require(script.Parent.NpcAnimationTypes)
 
 export type clientNpcRecordType = {
+	janitor: any,
 	npcId: number,
 	timeline: { any },
 	eventline: { any },
@@ -12,7 +13,10 @@ export type clientNpcRecordType = {
 	bloodEmitterRefs: { [number]: (ParticleEmitter | boolean)? },
 	humanoid: Humanoid?,
 	bodyParts: { [number]: BasePart? },
+	rightArmConstraint: BasePart?,
 	recoilSpring: any,
+	isRecoiling: boolean,
+	recoilAngle: number,
 	disabledLimbs: { [number]: boolean },
 	hz: number,
 	invHz: number,

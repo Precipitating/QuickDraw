@@ -99,7 +99,7 @@ return {
 			local isEnemy = false
 			for _, tag in enemyInstanceTags do
 				if model:HasTag(tag) then
-					Utility.Warn(`NPC saw enemy {tag}`)
+					--Utility.Warn(`NPC saw enemy {tag}`)
 					isEnemy = true
 					break
 				end

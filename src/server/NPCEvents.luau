@@ -141,6 +141,11 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 			spawnLocation.WorldCFrame
 		)
 
+		if not npcRecord then
+			TargetList:enqueue(mercenaryTarget)
+			return
+		end
+
 		local targetPlayer = Players:FindFirstChild(mercenaryTarget.Name)
 		if not targetPlayer then
 			Utility.Warn(`Mercenary error: Cannot get target's player instance`)
@@ -164,6 +169,10 @@ local function SpawnNPCAtSpawner(spawnerModel, spawnLocation)
 			spawnerModel:GetAttribute("DefaultStateData"),
 			spawnLocation.WorldCFrame
 		)
+
+		if not npcRecord then
+			return
+		end
 	end
 
 	local npcModel = npcRecord.instance

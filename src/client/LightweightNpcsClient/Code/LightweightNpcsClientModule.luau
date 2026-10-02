@@ -3,6 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local lightweightNpcsClientModule = {} :: lightweightNpcsClientModuleType
 
+local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Ripple = require(ReplicatedStorage.Packages.Ripple)
 local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MessageId = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.MessageId)
@@ -199,6 +200,7 @@ local function Init()
 				local model: Model = message.inst :: Model
 
 				local npcRecord: ClientNpcTypes.clientNpcRecordType = {
+					janitor = Janitor.new(),
 					instance = model,
 					npcId = message.npcId,
 					hz = message.hz,
@@ -211,11 +213,14 @@ local function Init()
 						[LimbsEnum.Head] = true,
 					},
 					bodyParts = {},
+					rightArmConstraint = nil,
 					recoilSpring = Ripple.createSpring(0, {
 						start = true,
 						dampingRatio = 0.6,
 						frequency = 5,
 					}),
+					isRecoiling = false,
+					recoilAngle = 0,
 					disabledLimbs = {},
 					humanoid = model:FindFirstChild("Humanoid") :: Humanoid?,
 					timeline = {},
@@ -229,16 +234,42 @@ local function Init()
 				}
 
 				npcRecord.recoilSpring:onChange(function(angle)
-					local rightArm = npcRecord.bodyParts[LimbsEnum.RightLowerArm]
-					local constraint: AnimationConstraint? = rightArm
-						and rightArm:FindFirstChild("RightElbow") :: AnimationConstraint?
-					if not rightArm or not constraint then
+					npcRecord.isRecoiling = true
+					npcRecord.recoilAngle = angle
+				end)
+
+				npcRecord.recoilSpring:onComplete(function()
+					npcRecord.isRecoiling = false
+					Utility.Warn("RECOIL OFF")
+				end)
+
+				npcRecord.janitor:Add(RunService.PreSimulation:Connect(function(a0: number)
+					if not npcRecord.isRecoiling then
 						return
 					end
+					local arm = npcRecord.bodyParts[LimbsEnum.RightUpperArm]
+					if not (npcRecord.placed and arm) or npcRecord.isDead then
+						return
+					end
+					local animConstraint = arm:FindFirstChild("RightShoulder") :: AnimationConstraint?
+					if not animConstraint then
+						return
+					end
+					animConstraint.Transform = CFrame.Angles(math.rad(90) + npcRecord.recoilAngle, 0, 0)
+				end))
 
-					constraint.Transform = CFrame.Angles(angle, 0, 0)
-					Utility.Warn(constraint.Transform)
-				end)
+				-- npcRecord.recoilSpring:onComplete(function(angle)
+				-- 	local arm = npcRecord.bodyParts[LimbsEnum.RightUpperArm]
+				-- 	local constraint: AnimationConstraint? = arm
+				-- 		and arm:FindFirstChild("RightShoulder") :: AnimationConstraint?
+
+				-- 	if not constraint then
+				-- 		return
+				-- 	end
+				-- 	npcRecord.isRecoiling = false
+				-- 	constraint.Transform = CFrame.Angles(0, 0, 0)
+				-- 	Utility.Warn("RECOIL OFF")
+				-- end)
 
 				--Assumes we have a primaryPart
 				if npcRecord.instance.PrimaryPart then
@@ -252,6 +283,10 @@ local function Init()
 					if part:IsA("MeshPart") then
 						if LimbsEnum[part.Name] then
 							npcRecord.bodyParts[LimbsEnum[part.Name]] = part
+						end
+
+						if npcRecord.bodyParts[LimbsEnum[LimbsEnum.RightUpperArm]] then
+							npcRecord.rightArmConstraint = npcRecord.bodyParts[LimbsEnum[LimbsEnum.RightUpperArm]]
 						end
 					end
 				end
@@ -274,6 +309,12 @@ end
 function lightweightNpcsClientModule:ProcessCleanup(npcId: number)
 	local record = self.npcRecords[npcId]
 	if record then
+		if record.janitor then
+			record.janitor:Destroy()
+		end
+		if record.recoilSpring then
+			record.recoilSpring:destroy()
+		end
 		record.onCustomEvent:Destroy()
 		self.npcRecords[npcId] = nil
 	end

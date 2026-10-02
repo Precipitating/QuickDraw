@@ -329,14 +329,19 @@ function lightweightNpcsServerModule:CreateNpc(
 	_location: string,
 	_defaultStateData: string,
 	originCFrame: CFrame
-): LightweightNpcTypes.npcRecordType
+): LightweightNpcTypes.npcRecordType?
+	local snappedPosition = SnapToGround(originCFrame.Position, npcConfig.motionSize)
+	originCFrame = CFrame.new(snappedPosition) * (originCFrame - originCFrame.Position)
+
+	if math.abs(originCFrame.Position.Y) > 10000 or originCFrame.Position ~= originCFrame.Position then
+		warn(`Bad spawn origin for {_npcType}: {originCFrame.Position}`, debug.traceback())
+		return nil
+	end
+
 	local npcId = GetNextNpcId()
 
 	local serverRigTemplate = ReplicatedStorage.Shared.NPCData.NPCs.Humans.ServerNPCRig:Clone()
 	serverRigTemplate:SetAttribute("npcId", npcId)
-
-	local snappedPosition = SnapToGround(originCFrame.Position, npcConfig.motionSize)
-	originCFrame = CFrame.new(snappedPosition) * (originCFrame - originCFrame.Position)
 
 	-- Pivot server rig to the target CFrame
 	serverRigTemplate:PivotTo(originCFrame)
