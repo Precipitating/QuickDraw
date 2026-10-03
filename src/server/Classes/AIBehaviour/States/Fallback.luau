@@ -10,7 +10,6 @@ local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local BaseState = require(script.Parent.BaseState)
 
-type HumanNPC = ClassTypes.HumanNPC
 type Animal = ClassTypes.Animal
 
 local Fallback = setmetatable({}, BaseState)
@@ -85,7 +84,7 @@ function Fallback:AimNPCTowards(ownerClass, targetPos: Vector3, target, eyeTarge
 	return true
 end
 
-function Fallback:PathFindToFallbackPosition(human: HumanNPC | Animal, target, targetPos: Vector3?)
+function Fallback:PathFindToFallbackPosition(npc: Animal, target, targetPos: Vector3?)
 	self.Janitor:Add(self.AI.NoobPath.Reached:Connect(function(success: boolean)
 		Utility.Warn("arrived fallback pos")
 		-- get updated target position
@@ -96,27 +95,8 @@ function Fallback:PathFindToFallbackPosition(human: HumanNPC | Animal, target, t
 		end
 
 		-- 3.1 Aim at target
-		if self.Owner.ClassType == "HumanNPC" then
-			local NPCAimArm = if human
-					and human.BodyParts
-					and human.BodyParts["RightUpperArm"]
-				then human.BodyParts["RightUpperArm"]
-				else nil
-
-			if not NPCAimArm then
-				Utility.Warn("Right arm missing, NPC probably dead")
-				return
-			end
-			-- 3.1. Aim arm & torso towards last seen pos and wait until finished rotating
-			targetPos = if target:IsA("Model") then target:GetPivot().Position else target.Position
-			local aimedAt = self:AimNPCTowards(human, targetPos, target, NPCAimArm)
-
-			if not aimedAt then
-				self.Machine:Transition("Seek", { Target = target })
-				return
-			end
-		elseif self.Owner.ClassType == "Animal" then
-			local aimedAt = self:AimNPCTowards(human, targetPos, target, self.Owner.BodyParts["Head"])
+		if self.Owner.ClassType == "Animal" then
+			local aimedAt = self:AimNPCTowards(npc, targetPos, target, self.Owner.BodyParts["Head"])
 
 			if not aimedAt then
 				self.Machine:Transition("Seek", { Target = target })

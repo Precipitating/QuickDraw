@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundData = require(ReplicatedStorage.Shared.Classes.SoundData)
 local RateLimiter = require(ReplicatedStorage.Shared.RateLimiter)
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
@@ -47,7 +48,7 @@ end
 function ServerSoundHandler:Play3DNPCVoiceline(
 	playerToExclude: Player?,
 	soundName: string,
-	NPCSoundInstance: Sound?,
+	NPCSoundInstance: { Sound: AudioPlayer?, Emitter: AudioEmitter? }?,
 	config
 )
 	if not NPCSoundInstance then
@@ -75,11 +76,13 @@ function ServerSoundHandler:Play3DNPCVoiceline(
 		return
 	end
 
-	local parent = NPCSoundInstance.Parent
-	if not parent then
+	local audioPlayer: AudioPlayer = NPCSoundInstance and NPCSoundInstance.Sound
+	local emitter: AudioEmitter = NPCSoundInstance and NPCSoundInstance.Emitter
+	local npc = audioPlayer.Parent
+	if not audioPlayer or not emitter or not npc then
 		return
 	end
-	local closePlayers = Utility.GetClosePlayers(parent:GetPivot().Position, config and config.MaxDistance or 200)
+	local closePlayers = Utility.GetClosePlayers(npc:GetPivot().Position, config and config.MaxDistance or 200)
 
 	for _, player in closePlayers do
 		if player == playerToExclude then

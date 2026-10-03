@@ -49,12 +49,20 @@ function Animal.new(model: Model?, type: string, requiresAI: boolean?)
 
 	return self
 end
+
 function Animal:SetupVoicelineSound()
-	local sound = Instance.new("Sound")
+	local sound: AudioPlayer = Instance.new("AudioPlayer")
+	local wire: Wire = Instance.new("Wire")
+	local emitter: AudioEmitter = Instance.new("AudioEmitter")
 	sound.Name = "VoicelineSound"
+	wire.TargetInstance = emitter
+	wire.SourceInstance = sound
+	wire.Parent = self.HRP
 	sound.Parent = self.HRP
-	return sound
+	emitter.Parent = self.HRP
+	return { Sound = sound, Emitter = emitter }
 end
+
 function Animal:InitializeTorsoAimer()
 	local aimer: AlignOrientation = Instance.new("AlignOrientation")
 	aimer.Mode = Enum.OrientationAlignmentMode.OneAttachment

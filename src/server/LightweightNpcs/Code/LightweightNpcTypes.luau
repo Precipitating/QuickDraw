@@ -85,7 +85,7 @@ export type npcRecordType = {
 	storedThrowable: any?,
 	defaultStateData: any?,
 	knockbackVelocity: Vector3,
-	npcSound: Sound?,
+	npcSound: { Sound: AudioPlayer?, Emitter: AudioEmitter? },
 
 	-- NPC AI conditions
 

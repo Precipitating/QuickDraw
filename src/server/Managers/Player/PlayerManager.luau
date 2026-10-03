@@ -2,7 +2,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
-local HumanNPC = require(ServerScriptService.Server.Classes.Human.HumanNPC)
 local HumanPlayer = require(ServerScriptService.Server.Classes.Human.HumanPlayer)
 local HumanRegistry = require(ServerScriptService.Server.Classes.Human.HumanRegistry)
 type HumanPlayer = ClassTypes.HumanPlayer

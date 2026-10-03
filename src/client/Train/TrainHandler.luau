@@ -103,7 +103,7 @@ function TrainHandler:Initialize()
 		if not ClientSpline then
 			return
 		end
-
+		dt = math.min(dt, 0.1)
 		-- 1. Smooth our local speed estimate toward the server's reported speed
 		PredictedSpeed = PredictedSpeed + (CurrentSpeed - PredictedSpeed) * (dt * SPEED_SMOOTH)
 

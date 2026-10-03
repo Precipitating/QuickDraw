@@ -14,6 +14,7 @@ local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightN
 local SignalModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.Signal)
 local NpcStateModule = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.NpcState)
 local NPCFactionTypes = require(ReplicatedStorage.Shared.NPCData.NPCs.NPCFactionTypes)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local NpcMover = require(script.Parent.NpcMover)
 
 local config = {
@@ -321,6 +322,24 @@ local function SnapToGround(position: Vector3, motionSize: Vector3): Vector3
 	return position
 end
 
+local function SetupVoicelineSound(npcRecord: LightweightNpcTypes.npcRecordType)
+	local hrp = npcRecord.instance:FindFirstChild("HumanoidRootPart")
+	if not hrp then
+		Utility.Warn(`Cannot initialize VoicelineSound, missing HRP`)
+		return
+	end
+	local sound: AudioPlayer = Instance.new("AudioPlayer")
+	local wire: Wire = Instance.new("Wire")
+	local emitter: AudioEmitter = Instance.new("AudioEmitter")
+	sound.Name = "VoicelineSound"
+	wire.TargetInstance = emitter
+	wire.SourceInstance = sound
+	wire.Parent = hrp
+	sound.Parent = hrp
+	emitter.Parent = hrp
+	npcRecord.npcSound = { Sound = sound, Emitter = emitter }
+end
+
 function lightweightNpcsServerModule:CreateNpc(
 	template: Instance,
 	npcConfig: any,
@@ -371,7 +390,7 @@ function lightweightNpcsServerModule:CreateNpc(
 	currentInstance:SetAttribute("npcId", npcId)
 
 	local soundInstance = Instance.new("Sound")
-	soundInstance.Parent = currentInstance:FindFirstChild("Head")
+	soundInstance.Parent = currentInstance:FindFirstChild("HumanoidRootPart")
 	-- Extract Yaw angle (ground rotation) in radians from originCFrame
 	local _, yawAngle, _ = originCFrame:ToOrientation()
 
@@ -411,7 +430,7 @@ function lightweightNpcsServerModule:CreateNpc(
 		npcId = npcId,
 		janitor = Janitor.new(),
 		serverRig = serverRigTemplate,
-		npcSound = soundInstance,
+		npcSound = nil,
 		instance = currentInstance,
 		configuration = npcConfiguration,
 		internal = npcInternal,
@@ -482,6 +501,8 @@ function lightweightNpcsServerModule:CreateNpc(
 	serverRigTemplate:AddTag(_faction)
 	serverRigTemplate:AddTag("NPC")
 	serverRigTemplate:SetAttribute("Location", _location)
+
+	SetupVoicelineSound(npcRecord)
 
 	return npcRecord
 end

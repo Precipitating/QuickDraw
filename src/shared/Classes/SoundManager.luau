@@ -462,10 +462,22 @@ end
 -- 3D / Spatial Sound
 -------------------------------------------------
 
-function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound, options: PlayOptions?)
+function SoundManager.Play3DNPCVoiceline(
+	soundName: string,
+	soundInstance: { Sound: AudioPlayer?, Emitter: AudioEmitter? },
+	options: PlayOptions?
+)
 	local opts: PlayOptions = options or {}
 	if not soundInstance then
 		Utility.Warn(`[Play3DNPCVoiceline] missing soundInstance reference of {soundName}`)
+		return
+	end
+
+	local emitter: AudioEmitter? = soundInstance.Emitter
+	local audioPlayer: AudioPlayer? = soundInstance.Sound
+
+	if not emitter or not audioPlayer then
+		Utility.Warn(`[Play3DNPCVoiceline] missing emitter/audioplayer reference of {soundName}`)
 		return
 	end
 
@@ -478,7 +490,7 @@ function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound
 	local stripped = (soundName:gsub("%d+", ""))
 
 	local config = SoundData.Sounds[soundName]
-	local model = soundInstance:FindFirstAncestorOfClass("Model")
+	local model = audioPlayer:FindFirstAncestorOfClass("Model")
 	local modelName: string? = if model and model.Name then model.Name else ""
 	local keyName = `{stripped}{modelName}`
 	local soundCooldown = GROUP_COOLDOWN_TIME[config.Group]
@@ -491,17 +503,17 @@ function SoundManager.Play3DNPCVoiceline(soundName: string, soundInstance: Sound
 		return
 	end
 
-	if soundInstance.IsPlaying then
-		soundInstance:Stop()
+	if audioPlayer.IsPlaying then
+		audioPlayer:Stop()
 	end
 
-	soundInstance.SoundId = config.SoundId
-	soundInstance.RollOffMaxDistance = opts.MaxDistance or 100
-	soundInstance.RollOffMinDistance = opts.MinDistance or 10
 	local baseVol = opts.Volume or config.Volume or 1
-	soundInstance.Volume = _calcVolume(baseVol, config.Group)
-	soundInstance.PlaybackSpeed = opts.Pitch or config.PlaybackSpeed or 1
-	soundInstance:Play()
+
+	audioPlayer.AudioContent = Content.fromUri(config.SoundId)
+	emitter.DistanceAttenuationBounds = NumberRange.new(opts.MinDistance or 4, opts.MaxDistance or 150)
+	audioPlayer.Volume = _calcVolume(baseVol, config.Group)
+	audioPlayer.PlaybackSpeed = opts.Pitch or config.PlaybackSpeed or 1
+	audioPlayer:Play()
 	_lastPlayed[keyName] = workspace:GetServerTimeNow()
 	Utility.Warn(`{soundName} should play`)
 end

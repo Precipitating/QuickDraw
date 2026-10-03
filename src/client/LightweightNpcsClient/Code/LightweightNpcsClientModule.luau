@@ -258,19 +258,6 @@ local function Init()
 					animConstraint.Transform = CFrame.Angles(math.rad(90) + npcRecord.recoilAngle, 0, 0)
 				end))
 
-				-- npcRecord.recoilSpring:onComplete(function(angle)
-				-- 	local arm = npcRecord.bodyParts[LimbsEnum.RightUpperArm]
-				-- 	local constraint: AnimationConstraint? = arm
-				-- 		and arm:FindFirstChild("RightShoulder") :: AnimationConstraint?
-
-				-- 	if not constraint then
-				-- 		return
-				-- 	end
-				-- 	npcRecord.isRecoiling = false
-				-- 	constraint.Transform = CFrame.Angles(0, 0, 0)
-				-- 	Utility.Warn("RECOIL OFF")
-				-- end)
-
 				--Assumes we have a primaryPart
 				if npcRecord.instance.PrimaryPart then
 					npcRecord.instance.PrimaryPart.Anchored = true

@@ -1,7 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ActionResult = require(script.Parent.ActionResult)
 local CommonStateLogic = require(script.Parent.CommonStateLogic)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local Seek = {}
@@ -115,6 +118,13 @@ function Seek:Update(agent, context)
 		CommonStateLogic.SetCurrentTarget(agent, seesEnemy)
 		Utility.Warn("AI sees enemy")
 		self:ExitSeekState(agent)
+
+		ServerSoundHandler:Play3DNPCVoiceline(
+			nil,
+			`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
+			agent.npcSound,
+			{ MaxDistance = 150 }
+		)
 		return ActionResult.Success
 	end
 

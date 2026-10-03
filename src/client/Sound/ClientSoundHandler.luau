@@ -34,7 +34,7 @@ function ClientSoundHandler:Play3DOneShotToOthers(buf)
 	})
 end
 
-function ClientSoundHandler:Play3DNPCVoiceline(buf, soundInstance: Sound)
+function ClientSoundHandler:Play3DNPCVoiceline(buf, soundInstance: { Sound: AudioPlayer?, Emitter: AudioEmitter? })
 	if not soundInstance then
 		-- usually because of client not in range
 		return

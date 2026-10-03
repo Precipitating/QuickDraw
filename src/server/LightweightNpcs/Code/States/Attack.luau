@@ -128,13 +128,6 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		end
 	end
 
-	-- 1.1 Play voiceline
-	ServerSoundHandler:Play3DNPCVoiceline(
-		nil,
-		`RangedAIAttack{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
-		agent.npcSound,
-		{ MaxDistance = 150 }
-	)
 	-- 2. Smoothly rotate to face target
 	local dir = enemyPosition - agent.hrp.Position
 	if dir.Magnitude > 0.001 then
