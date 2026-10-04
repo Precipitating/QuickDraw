@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local SoundData = require(ReplicatedStorage.Shared.Classes.SoundData)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
@@ -43,11 +44,10 @@ function ClientSoundHandler:Play3DNPCVoiceline(buf, soundInstance: { Sound: Audi
 	local data = Sera.DeltaDeserialize(SeraSchemas.Play3DNPCVoicelineSchema, buf)
 
 	local soundName = data.SoundName
-
 	SoundManager.Play3DNPCVoiceline(
 		soundName,
 		soundInstance,
-		{ MaxDistance = data.MaxDistance, Volume = data.Volume or 1, Pitch = data.Pitch or 1 }
+		{ MaxDistance = data.MaxDistance, Pitch = data.Pitch or 1 }
 	)
 end
 

@@ -31,7 +31,7 @@ function Seek:LookAroundForTarget(agent: LightweightNpcTypes.npcRecordType, dt: 
 	agent.busy = true
 	for _ = 1, 4 do
 		Utility.Warn("ROTATIN")
-		if agent.ai.worldState:get("hasTarget") then
+		if agent.ai.worldState:get("hasTarget") and CommonStateLogic.GetCurrentTarget(agent) then
 			agent.busy = false
 			return
 		end
@@ -151,7 +151,7 @@ function Seek:Update(agent, context)
 	end
 
 	-- 3.1  If reached waypoint already, rotate and exit if enemy not found
-	if agent.ai.currentMoveIdx > #waypoints then
+	if agent.ai.currentMoveIdx >= #waypoints then
 		Utility.Warn(`Reached flank position`)
 		self:LookAroundForTarget(agent, dt)
 		self:ExitSeekState(agent)

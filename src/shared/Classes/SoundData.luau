@@ -617,7 +617,7 @@ SoundData.Sounds = {
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
 	},
-	RangedAITooFar2Grenadierc = {
+	RangedAITooFar2Grenadier = {
 		SoundId = "rbxassetid://72758385810042",
 		Volume = 5,
 		PlaybackSpeed = 1,
@@ -625,6 +625,62 @@ SoundData.Sounds = {
 	},
 	RangedAITooFar3Grenadier = {
 		SoundId = "rbxassetid://117670246128566",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+
+	-- Gatling
+	RangedAIAttack1Gatling = {
+		SoundId = "rbxassetid://96322060129341",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack2Gatling = {
+		SoundId = "rbxassetid://72409927513452",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIAttack3Gatling = {
+		SoundId = "rbxassetid://133582130918158",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff1Gatling = {
+		SoundId = "rbxassetid://120694596746803",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff2Gatling = {
+		SoundId = "rbxassetid://104997312186336",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAIBackOff3Gatling = {
+		SoundId = "rbxassetid://124160405738624",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar1Gatling = {
+		SoundId = "rbxassetid://75206385116468",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar2Gatling = {
+		SoundId = "rbxassetid://111350732116937",
+		Volume = 5,
+		PlaybackSpeed = 1,
+		Group = "Voiceline",
+	},
+	RangedAITooFar3Gatling = {
+		SoundId = "rbxassetid://127555303192098",
 		Volume = 5,
 		PlaybackSpeed = 1,
 		Group = "Voiceline",
