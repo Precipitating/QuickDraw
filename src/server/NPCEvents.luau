@@ -37,7 +37,7 @@ NPCEvents.NPCTypesSpawned = {
 	BanditBase = { Sheriff = 0, Bandit = 0 },
 }
 
-NPCEvents.SecondsToSpawnNPC = 10
+NPCEvents.SecondsToSpawnNPC = 120
 NPCEvents.CurrentSpawnedNPCS = 0
 
 local MAX_TYPE_OFFSET = 3

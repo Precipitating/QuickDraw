@@ -1,177 +1,168 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local ActionResult = require(script.Parent.ActionResult)
 local CommonStateLogic = require(script.Parent.CommonStateLogic)
-local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
+
+local ARRIVE_DISTANCE = 2 -- studs from a waypoint (flat) to count as reached
+local LOOK_TIME = 1 -- seconds spent standing and scanning after arriving
+local BAND_TARGET = 0.5 -- 0 = aim for MinAttackDistance, 1 = aim for MaxAttackDistance
+local MAX_REPOSITIONS = 3 -- arrivals that still end up out of band before giving up
+local FLAT = Vector3.new(1, 0, 1)
+
 local StayInValidRange = {}
 
+-- Cleanup that must run whenever this state stops, however it stops.
 function StayInValidRange:ExitStayInValidRangeState(agent: LightweightNpcTypes.npcRecordType)
+	local ai = agent.ai
+	ai.pathRequestId = (ai.pathRequestId or 0) + 1 -- discard any in-flight path
+	ai.currentNavigationData = nil
+	ai.currentMoveIdx = 2
+	ai.lookUntil = nil
+
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
 	agent.configuration.walkSpeed = HumanConstants.WALKSPEED
-	agent.ai.currentNavigationData = nil
-	agent.ai.currentMoveIdx = 2
 	agent.busy = false
-
-	if not agent.legless then
-		agent:PlayAnimation("idle", false, 1, 1)
-	else
-		agent:PlayAnimation("crawlidle", false, 1, 1)
-	end
+	CommonStateLogic.PlayLocomotion(agent, "idle")
 end
 
-function StayInValidRange:GeneratePathWithinRange(agent: LightweightNpcTypes.npcRecordType)
-	if agent.ai.currentNavigationData then
+local function Finish(agent, result)
+	StayInValidRange:ExitStayInValidRangeState(agent)
+	agent.ai.repositionCount = nil
+	return result
+end
+
+function StayInValidRange:GeneratePathWithinRange(agent: LightweightNpcTypes.npcRecordType): boolean
+	local ai = agent.ai
+	if ai.currentNavigationData then
 		return true
 	end
-	agent.busy = true
 
-	local target = agent.ai.lastSeenTarget
-	local npcData = agent.ai.factionData
-	local maxAttackDist = npcData.MaxAttackDistance
-
-	local targetPos = target:GetPivot().Position
-	local flattenedTargetPos = Vector3.new(targetPos.X, 0, targetPos.Z)
-	local currentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
-
-	-- 1. If not waypoints set, attempt to generate  one respecting radius
-	local destination = agent.ai.pathfinder:findFlankingPath(currentPos, flattenedTargetPos, maxAttackDist * 0.3)
-	if not destination then
-		Utility.Warn(`Cannot get in-range angle position`)
-		agent.busy = false
+	local target = ai.lastSeenTarget
+	local factionData = ai.factionData
+	if not target or not factionData then
 		return false
 	end
-	agent.ai.currentNavigationData = destination
-	agent.ai.currentMoveIdx = 2
+
+	local requestId = (ai.pathRequestId or 0) + 1
+	ai.pathRequestId = requestId
+
+	-- Aim for the inside of the valid band so arrival has margin on both sides.
+	local minDist, maxDist = factionData.MinAttackDistance, factionData.MaxAttackDistance
+	local radius = minDist + (maxDist - minDist) * BAND_TARGET
+
+	agent.busy = true
+	local ok, nav =
+		pcall(ai.pathfinder.findFlankingPath, ai.pathfinder, agent.position, target:GetPivot().Position, radius)
 	agent.busy = false
+
+	if ai.pathRequestId ~= requestId then
+		return false -- state exited while we yielded; discard
+	end
+	if not ok then
+		Utility.Warn(`[StayInValidRange] findFlankingPath errored: {nav}`)
+		return false
+	end
+	if not nav then
+		return false -- no reachable position
+	end
+
+	ai.currentNavigationData = nav
+	ai.currentMoveIdx = 2
 	return true
 end
 
-local function CanStillSeeEnemy(agent: LightweightNpcTypes.npcRecordType, targetPos: Vector3, dt: number)
-	local dir = (targetPos - Vector3.new(agent.position.X, 0, agent.position.Z)).Unit
-	agent.targetAngle = MathUtils:PlayerVecToAngle(dir)
-
-	agent.busy = true
-	task.wait(1)
-
-	-- 3. Check if we can see any enemies
-	local seesTarget = CommonStateLogic.CanSeeEnemy(agent, dt)
-	if seesTarget then
-		CommonStateLogic.SetCurrentTarget(agent, nil)
-		agent.ai.worldState:set("hasTarget", true)
-		return true
-	end
-
-	return false
-end
-
-function StayInValidRange:MoveTowardsWaypoints(agent: LightweightNpcTypes.npcRecordType, context, onFinished: () -> ())
-	local wp = agent.ai and agent.ai.currentNavigationData and agent.ai.currentNavigationData.waypoints
-	local currentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
-	local target = agent.ai.lastSeenTarget
-	local targetPos = target and target:GetPivot().Position
-
-	if not wp or not currentPos or not target or not targetPos then
-		return
-	end
-
-	local nextWaypoint = wp[agent.ai.currentMoveIdx]
-	local flattenedNextWaypoint = Vector3.new(nextWaypoint.Position.X, 0, nextWaypoint.Position.Z)
-
-	-- Move towards waypoint
-	if (flattenedNextWaypoint - currentPos).Magnitude <= 2 then
-		agent.ai.currentMoveIdx += 1
-		nextWaypoint = wp[agent.ai.currentMoveIdx]
-
-		-- Finished pathfinding
-		if not nextWaypoint then
-			Utility.Warn(`PATHFIND FINISHED ON VALID RANGE`)
-			onFinished()
-			return
-		end
-	else
-		-- 5.2 Move towards current waypoint target
-		if nextWaypoint.Action == Enum.PathWaypointAction.Jump then
-			if agent.isOnGround then
-				agent:Jump()
-				agent.ai.currentMoveIdx += 1
-			else
-				CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
-			end
-		else
-			-- Run
-			agent.configuration.walkSpeed = if not agent.legless
-
-				then HumanConstants.SPRINT_SPEED
-				else HumanConstants.WALKSPEED
-
-			if not agent.legless then
-				agent:PlayAnimation("run", false, 1, 1)
-			else
-				agent:PlayAnimation("crawlwalk", false, 1, 1)
-			end
-			CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
-		end
-	end
-end
-
 function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, context)
+	-- Getting hit: bail so Provoked can take over
+	if agent.data.forceExitState then
+		return Finish(agent, ActionResult.Success)
+	end
 	if agent.busy then
 		return ActionResult.Running
 	end
 
-	Utility.Warn(`StayInValidRange Entered`)
-	local target = agent.ai.lastSeenTarget
-	local npcData = agent.ai.factionData
-	if not target or not npcData then
-		self:ExitStayInValidRangeState(agent)
-		return ActionResult.Success
-	end
-	local targetPos = target:GetPivot().Position
-	targetPos = Vector3.new(targetPos.X, 0, targetPos.Z)
-	local currentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
-	local currentDist = (targetPos - currentPos).Magnitude
-
-	-- -- 1. If within range return early
-	if currentDist < npcData.MaxAttackDistance and currentDist > npcData.MinAttackDistance then
-		self:ExitStayInValidRangeState(agent)
-		return ActionResult.Success
+	local ai = agent.ai
+	local target = ai.lastSeenTarget
+	local factionData = ai.factionData
+	if not target or not target.Parent or target:HasTag("Dead") or not factionData then
+		return Finish(agent, ActionResult.Success)
 	end
 
-	-- 2. Set path to be in range if not set
-	local success = self:GeneratePathWithinRange(agent)
-	if not success then
-		self:ExitStayInValidRangeState(agent)
-		return ActionResult.Success
+	local offset = (target:GetPivot().Position - agent.position) * FLAT
+	local dist = offset.Magnitude
+
+	-- Look window: arrived, stand still, face the target, then check once
+	local lookUntil = ai.lookUntil
+	if lookUntil then
+		if dist > 0.001 then
+			agent.targetAngle = MathUtils:PlayerVecToAngle(offset)
+		end
+		if os.clock() < lookUntil then
+			return ActionResult.Running
+		end
+		ai.lookUntil = nil
+
+		local seen = CommonStateLogic.CanSeeEnemy(agent, context.dt)
+		if seen then
+			CommonStateLogic.SetCurrentTarget(agent, seen)
+			ai.worldState:set("hasTarget", true)
+		end
+		return ActionResult.Running -- next tick re-evaluates the band
 	end
 
-	local wp = agent.ai and agent.ai.currentNavigationData and agent.ai.currentNavigationData.waypoints
+	-- 1. Inside the valid band: done
+	if dist < factionData.MaxAttackDistance and dist > factionData.MinAttackDistance then
+		return Finish(agent, ActionResult.Success)
+	end
 
+	-- 2. Give up if repositioning keeps ending out of band
+	if (ai.repositionCount or 0) >= MAX_REPOSITIONS then
+		return Finish(agent, ActionResult.Failed)
+	end
+
+	-- 3. Need a route
+	if not self:GeneratePathWithinRange(agent) then
+		return Finish(agent, ActionResult.Failed)
+	end
+
+	local waypoints = ai.currentNavigationData and ai.currentNavigationData.waypoints
+	if not waypoints then
+		return Finish(agent, ActionResult.Failed)
+	end
+
+	-- 4. Jump first, so a close Jump waypoint can't be skipped by the arrival check
+	local wp = waypoints[ai.currentMoveIdx]
+	if wp and wp.Action == Enum.PathWaypointAction.Jump and agent.isOnGround then
+		agent:Jump()
+		ai.currentMoveIdx += 1
+		return ActionResult.Running
+	end
+
+	-- 5. Reached the current waypoint
+	if wp and ((wp.Position - agent.position) * FLAT).Magnitude <= ARRIVE_DISTANCE then
+		ai.currentMoveIdx += 1
+		wp = waypoints[ai.currentMoveIdx]
+	end
+
+	-- 6. Out of waypoints: arrived. Stop, face the target, scan
 	if not wp then
+		local count = (ai.repositionCount or 0) + 1
 		self:ExitStayInValidRangeState(agent)
-		return ActionResult.Success
+		ai.repositionCount = count
+		ai.lookUntil = os.clock() + LOOK_TIME
+		return ActionResult.Running
 	end
-	-- DEBUG
-	-- for _, path in wp do
-	-- 	local p2 = Instance.new("Part", workspace)
-	-- 	p2.Anchored = true
-	-- 	p2.Size = Vector3.new(0.5, 0.5, 0.5)
-	-- 	p2.Position = path.Position
-	-- 	p2.CanCollide = false
-	-- 	p2.Color = Color3.fromRGB(0, 255, 0)
-	-- 	task.delay(10, function()
-	-- 		p2:Destroy()
-	-- 	end)
-	-- end
 
-	--
-	self:MoveTowardsWaypoints(agent, context, function()
-		self:ExitStayInValidRangeState(agent)
-		CanStillSeeEnemy(agent, targetPos, context.dt)
-		agent.busy = false
-	end)
+	-- 7. Run toward it
+	agent.configuration.walkSpeed = if agent.legless then HumanConstants.WALKSPEED else HumanConstants.SPRINT_SPEED
+	CommonStateLogic.MoveTowardFlattened(agent, wp.Position)
+	if wp.Action ~= Enum.PathWaypointAction.Jump then
+		CommonStateLogic.PlayLocomotion(agent, "run")
+	end
 
 	return ActionResult.Running
 end

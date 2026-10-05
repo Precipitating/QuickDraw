@@ -9,6 +9,7 @@ local pierceableMaterials = {
 
 local GunData = {
 	Revolver = {
+		Name = "Revolver",
 		MaxAmmo = 6,
 		MaxAmmoStack = 3,
 		ShotDelay = 0.25,
@@ -67,6 +68,7 @@ local GunData = {
 			:Build(),
 	},
 	Winchester = {
+		Name = "Winchester",
 		MaxAmmo = 8,
 		MaxAmmoStack = 3,
 		ShotDelay = 0.8,
@@ -131,6 +133,7 @@ local GunData = {
 			:Build(),
 	},
 	Coach = {
+		Name = "Coach",
 		MaxAmmo = 2,
 		MaxAmmoStack = 3,
 		ShotDelay = 1,
@@ -196,6 +199,7 @@ local GunData = {
 			:Build(),
 	},
 	RoperShotgun = {
+		Name = "RoperShotgun",
 		MaxAmmo = 4,
 		JamChance = 0.05,
 		MaxAmmoStack = 3,
@@ -263,6 +267,7 @@ local GunData = {
 			:Build(),
 	},
 	CannonGun = {
+		Name = "CannonGun",
 		MaxAmmo = 1,
 		MaxAmmoStack = 3,
 		ShotDelay = 1,
@@ -329,6 +334,7 @@ local GunData = {
 			:Build(),
 	},
 	Gatling = {
+		Name = "Gatling",
 		MaxAmmo = 20,
 		MaxAmmoStack = 3,
 		ShotDelay = 0.3,

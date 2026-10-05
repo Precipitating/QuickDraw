@@ -1,7 +1,10 @@
 local CollectionService = game:GetService("CollectionService")
 local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 local Networker = require(ReplicatedStorage.Packages.Networker).client
+local LightweightNpcsClientModule =
+	require(StarterPlayer.StarterPlayerScripts.Client.LightweightNpcsClient.Code.LightweightNpcsClientModule)
 local Sera = require(ReplicatedStorage.Shared.Sera)
 local SeraSchemas = require(ReplicatedStorage.Shared.SeraSchemas)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
@@ -120,13 +123,28 @@ function EffectsDisplayer:DisplayProjectileMark(name: string, result: RaycastRes
 	end
 end
 
-function EffectsDisplayer:DisplayMuzzleFlash(gunTool: Tool?)
-	if not gunTool then
+function EffectsDisplayer:DisplayMuzzleFlash(gunToolOrNPCId: Tool?)
+	if not gunToolOrNPCId then
 		Utility.Warn("Client gunTool invalid")
 		return
 	end
+	local muzzleFlash = nil
 
-	local muzzleFlash = gunTool:FindFirstChild("MuzzleFlash")
+	if typeof(gunToolOrNPCId) == "number" then
+		local record = LightweightNpcsClientModule.npcRecords[gunToolOrNPCId]
+		if not record then
+			Utility.Warn(`Cannot display NPC muzzle, missing npc record`)
+			return
+		end
+		local gunTool = record.instance and record.instance:FindFirstChildOfClass("Tool")
+		if not gunTool then
+			Utility.Warn(`Cannot display NPC muzzle, missing gun tool`)
+			return
+		end
+		gunToolOrNPCId = gunTool
+	end
+
+	muzzleFlash = gunToolOrNPCId:FindFirstChild("MuzzleFlash")
 	if not muzzleFlash then
 		return
 	end

@@ -4,72 +4,84 @@ local ServerStorage = game:GetService("ServerStorage")
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ActionResult = require(script.Parent.ActionResult)
 local CommonStateLogic = require(script.Parent.CommonStateLogic)
-local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
-local PatrolData = ServerStorage.PatrolData
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
+
+local PatrolData = ServerStorage.PatrolData
+local ARRIVE_DISTANCE = 2
+local FLAT = Vector3.new(1, 0, 1)
+
+local patrolPointCache: { [string]: { Vector3 } } = {}
+
+local function getPatrolPositions(folderName: string): { Vector3 }?
+	local cached = patrolPointCache[folderName]
+	if cached then
+		return cached
+	end
+
+	local folder = PatrolData:FindFirstChild(folderName)
+	if not folder then
+		return nil
+	end
+
+	local positions = {}
+	for _, point in folder:GetChildren() do
+		if point:IsA("BasePart") then
+			table.insert(positions, point.Position)
+		end
+	end
+	if #positions == 0 then
+		return nil
+	end
+
+	patrolPointCache[folderName] = positions
+	return positions
+end
+
 local Patrol = {}
 
 function Patrol:ExitPatrolState(agent: LightweightNpcTypes.npcRecordType)
+	local ai = agent.ai
+	ai.pathRequestId = (ai.pathRequestId or 0) + 1 -- invalidates any in-flight findPath
+	ai.currentNavigationData = nil
+	agent.busy = false
 	agent:Move(Vector3.zero)
 	agent.velocity = Vector3.zero
-	agent.busy = false
-	agent.ai.currentNavigationData = nil
-	if not agent.legless then
-		agent:PlayAnimation("idle", false, 1, 1)
-	else
-		agent:PlayAnimation("crawlidle", false, 1, 1)
-	end
+	CommonStateLogic.PlayLocomotion(agent, "idle")
 end
 
-function Patrol:GetNextPatrolPoint(npcRecord: LightweightNpcTypes.npcRecordType)
-	if not npcRecord then
-		Utility.Warn(`[GetNextPatrolPoint] Missing npcRecord`)
-		return nil
-	end
-	local patrolPoints = npcRecord.defaultStateData
-	if not patrolPoints then
-		Utility.Warn(`[GetNextPatrolPoint] Missing default state data`)
-		return nil
-	end
-	local patrolData = PatrolData[patrolPoints]
-	patrolData = patrolData:GetChildren()
-
-	if #patrolData <= 0 then
-		Utility.Warn(`[GetNextPatrolPoint] Patrol points folder {patrolPoints} missing points`)
-		return nil
-	end
-
-	local randomPoint = patrolData[RandomModule.GetRandomIntBetween(1, #patrolData)]
-
-	if not randomPoint then
-		Utility.Warn(`[GetNextPatrolPoint] Cannot get a random point inside PatrolData {patrolPoints}`)
-		return nil
-	end
-
-	return randomPoint.Position
+local function fail(agent)
+	Patrol:ExitPatrolState(agent)
+	return ActionResult.Failed
 end
 
-function Patrol:TryGetNextPatrolWaypoint(npcRecord: LightweightNpcTypes.npcRecordType)
-	local success = CommonStateLogic.TryPathfind(npcRecord, self:GetNextPatrolPoint(npcRecord))
-	return success
+function Patrol:GetNextPatrolPoint(agent: LightweightNpcTypes.npcRecordType): Vector3?
+	local folderName = agent.defaultStateData
+	local positions = folderName and getPatrolPositions(folderName)
+	if not positions then
+		Utility.Warn(`[GetNextPatrolPoint] No usable patrol points for {folderName}`)
+		return nil
+	end
+	return positions[RandomModule.GetRandomIntBetween(1, #positions)]
+end
+
+function Patrol:TryGetNextPatrolWaypoint(agent: LightweightNpcTypes.npcRecordType): boolean
+	return CommonStateLogic.TryPathfind(agent, self:GetNextPatrolPoint(agent))
 end
 
 function Patrol:Update(agent, context)
 	if agent.data.forceExitState then
-		Utility.Warn(`Force exit state on patrol!`)
 		self:ExitPatrolState(agent)
 		return ActionResult.Success
 	end
-	local dt = context.dt
 	if agent.busy then
 		return ActionResult.Running
 	end
 
-	local seesTarget = CommonStateLogic.CanSeeEnemy(agent, dt)
-	if seesTarget then
-		CommonStateLogic.SetCurrentTarget(agent, seesTarget)
-		Utility.Warn("AI sees enemy")
+	local seen = CommonStateLogic.CanSeeEnemy(agent, context.dt)
+	if seen then
+		CommonStateLogic.SetCurrentTarget(agent, seen)
 		self:ExitPatrolState(agent)
 		ServerSoundHandler:Play3DNPCVoiceline(
 			nil,
@@ -80,72 +92,44 @@ function Patrol:Update(agent, context)
 		return ActionResult.Success
 	end
 
-	-- 1. Set patrol route if none set.
-	if not agent.ai.currentNavigationData then
-		local success = self:TryGetNextPatrolWaypoint(agent)
+	local ai = agent.ai
 
-		if not success then
-			self:ExitPatrolState(agent)
-			return ActionResult.Failed
-		end
+	-- 1. Need a route
+	if not ai.currentNavigationData and not self:TryGetNextPatrolWaypoint(agent) then
+		return fail(agent)
 	end
 
-	--
-
-	-- 2. If waypoints not set, the path cannot be navigated
-	local waypoints = agent.ai.currentNavigationData and agent.ai.currentNavigationData.waypoints
-	if not waypoints then
-		self:ExitPatrolState(agent)
-		return ActionResult.Failed
+	local waypoints = ai.currentNavigationData and ai.currentNavigationData.waypoints
+	local wp = waypoints and waypoints[ai.currentMoveIdx]
+	if not wp then
+		return fail(agent)
 	end
 
-	local nextWaypoint = waypoints[agent.ai.currentMoveIdx]
-	if not nextWaypoint then
-		self:ExitPatrolState(agent)
-		return ActionResult.Failed
+	-- 2. Jump first, so a close Jump waypoint can't be skipped by the arrival check
+	local isJump = wp.Action == Enum.PathWaypointAction.Jump
+	if isJump and agent.isOnGround then
+		agent:Jump()
+		ai.currentMoveIdx += 1
+		return ActionResult.Running
 	end
-	--
 
-	local flatAgentPos = Vector3.new(agent.position.X, 0, agent.position.Z)
-	local flatTarget = Vector3.new(nextWaypoint.Position.X, 0, nextWaypoint.Position.Z)
-
-	-- 3. If reached the waypoint within a 2 stud distance, go next waypoint
-	if (flatTarget - flatAgentPos).Magnitude <= 2 then
-		agent.ai.currentMoveIdx += 1
-		nextWaypoint = waypoints[agent.ai.currentMoveIdx]
-
-		-- 3.1. If no waypoints left, we've reached our destination. Set a new one
-		if not nextWaypoint then
-			local success = self:TryGetNextPatrolWaypoint(agent)
-
-			if not success then
-				self:ExitPatrolState(agent)
-				return ActionResult.Failed
-			end
+	-- 3. Arrival
+	if ((wp.Position - agent.position) * FLAT).Magnitude <= ARRIVE_DISTANCE then
+		ai.currentMoveIdx += 1
+		wp = waypoints[ai.currentMoveIdx]
+		if not wp then
+			-- destination reached; next tick picks a new one (add an idle pause here if you want)
+			ai.currentNavigationData = nil
 			return ActionResult.Running
 		end
 	end
 
-	-- 4. Still traversing the current waypoint
-	if nextWaypoint.Action == Enum.PathWaypointAction.Jump then
-		if agent.isOnGround then
-			agent:Jump()
-			agent.ai.currentMoveIdx += 1
-		else
-			-- still walking toward the jump point while airborne/not-yet-grounded;
-			-- don't leave motionVector frozen
-			CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
-		end
-	else
-		CommonStateLogic.MoveTowardFlattened(agent, nextWaypoint.Position)
-
-		if not agent.legless then
-			agent:PlayAnimation("walk", false, 1, 1)
-		else
-			agent:PlayAnimation("crawlwalk", false, 1, 1)
-		end
+	-- 4. Move
+	CommonStateLogic.MoveTowardFlattened(agent, wp.Position)
+	if wp.Action ~= Enum.PathWaypointAction.Jump then
+		CommonStateLogic.PlayLocomotion(agent, "walk")
 	end
-
 	return ActionResult.Running
 end
+
 return Patrol

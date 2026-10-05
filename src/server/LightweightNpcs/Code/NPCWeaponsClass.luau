@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ServerEffectsDisplayer = require(ServerScriptService.Server.Classes.Environment.ServerEffectsDisplayer)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
@@ -85,11 +86,13 @@ function NPCWeaponsClass:SingleShot(agent: LightweightNpcTypes.npcRecordType, ta
 	ProjectileContext.Solver:Fire(context, projectileData)
 	self:UpdateAmmo(agent, -1)
 
+	ServerEffectsDisplayer:DisplayMuzzleFlash(agent, gunData.Name)
+
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
 		gunData.ShootSoundName,
 		agent.hrp.Position,
-		{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
+		{ MaxDistance = 350, Pitch = 1 + (math.random() - 0.5) * 0.1 }
 	)
 end
 
@@ -145,7 +148,7 @@ function NPCWeaponsClass:SpreadShot(agent: LightweightNpcTypes.npcRecordType, ta
 			nil,
 			gunData.ShootSoundName,
 			agent.hrp.Position,
-			{ Pitch = 1 + (math.random() - 0.5) * 0.1 }
+			{ MaxDistance = 350, Pitch = 1 + (math.random() - 0.5) * 0.1 }
 		)
 	end
 	self:UpdateAmmo(agent, -1)

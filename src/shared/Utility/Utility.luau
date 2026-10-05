@@ -128,7 +128,14 @@ return {
 	Warn = function(...)
 		if DEBUG_PRINT then
 			local isServerTxt = if isServer then "[SERVER]" else "[CLIENT]"
-			_warn(`{isServerTxt} {...}`)
+			local source, line = debug.info(2, "sl")
+
+			local parts = table.pack(...)
+			for i = 1, parts.n do
+				parts[i] = tostring(parts[i])
+			end
+
+			_warn(`{isServerTxt} {table.concat(parts, " ")} ({source}:{line})`)
 		end
 	end,
 

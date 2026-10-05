@@ -41,11 +41,6 @@ local reload = Action.new({
 	cost = 1,
 	preconditions = { canShoot = false },
 	effects = { canShoot = true },
-	interruptible = true,
-	onInterrupt = function(agent, context)
-		print("Interrupted reload")
-	end,
-
 	executeFn = function(agent, context)
 		Utility.Warn(`Entered Reload State`)
 		return Reload:Update(agent, context)
@@ -110,6 +105,7 @@ planner:registerActions({ patrol, stayWithinRange, seek, attack, reload, provoke
 
 function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	local ai = npcRecord.ai
+	ai.pathRequestId = (ai.pathRequestId or 0) + 1
 	ai.lastSeenTarget = nil
 	ai.currentMoveIdx = 2
 	ai.currentActionIndex = 1

@@ -509,8 +509,11 @@ function PathfindingAdapter:findFlankingPath(
 	targetDistance: number?,
 	preferLeft: boolean?
 ): (PathResult?, Vector3?)
-	local toTarget = (targetPosition - currentPosition)
+	local toTarget = (targetPosition - currentPosition) * Vector3.new(1, 0, 1)
 	local distance = toTarget.Magnitude
+	if distance < 0.001 then
+		return nil, nil
+	end
 	local direction = toTarget.Unit
 
 	-- Calculate flank positions
@@ -544,7 +547,7 @@ function PathfindingAdapter:findFlankingPath(
 	for _, flankPos in ipairs(flankPositions) do
 		-- Raycast to find ground at flank position
 		local rayResult =
-			workspace:Raycast(flankPos + Vector3.new(0, 10, 0), Vector3.new(0, -20, 0), RaycastParams.new())
+			workspace:Raycast(flankPos + Vector3.new(0, 20, 0), Vector3.new(0, -60, 0), RaycastParams.new())
 
 		local groundPos = if rayResult then rayResult.Position + Vector3.new(0, 1, 0) else flankPos
 

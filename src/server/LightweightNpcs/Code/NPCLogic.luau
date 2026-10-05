@@ -3,7 +3,9 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ActionResult = require(ServerScriptService.Server.LightweightNpcs.Code.States.ActionResult)
 local CommonStateLogic = require(ServerScriptService.Server.LightweightNpcs.Code.States.CommonStateLogic)
 local Patrol = require(ServerScriptService.Server.LightweightNpcs.Code.States.Patrol)
+local Reload = require(ServerScriptService.Server.LightweightNpcs.Code.States.Reload)
 local Seek = require(ServerScriptService.Server.LightweightNpcs.Code.States.Seek)
+local StayInValidRange = require(ServerScriptService.Server.LightweightNpcs.Code.States.StayInValidRange)
 local PlayerSignals = require(ServerScriptService.Server.Managers.Player.PlayerSignals)
 local AwardHandler = require(script.Parent.Parent.Parent.AwardHandler.AwardHandler)
 local CommonNPCData = require(ReplicatedStorage.Shared.NPCData.NPCs.CommonNPCData)
@@ -43,6 +45,19 @@ local LimbDamageMultiplier = {
 	[LimbsEnum.LeftLowerLeg] = 0.7,
 	[LimbsEnum.RightUpperLeg] = 0.7,
 	[LimbsEnum.RightLowerLeg] = 0.7,
+}
+
+local LEAVE_HANDLERS = {
+	StayWithinRange = function(npc)
+		StayInValidRange:ExitStayInValidRangeState(npc)
+		npc.ai.repositionCount = nil
+	end,
+	Seek = function(npc)
+		Seek:ExitSeekState(npc)
+	end,
+	Reload = function(npc)
+		Reload:ExitReloadState(npc)
+	end,
 }
 function NPCLogic:SetupServerAnims(npcRecord: LightweightNpcTypes.npcRecordType)
 	if not npcRecord.animator then
@@ -264,15 +279,18 @@ end
 function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
 		-- Early exits
+		local ai = npcRecord.ai
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
 			--Utility.Warn("NPC should stop all actions")
 			npcRecord:Move(Vector3.zero)
 			npcRecord.velocity = Vector3.zero
 			return
 		end
-
+		if ai.retryAt and os.clock() < ai.retryAt then
+			return -- idling after a failure (Exit already stopped movement)
+		end
 		--
-		local ai = npcRecord.ai
+
 		ai.perception:update(dt)
 
 		-- Replan if state changed or we have no valid plan
@@ -280,6 +298,17 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			local plan, selectedGoal = npcRecord.ai.planner:planBestGoal(ai.worldState, npcRecord.ai.goals, npcRecord)
 
 			if plan.success then
+				local newName = selectedGoal.name
+				local oldName = ai.currentGoal and ai.currentGoal.name
+				if oldName ~= newName then
+					ai.pathRequestId = (ai.pathRequestId or 0) + 1
+					ai.currentNavigationData = nil
+					ai.currentMoveIdx = 2
+					local leave = oldName and LEAVE_HANDLERS[oldName]
+					if leave then
+						leave(npcRecord)
+					end
+				end
 				ai.currentPlan = plan
 				ai.currentGoal = selectedGoal
 				ai.currentActionIndex = 1
@@ -318,15 +347,11 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 				end
 			end
 		elseif result == ActionResult.Failed then
-			if ai.currentActionIndex > #ai.currentPlan.actions then
-				-- revert states
-				for key, value in currentAction.effects._data do
-					ai.worldState:set(key, not value)
-					print(`Failed state: {key}, {value}`)
-				end
-				ai.currentPlan = nil
-				ai.currentGoal = nil
-				ai.currentActionIndex = 1
+			ai.currentPlan = nil
+			ai.currentGoal = nil
+			ai.currentActionIndex = 1
+			if not npcRecord.data.forceExitState then
+				ai.retryAt = os.clock() + 0.5
 			end
 		elseif result == ActionResult.Running then
 			-- Continue running
@@ -336,41 +361,6 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			npcRecord.data.forceExitState()
 			npcRecord.data.forceExitState = nil
 		end
-
-		-- 	if tick() > npcRecord.data.nextMove then
-		-- 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
-		-- 			return
-		-- 		end
-
-		-- 		npcRecord.data.nextMove = tick() + 0.5 + math.random()
-
-		-- 		if math.random() > 0.5 then
-		-- 			--idle
-		-- 			npcRecord:Move(Vector3.zero)
-
-		-- 			if npcRecord.legless then
-		-- 				npcRecord:PlayAnimation("crawlidle", false, 1, 1)
-		-- 			else
-		-- 				npcRecord:PlayAnimation("idle", false, 1, 1)
-		-- 			end
-		-- 		else
-		-- 			--run
-		-- 			local ang = math.random() * math.pi * 2
-		-- 			npcRecord:Move(MathUtils:PlayerAngleToVec(ang))
-
-		-- 			if npcRecord.legless then
-		-- 				npcRecord:PlayAnimation("crawlwalk", false, 1, 1)
-		-- 			else
-		-- 				npcRecord:PlayAnimation("walk", false, 1, 1)
-		-- 			end
-		-- 		end
-
-		-- 		if npcRecord.currentEquipped and not npcRecord.legless then
-		-- 			npcRecord:PlayAnimation("toolhold", false, 2, 1)
-		-- 		else
-		-- 			npcRecord:StopAnimationChannel(2)
-		-- 		end
-		-- 	end
 	end)
 
 	--

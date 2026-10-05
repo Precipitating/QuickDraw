@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local GunData = require(ReplicatedStorage.Shared.GunData.GunData)
 local RateLimiter = require(ReplicatedStorage.Shared.RateLimiter)
 local Sera = require(ReplicatedStorage.Shared.Sera)
@@ -113,29 +114,48 @@ function ServerEffectsDisplayer:DisplayMuzzleFlashToOthers(player: Player?, gunT
 end
 
 -- Second parameter is used for compatibility with turrets, as they dont use tools
-function ServerEffectsDisplayer:DisplayMuzzleFlash(gun: Tool? | Model?, gunName: string?)
-	if not gun then
+function ServerEffectsDisplayer:DisplayMuzzleFlash(
+	gunOrNPCRecord: Tool? | Model? | LightweightNpcTypes.npcRecordType,
+	gunName: string?
+)
+	if not gunOrNPCRecord then
 		Utility.Warn("[ServerGunHandler:ActivateMuzzleFlash] gun reference invalid")
-		return
-	end
-	local shotPos = gun:FindFirstChild("Frame", true) or gun
-	if not shotPos then
-		Utility.Warn("[ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
 		return
 	end
 
 	if not EffectsLimiter:TryConsume() then
 		return
 	end
-	local gunData = GunData[gunName or gun.Name]
 
-	-- its an NPC, so fire all
-	self.networker:fireAll("DisplayMuzzleFlash", gun)
+	-- If its an npcRecord, handle getting tool on client
+	if typeof(gunOrNPCRecord) == "table" then
+		local gunData = GunData[gunName]
+
+		-- its an NPC, so fire all
+		self.networker:fireAll("DisplayMuzzleFlash", gunOrNPCRecord.npcId)
+		ServerSoundHandler:Play3DOneShotToOthers(
+			nil,
+			gunData.ShootSoundName,
+			gunOrNPCRecord.serverRig:GetPivot().Position,
+			{ Pitch = 1 + (math.random() - 0.5) * 0.1, MaxDistance = 350 }
+		)
+
+		return
+	end
+	local shotPos = gunOrNPCRecord:FindFirstChild("Frame", true) or gunOrNPCRecord
+	if not shotPos then
+		Utility.Warn("[ServerGunHandler:ActivateMuzzleFlash] Missing gun frame reference ")
+		return
+	end
+
+	local gunData = GunData[gunName or gunOrNPCRecord.Name]
+
+	self.networker:fireAll("DisplayMuzzleFlash", gunOrNPCRecord)
 	ServerSoundHandler:Play3DOneShotToOthers(
 		nil,
 		gunData.ShootSoundName,
 		shotPos:GetPivot().Position,
-		{ Pitch = 1 + (math.random() - 0.5) * 0.1, MaxDistance = 300 }
+		{ Pitch = 1 + (math.random() - 0.5) * 0.1, MaxDistance = 350 }
 	)
 
 	print(`Server -> Client Muzzle Flash`)
