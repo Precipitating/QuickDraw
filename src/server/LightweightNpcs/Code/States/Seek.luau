@@ -29,7 +29,7 @@ function Seek:ExitSeekState(agent: LightweightNpcTypes.npcRecordType)
 	CommonStateLogic.PlayLocomotion(agent, "idle")
 end
 
-local function BeginScan(agent)
+local function beginScan(agent)
 	Seek:ExitSeekState(agent) -- stop moving, reset speed, clear the path
 	agent.ai.lookStepsLeft = LOOK_STEPS
 	agent.ai.nextLookStep = 0
@@ -47,7 +47,9 @@ function Seek:GeneratePathToLastSeenTarget(agent: LightweightNpcTypes.npcRecordT
 		return false
 	end
 
+	-- Perception drops its record once awareness decays to zero; Attack keeps its own copy as a fallback
 	local lastSeenPos = ai.perception:getLastKnownPosition(target:GetAttribute("npcId") or target.Name)
+		or ai.lastSeenPosition
 	if not lastSeenPos then
 		Utility.Warn(`[SEEK] No last seen position`)
 		return false
@@ -56,23 +58,31 @@ function Seek:GeneratePathToLastSeenTarget(agent: LightweightNpcTypes.npcRecordT
 	local requestId = (ai.pathRequestId or 0) + 1
 	ai.pathRequestId = requestId
 
+	-- Direct route first (most reliable); the flanking route is only a fallback
 	agent.busy = true
-	local ok, flankPath = pcall(ai.pathfinder.findFlankingPath, ai.pathfinder, agent.position, lastSeenPos)
+	local ok, path = pcall(ai.pathfinder.findPath, ai.pathfinder, agent.position, lastSeenPos)
+	if ai.pathRequestId ~= requestId then
+		return false -- state exited while we yielded; Exit already reset busy
+	end
+	if not (ok and path.success) then
+		ok, path = pcall(ai.pathfinder.findFlankingPath, ai.pathfinder, agent.position, lastSeenPos)
+		if ai.pathRequestId ~= requestId then
+			return false
+		end
+	end
 	agent.busy = false
 
-	if ai.pathRequestId ~= requestId then
-		return false -- state exited while we yielded; discard
-	end
 	if not ok then
-		Utility.Warn(`[SEEK] findFlankingPath errored: {flankPath}`)
+		Utility.Warn(`[SEEK] pathfinding errored: {path}`)
 		return false
 	end
-	if not flankPath or not flankPath.success then
+	if not path or not path.success then
+		Utility.Warn(`[SEEK] no route to the last known position`)
 		return false
 	end
 
 	ai.currentMoveIdx = 2
-	ai.currentNavigationData = flankPath
+	ai.currentNavigationData = path
 	return true
 end
 
@@ -135,7 +145,7 @@ function Seek:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		self:ExitSeekState(agent)
 		return ActionResult.Success
 	elseif status == "arrived" then
-		BeginScan(agent)
+		beginScan(agent)
 	end
 
 	return ActionResult.Running

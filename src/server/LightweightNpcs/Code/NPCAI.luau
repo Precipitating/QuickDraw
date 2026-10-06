@@ -15,45 +15,41 @@ local PathfindingAdapter = require(ReplicatedStorage.Shared.GoalAI.Navigation.Pa
 local Planner = require(ReplicatedStorage.Shared.GoalAI.Planner)
 local State = require(ReplicatedStorage.Shared.GoalAI.State)
 local NPCTypes = require(ReplicatedStorage.Shared.NPCData.NPCTypes)
-local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
-local LightweightNpcTypes = require(game.ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
+local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 
 local planner = Planner.new({ maxEvaluationsPerTick = 10 })
 local NPCAI = {}
+
+-- NOTE: these Actions are module-level, so every NPC shares them. They carry no per-NPC state
+-- (no cooldowns / markStarted / interrupts); per-NPC state lives on npcRecord.ai and npcRecord.data.
+-- Each executeFn is polled once per think and returns Running / Success / Failed.
 
 local patrol = Action.new({
 	name = "Patrol",
 	cost = 1,
 	preconditions = { hasTarget = false },
 	effects = { hasTarget = true },
-	interruptible = true,
-	onInterrupt = function(agent, context)
-		print("Interrupted patrol")
-	end,
-
 	executeFn = function(agent, context)
-		--Utility.Warn(`Entered Patrol State`)
 		return Patrol:Update(agent, context)
 	end,
 })
+
 local reload = Action.new({
 	name = "Reload",
 	cost = 1,
 	preconditions = { canShoot = false },
 	effects = { canShoot = true },
 	executeFn = function(agent, context)
-		Utility.Warn(`Entered Reload State`)
 		return Reload:Update(agent, context)
 	end,
 })
+
 local attack = Action.new({
 	name = "Attack",
 	cost = 1,
 	preconditions = { hasTarget = true, atSafeDistance = true },
 	effects = { hasTarget = false },
-
 	executeFn = function(agent, context)
-		Utility.Warn(`Entered Attack State`)
 		return Attack:Update(agent, context)
 	end,
 })
@@ -63,17 +59,16 @@ local seek = Action.new({
 	cost = 1,
 	preconditions = { hasTarget = false, lostTarget = true },
 	effects = { lostTarget = false },
-
 	executeFn = function(agent, context)
 		return Seek:Update(agent, context)
 	end,
 })
+
 local stayWithinRange = Action.new({
 	name = "StayWithinRange",
 	cost = 1,
 	preconditions = { atSafeDistance = false },
 	effects = { atSafeDistance = true },
-
 	executeFn = function(agent, context)
 		return StayInValidRange:Update(agent, context)
 	end,
@@ -84,7 +79,6 @@ local provoked = Action.new({
 	cost = 1,
 	preconditions = { provoked = true },
 	effects = { provoked = false, hasTarget = true },
-
 	executeFn = function(agent, context)
 		return Provoked:Update(agent, context)
 	end,
@@ -95,7 +89,6 @@ local hunt = Action.new({
 	cost = 1,
 	preconditions = { hasTarget = true },
 	effects = { hasTarget = false },
-
 	executeFn = function(agent, context)
 		return Hunt:Update(agent, context)
 	end,
@@ -105,10 +98,16 @@ planner:registerActions({ patrol, stayWithinRange, seek, attack, reload, provoke
 
 function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	local ai = npcRecord.ai
-	ai.pathRequestId = (ai.pathRequestId or 0) + 1
+	ai.pathRequestId = (ai.pathRequestId or 0) + 1 -- discard any in-flight findPath
 	ai.lastSeenTarget = nil
+	ai.lastSeenPosition = nil
 	ai.currentMoveIdx = 2
 	ai.currentActionIndex = 1
+	ai.retryAt = nil
+	ai.lookUntil = nil
+	ai.lookStepsLeft = nil
+	ai.nextLookStep = nil
+	ai.repositionCount = nil
 	npcRecord.busy = false
 	CommonStateLogic.SetCurrentTarget(npcRecord, nil)
 	ai.currentNavigationIndex = nil
@@ -123,6 +122,7 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	ai.worldState:set("canShoot", true)
 	ai.worldState:set("provoked", false)
 end
+
 function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local npcData = NPCTypes[npcRecord.npcType]
 
@@ -157,30 +157,29 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 		defaultStateData = npcRecord.defaultStateData,
 		currentNavigationIndex = nil,
 		currentNavigationData = nil,
+		pathRequestId = 0,
 		lastShot = 0,
 		goals = nil,
 		jumpRequested = false,
 	}
+
+	-- Obstruction check: returns true when the view is BLOCKED (Perception:canSee treats true as obstructed).
+	local sightParams = RaycastParams.new()
+	sightParams.FilterType = Enum.RaycastFilterType.Exclude
+	sightParams.FilterDescendantsInstances = { npcRecord.serverRig }
+
 	npcRecord.ai.perception:setObstructionCheck(function(from, to)
-		local raycastParams = RaycastParams.new()
-		raycastParams.ExcludeInstances = { npcRecord.serverRig }
-
-		local result = workspace:Raycast(from, to - from)
-
-		if result and result.Instance then
-			local parent = result.Instance.Parent
-			if not parent then
-				return true
-			end
-
-			if parent:HasTag("NPC") or parent:HasTag("Player") or parent:HasTag("Animal") then
-				return false
-			else
-				return true
-			end
-		else
-			return true
+		local result = workspace:Raycast(from, to - from, sightParams)
+		if not result then
+			return false -- nothing in the way
 		end
+
+		-- Resolve to the ancestor Model so hits on accessories/tools still count as the character
+		local model = result.Instance:FindFirstAncestorOfClass("Model")
+		if model and (model:HasTag("NPC") or model:HasTag("Player") or model:HasTag("Animal")) then
+			return false -- hit another character on the way to the target, not a wall
+		end
+		return true
 	end)
 
 	npcRecord.ai.pathfinder = PathfindingAdapter.new({
@@ -215,6 +214,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			return state:get("hasTarget") and state:get("atSafeDistance")
 		end,
 	})
+
 	local seekGoal = Goal.new({
 		name = "Seek",
 		desiredState = { lostTarget = false },
@@ -260,15 +260,17 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 			return state:get("defaultState") == "Hunt" and state:get("hasTarget")
 		end,
 	})
+
 	npcRecord.ai.goals = { patrolGoal, stayWithinRangeGoal, attackGoal, seekGoal, reloadGoal, provokedGoal, huntGoal }
+
+	-- Reset first, then plan, so the initial plan isn't immediately wiped
+	self:ResetWorldState(npcRecord)
 
 	local plan, selectedGoal = planner:planBestGoal(npcRecord.ai.worldState, npcRecord.ai.goals, npcRecord)
 	if plan.success then
 		npcRecord.ai.currentPlan = plan
 		npcRecord.ai.currentGoal = selectedGoal
 	end
-
-	self:ResetWorldState(npcRecord)
 end
 
 return NPCAI

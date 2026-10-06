@@ -329,7 +329,15 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 
 		local context = { dt = dt }
 		local result = currentAction:execute(npcRecord, context)
-
+		if result ~= ActionResult.Running then
+			local ws = ai.worldState
+			Utility.Warn(
+				`[AI] {npcRecord.serverRig:GetAttribute("npcId") or npcRecord.serverRig.Name} `
+					.. `{ai.currentGoal and ai.currentGoal.name} ended {result} | `
+					.. `hasTarget={ws:get("hasTarget")} lost={ws:get("lostTarget")} `
+					.. `safe={ws:get("atSafeDistance")} canShoot={ws:get("canShoot")}`
+			)
+		end
 		-- Action complete, meaning apply effects if all actions ran and so next plan should occur.
 		if result == ActionResult.Success then
 			if ai.currentPlan and ai.currentPlan.actions then

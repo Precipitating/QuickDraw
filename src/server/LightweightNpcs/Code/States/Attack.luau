@@ -11,12 +11,12 @@ local LimbsEnum = require(ReplicatedStorage.Shared.NPCData.NPCs.Enums.LimbsEnum)
 local MathUtils = require(ReplicatedStorage.Shared.NPCData.NPCs.LightweightNPCData.Utils.MathUtils)
 local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 
-local TOOLHOLD_REFRESH = 1
+local TOOLHOLD_REFRESH = 1 -- seconds between re-applying the tool-hold pose (each apply replicates)
 local THROW_CHANCE = 0.2
 
 local Attack = {}
 
-local function PlayVoice(agent, lineName: string, variants: number?)
+local function playVoice(agent, lineName: string, variants: number?)
 	local suffix = if variants then RandomModule.GetRandomIntBetween(1, variants) else ""
 	ServerSoundHandler:Play3DNPCVoiceline(
 		nil,
@@ -39,24 +39,24 @@ function Attack:ExitAttackState(agent: LightweightNpcTypes.npcRecordType)
 	CommonStateLogic.PlayLocomotion(agent, "idle")
 end
 
-local function Finish(agent, result)
+local function finish(agent, result)
 	Attack:ExitAttackState(agent)
 	return result
 end
 
 function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	if agent.data.forceExitState then
-		return Finish(agent, ActionResult.Failed)
+		return finish(agent, ActionResult.Failed)
 	end
 
 	local ai = agent.ai
 	local target = CommonStateLogic.GetCurrentTarget(agent)
 	if not target or not target.Parent or target:HasTag("Dead") then
-		return Finish(agent, ActionResult.Success)
+		return finish(agent, ActionResult.Success)
 	end
 
 	if not ai.worldState:get("canShoot") then
-		return Finish(agent, ActionResult.Success)
+		return finish(agent, ActionResult.Success)
 	end
 
 	-- 1. Can we still see them?
@@ -67,12 +67,15 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 
 	local detected = perception:processVisualDetection(targetId, hrp.Position, hrp.CFrame.LookVector, enemyPosition)
 	local awareness = perception:getAwarenessState(targetId)
+	if detected then
+		ai.lastSeenPosition = enemyPosition -- Seek's fallback if perception forgets the target
+	end
 
 	if not detected and awareness ~= "combat" then
 		ai.lastSeenTarget = target
 		ai.worldState:set("lostTarget", true)
-		PlayVoice(agent, "RangedAILostSight1")
-		return Finish(agent, ActionResult.Success)
+		playVoice(agent, "RangedAILostSight1")
+		return finish(agent, ActionResult.Success)
 	end
 
 	-- 2. Attack range
@@ -82,10 +85,10 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	if minDist and maxDist then
 		local dist = (enemyPosition - hrp.Position).Magnitude
 		if dist <= minDist or dist >= maxDist then
-			PlayVoice(agent, if dist <= minDist then "RangedAIBackOff" else "RangedAITooFar", 3)
+			playVoice(agent, if dist <= minDist then "RangedAIBackOff" else "RangedAITooFar", 3)
 			ai.lastSeenTarget = target
 			ai.worldState:set("atSafeDistance", false)
-			return Finish(agent, ActionResult.Success)
+			return finish(agent, ActionResult.Success)
 		end
 	end
 
@@ -112,6 +115,7 @@ function Attack:Update(agent: LightweightNpcTypes.npcRecordType, context)
 		return ActionResult.Running
 	end
 
+	-- A throw consumes the shot delay; a failed throw falls through to a normal shot.
 	if RandomModule.GetRandom() <= THROW_CHANCE and NPCWeaponsClass:ThrowThrowable(agent, enemyPosition) then
 		agent.data.lastThrown = now
 		ai.lastShot = now

@@ -23,11 +23,6 @@ function Hunt:ExitHuntState(agent: LightweightNpcTypes.npcRecordType)
 end
 
 function Hunt:Update(agent: LightweightNpcTypes.npcRecordType, context)
-	if agent.data.forceExitState then
-		self:ExitHuntState(agent)
-		return ActionResult.Failed
-	end
-
 	local ai = agent.ai
 	local target = CommonStateLogic.GetCurrentTarget(agent)
 	if not target then
