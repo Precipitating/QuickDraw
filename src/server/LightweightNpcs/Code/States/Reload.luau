@@ -1,4 +1,6 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local RandomModule = require(ReplicatedStorage.Shared.Utility.RandomModule)
 local NPCWeaponsClass = require(ServerScriptService.Server.LightweightNpcs.Code.NPCWeaponsClass)
 local ServerSoundHandler = require(ServerScriptService.Server.Sound.ServerSoundHandler)
 local ActionResult = require(script.Parent.ActionResult)
@@ -33,6 +35,24 @@ function Reload:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	if agent.currentWeaponAmmo >= gunData.MaxAmmo then
 		self:ExitReloadState(agent)
 		return ActionResult.Success
+	end
+
+	local ai = agent.ai
+	local target = CommonStateLogic.GetCurrentTarget(agent)
+	local minDist = ai.factionData and ai.factionData.MinAttackDistance
+	if target and target.Parent and not target:HasTag("Dead") and minDist and ai.worldState:get("atSafeDistance") then
+		local dist = (target:GetPivot().Position - agent.hrp.Position).Magnitude
+		if dist <= minDist then
+			ai.lastSeenTarget = target
+			ai.worldState:set("atSafeDistance", false)
+			ServerSoundHandler:Play3DNPCVoiceline(
+				nil,
+				`RangedAIBackOff{RandomModule.GetRandomIntBetween(1, 3)}{agent.npcType}`,
+				agent.npcSound,
+				{ MaxDistance = 150 }
+			)
+			return ActionResult.Running
+		end
 	end
 
 	local perBulletTime = gunData.ReloadTimePerBullet

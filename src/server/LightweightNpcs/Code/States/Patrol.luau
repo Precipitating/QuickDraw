@@ -51,7 +51,7 @@ function Patrol:ExitPatrolState(agent: LightweightNpcTypes.npcRecordType)
 	CommonStateLogic.PlayLocomotion(agent, "idle")
 end
 
-local function fail(agent)
+local function Fail(agent)
 	Patrol:ExitPatrolState(agent)
 	return ActionResult.Failed
 end
@@ -66,7 +66,7 @@ function Patrol:GetNextPatrolPoint(agent: LightweightNpcTypes.npcRecordType): Ve
 	return positions[RandomModule.GetRandomIntBetween(1, #positions)]
 end
 
-function Patrol:TryGetNextPatrolWaypoint(agent: LightweightNpcTypes.npcRecordType): boolean
+function Patrol:TryGetNextPatrolWaypoint(agent: LightweightNpcTypes.npcRecordType): (boolean, boolean?)
 	return CommonStateLogic.TryPathfind(agent, self:GetNextPatrolPoint(agent))
 end
 
@@ -94,15 +94,25 @@ function Patrol:Update(agent, context)
 
 	local ai = agent.ai
 
+	if not ai.currentNavigationData then
+		local ok, stale = self:TryGetNextPatrolWaypoint(agent)
+		if stale then
+			return ActionResult.Running
+		end
+		if not ok then
+			return Fail(agent)
+		end
+	end
+
 	-- 1. Need a route
 	if not ai.currentNavigationData and not self:TryGetNextPatrolWaypoint(agent) then
-		return fail(agent)
+		return Fail(agent)
 	end
 
 	local waypoints = ai.currentNavigationData and ai.currentNavigationData.waypoints
 	local wp = waypoints and waypoints[ai.currentMoveIdx]
 	if not wp then
-		return fail(agent)
+		return Fail(agent)
 	end
 
 	-- 2. Jump first, so a close Jump waypoint can't be skipped by the arrival check

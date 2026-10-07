@@ -15,7 +15,7 @@ local Inputs = {}
 
 function Inputs:ApplyJumpDrain(player: Player)
 	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
-	local humanoid = humanClass.Humanoid
+	local humanoid = humanClass and humanClass.Humanoid
 
 	if not humanoid then
 		Utility.Warn("Missing humanoid reference to apply jump drain, probably dead")

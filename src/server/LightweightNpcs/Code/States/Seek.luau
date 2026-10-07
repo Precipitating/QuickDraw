@@ -36,7 +36,10 @@ local function beginScan(agent)
 end
 
 -- Also called by the bump-recovery handler in NPCLogic (forceReset = true).
-function Seek:GeneratePathToLastSeenTarget(agent: LightweightNpcTypes.npcRecordType, forceReset: boolean?): boolean
+function Seek:GeneratePathToLastSeenTarget(
+	agent: LightweightNpcTypes.npcRecordType,
+	forceReset: boolean?
+): (boolean, boolean?)
 	local ai = agent.ai
 	if not forceReset and ai.currentNavigationData then
 		return true
@@ -62,12 +65,12 @@ function Seek:GeneratePathToLastSeenTarget(agent: LightweightNpcTypes.npcRecordT
 	agent.busy = true
 	local ok, path = pcall(ai.pathfinder.findPath, ai.pathfinder, agent.position, lastSeenPos)
 	if ai.pathRequestId ~= requestId then
-		return false -- state exited while we yielded; Exit already reset busy
+		return false, true -- state exited while we yielded; Exit already reset busy
 	end
 	if not (ok and path.success) then
 		ok, path = pcall(ai.pathfinder.findFlankingPath, ai.pathfinder, agent.position, lastSeenPos)
 		if ai.pathRequestId ~= requestId then
-			return false
+			return false, true
 		end
 	end
 	agent.busy = false
@@ -134,7 +137,14 @@ function Seek:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	end
 
 	-- 3. Route to the last known position
-	if not self:GeneratePathToLastSeenTarget(agent, false) then
+
+	local routed, stale = self:GeneratePathToLastSeenTarget(agent, false)
+
+	if stale then
+		return ActionResult.Running
+	end
+
+	if not routed then
 		self:ExitSeekState(agent)
 		return ActionResult.Success -- can't seek, give up
 	end

@@ -33,7 +33,7 @@ function StayInValidRange:ExitStayInValidRangeState(agent: LightweightNpcTypes.n
 	CommonStateLogic.PlayLocomotion(agent, "idle")
 end
 
-local function finish(agent, result)
+local function Finish(agent, result)
 	StayInValidRange:ExitStayInValidRangeState(agent)
 	agent.ai.repositionCount = nil
 	return result
@@ -66,7 +66,7 @@ end
 -- Picks a reachable spot inside the band: straight along the target->NPC line first (a too-close NPC
 -- backs straight off, a too-far one walks straight in), then fanned out to either side.
 -- Also used by Hunt.
-function StayInValidRange:GeneratePathWithinRange(agent: LightweightNpcTypes.npcRecordType): boolean
+function StayInValidRange:GeneratePathWithinRange(agent: LightweightNpcTypes.npcRecordType): (boolean, boolean?)
 	local ai = agent.ai
 	if ai.currentNavigationData then
 		return true
@@ -110,7 +110,7 @@ function StayInValidRange:GeneratePathWithinRange(agent: LightweightNpcTypes.npc
 				local ok, nav = pcall(ai.pathfinder.findPath, ai.pathfinder, agent.position, dest)
 
 				if ai.pathRequestId ~= requestId then
-					return false -- state exited while we yielded; Exit already reset busy
+					return false, true -- state exited while we yielded; Exit already reset busy
 				end
 				if not ok then
 					Utility.Warn(`[StayInValidRange] findPath errored: {nav}`)
@@ -139,7 +139,7 @@ end
 function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, context)
 	-- Getting hit: bail so Provoked can take over
 	if agent.data.forceExitState then
-		return finish(agent, ActionResult.Success)
+		return Finish(agent, ActionResult.Success)
 	end
 	if agent.busy then
 		return ActionResult.Running
@@ -149,7 +149,7 @@ function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, conte
 	local target = ai.lastSeenTarget
 	local factionData = ai.factionData
 	if not target or not target.Parent or target:HasTag("Dead") or not factionData then
-		return finish(agent, ActionResult.Success)
+		return Finish(agent, ActionResult.Success)
 	end
 
 	-- 3D distance from the HRP, exactly what Attack measures, so the two states can't disagree
@@ -190,24 +190,28 @@ function StayInValidRange:Update(agent: LightweightNpcTypes.npcRecordType, conte
 			startLook(agent)
 			return ActionResult.Running
 		end
-		return finish(agent, ActionResult.Success)
+		return Finish(agent, ActionResult.Success)
 	end
 
 	-- 2. Give up if repositioning keeps ending out of band
 	if (ai.repositionCount or 0) >= MAX_REPOSITIONS then
-		return finish(agent, ActionResult.Failed)
+		return Finish(agent, ActionResult.Failed)
 	end
 
 	-- 3. Need a route (a new route means a new look on arrival)
-	if not self:GeneratePathWithinRange(agent) then
-		return finish(agent, ActionResult.Failed)
+	local routed, stale = self:GeneratePathWithinRange(agent)
+	if stale then
+		return ActionResult.Running
+	end
+	if not routed then
+		return Finish(agent, ActionResult.Failed)
 	end
 	ai.lookDone = nil
 
 	-- 4. Follow it; on arrival, stop and look
 	local status = CommonStateLogic.FollowPath(agent, true)
 	if status == "failed" then
-		return finish(agent, ActionResult.Failed)
+		return Finish(agent, ActionResult.Failed)
 	elseif status == "arrived" then
 		startLook(agent)
 	end

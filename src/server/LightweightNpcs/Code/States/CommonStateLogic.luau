@@ -42,7 +42,7 @@ local CommonStateLogic = {
 
 		-- state was exited while we yielded: discard the result
 		if ai.pathRequestId ~= requestId then
-			return false
+			return false, true -- stale: state changed while we yielded
 		end
 
 		if ok and result.success then

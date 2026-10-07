@@ -103,6 +103,7 @@ function NPCAI:ResetWorldState(npcRecord: LightweightNpcTypes.npcRecordType)
 	ai.lastSeenPosition = nil
 	ai.currentMoveIdx = 2
 	ai.currentActionIndex = 1
+	ai.lookDone = nil
 	ai.retryAt = nil
 	ai.lookUntil = nil
 	ai.lookStepsLeft = nil
@@ -245,7 +246,7 @@ function NPCAI:Initialize(npcRecord: LightweightNpcTypes.npcRecordType)
 	local stayWithinRangeGoal = Goal.new({
 		name = "StayWithinRange",
 		desiredState = { atSafeDistance = true },
-		priority = 4,
+		priority = 4.5,
 		isValidFn = function(state)
 			return not state:get("atSafeDistance")
 		end,

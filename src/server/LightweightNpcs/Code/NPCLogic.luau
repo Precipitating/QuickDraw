@@ -46,7 +46,8 @@ local LimbDamageMultiplier = {
 	[LimbsEnum.RightUpperLeg] = 0.7,
 	[LimbsEnum.RightLowerLeg] = 0.7,
 }
-
+-- Cleanup to run when the planner switches AWAY from one of these goals mid-run.
+-- (Attack is deliberately absent: its exit clears the target, which a reload mid-fight must not do.)
 local LEAVE_HANDLERS = {
 	StayWithinRange = function(npc)
 		StayInValidRange:ExitStayInValidRangeState(npc)
@@ -59,6 +60,15 @@ local LEAVE_HANDLERS = {
 		Reload:ExitReloadState(npc)
 	end,
 }
+
+local function FlushForceExit(npcRecord)
+	local fn = npcRecord.data.forceExitState
+	if fn then
+		npcRecord.data.forceExitState = nil
+		fn()
+	end
+end
+
 function NPCLogic:SetupServerAnims(npcRecord: LightweightNpcTypes.npcRecordType)
 	if not npcRecord.animator then
 		Utility.Warn("[ NPCLogic:SetupServerAnims] Animator ref missing")
@@ -279,28 +289,33 @@ end
 function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	npcRecord.onThink:Connect(function(dt)
 		-- Early exits
-		local ai = npcRecord.ai
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
-			--Utility.Warn("NPC should stop all actions")
 			npcRecord:Move(Vector3.zero)
 			npcRecord.velocity = Vector3.zero
 			return
 		end
-		if ai.retryAt and os.clock() < ai.retryAt then
-			return -- idling after a failure (Exit already stopped movement)
-		end
-		--
 
+		local ai = npcRecord.ai
 		ai.perception:update(dt)
+
+		-- Backing off after a failed action. Getting hit cancels the backoff so Provoked reacts immediately.
+		if ai.retryAt then
+			if npcRecord.data.forceExitState or os.clock() >= ai.retryAt then
+				ai.retryAt = nil
+			else
+				return
+			end
+		end
 
 		-- Replan if state changed or we have no valid plan
 		if ai.worldState:isDirty() or not ai.currentPlan or not ai.currentPlan.success then
-			local plan, selectedGoal = npcRecord.ai.planner:planBestGoal(ai.worldState, npcRecord.ai.goals, npcRecord)
+			local plan, selectedGoal = ai.planner:planBestGoal(ai.worldState, ai.goals, npcRecord)
 
 			if plan.success then
 				local newName = selectedGoal.name
 				local oldName = ai.currentGoal and ai.currentGoal.name
 				if oldName ~= newName then
+					-- Goal changed: drop the old state's path and run its cleanup
 					ai.pathRequestId = (ai.pathRequestId or 0) + 1
 					ai.currentNavigationData = nil
 					ai.currentMoveIdx = 2
@@ -318,59 +333,54 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 		end
 
 		if not ai.currentPlan or not ai.currentPlan.success then
-			ResetToDefaultState(npcRecord)
+			-- Hunt NPCs are handed their target from outside; resetting would wipe it for good.
+			if ai.defaultState ~= "Hunt" then
+				NPCAI:ResetWorldState(npcRecord)
+			end
+			FlushForceExit(npcRecord)
 			return -- nothing achievable right now
 		end
 
 		local currentAction = ai.currentPlan.actions[ai.currentActionIndex]
 		if not currentAction then
-			return -- plan finished; will replan next dirty check, or force one
+			FlushForceExit(npcRecord)
+			return -- plan finished; will replan next dirty check
 		end
 
-		local context = { dt = dt }
-		local result = currentAction:execute(npcRecord, context)
-		if result ~= ActionResult.Running then
-			local ws = ai.worldState
-			Utility.Warn(
-				`[AI] {npcRecord.serverRig:GetAttribute("npcId") or npcRecord.serverRig.Name} `
-					.. `{ai.currentGoal and ai.currentGoal.name} ended {result} | `
-					.. `hasTarget={ws:get("hasTarget")} lost={ws:get("lostTarget")} `
-					.. `safe={ws:get("atSafeDistance")} canShoot={ws:get("canShoot")}`
-			)
+		local planAtStart = ai.currentPlan
+		local result = currentAction:execute(npcRecord, { dt = dt })
+
+		-- execute can yield (pathfinding), and onThink keeps firing meanwhile. If the plan changed or ended
+		-- during the yield, this result is stale: applying it would touch a plan that no longer exists.
+		if ai.currentPlan ~= planAtStart then
+			FlushForceExit(npcRecord)
+			return
 		end
-		-- Action complete, meaning apply effects if all actions ran and so next plan should occur.
+
 		if result == ActionResult.Success then
-			if ai.currentPlan and ai.currentPlan.actions then
-				ai.currentActionIndex += 1
-
-				if ai.currentActionIndex > #ai.currentPlan.actions then
-					-- apply this action's effects when all steps finished
-					for key, value in currentAction.effects._data do
-						ai.worldState:set(key, value)
-						print(`Success state: {key}, {value}`)
-					end
-					ai.currentPlan = nil
-					ai.currentGoal = nil
-					ai.currentActionIndex = 1
+			ai.currentActionIndex += 1
+			if ai.currentActionIndex > #ai.currentPlan.actions then
+				-- apply this action's effects once all steps have finished
+				for key, value in currentAction.effects._data do
+					ai.worldState:set(key, value)
 				end
+				ai.currentPlan = nil
+				ai.currentGoal = nil
+				ai.currentActionIndex = 1
 			end
 		elseif result == ActionResult.Failed then
+			-- Drop the plan and idle briefly before retrying, so a stuck NPC doesn't re-run
+			-- pathfinding every tick. No backoff if the failure was caused by being hit.
 			ai.currentPlan = nil
 			ai.currentGoal = nil
 			ai.currentActionIndex = 1
 			if not npcRecord.data.forceExitState then
 				ai.retryAt = os.clock() + 0.5
 			end
-		elseif result == ActionResult.Running then
-			-- Continue running
 		end
 
-		if npcRecord.data.forceExitState then
-			npcRecord.data.forceExitState()
-			npcRecord.data.forceExitState = nil
-		end
+		FlushForceExit(npcRecord)
 	end)
-
 	--
 	npcRecord.onDismemberLimb:Connect(function(limbToDestroy: number)
 		ServerSoundHandler:Play3DOneShotToOthers(
@@ -454,11 +464,12 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 			end
 
 			-- aggro
-			local currentStateName = npcRecord.ai.currentGoal and npcRecord.ai.currentGoal.name
+			local ai = npcRecord.ai
+			local currentStateName = ai.currentGoal and ai.currentGoal.name
 
-			if currentStateName and currentStateName ~= "Attack" then
+			if currentStateName and currentStateName ~= "Attack" and ai.defaultState ~= "Hunt" then
 				npcRecord.data.forceExitState = function()
-					npcRecord.ai.worldState:set("provoked", true)
+					ai.worldState:set("provoked", true)
 					if damageData.Type == "Shot" then
 						npcRecord.data.shotPosition = damageData.ShotPosition
 						npcRecord.data.lastProvoked = os.clock()
@@ -561,55 +572,58 @@ function NPCLogic:OnSpawn(npcRecord: LightweightNpcTypes.npcRecordType)
 	InitializeOnSpawn(npcRecord)
 	npcRecord.onBumpIntoWall:Connect(function(instance)
 		if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
-			--Utility.Warn("NPC should stop all actions")
 			return
 		end
+
 		local now = os.clock()
 		local lastBumped = npcRecord.data.lastBumped
-
-		-- reduce bump spam, tries again in 0.5 secs
 		if lastBumped and now - lastBumped <= BUMP_DELAY then
+			return -- reduce bump spam
+		end
+
+		local ai = npcRecord.ai
+		if not (ai and ai.currentGoal) then
+			return
+		end
+
+		-- onImpulse silently drops impulses within BUMP_DELAY of the last one and then never calls us back,
+		-- which would leave the HRP unanchored forever. Bail out before unanchoring.
+		local lastImpulse = npcRecord.data.lastImpulse
+		if lastImpulse and now - lastImpulse < BUMP_DELAY then
 			return
 		end
 
 		npcRecord.data.lastBumped = now
 
-		local currentStateName = npcRecord.ai and npcRecord.ai.currentGoal and npcRecord.ai.currentGoal.name
+		-- Attempt to get unstuck via a random impulse behind/left/right
 
-		if not currentStateName then
-			return
-		end
+		local randList = {
+			[1] = -npcRecord.hrp.CFrame.LookVector,
+			[2] = npcRecord.hrp.CFrame.RightVector,
+			[3] = -npcRecord.hrp.CFrame.RightVector,
+		}
 
-		-- Attempt to get unstuck via random impulses behind/left/right
-		local impulseDir = nil
-		if RandomModule.GetRandom() > 0.5 then
-			impulseDir = -npcRecord.hrp.CFrame.LookVector
-		else
-			if RandomModule.GetRandom() > 0.5 then
-				impulseDir = npcRecord.hrp.CFrame.RightVector
-			else
-				impulseDir = -npcRecord.hrp.CFrame.RightVector
-			end
-		end
+		local impulseDir = randList[RandomModule.GetRandomIntBetween(1, 3)]
 
 		npcRecord.hrp.Anchored = false
 		npcRecord.onImpulse:Fire(impulseDir * 50, function()
 			npcRecord.hrp.Anchored = true
-			-- Retry a waypoint path
-			if currentStateName == "Patrol" then
-				local success = Patrol:TryGetNextPatrolWaypoint(npcRecord)
-				if not success then
+
+			-- Read the state NOW: it may have changed since the bump
+			local stateName = ai.currentGoal and ai.currentGoal.name
+			if stateName == "Patrol" then
+				local ok, stale = Patrol:TryGetNextPatrolWaypoint(npcRecord)
+				if not ok and not stale then
 					Patrol:ExitPatrolState(npcRecord)
 				end
-			elseif currentStateName == "Seek" and npcRecord.ai.lastSeenTarget then
-				local success = Seek:GeneratePathToLastSeenTarget(npcRecord, true)
-
-				if not success then
+			elseif stateName == "Seek" and ai.lastSeenTarget then
+				local ok, stale = Seek:GeneratePathToLastSeenTarget(npcRecord, true)
+				if not ok and not stale then
 					Seek:ExitSeekState(npcRecord)
 				end
-			elseif currentStateName == "StayWithinRange" or currentStateName == "Hunt" then
+			elseif stateName == "StayWithinRange" or stateName == "Hunt" then
 				-- Force a new path to be calculated
-				npcRecord.ai.currentNavigationData = nil
+				ai.currentNavigationData = nil
 			end
 		end)
 		npcRecord:ForceReplicate()
