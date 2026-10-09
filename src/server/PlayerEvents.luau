@@ -60,6 +60,28 @@ local function InitializePlayer(player: Player, character: Model)
 
 	SpawnHandler:SpawnPlayer(player, false)
 
+	local hrp = humanClass.HRP
+	local last = hrp:GetNetworkOwner()
+	game:GetService("RunService").Heartbeat:Connect(function()
+		local ok, owner = pcall(humanClass.HRP.GetNetworkOwner, humanClass.HRP)
+		if not ok then
+			owner = "ANCHORED/ERR"
+		end
+		if owner ~= last then
+			print(
+				"OWNER CHANGED:",
+				last,
+				"->",
+				owner,
+				"auto:",
+				pcall(hrp.GetNetworkOwnershipAuto, hrp),
+				"root:",
+				hrp.AssemblyRootPart
+			)
+			last = owner
+		end
+	end)
+
 	-- task.wait(2)
 	-- humanClass:DestroyLimb("LeftUpperArm")
 	-- humanClass:DestroyLimb("LeftUpperLeg")

@@ -21,7 +21,6 @@ HumanPlayer.__index = HumanPlayer
 local RagdollDisabledStates = {
 	[Enum.HumanoidStateType.Ragdoll] = true,
 	[Enum.HumanoidStateType.FallingDown] = true,
-	[Enum.HumanoidStateType.GettingUp] = true,
 	[Enum.HumanoidStateType.Dead] = true,
 }
 
@@ -67,6 +66,7 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self:InitializeWeaponLoadout()
 
 	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
+
 	if CollectionService:HasTag(player, "FirstLoad") then
 		Utility.Warn("Player first loaded, setting invincible forever until game loaded")
 		self:SetInvincible(true, true)
@@ -80,36 +80,43 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	return self :: any
 end
 function HumanPlayer:OnHumanoidStateChange()
-	if not self.Humanoid then
+	local humanoid = self.Humanoid
+	if not humanoid then
 		error("Missing humanoid reference in human class!")
 	end
 	-- keep BallSocketConstraints on death
-	self.Humanoid.BreakJointsOnDeath = false
+	humanoid.BreakJointsOnDeath = false
 
-	self.Janitor:Add(
-		self.Humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
-			if RagdollDisabledStates[newState] then
-				self.AnimationControllerState = false
-				self.IsRagdolled = true
-			else
-				self.AnimationControllerState = true
-				self.IsRagdolled = false
-			end
+	humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+	task.delay(1.5, function()
+		if humanoid.Parent then
+			humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+		end
+	end)
 
-			for _, j in self.Character:GetDescendants() do
-				if j:IsA("AnimationConstraint") and j.Name ~= "Root" then
-					j.Enabled = self.AnimationControllerState
-				end
+	self.Janitor:Add(humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, newState: Enum.HumanoidStateType)
+		if RagdollDisabledStates[newState] then
+			Utility.Warn(`{newState} triggered, ragdolling`)
+			self.AnimationControllerState = false
+			self.IsRagdolled = true
+		else
+			self.AnimationControllerState = true
+			self.IsRagdolled = false
+		end
+
+		for _, j in self.Character:GetDescendants() do
+			if j:IsA("AnimationConstraint") and j.Name ~= "Root" then
+				j.Enabled = self.AnimationControllerState
 			end
-			if newState == Enum.HumanoidStateType.Dead then
-				self:OnDeath()
-			end
-		end)
-	)
+		end
+		if newState == Enum.HumanoidStateType.Dead then
+			self:OnDeath()
+		end
+	end))
 end
 function HumanPlayer:SimulateDefaultLimbs()
 	-- setting this to HumanoidRootPart prevents any sliding from occuring, very IMPORTANT
-	local physicalProperties: PhysicalProperties = PhysicalProperties.new(100, 2, 0.5, 1, 1)
+	local physicalProperties: PhysicalProperties = PhysicalProperties.new(100, 2, 0, 1, 1)
 	self.HRP.CustomPhysicalProperties = physicalProperties
 
 	for _, obj in self.Character:GetDescendants() do

@@ -140,6 +140,9 @@ function MainMenuScreen:InitializeShowdownScene()
 end
 
 function MainMenuScreen:OpenMainMenu()
+	if not game:IsLoaded() then
+		game.Loaded:Wait()
+	end
 	self:InitializeShowdownScene()
 end
 

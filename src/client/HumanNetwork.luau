@@ -19,7 +19,6 @@ function HumanNetwork:RagdollClient(ragdollTime: number)
 		return
 	end
 	local Inputs = require(script.Parent.ClientInputs.Inputs)
-
 	PlayerContext.Humanoid:UnequipTools()
 	PlayerContext.Humanoid:ChangeState(Enum.HumanoidStateType.Ragdoll)
 	PlayerContext.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
