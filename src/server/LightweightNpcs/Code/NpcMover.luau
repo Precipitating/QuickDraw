@@ -162,19 +162,19 @@ function module:HandleWalkingState(npcRecord: LightweightNpcTypes.npcRecordType,
 			stepupPosition, stepupHitResults =
 				SweepMove(startPos, velocity, npcRecord.configuration.motionSize, castParams)
 
-			Utility.Warn(
-				string.format(
-					"[STEPUP] hitInstance=%s startPos=(%.2f,%.2f,%.2f) afterFwdSweep=(%.2f,%.2f,%.2f) fwdHit=%s",
-					hitResults.Instance and hitResults.Instance:GetFullName() or "nil",
-					startPos.X,
-					startPos.Y,
-					startPos.Z,
-					stepupPosition.X,
-					stepupPosition.Y,
-					stepupPosition.Z,
-					tostring(stepupHitResults ~= nil)
-				)
-			)
+			-- Utility.Warn(
+			-- 	string.format(
+			-- 		"[STEPUP] hitInstance=%s startPos=(%.2f,%.2f,%.2f) afterFwdSweep=(%.2f,%.2f,%.2f) fwdHit=%s",
+			-- 		hitResults.Instance and hitResults.Instance:GetFullName() or "nil",
+			-- 		startPos.X,
+			-- 		startPos.Y,
+			-- 		startPos.Z,
+			-- 		stepupPosition.X,
+			-- 		stepupPosition.Y,
+			-- 		stepupPosition.Z,
+			-- 		tostring(stepupHitResults ~= nil)
+			-- 	)
+			-- )
 
 			if stepupHitResults then
 				bumpedInstance = stepupHitResults.Instance

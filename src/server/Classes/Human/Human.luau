@@ -527,6 +527,14 @@ function Human:AssignBodyParts(tagName: string)
 			obj.CollisionGroup = tagName
 		end
 	end
+
+	task.delay(0.1, function()
+		local hrp = self.Character and self.Character:FindFirstChild("HumanoidRootPart")
+
+		if hrp then
+			hrp:SetNetworkOwner(self.Player)
+		end
+	end)
 end
 
 function Human:SimulateDefaultLimbs()

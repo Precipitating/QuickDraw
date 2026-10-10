@@ -240,7 +240,6 @@ local function Init()
 
 				npcRecord.recoilSpring:onComplete(function()
 					npcRecord.isRecoiling = false
-					Utility.Warn("RECOIL OFF")
 				end)
 
 				npcRecord.janitor:Add(RunService.PreSimulation:Connect(function(a0: number)

@@ -233,6 +233,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	PlayerContext.CanKick = true
 	PlayerContext.PlayerGui = player:WaitForChild("PlayerGui", 10)
 	PlayerContext.AnimationController = AnimationController.new(character, DefaultAnimations, DefaultAnimateParams)
+
 	PlayerContext.IsMoving = false
 	PlayerContext.Reloading = false
 	PlayerContext.MovingPlatformConn = nil
@@ -264,6 +265,7 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	ClientUtility.ToggleControls(true)
 
 	CurrentCamera.CameraSubject = humanoid
+
 	-- connect events
 	PlayerContext.janitor:Add(
 		humanoid.StateChanged:Connect(function(_: Enum.HumanoidStateType, new: Enum.HumanoidStateType)

@@ -20,18 +20,6 @@ function PlayerManager:AddHumanClass(player: Player)
 	return HumanRegistry:Add(humanoid, humanClass)
 end
 
--- function PlayerManager:AddHumanClassNPC(
--- 	lightweightNPCClass: {},
--- 	humanoid: Humanoid?,
--- 	classType: string,
--- 	factionType: string,
--- 	optionalData: any?
--- )
--- 	assert(humanoid, "[PlayerManager:AddHumanClassNPC] should be humanoid argument!")
--- 	local humanClass = HumanNPC.new(lightweightNPCClass, humanoid, classType, optionalData)
--- 	return HumanRegistry:Add(humanoid, humanClass)
--- end
-
 function PlayerManager:RemoveHumanClass(humanoid: Humanoid)
 	if not humanoid then
 		return

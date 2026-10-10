@@ -65,8 +65,6 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self.KickSignalled = false
 	self:InitializeWeaponLoadout()
 
-	self.BodyParts["RightUpperArm"]:SetNetworkOwner(player)
-
 	if CollectionService:HasTag(player, "FirstLoad") then
 		Utility.Warn("Player first loaded, setting invincible forever until game loaded")
 		self:SetInvincible(true, true)

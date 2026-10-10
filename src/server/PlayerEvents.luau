@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local DataService = require(ReplicatedStorage.Packages.DataService).server
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
@@ -59,28 +60,6 @@ local function InitializePlayer(player: Player, character: Model)
 	end
 
 	SpawnHandler:SpawnPlayer(player, false)
-
-	local hrp = humanClass.HRP
-	local last = hrp:GetNetworkOwner()
-	game:GetService("RunService").Heartbeat:Connect(function()
-		local ok, owner = pcall(humanClass.HRP.GetNetworkOwner, humanClass.HRP)
-		if not ok then
-			owner = "ANCHORED/ERR"
-		end
-		if owner ~= last then
-			print(
-				"OWNER CHANGED:",
-				last,
-				"->",
-				owner,
-				"auto:",
-				pcall(hrp.GetNetworkOwnershipAuto, hrp),
-				"root:",
-				hrp.AssemblyRootPart
-			)
-			last = owner
-		end
-	end)
 
 	-- task.wait(2)
 	-- humanClass:DestroyLimb("LeftUpperArm")

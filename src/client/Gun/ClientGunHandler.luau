@@ -381,7 +381,8 @@ function ClientGunHandler:AttemptReload()
 
 	PlayerContext.Reloading = true
 	local newAmmoCount = GunNetwork:fetch("Reload")
-	if not currAmmo or maxAmmo then
+	if not newAmmoCount then
+		PlayerContext.Reloading = false
 		return
 	end
 
@@ -392,22 +393,19 @@ function ClientGunHandler:AttemptReload()
 end
 
 function ClientGunHandler:AddCollisionConstraints(gunTool: Tool)
-	local bodyParts = PlayerContext.BodyParts
-	local gunParts = gunTool:GetChildren()
-	for _, bodyPart in bodyParts do
-		local collisionConstraint = Instance.new("NoCollisionConstraint")
-
-		for _, gunPart in gunParts do
-			if not gunPart:IsA("BasePart") then
-				continue
-			end
+	for _, gunPart in gunTool:GetDescendants() do
+		if not gunPart:IsA("BasePart") then
+			continue
+		end
+		for _, bodyPart in PlayerContext.BodyParts do
+			local collisionConstraint = Instance.new("NoCollisionConstraint")
 			collisionConstraint.Part0 = gunPart
 			collisionConstraint.Part1 = bodyPart
-			collisionConstraint.Parent = gunTool
+			collisionConstraint.Parent = gunPart
+			self.janitor:Add(collisionConstraint)
 		end
 	end
 end
-
 function ClientGunHandler:AfterShot()
 	GunNetwork:fire("ReduceGunAmmo")
 	GunNetwork:fire("GunJamIfRolled")
