@@ -158,7 +158,6 @@ function Human.new(humanoid: Humanoid?): Human
 	self.Dead = false
 	self.Name = humanoid.Parent and humanoid.Parent.Name
 	self.Animator = humanoid:FindFirstChildOfClass("Animator")
-	self.Stamina = 100
 	self.Inventory = Inventory.new(self)
 	self.Moving = false
 	self.Sprinting = false
@@ -395,10 +394,6 @@ function Human:ApplyRollForce()
 		end
 		if attachment and attachment.Parent then
 			attachment:Destroy()
-		end
-
-		if self.RollSignalled then
-			self.RollSignalled = false
 		end
 	end)
 end

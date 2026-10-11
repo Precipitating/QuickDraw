@@ -1,5 +1,6 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 -- inheriting Human and defining Player only data
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
@@ -15,6 +16,7 @@ local ServerScreenEffects = require(ServerScriptService.Server.ServerScreenEffec
 
 local Human = require(script.Parent.Human)
 local HumanSignals = require(script.Parent.HumanSignals)
+local Stamina = require(script.Parent.Stamina)
 local HumanPlayer = setmetatable({}, Human)
 HumanPlayer.__index = HumanPlayer
 
@@ -54,15 +56,15 @@ function HumanPlayer.new(humanoid: Humanoid, player: Player?)
 	self:SimulateDefaultLimbs()
 	self:SetupPhysicsSettings()
 	self:OnHumanoidStateChange()
-
 	Human.AssignBodyParts(self, "Player")
 	self:SetupBloodEmitters()
 	self.Player = player
 	self.ClassType = "HumanPlayer"
 	self.HumanType = HumanTypeEnum.Player
-	self.JumpSignalled = false
-	self.RollSignalled = false
-	self.KickSignalled = false
+	self.Stamina = Stamina.new(self.Character)
+	self.Janitor:Add(RunService.Heartbeat:Connect(function(dt)
+		self.Stamina:Update(dt, self.Moving and self.Sprinting)
+	end))
 	self:InitializeWeaponLoadout()
 
 	if CollectionService:HasTag(player, "FirstLoad") then
@@ -233,7 +235,7 @@ function HumanPlayer:SetupMovementDetector()
 end
 
 function HumanPlayer:ToggleSprinting(active: boolean, bypassMovingRequirement: boolean?)
-	local stamina = self.Stamina
+	local stamina = self.Stamina.Current
 	if self:IsLegless() then
 		return
 	end

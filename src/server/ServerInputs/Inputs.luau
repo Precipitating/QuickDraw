@@ -4,76 +4,80 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ClassTypes = require(ServerScriptService.Server.Classes.ClassTypes)
 local DamageModule = require(ServerScriptService.Server.DamageModule)
 local PopupGUI = require(ServerScriptService.Server.GUI.PopupGUI)
-local LightweightNpcTypes = require(ServerScriptService.Server.LightweightNpcs.Code.LightweightNpcTypes)
 local LightweightNpcsServerAPI = require(ServerScriptService.Server.LightweightNpcs.LightweightNpcsServerAPI)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local PlayerManager = require(ServerScriptService.Server.Managers.Player.PlayerManager)
-
 local Networker = require(ReplicatedStorage.Packages.Networker).server
+
+local ACTION_COST = {
+	Jump = HumanConstants.JUMP_DRAIN,
+	Roll = HumanConstants.ROLL_DRAIN,
+	Kick = HumanConstants.KICK_DRAIN,
+}
+local BARGE_BOX_SIZE = Vector3.new(4, 4, 3)
+local BARGE_OFFSET = CFrame.new(0, 0, -3)
+local BARGE_MAX_DURATION = 3 -- safety timeout, set to your barge length
+local BARGE_LIFT = 0.25 -- fraction of force added upward so ragdolls don't just drag
+
+local activeBarges: { [Player]: () -> () } = {}
 local Inputs = {}
 
-function Inputs:ApplyJumpDrain(player: Player)
+-- Shared guards for grounded leg actions. Returns the human class if allowed.
+local function GetGroundedHuman(player: Player)
 	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
-	local humanoid = humanClass and humanClass.Humanoid
-
-	if not humanoid then
-		Utility.Warn("Missing humanoid reference to apply jump drain, probably dead")
-		return false
+	if not humanClass or not humanClass.Humanoid then
+		return nil
 	end
 	if humanClass:IsLegless() then
-		return false
+		return nil
 	end
-	if humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-		return false
+	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+		return nil
 	end
+	return humanClass
+end
 
-	if humanClass.Stamina < HumanConstants.JUMP_DRAIN then
+function Inputs:ApplyJumpDrain(player: Player)
+	local humanClass = GetGroundedHuman(player)
+	if not humanClass then
 		return false
 	end
-	humanClass.JumpSignalled = true
-	return true
+	return humanClass.Stamina:TryConsume(ACTION_COST.Jump)
+end
+
+function Inputs:BindHumanStamina(player: Player, humanClass)
+	humanClass.Janitor:Add(humanClass.Stamina.OnDepleted:Connect(function()
+		if humanClass.Humanoid and humanClass.Humanoid.Health > 0 then
+			self:ToggleSprint(player, false)
+			self.networker:fire(player, "StaminaDepleted")
+		end
+	end))
 end
 
 function Inputs:ApplyRollDrain(player: Player, lookDir: Vector3)
 	assert(lookDir, "Missing lookDir from client to roll!")
-	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
-
-	if not humanClass or humanClass:IsLegless() or not humanClass.Humanoid then
+	local humanClass = GetGroundedHuman(player)
+	if not humanClass then
 		return false
 	end
-
-	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+	if not humanClass.Stamina:TryConsume(ACTION_COST.Roll) then
 		return false
 	end
-
-	if humanClass.Stamina < HumanConstants.JUMP_DRAIN then
-		return false
-	end
-	humanClass.RollSignalled = true
 	humanClass:ApplyRollForce(lookDir)
 	return true
 end
-
 function Inputs:ApplyKickDrain(player: Player)
-	local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
-	if not humanClass or humanClass:IsLegless() or not humanClass.Humanoid then
+	local humanClass = GetGroundedHuman(player)
+	if not humanClass then
 		return false
 	end
-
-	if humanClass.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+	if not humanClass.Stamina:TryConsume(ACTION_COST.Kick) then
 		return false
 	end
-	if humanClass.Stamina < HumanConstants.KICK_DRAIN then
-		return false
-	end
-
-	humanClass.KickSignalled = true
 	humanClass:ApplyKickForce()
-
 	return true
 end
-
 function Inputs:ToggleSprint(player: Player, active: boolean, bypassMovingRequirement: boolean?)
 	local humanClass, _ = PlayerManager:GetHumanClassFromPlayer(player)
 	if not humanClass or not humanClass.Stamina then
@@ -82,8 +86,8 @@ function Inputs:ToggleSprint(player: Player, active: boolean, bypassMovingRequir
 
 	humanClass:ToggleSprinting(active, bypassMovingRequirement)
 
-	if humanClass.Stamina <= 0 then
-		self.networker:fire(self.Player, "StaminaDepleted")
+	if humanClass.Stamina.Current <= 0 then
+		self.networker:fire(player, "StaminaDepleted")
 	end
 end
 
@@ -95,7 +99,7 @@ function Inputs:CanBarge(player: Player)
 	if not humanClass or not humanClass.Stamina then
 		return false
 	end
-	local stamina = humanClass.Stamina
+	local stamina = humanClass.Stamina.Current
 
 	if humanClass.Character and humanClass.Character:FindFirstChildOfClass("Tool") then
 		PopupGUI:NewPopup(player, 2, "You're holding something, unequip to barge")
@@ -113,159 +117,147 @@ function Inputs:CanBarge(player: Player)
 	return true
 end
 
+-- Walks up from any hit part to a player human class or lightweight NPC.
+local function FindTarget(hitPart: BasePart)
+	local inst = hitPart.Parent
+	while inst and inst ~= workspace do
+		local npcId = inst:GetAttribute("npcId")
+		if npcId then
+			local npc = LightweightNpcsServerAPI:GetNpcById(npcId)
+			if npc then
+				return npc, "NPC"
+			end
+		end
+		local humanoid = inst:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			local humanClass = PlayerManager:GetHumanClass(humanoid)
+			if humanClass then
+				return humanClass, "Player"
+			end
+		end
+		inst = inst.Parent
+	end
+	return nil, nil
+end
+
+local function GetPushDir(from: Vector3, to: Vector3, fallback: Vector3): Vector3
+	local flat = Vector3.new(to.X - from.X, 0, to.Z - from.Z)
+	if flat.Magnitude < 1e-3 then
+		flat = Vector3.new(fallback.X, 0, fallback.Z)
+	end
+	local dir = flat.Unit * HumanConstants.BARGE_FORCE
+	return dir + Vector3.new(0, HumanConstants.BARGE_FORCE * BARGE_LIFT, 0)
+end
+
+local function KnockbackPlayer(humanClass, dir: Vector3)
+	humanClass:Ragdoll(5)
+	task.defer(function()
+		-- if the target is client-owned, move this impulse to a remote on their client
+		humanClass:ApplyImpulse(dir * humanClass.HRP.AssemblyMass)
+	end)
+end
+
 function Inputs:AddBargeCollision(player: Player)
-	if not player then
-		Utility.Warn(`Cannot initialize barge colliders, player ref missing`)
-		return
-	end
-
-	local character = player.Character
-
-	if not character then
-		Utility.Warn(`Cannot initialize barge colliders, character ref missing`)
-		return
-	end
-
-	local hrp = character:FindFirstChild("HumanoidRootPart")
+	local character = player and player.Character
+	local hrp = character and character:FindFirstChild("HumanoidRootPart") :: BasePart?
 	if not hrp then
-		Utility.Warn(`Cannot initialize barge colliders, HRP missing`)
+		Utility.Warn("Cannot initialize barge, player/character/HRP missing")
 		return
 	end
 
-	local collider: Part = Instance.new("Part")
-	collider.CanCollide = false
-	collider.CanQuery = false
-	collider.CanTouch = true
-	collider.Name = "BargeCollider"
+	self:DestroyBargeCollision(player) -- never stack barges
 
-	collider.CollisionGroup = "Projectile"
-	collider.Transparency = 1
-	local weld: WeldConstraint = Instance.new("WeldConstraint")
-	weld.Name = "BargeWeld"
-	weld.Part0 = hrp
-	weld.Part1 = collider
-	weld.Parent = character
+	local params = OverlapParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = { character }
 
-	collider.CFrame = hrp.CFrame * CFrame.new(0, 0, -4)
-	collider.Parent = character
+	local startTime = os.clock()
+	local conn: RBXScriptConnection?
 
-	local onBargeHitConn = nil
-	local BargeOverlapParams = OverlapParams.new()
+	local function Stop(reason: string?)
+		if not conn then
+			return
+		end
+		conn:Disconnect()
+		conn = nil
+		activeBarges[player] = nil
+		if reason then
+			self.networker:fire(player, "StopBarge", reason)
+		end
+	end
+	activeBarges[player] = Stop
 
-	BargeOverlapParams.ExcludeInstances = { character }
-
-	onBargeHitConn = RunService.Heartbeat:Connect(function()
-		if not collider or not collider.Parent then
-			onBargeHitConn:Disconnect()
+	conn = RunService.Heartbeat:Connect(function()
+		if not hrp.Parent or os.clock() - startTime > BARGE_MAX_DURATION then
+			Stop("Timeout")
 			return
 		end
 
-		local colliderTouched = workspace:GetPartsInPart(collider, BargeOverlapParams)
+		local parts = workspace:GetPartBoundsInBox(hrp.CFrame * BARGE_OFFSET, BARGE_BOX_SIZE, params)
+		if #parts == 0 then
+			return
+		end
 
-		for _, hitPart in colliderTouched do
-			local parent = hitPart.Parent
-			if not parent then
-				continue
+		-- entities take priority over walls, regardless of part order
+		local target, kind, hitPart
+		local hitWall = false
+		for _, part in parts do
+			local t, k = FindTarget(part)
+			if t then
+				target, kind, hitPart = t, k, part
+				break
 			end
-			local hitPlayer = parent:FindFirstChild("Humanoid")
-			local hitNPC: LightweightNpcTypes.npcRecordType? = parent:GetAttribute("npcId")
-				and LightweightNpcsServerAPI:GetNpcById(parent:GetAttribute("npcId"))
+			if part.CanCollide then
+				hitWall = true
+			end
+		end
 
-			-- Hit environment
-			if not hitPlayer and not hitNPC then
-				local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
-				if not humanClass then
-					return
-				end
+		if target then
+			Stop(kind) -- "Player" or "NPC"; swap back to "Human" if the client expects it
 
-				local data = {
+			local targetHrp = target.HRP or target.hrp
+			local dir = GetPushDir(hrp.Position, targetHrp.Position, hrp.CFrame.LookVector)
+
+			local data = {
+				Type = "Barge",
+				Damage = HumanConstants.BARGE_DAMAGE,
+				LimbHit = hitPart,
+				TargetHuman = target,
+				CanAffectShooter = false,
+				Shooter = player,
+			} :: ClassTypes.BargeDamage
+
+			if kind == "Player" then
+				KnockbackPlayer(target, dir)
+				DamageModule.DamageHuman(data)
+			else
+				target.onHit:Fire(data)
+				target.onImpulse:Fire(dir * 5)
+				target.onRagdoll:Fire(5)
+			end
+		elseif hitWall then
+			Stop("Environment")
+			local humanClass = PlayerManager:GetHumanClassFromPlayer(player)
+			if humanClass then
+				DamageModule.DamageHuman({
 					Type = "Barge",
 					Damage = HumanConstants.BARGE_DAMAGE,
 					LimbHit = character:FindFirstChild("UpperTorso"),
 					TargetHuman = humanClass,
 					CanAffectShooter = true,
 					Shooter = player,
-				} :: ClassTypes.BargeDamage
-
-				DamageModule.DamageHuman(data)
-
-				collider:Destroy()
-				weld:Destroy()
-				self.networker:fire(player, "StopBarge", "Environment")
-				return
+				} :: ClassTypes.BargeDamage)
 			end
-
-			-- Hit a player, apply impulse and ragdoll
-			local humanClass = PlayerManager:GetHumanClass(hitPlayer) or hitNPC
-			if not humanClass then
-				continue
-			end
-
-			local targetPos = (humanClass.HRP and humanClass.HRP.Position)
-				or (humanClass.hrp and humanClass.hrp.Position)
-			-- Get barge force
-			local force = HumanConstants.BARGE_FORCE
-			local rawDir = (targetPos - hrp.Position)
-			local flattenedDir = vector.create(rawDir.X, 0, rawDir.Z)
-			local pushDirection = flattenedDir.Unit
-			local dir: Vector3 = pushDirection * force
-
-			local data = {
-				Type = "Barge",
-				Damage = HumanConstants.BARGE_DAMAGE,
-				LimbHit = hitPart,
-				TargetHuman = humanClass or hitNPC,
-				CanAffectShooter = false,
-				Shooter = player,
-			} :: ClassTypes.BargeDamage
-
-			if hitPlayer then
-				dir *= hitPlayer.HRP.AssemblyMass
-				if humanClass.Ragdoll then
-					humanClass:Ragdoll(5)
-				end
-				task.defer(function()
-					humanClass:ApplyImpulse(dir)
-				end)
-				DamageModule.DamageHuman(data)
-			elseif hitNPC then
-				hitNPC.onHit:Fire(data)
-				hitNPC.onImpulse:Fire(dir * 5)
-				hitNPC.onRagdoll:Fire(5)
-			end
-
-			collider:Destroy()
-			weld:Destroy()
-			self.networker:fire(player, "StopBarge", "Human")
-			break
 		end
 	end)
 end
 
 function Inputs:DestroyBargeCollision(player: Player)
-	if not player then
-		Utility.Warn(`Cannot initialize barge colliders, player ref missing`)
-		return
-	end
-
-	local character = player.Character
-
-	if not character then
-		Utility.Warn(`Cannot remove barge colliders, character ref missing`)
-		return
-	end
-
-	local hasWeld = character:FindFirstChild("BargeWeld")
-	local hasCollider = character:FindFirstChild("BargeCollider")
-
-	if hasWeld then
-		hasWeld:Destroy()
-	end
-	if hasCollider then
-		hasCollider:Destroy()
+	local stop = player and activeBarges[player]
+	if stop then
+		stop() -- no reason, so no StopBarge fired back at the client
 	end
 end
-
 Inputs.networker = Networker.new("InputNetwork", Inputs, {
 	Inputs.ToggleSprint,
 	Inputs.ApplyJumpDrain,

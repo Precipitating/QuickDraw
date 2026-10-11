@@ -20,6 +20,10 @@ function NPCPhysics:ToggleNPCCollision(npcRecord: LightweightNpcTypes.npcRecordT
 	end
 end
 
+local function IsGone(npcRecord)
+	return npcRecord.npcState == NpcStateModule.Dying or npcRecord.hitPoints <= 0
+end
+
 function NPCPhysics:Ragdoll(npcRecord: LightweightNpcTypes.npcRecordType, duration: number?, onChanged: (() -> ())?)
 	if npcRecord.npcState == NpcStateModule.Dying or npcRecord.npcState == NpcStateModule.Ragdolled then
 		return
@@ -45,6 +49,7 @@ function NPCPhysics:Ragdoll(npcRecord: LightweightNpcTypes.npcRecordType, durati
 			local frontOrBack = if RandomModule.GetRandom() > 0.5 then "standupfront" else "standupback"
 			npcRecord:PlayAnimation(frontOrBack, false, 1, 1)
 			task.wait(1.2)
+
 			npcRecord.npcState = NpcStateModule.Running
 			self:ToggleNPCCollision(npcRecord, false)
 		end)
