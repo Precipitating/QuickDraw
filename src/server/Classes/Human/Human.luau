@@ -523,7 +523,7 @@ function Human:AssignBodyParts(tagName: string)
 		end
 	end
 
-	task.delay(0.1, function()
+	task.delay(0.5, function()
 		local hrp = self.Character and self.Character:FindFirstChild("HumanoidRootPart")
 
 		if hrp then

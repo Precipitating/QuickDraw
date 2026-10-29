@@ -319,10 +319,9 @@ function HumanPlayer:Die(killer: (Player | Model)?)
 end
 
 function HumanPlayer:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model)
-	Human.OnHit(self, damage, damageMultiplier, limbName, shooter)
-
 	-- update limb hp gui, changing limb health colour green->orange->red
 	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
+	Human.OnHit(self, damage, damageMultiplier, limbName, shooter)
 end
 
 function HumanPlayer:HealInjuredPart(healAmount: number)
@@ -334,13 +333,13 @@ function HumanPlayer:HealInjuredPart(healAmount: number)
 	return limbName
 end
 function HumanPlayer:DestroyLimb(limbName: string)
-	Human.DestroyLimb(self, limbName)
 	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, 0)
+	Human.DestroyLimb(self, limbName)
 end
 
 function HumanPlayer:DisableLimb(limbName: string)
-	Human.DisableLimb(self, limbName)
 	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
+	Human.DisableLimb(self, limbName)
 end
 
 function HumanPlayer:RevertCrawlState()

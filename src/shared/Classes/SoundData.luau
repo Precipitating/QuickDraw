@@ -115,7 +115,7 @@ SoundData.Sounds = {
 	},
 
 	BulletHitGroan = {
-		SoundId = "rbxassetid://1489934368",
+		SoundId = "rbxassetid://120577318608796",
 		Volume = 1,
 		PlaybackSpeed = 1,
 		Group = "SFX",

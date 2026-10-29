@@ -12,6 +12,7 @@ local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local AnimationController = require(ReplicatedStorage.Shared.AnimationData.AnimationController)
 local SoundManager = require(ReplicatedStorage.Shared.Classes.SoundManager)
 local CameraShaker = require(ReplicatedStorage.Shared.Effects.CameraShaker)
+local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
 local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 local WindConstants = require(ReplicatedStorage.Shared.Wind.WindConstants)
 local WindLines = require(ReplicatedStorage.Shared.Wind.WindLines)
@@ -163,7 +164,9 @@ function PlayerContext:UpdateLimbsGUIHP(limbPartName: string, healthPercent: num
 		return
 	end
 
-	limb.Color = if not healthPercent then Color3.fromRGB(0, 0, 0) else EvalColorSequence(HealthGradient, healthPercent)
+	limb.Color = if (not healthPercent or healthPercent <= HumanConstants.LIMB_DISMEMBER_HP / 100)
+		then Color3.fromRGB(0, 0, 0)
+		else EvalColorSequence(HealthGradient, healthPercent)
 end
 
 function PlayerContext:SetupLimbGUI()
@@ -202,6 +205,7 @@ function PlayerContext:SetupLimbGUI()
 		if not part:IsA("BasePart") then
 			continue
 		end
+
 		part.Color = Color3.fromRGB(0, 255, 0)
 	end
 end

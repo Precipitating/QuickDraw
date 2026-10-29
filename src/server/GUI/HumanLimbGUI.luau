@@ -16,7 +16,7 @@ function HumanLimbGUIHandler:UpdateLimbGUIHP(player: Player, limbName: string, l
 	end
 
 	self.networker:fire(player, "UpdateLimbGUIHP", buf)
-	Utility.Warn("Update limb gui hp")
+	Utility.Warn(`Update limb gui hp {limbName} at percentage {limbHealthPercentage}`)
 end
 
 HumanLimbGUIHandler.networker = Networker.new("HumanLimbGUINetwork", HumanLimbGUIHandler)
