@@ -17,7 +17,7 @@ local ACTION_COST = {
 }
 local BARGE_BOX_SIZE = Vector3.new(4, 4, 3)
 local BARGE_OFFSET = CFrame.new(0, 0, -3)
-local BARGE_MAX_DURATION = 3 -- safety timeout, set to your barge length
+local BARGE_MAX_DURATION = 10 -- safety timeout, set to your barge length
 local BARGE_LIFT = 0.25 -- fraction of force added upward so ragdolls don't just drag
 
 local activeBarges: { [Player]: () -> () } = {}

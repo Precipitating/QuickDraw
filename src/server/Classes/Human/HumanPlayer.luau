@@ -176,9 +176,8 @@ function HumanPlayer:InitializeWeaponLoadout()
 	-- 	savedThrowableData and savedThrowableData.Ammo or 9
 	-- )
 
-	--self.Inventory:AddWeaponToInventory("HookGrenade", 100)
-
-	--self.Inventory:EquipWeapon("Throwable")
+	self.Inventory:AddWeaponToInventory("Molotov", 100)
+	self.Inventory:EquipWeapon("Throwable")
 
 	self.Inventory:AddWeaponToInventory(savedTrapData or "BearTrap")
 	self.Inventory:EquipWeapon("Trap")
@@ -320,8 +319,8 @@ end
 
 function HumanPlayer:OnHit(damage: number, damageMultiplier: number, limbName: string, shooter: Player | Model)
 	-- update limb hp gui, changing limb health colour green->orange->red
-	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
 	Human.OnHit(self, damage, damageMultiplier, limbName, shooter)
+	HumanLimbGUI:UpdateLimbGUIHP(self.Player, limbName, self.LimbHealth[limbName] / LimbHealth[limbName])
 end
 
 function HumanPlayer:HealInjuredPart(healAmount: number)

@@ -2,7 +2,7 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Part" referent="RBX25FEFC42896347BE846F6DD1552B7D2A">
+	<Item class="Part" referent="RBX7BE0F8D87B314B88B3E2DBDDA554E3CF">
 		<Properties>
 			<token name="shape">1</token>
 			<token name="formFactorRaw">1</token>
@@ -97,10 +97,11 @@
 			<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 			<bool name="DefinesCapabilities">false</bool>
 			<string name="Name">Blood</string>
+			<BinaryString name="SerializedOverrides"></BinaryString>
 			<int64 name="SourceAssetId">10375794405</int64>
-			<BinaryString name="Tags"></BinaryString>
+			<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 		</Properties>
-		<Item class="ParticleEmitter" referent="RBXAC932E27DA6F44CB8806A9C00C628BE1">
+		<Item class="ParticleEmitter" referent="RBX5BB27C12408F49E39BEE0CCFB4A4AD44">
 			<Properties>
 				<Vector3 name="Acceleration">
 					<X>0</X>
@@ -112,6 +113,7 @@
 				<float name="Drag">0</float>
 				<token name="EmissionDirection">5</token>
 				<bool name="Enabled">false</bool>
+				<bool name="FlipbookBlendFrames">true</bool>
 				<NumberRange name="FlipbookFramerate">1 1 </NumberRange>
 				<string name="FlipbookIncompatible">Particle texture must be 1024 by 1024 to use flipbooks.</string>
 				<token name="FlipbookLayout">0</token>
@@ -148,11 +150,12 @@
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ParticleEmitter</string>
+				<BinaryString name="SerializedOverrides"></BinaryString>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="ParticleEmitter" referent="RBX5FDDEB79B9CA4EE3BC776A8368EF61E3">
+		<Item class="ParticleEmitter" referent="RBX7C6628C34191487093C8C3C21BE4B41E">
 			<Properties>
 				<Vector3 name="Acceleration">
 					<X>0</X>
@@ -164,6 +167,7 @@
 				<float name="Drag">0</float>
 				<token name="EmissionDirection">5</token>
 				<bool name="Enabled">false</bool>
+				<bool name="FlipbookBlendFrames">true</bool>
 				<NumberRange name="FlipbookFramerate">1 1 </NumberRange>
 				<string name="FlipbookIncompatible">Particle texture must be 1024 by 1024 to use flipbooks.</string>
 				<token name="FlipbookLayout">0</token>
@@ -190,7 +194,7 @@
 					<Y>0</Y>
 				</Vector2>
 				<NumberSequence name="Squash">0 0.1125 0 0.336297 -3 0 1 0 0 </NumberSequence>
-				<Content name="Texture"><url>http://www.roblox.com/asset/?id=2787218577</url></Content>
+				<Content name="Texture"><url>rbxassetid://138674824359224</url></Content>
 				<float name="TimeScale">1</float>
 				<NumberSequence name="Transparency">0 1 0 0.109135 0.30625 0 1 1 0 </NumberSequence>
 				<float name="VelocityInheritance">0</float>
@@ -200,11 +204,12 @@
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ParticleEmitter</string>
+				<BinaryString name="SerializedOverrides"></BinaryString>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="ParticleEmitter" referent="RBX23A8FF2BE124499184865D773C4F4DC3">
+		<Item class="ParticleEmitter" referent="RBX50D058429CD448C3ABCA1D4B176F0094">
 			<Properties>
 				<Vector3 name="Acceleration">
 					<X>0</X>
@@ -216,6 +221,7 @@
 				<float name="Drag">0</float>
 				<token name="EmissionDirection">5</token>
 				<bool name="Enabled">false</bool>
+				<bool name="FlipbookBlendFrames">true</bool>
 				<NumberRange name="FlipbookFramerate">1 1 </NumberRange>
 				<string name="FlipbookIncompatible">Particle texture must be 1024 by 1024 to use flipbooks.</string>
 				<token name="FlipbookLayout">0</token>
@@ -252,11 +258,12 @@
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ParticleEmitter</string>
+				<BinaryString name="SerializedOverrides"></BinaryString>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
-		<Item class="ParticleEmitter" referent="RBXF7F8D1E1B6214F8DB326A9151E63AA86">
+		<Item class="ParticleEmitter" referent="RBX39BB163098664077996997FD4B2498A1">
 			<Properties>
 				<Vector3 name="Acceleration">
 					<X>0</X>
@@ -268,6 +275,7 @@
 				<float name="Drag">0</float>
 				<token name="EmissionDirection">5</token>
 				<bool name="Enabled">false</bool>
+				<bool name="FlipbookBlendFrames">true</bool>
 				<NumberRange name="FlipbookFramerate">1 1 </NumberRange>
 				<string name="FlipbookIncompatible">Particle texture must be 1024 by 1024 to use flipbooks.</string>
 				<token name="FlipbookLayout">0</token>
@@ -294,7 +302,7 @@
 					<Y>0</Y>
 				</Vector2>
 				<NumberSequence name="Squash">0 0.1125 0 0.336297 -3 0 1 0 0 </NumberSequence>
-				<Content name="Texture"><url>http://www.roblox.com/asset/?id=2787218577</url></Content>
+				<Content name="Texture"><url>rbxassetid://138674824359224</url></Content>
 				<float name="TimeScale">1</float>
 				<NumberSequence name="Transparency">0 1 0 0.0638642 0.7125 0 1 1 0 </NumberSequence>
 				<float name="VelocityInheritance">0</float>
@@ -304,9 +312,13 @@
 				<SecurityCapabilities name="Capabilities">0</SecurityCapabilities>
 				<bool name="DefinesCapabilities">false</bool>
 				<string name="Name">ParticleEmitter</string>
+				<BinaryString name="SerializedOverrides"></BinaryString>
 				<int64 name="SourceAssetId">-1</int64>
-				<BinaryString name="Tags"></BinaryString>
+				<SharedString name="Tags">yuZpQdnvvUBOTYh1jqZ2cA==</SharedString>
 			</Properties>
 		</Item>
 	</Item>
+	<SharedStrings>
+		<SharedString md5="yuZpQdnvvUBOTYh1jqZ2cA=="></SharedString>
+	</SharedStrings>
 </roblox>

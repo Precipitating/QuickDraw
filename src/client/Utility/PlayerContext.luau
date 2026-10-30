@@ -220,8 +220,8 @@ local function RefreshPlayerContextRefs(player: Player, character: Model)
 	assert(player, "Missing player when refreshing PlayerContext")
 	assert(character, "Missing character when refreshing PlayerContext")
 
-	local humanoid: Humanoid? = character:WaitForChild("Humanoid", 5) :: Humanoid
-	local hrp = character:WaitForChild("HumanoidRootPart", 5)
+	local humanoid: Humanoid? = character:WaitForChild("Humanoid") :: Humanoid
+	local hrp = character:WaitForChild("HumanoidRootPart")
 
 	if not humanoid or not hrp then
 		error("Cannot refresh PlayerContext, missing humanoid or HRP")
@@ -347,6 +347,14 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 	assert(player, "Missing player when refreshing PlayerContext")
 	assert(character, "Missing character when refreshing PlayerContext")
 
+	local hrp: BasePart = character:WaitForChild("HumanoidRootPart") :: BasePart
+
+	if not hrp then
+		Utility.Warn(`Missing HRP`)
+		return
+	end
+
+	hrp.Anchored = true
 	RefreshPlayerContextRefs(player, character)
 	PlayerContext:PlayerFollowCamera()
 	PlayerContext:AddRightArmOrientation()
@@ -356,6 +364,7 @@ function PlayerContext.OnCharacterAdded(player: Player, character: Model)
 	PlayerContext.ApplyMouseLock(true)
 	UserInputService.MouseIconEnabled = false
 
+	hrp.Anchored = false
 	--Utility.Warn("Local character references updated!")
 end
 

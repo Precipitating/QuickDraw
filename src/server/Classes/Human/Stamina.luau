@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local HumanConstants = require(ReplicatedStorage.Shared.HumanConstants)
+local Utility = require(ReplicatedStorage.Shared.Utility.Utility)
 -- Stamina.luau
 
 local Stamina = {}
@@ -36,6 +37,7 @@ function Stamina:Update(dt: number, sprinting: boolean)
 
 	-- fire once on the transition, not every frame while at 0
 	if before > 0 and self.Current <= 0 then
+		Utility.Warn(`Stamina depleted!`)
 		self.OnDepleted:Fire()
 	end
 	self:_publish()
